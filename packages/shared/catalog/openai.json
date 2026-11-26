@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_addvectorstorefile",
             "name": "add-vector-store-file",
-            "output": ["ActionOutput_openai_addvectorstorefile"],
-            "scopes": ["vector_stores.write"],
-            "usedModels": ["ActionInput_openai_addvectorstorefile", "ActionOutput_openai_addvectorstorefile"],
+            "output": [
+                "ActionOutput_openai_addvectorstorefile"
+            ],
+            "scopes": [
+                "vector_stores.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_addvectorstorefile",
+                "ActionOutput_openai_addvectorstorefile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -35,7 +42,9 @@
                                                 "const": "auto"
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -57,11 +66,17 @@
                                                         "description": "Number of tokens to overlap between chunks"
                                                     }
                                                 },
-                                                "required": ["max_chunk_size_tokens", "chunk_overlap_tokens"],
+                                                "required": [
+                                                    "max_chunk_size_tokens",
+                                                    "chunk_overlap_tokens"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["type", "static"],
+                                        "required": [
+                                            "type",
+                                            "static"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -74,7 +89,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["vector_store_id", "file_id"],
+                        "required": [
+                            "vector_store_id",
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_addvectorstorefile": {
@@ -113,7 +131,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "vector_store_id", "status", "created_at"],
+                        "required": [
+                            "id",
+                            "vector_store_id",
+                            "status",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -126,9 +149,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_cancelfinetuningjob",
             "name": "cancel-fine-tuning-job",
-            "output": ["ActionOutput_openai_cancelfinetuningjob"],
-            "scopes": ["fine_tuning.write"],
-            "usedModels": ["ActionInput_openai_cancelfinetuningjob", "ActionOutput_openai_cancelfinetuningjob"],
+            "output": [
+                "ActionOutput_openai_cancelfinetuningjob"
+            ],
+            "scopes": [
+                "fine_tuning.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_cancelfinetuningjob",
+                "ActionOutput_openai_cancelfinetuningjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -140,7 +170,9 @@
                                 "description": "The ID of the fine-tuning job to cancel. Example: \"ftjob-abc123\""
                             }
                         },
-                        "required": ["fine_tuning_job_id"],
+                        "required": [
+                            "fine_tuning_job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_cancelfinetuningjob": {
@@ -156,13 +188,19 @@
                                 "type": "number"
                             },
                             "finished_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "model": {
                                 "type": "string"
                             },
                             "fine_tuned_model": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_id": {
                                 "type": "string"
@@ -177,7 +215,10 @@
                                 "type": "string"
                             },
                             "validation_file": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "training_file": {
                                 "type": "string"
@@ -186,19 +227,31 @@
                                 "type": "object",
                                 "properties": {
                                     "n_epochs": {
-                                        "type": ["number", "string"]
+                                        "type": [
+                                            "number",
+                                            "string"
+                                        ]
                                     },
                                     "batch_size": {
-                                        "type": ["number", "string"]
+                                        "type": [
+                                            "number",
+                                            "string"
+                                        ]
                                     },
                                     "learning_rate_multiplier": {
-                                        "type": ["number", "string"]
+                                        "type": [
+                                            "number",
+                                            "string"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": {}
                             },
                             "trained_tokens": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "error": {
                                 "anyOf": [
@@ -212,10 +265,16 @@
                                                 "type": "string"
                                             },
                                             "param": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "line": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -226,7 +285,17 @@
                                 ]
                             }
                         },
-                        "required": ["id", "object", "created_at", "model", "organization_id", "result_files", "status", "training_file", "hyperparameters"],
+                        "required": [
+                            "id",
+                            "object",
+                            "created_at",
+                            "model",
+                            "organization_id",
+                            "result_files",
+                            "status",
+                            "training_file",
+                            "hyperparameters"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -239,9 +308,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createbatch",
             "name": "create-batch",
-            "output": ["ActionOutput_openai_createbatch"],
-            "scopes": ["batch.write"],
-            "usedModels": ["ActionInput_openai_createbatch", "ActionOutput_openai_createbatch"],
+            "output": [
+                "ActionOutput_openai_createbatch"
+            ],
+            "scopes": [
+                "batch.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createbatch",
+                "ActionOutput_openai_createbatch"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -297,11 +373,18 @@
                                         "description": "Seconds until output and error files expire, from 1 hour to 30 days."
                                     }
                                 },
-                                "required": ["anchor", "seconds"],
+                                "required": [
+                                    "anchor",
+                                    "seconds"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["input_file_id", "endpoint", "completion_window"],
+                        "required": [
+                            "input_file_id",
+                            "endpoint",
+                            "completion_window"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createbatch": {
@@ -371,7 +454,11 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["total", "completed", "failed"],
+                                "required": [
+                                    "total",
+                                    "completed",
+                                    "failed"
+                                ],
                                 "additionalProperties": false
                             },
                             "metadata": {
@@ -384,7 +471,15 @@
                                 }
                             }
                         },
-                        "required": ["id", "object", "endpoint", "input_file_id", "completion_window", "status", "created_at"],
+                        "required": [
+                            "id",
+                            "object",
+                            "endpoint",
+                            "input_file_id",
+                            "completion_window",
+                            "status",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -397,9 +492,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createchatcompletion",
             "name": "create-chat-completion",
-            "output": ["ActionOutput_openai_createchatcompletion"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_createchatcompletion", "ActionOutput_openai_createchatcompletion"],
+            "output": [
+                "ActionOutput_openai_createchatcompletion"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createchatcompletion",
+                "ActionOutput_openai_createchatcompletion"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -417,13 +519,21 @@
                                     "properties": {
                                         "role": {
                                             "type": "string",
-                                            "enum": ["system", "user", "assistant", "tool"]
+                                            "enum": [
+                                                "system",
+                                                "user",
+                                                "assistant",
+                                                "tool"
+                                            ]
                                         },
                                         "content": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["role", "content"],
+                                    "required": [
+                                        "role",
+                                        "content"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of messages with role and content"
@@ -462,7 +572,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["model", "messages"],
+                        "required": [
+                            "model",
+                            "messages"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createchatcompletion": {
@@ -495,17 +608,28 @@
                                                     "type": "string"
                                                 },
                                                 "content": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["role"],
+                                            "required": [
+                                                "role"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "finish_reason": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["index", "message"],
+                                    "required": [
+                                        "index",
+                                        "message"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -522,11 +646,21 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["prompt_tokens", "completion_tokens", "total_tokens"],
+                                "required": [
+                                    "prompt_tokens",
+                                    "completion_tokens",
+                                    "total_tokens"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "object", "created", "model", "choices"],
+                        "required": [
+                            "id",
+                            "object",
+                            "created",
+                            "model",
+                            "choices"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -539,9 +673,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createembedding",
             "name": "create-embedding",
-            "output": ["ActionOutput_openai_createembedding"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_createembedding", "ActionOutput_openai_createembedding"],
+            "output": [
+                "ActionOutput_openai_createembedding"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createembedding",
+                "ActionOutput_openai_createembedding"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -569,14 +710,20 @@
                             "encodingFormat": {
                                 "description": "The format to return the embeddings in. Can be \"float\" or \"base64\".",
                                 "type": "string",
-                                "enum": ["float", "base64"]
+                                "enum": [
+                                    "float",
+                                    "base64"
+                                ]
                             },
                             "dimensions": {
                                 "description": "The number of dimensions the resulting output embeddings should have. Only supported in text-embedding-3 and later models.",
                                 "type": "number"
                             }
                         },
-                        "required": ["model", "input"],
+                        "required": [
+                            "model",
+                            "input"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createembedding": {
@@ -603,7 +750,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["object", "embedding", "index"],
+                                    "required": [
+                                        "object",
+                                        "embedding",
+                                        "index"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -620,11 +771,19 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["promptTokens", "totalTokens"],
+                                "required": [
+                                    "promptTokens",
+                                    "totalTokens"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["object", "data", "model", "usage"],
+                        "required": [
+                            "object",
+                            "data",
+                            "model",
+                            "usage"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -637,9 +796,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createfile",
             "name": "create-file",
-            "output": ["ActionOutput_openai_createfile"],
-            "scopes": ["file.write"],
-            "usedModels": ["ActionInput_openai_createfile", "ActionOutput_openai_createfile"],
+            "output": [
+                "ActionOutput_openai_createfile"
+            ],
+            "scopes": [
+                "file.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createfile",
+                "ActionOutput_openai_createfile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -651,7 +817,9 @@
                                 "description": "Informational message about using the proxy script"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createfile": {
@@ -664,7 +832,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message", "proxyScript"],
+                        "required": [
+                            "message",
+                            "proxyScript"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -677,9 +848,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createimage",
             "name": "create-image",
-            "output": ["ActionOutput_openai_createimage"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_createimage", "ActionOutput_openai_createimage"],
+            "output": [
+                "ActionOutput_openai_createimage"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createimage",
+                "ActionOutput_openai_createimage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -719,17 +897,31 @@
                             "quality": {
                                 "description": "The image quality. Supported values depend on the selected GPT Image model.",
                                 "type": "string",
-                                "enum": ["low", "medium", "high", "xhigh", "max", "auto"]
+                                "enum": [
+                                    "low",
+                                    "medium",
+                                    "high",
+                                    "xhigh",
+                                    "max",
+                                    "auto"
+                                ]
                             },
                             "background": {
                                 "description": "The image background.",
                                 "type": "string",
-                                "enum": ["transparent", "opaque", "auto"]
+                                "enum": [
+                                    "transparent",
+                                    "opaque",
+                                    "auto"
+                                ]
                             },
                             "moderation": {
                                 "description": "The content moderation level.",
                                 "type": "string",
-                                "enum": ["low", "auto"]
+                                "enum": [
+                                    "low",
+                                    "auto"
+                                ]
                             },
                             "output_compression": {
                                 "description": "Compression level from 0 to 100 for JPEG or WebP output.",
@@ -740,14 +932,20 @@
                             "output_format": {
                                 "description": "The generated image format.",
                                 "type": "string",
-                                "enum": ["png", "jpeg", "webp"]
+                                "enum": [
+                                    "png",
+                                    "jpeg",
+                                    "webp"
+                                ]
                             },
                             "user": {
                                 "description": "A unique identifier representing the end user for abuse monitoring.",
                                 "type": "string"
                             }
                         },
-                        "required": ["prompt"],
+                        "required": [
+                            "prompt"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createimage": {
@@ -775,7 +973,9 @@
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -788,9 +988,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createmoderation",
             "name": "create-moderation",
-            "output": ["ActionOutput_openai_createmoderation"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_createmoderation", "ActionOutput_openai_createmoderation"],
+            "output": [
+                "ActionOutput_openai_createmoderation"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createmoderation",
+                "ActionOutput_openai_createmoderation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -824,7 +1031,10 @@
                                                             "description": "Text to classify. Example: \"I want to hurt someone.\""
                                                         }
                                                     },
-                                                    "required": ["type", "text"],
+                                                    "required": [
+                                                        "type",
+                                                        "text"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -842,11 +1052,16 @@
                                                                     "description": "Image URL or base64-encoded data URL to classify."
                                                                 }
                                                             },
-                                                            "required": ["url"],
+                                                            "required": [
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["type", "image_url"],
+                                                    "required": [
+                                                        "type",
+                                                        "image_url"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             ]
@@ -858,10 +1073,17 @@
                             "model": {
                                 "description": "Moderation model. Defaults to \"omni-moderation-latest\".",
                                 "type": "string",
-                                "enum": ["omni-moderation-latest", "omni-moderation-2024-09-26", "text-moderation-latest", "text-moderation-stable"]
+                                "enum": [
+                                    "omni-moderation-latest",
+                                    "omni-moderation-2024-09-26",
+                                    "text-moderation-latest",
+                                    "text-moderation-stable"
+                                ]
                             }
                         },
-                        "required": ["input"],
+                        "required": [
+                            "input"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createmoderation": {
@@ -887,7 +1109,10 @@
                                                 "type": "string"
                                             },
                                             "additionalProperties": {
-                                                "type": ["boolean", "null"]
+                                                "type": [
+                                                    "boolean",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "category_scores": {
@@ -896,16 +1121,27 @@
                                                 "type": "string"
                                             },
                                             "additionalProperties": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         }
                                     },
-                                    "required": ["flagged", "categories", "category_scores"],
+                                    "required": [
+                                        "flagged",
+                                        "categories",
+                                        "category_scores"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "model", "results"],
+                        "required": [
+                            "id",
+                            "model",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -918,9 +1154,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createresponse",
             "name": "create-response",
-            "output": ["ActionOutput_openai_createresponse"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_createresponse", "ActionOutput_openai_createresponse"],
+            "output": [
+                "ActionOutput_openai_createresponse"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createresponse",
+                "ActionOutput_openai_createresponse"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -984,7 +1227,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["model", "input"],
+                        "required": [
+                            "model",
+                            "input"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createresponse": {
@@ -1016,11 +1262,18 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["input_tokens", "output_tokens", "total_tokens"],
+                                "required": [
+                                    "input_tokens",
+                                    "output_tokens",
+                                    "total_tokens"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "output"],
+                        "required": [
+                            "id",
+                            "output"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1033,9 +1286,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createspeech",
             "name": "create-speech",
-            "output": ["ActionOutput_openai_createspeech"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_createspeech", "ActionOutput_openai_createspeech"],
+            "output": [
+                "ActionOutput_openai_createspeech"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createspeech",
+                "ActionOutput_openai_createspeech"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1064,7 +1324,9 @@
                                                 "description": "Custom voice ID. Example: \"voice_1234\""
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ],
@@ -1077,7 +1339,14 @@
                             "response_format": {
                                 "description": "Audio format. Defaults to \"mp3\".",
                                 "type": "string",
-                                "enum": ["mp3", "opus", "aac", "flac", "wav", "pcm"]
+                                "enum": [
+                                    "mp3",
+                                    "opus",
+                                    "aac",
+                                    "flac",
+                                    "wav",
+                                    "pcm"
+                                ]
                             },
                             "speed": {
                                 "description": "Speech speed. 0.25 to 4.0. Defaults to 1.0.",
@@ -1086,7 +1355,11 @@
                                 "maximum": 4
                             }
                         },
-                        "required": ["model", "input", "voice"],
+                        "required": [
+                            "model",
+                            "input",
+                            "voice"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createspeech": {
@@ -1101,7 +1374,10 @@
                                 "description": "MIME type of the audio format."
                             }
                         },
-                        "required": ["audio_data", "content_type"],
+                        "required": [
+                            "audio_data",
+                            "content_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1114,9 +1390,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createtranscription",
             "name": "create-transcription",
-            "output": ["ActionOutput_openai_createtranscription"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_createtranscription", "ActionOutput_openai_createtranscription"],
+            "output": [
+                "ActionOutput_openai_createtranscription"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createtranscription",
+                "ActionOutput_openai_createtranscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1129,7 +1412,10 @@
                             },
                             "model": {
                                 "type": "string",
-                                "enum": ["whisper-1", "gpt-4o-transcribe"],
+                                "enum": [
+                                    "whisper-1",
+                                    "gpt-4o-transcribe"
+                                ],
                                 "description": "Transcription model to use"
                             },
                             "language": {
@@ -1143,7 +1429,13 @@
                             "response_format": {
                                 "description": "Output format",
                                 "type": "string",
-                                "enum": ["json", "text", "srt", "verbose_json", "vtt"]
+                                "enum": [
+                                    "json",
+                                    "text",
+                                    "srt",
+                                    "verbose_json",
+                                    "vtt"
+                                ]
                             },
                             "temperature": {
                                 "description": "Sampling temperature",
@@ -1152,7 +1444,10 @@
                                 "maximum": 1
                             }
                         },
-                        "required": ["filePath", "model"],
+                        "required": [
+                            "filePath",
+                            "model"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_createtranscription": {
@@ -1167,7 +1462,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["text"],
+                        "required": [
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1180,9 +1477,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_createvectorstore",
             "name": "create-vector-store",
-            "output": ["ActionOutput_openai_createvectorstore"],
-            "scopes": ["vector_stores.write"],
-            "usedModels": ["ActionInput_openai_createvectorstore", "ActionOutput_openai_createvectorstore"],
+            "output": [
+                "ActionOutput_openai_createvectorstore"
+            ],
+            "scopes": [
+                "vector_stores.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_createvectorstore",
+                "ActionOutput_openai_createvectorstore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1213,7 +1517,10 @@
                                         "description": "Number of days after last activity when the vector store expires"
                                     }
                                 },
-                                "required": ["anchor", "days"],
+                                "required": [
+                                    "anchor",
+                                    "days"
+                                ],
                                 "additionalProperties": false
                             },
                             "chunking_strategy": {
@@ -1227,7 +1534,9 @@
                                                 "const": "auto"
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1247,11 +1556,17 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["max_chunk_size_tokens", "chunk_overlap_tokens"],
+                                                "required": [
+                                                    "max_chunk_size_tokens",
+                                                    "chunk_overlap_tokens"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["type", "static"],
+                                        "required": [
+                                            "type",
+                                            "static"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -1309,7 +1624,13 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["in_progress", "completed", "failed", "cancelled", "total"],
+                                "required": [
+                                    "in_progress",
+                                    "completed",
+                                    "failed",
+                                    "cancelled",
+                                    "total"
+                                ],
                                 "additionalProperties": false
                             },
                             "usage_bytes": {
@@ -1333,7 +1654,10 @@
                                         "description": "Number of days after last activity when the vector store expires"
                                     }
                                 },
-                                "required": ["anchor", "days"],
+                                "required": [
+                                    "anchor",
+                                    "days"
+                                ],
                                 "additionalProperties": false
                             },
                             "chunking_strategy": {
@@ -1346,7 +1670,9 @@
                                                 "const": "auto"
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1366,11 +1692,17 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["max_chunk_size_tokens", "chunk_overlap_tokens"],
+                                                "required": [
+                                                    "max_chunk_size_tokens",
+                                                    "chunk_overlap_tokens"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["type", "static"],
+                                        "required": [
+                                            "type",
+                                            "static"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -1381,7 +1713,13 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "status", "file_counts", "usage_bytes", "created_at"],
+                        "required": [
+                            "id",
+                            "status",
+                            "file_counts",
+                            "usage_bytes",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1394,9 +1732,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_deleteresponse",
             "name": "delete-response",
-            "output": ["ActionOutput_openai_deleteresponse"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_deleteresponse", "ActionOutput_openai_deleteresponse"],
+            "output": [
+                "ActionOutput_openai_deleteresponse"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_deleteresponse",
+                "ActionOutput_openai_deleteresponse"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1408,7 +1753,9 @@
                                 "description": "The ID of the response to delete. Example: \"resp_abc123\""
                             }
                         },
-                        "required": ["response_id"],
+                        "required": [
+                            "response_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_deleteresponse": {
@@ -1421,7 +1768,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1434,9 +1784,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_deletevectorstorefile",
             "name": "delete-vector-store-file",
-            "output": ["ActionOutput_openai_deletevectorstorefile"],
-            "scopes": ["vector_stores.write"],
-            "usedModels": ["ActionInput_openai_deletevectorstorefile", "ActionOutput_openai_deletevectorstorefile"],
+            "output": [
+                "ActionOutput_openai_deletevectorstorefile"
+            ],
+            "scopes": [
+                "vector_stores.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_deletevectorstorefile",
+                "ActionOutput_openai_deletevectorstorefile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1452,7 +1809,10 @@
                                 "description": "The ID of the file to remove from the vector store. Example: \"file-abc123\""
                             }
                         },
-                        "required": ["vector_store_id", "file_id"],
+                        "required": [
+                            "vector_store_id",
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_deletevectorstorefile": {
@@ -1469,7 +1829,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "object", "deleted"],
+                        "required": [
+                            "id",
+                            "object",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1482,9 +1846,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_deletevectorstore",
             "name": "delete-vector-store",
-            "output": ["ActionOutput_openai_deletevectorstore"],
-            "scopes": ["vector_stores.write"],
-            "usedModels": ["ActionInput_openai_deletevectorstore", "ActionOutput_openai_deletevectorstore"],
+            "output": [
+                "ActionOutput_openai_deletevectorstore"
+            ],
+            "scopes": [
+                "vector_stores.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_deletevectorstore",
+                "ActionOutput_openai_deletevectorstore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1496,7 +1867,9 @@
                                 "description": "The ID of the vector store to delete. Example: \"vs_abc123\""
                             }
                         },
-                        "required": ["vector_store_id"],
+                        "required": [
+                            "vector_store_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_deletevectorstore": {
@@ -1516,7 +1889,11 @@
                                 "description": "Whether the vector store was successfully deleted"
                             }
                         },
-                        "required": ["id", "object", "deleted"],
+                        "required": [
+                            "id",
+                            "object",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1529,9 +1906,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_getbatch",
             "name": "get-batch",
-            "output": ["ActionOutput_openai_getbatch"],
-            "scopes": ["batch.read"],
-            "usedModels": ["ActionInput_openai_getbatch", "ActionOutput_openai_getbatch"],
+            "output": [
+                "ActionOutput_openai_getbatch"
+            ],
+            "scopes": [
+                "batch.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_getbatch",
+                "ActionOutput_openai_getbatch"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1543,7 +1927,9 @@
                                 "description": "The ID of the batch to retrieve. Example: \"batch_abc123\""
                             }
                         },
-                        "required": ["batch_id"],
+                        "required": [
+                            "batch_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_getbatch": {
@@ -1554,7 +1940,16 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["validating", "failed", "in_progress", "finalizing", "completed", "expired", "cancelling", "cancelled"]
+                                "enum": [
+                                    "validating",
+                                    "failed",
+                                    "in_progress",
+                                    "finalizing",
+                                    "completed",
+                                    "expired",
+                                    "cancelling",
+                                    "cancelled"
+                                ]
                             },
                             "input_file_id": {
                                 "type": "string"
@@ -1581,7 +1976,11 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["total", "completed", "failed"],
+                                "required": [
+                                    "total",
+                                    "completed",
+                                    "failed"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -1594,7 +1993,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "status", "input_file_id", "endpoint", "request_counts", "created_at"],
+                        "required": [
+                            "id",
+                            "status",
+                            "input_file_id",
+                            "endpoint",
+                            "request_counts",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1607,9 +2013,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_getfile",
             "name": "get-file",
-            "output": ["ActionOutput_openai_getfile"],
-            "scopes": ["file.read"],
-            "usedModels": ["ActionInput_openai_getfile", "ActionOutput_openai_getfile"],
+            "output": [
+                "ActionOutput_openai_getfile"
+            ],
+            "scopes": [
+                "file.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_getfile",
+                "ActionOutput_openai_getfile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1621,7 +2034,9 @@
                                 "description": "The ID of the file to retrieve. Example: \"file-123\""
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_getfile": {
@@ -1646,7 +2061,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "filename", "purpose", "bytes", "created_at", "status"],
+                        "required": [
+                            "id",
+                            "filename",
+                            "purpose",
+                            "bytes",
+                            "created_at",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1659,9 +2081,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_getmodel",
             "name": "get-model",
-            "output": ["ActionOutput_openai_getmodel"],
-            "scopes": ["model.read"],
-            "usedModels": ["ActionInput_openai_getmodel", "ActionOutput_openai_getmodel"],
+            "output": [
+                "ActionOutput_openai_getmodel"
+            ],
+            "scopes": [
+                "model.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_getmodel",
+                "ActionOutput_openai_getmodel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1673,7 +2102,9 @@
                                 "description": "Model ID. Example: \"gpt-4o-mini\""
                             }
                         },
-                        "required": ["model"],
+                        "required": [
+                            "model"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_getmodel": {
@@ -1692,7 +2123,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "object", "created", "owned_by"],
+                        "required": [
+                            "id",
+                            "object",
+                            "created",
+                            "owned_by"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1705,9 +2141,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_getresponse",
             "name": "get-response",
-            "output": ["ActionOutput_openai_getresponse"],
-            "scopes": ["model.request"],
-            "usedModels": ["ActionInput_openai_getresponse", "ActionOutput_openai_getresponse"],
+            "output": [
+                "ActionOutput_openai_getresponse"
+            ],
+            "scopes": [
+                "model.request"
+            ],
+            "usedModels": [
+                "ActionInput_openai_getresponse",
+                "ActionOutput_openai_getresponse"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1719,7 +2162,9 @@
                                 "description": "The ID of the response to retrieve. Must start with \"resp_\". Example: \"resp_abc123\""
                             }
                         },
-                        "required": ["response_id"],
+                        "required": [
+                            "response_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_getresponse": {
@@ -1764,7 +2209,12 @@
                                 "description": "Unix timestamp (in seconds) of when the response was created."
                             }
                         },
-                        "required": ["id", "model", "output", "created_at"],
+                        "required": [
+                            "id",
+                            "model",
+                            "output",
+                            "created_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1777,9 +2227,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_getvectorstorefile",
             "name": "get-vector-store-file",
-            "output": ["ActionOutput_openai_getvectorstorefile"],
-            "scopes": ["vector_stores.read"],
-            "usedModels": ["ActionInput_openai_getvectorstorefile", "ActionOutput_openai_getvectorstorefile"],
+            "output": [
+                "ActionOutput_openai_getvectorstorefile"
+            ],
+            "scopes": [
+                "vector_stores.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_getvectorstorefile",
+                "ActionOutput_openai_getvectorstorefile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1795,7 +2252,10 @@
                                 "description": "The ID of the file. Example: \"file_abc123\""
                             }
                         },
-                        "required": ["vector_store_id", "file_id"],
+                        "required": [
+                            "vector_store_id",
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_getvectorstorefile": {
@@ -1835,11 +2295,16 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["max_chunk_size_tokens", "chunk_overlap_tokens"],
+                                        "required": [
+                                            "max_chunk_size_tokens",
+                                            "chunk_overlap_tokens"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "last_error": {
@@ -1852,11 +2317,21 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["code", "message"],
+                                "required": [
+                                    "code",
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "object", "vector_store_id", "status", "created_at", "usage_bytes"],
+                        "required": [
+                            "id",
+                            "object",
+                            "vector_store_id",
+                            "status",
+                            "created_at",
+                            "usage_bytes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1869,9 +2344,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_getvectorstore",
             "name": "get-vector-store",
-            "output": ["ActionOutput_openai_getvectorstore"],
-            "scopes": ["vector_stores.read"],
-            "usedModels": ["ActionInput_openai_getvectorstore", "ActionOutput_openai_getvectorstore"],
+            "output": [
+                "ActionOutput_openai_getvectorstore"
+            ],
+            "scopes": [
+                "vector_stores.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_getvectorstore",
+                "ActionOutput_openai_getvectorstore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1883,7 +2365,9 @@
                                 "description": "The ID of the vector store to retrieve. Example: \"vs_abc123\""
                             }
                         },
-                        "required": ["vector_store_id"],
+                        "required": [
+                            "vector_store_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_getvectorstore": {
@@ -1937,7 +2421,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1950,9 +2437,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_listbatches",
             "name": "list-batches",
-            "output": ["ActionOutput_openai_listbatches"],
-            "scopes": ["batch.read"],
-            "usedModels": ["ActionInput_openai_listbatches", "ActionOutput_openai_listbatches"],
+            "output": [
+                "ActionOutput_openai_listbatches"
+            ],
+            "scopes": [
+                "batch.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_listbatches",
+                "ActionOutput_openai_listbatches"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2004,10 +2498,16 @@
                                                                         "type": "string"
                                                                     },
                                                                     "param": {
-                                                                        "type": ["string", "null"]
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "line": {
-                                                                        "type": ["number", "null"]
+                                                                        "type": [
+                                                                            "number",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
                                                                 "additionalProperties": {}
@@ -2029,40 +2529,79 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["validating", "failed", "in_progress", "finalizing", "completed", "expired", "cancelling", "cancelled"]
+                                            "enum": [
+                                                "validating",
+                                                "failed",
+                                                "in_progress",
+                                                "finalizing",
+                                                "completed",
+                                                "expired",
+                                                "cancelling",
+                                                "cancelled"
+                                            ]
                                         },
                                         "output_file_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "error_file_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "number"
                                         },
                                         "in_progress_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "expires_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "finalizing_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "completed_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "failed_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "expired_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "cancelling_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "cancelled_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "request_counts": {
                                             "type": "object",
@@ -2077,7 +2616,11 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["total", "completed", "failed"],
+                                            "required": [
+                                                "total",
+                                                "completed",
+                                                "failed"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2112,7 +2655,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["batches", "has_more"],
+                        "required": [
+                            "batches",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2125,9 +2671,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_listfiles",
             "name": "list-files",
-            "output": ["ActionOutput_openai_listfiles"],
-            "scopes": ["file.read"],
-            "usedModels": ["ActionInput_openai_listfiles", "ActionOutput_openai_listfiles"],
+            "output": [
+                "ActionOutput_openai_listfiles"
+            ],
+            "scopes": [
+                "file.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_listfiles",
+                "ActionOutput_openai_listfiles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2137,7 +2690,12 @@
                             "purpose": {
                                 "description": "Filter by file purpose. Example: \"assistants\"",
                                 "type": "string",
-                                "enum": ["assistants", "batch", "fine-tune", "vision"]
+                                "enum": [
+                                    "assistants",
+                                    "batch",
+                                    "fine-tune",
+                                    "vision"
+                                ]
                             },
                             "cursor": {
                                 "description": "Pagination cursor from the previous response (last_id). Omit for the first page.",
@@ -2152,7 +2710,10 @@
                             "order": {
                                 "description": "Sort order by created_at. Example: \"desc\"",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2194,7 +2755,15 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "bytes", "created_at", "filename", "purpose", "status"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "bytes",
+                                        "created_at",
+                                        "filename",
+                                        "purpose",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2205,7 +2774,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["files", "has_more"],
+                        "required": [
+                            "files",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2218,9 +2790,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_listfinetuningjobs",
             "name": "list-fine-tuning-jobs",
-            "output": ["ActionOutput_openai_listfinetuningjobs"],
-            "scopes": ["fine_tuning.read"],
-            "usedModels": ["ActionInput_openai_listfinetuningjobs", "ActionOutput_openai_listfinetuningjobs"],
+            "output": [
+                "ActionOutput_openai_listfinetuningjobs"
+            ],
+            "scopes": [
+                "fine_tuning.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_listfinetuningjobs",
+                "ActionOutput_openai_listfinetuningjobs"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2277,7 +2856,14 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["validating_files", "queued", "running", "succeeded", "failed", "cancelled"]
+                                            "enum": [
+                                                "validating_files",
+                                                "queued",
+                                                "running",
+                                                "succeeded",
+                                                "failed",
+                                                "cancelled"
+                                            ]
                                         },
                                         "validation_file": {
                                             "type": "string"
@@ -2289,13 +2875,22 @@
                                             "type": "object",
                                             "properties": {
                                                 "n_epochs": {
-                                                    "type": ["number", "string"]
+                                                    "type": [
+                                                        "number",
+                                                        "string"
+                                                    ]
                                                 },
                                                 "batch_size": {
-                                                    "type": ["number", "string"]
+                                                    "type": [
+                                                        "number",
+                                                        "string"
+                                                    ]
                                                 },
                                                 "learning_rate_multiplier": {
-                                                    "type": ["number", "string"]
+                                                    "type": [
+                                                        "number",
+                                                        "string"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -2316,7 +2911,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["code", "message"],
+                                            "required": [
+                                                "code",
+                                                "message"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "metadata": {
@@ -2339,7 +2937,15 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "object", "created_at", "model", "organization_id", "status", "training_file"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "created_at",
+                                        "model",
+                                        "organization_id",
+                                        "status",
+                                        "training_file"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2351,7 +2957,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "has_more"],
+                        "required": [
+                            "items",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2364,9 +2973,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_listmodels",
             "name": "list-models",
-            "output": ["ActionOutput_openai_listmodels"],
-            "scopes": ["model.read"],
-            "usedModels": ["ActionInput_openai_listmodels", "ActionOutput_openai_listmodels"],
+            "output": [
+                "ActionOutput_openai_listmodels"
+            ],
+            "scopes": [
+                "model.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_listmodels",
+                "ActionOutput_openai_listmodels"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2396,12 +3012,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "created", "owned_by"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "created",
+                                        "owned_by"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["models"],
+                        "required": [
+                            "models"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2414,9 +3037,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_listvectorstorefiles",
             "name": "list-vector-store-files",
-            "output": ["ActionOutput_openai_listvectorstorefiles"],
-            "scopes": ["vector_stores.read"],
-            "usedModels": ["ActionInput_openai_listvectorstorefiles", "ActionOutput_openai_listvectorstorefiles"],
+            "output": [
+                "ActionOutput_openai_listvectorstorefiles"
+            ],
+            "scopes": [
+                "vector_stores.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_listvectorstorefiles",
+                "ActionOutput_openai_listvectorstorefiles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2440,15 +3070,25 @@
                             "order": {
                                 "description": "Sort order by created_at.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "filter": {
                                 "description": "Filter by file status.",
                                 "type": "string",
-                                "enum": ["in_progress", "completed", "failed", "cancelled"]
+                                "enum": [
+                                    "in_progress",
+                                    "completed",
+                                    "failed",
+                                    "cancelled"
+                                ]
                             }
                         },
-                        "required": ["vector_store_id"],
+                        "required": [
+                            "vector_store_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_listvectorstorefiles": {
@@ -2470,7 +3110,12 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["in_progress", "completed", "failed", "cancelled"]
+                                            "enum": [
+                                                "in_progress",
+                                                "completed",
+                                                "failed",
+                                                "cancelled"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "number"
@@ -2479,7 +3124,14 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "object", "vector_store_id", "status", "created_at", "usage_bytes"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "vector_store_id",
+                                        "status",
+                                        "created_at",
+                                        "usage_bytes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2493,7 +3145,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["data", "has_more"],
+                        "required": [
+                            "data",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2506,9 +3161,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_listvectorstores",
             "name": "list-vector-stores",
-            "output": ["ActionOutput_openai_listvectorstores"],
-            "scopes": ["vector_stores.read"],
-            "usedModels": ["ActionInput_openai_listvectorstores", "ActionOutput_openai_listvectorstores"],
+            "output": [
+                "ActionOutput_openai_listvectorstores"
+            ],
+            "scopes": [
+                "vector_stores.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_listvectorstores",
+                "ActionOutput_openai_listvectorstores"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2528,7 +3190,10 @@
                             "order": {
                                 "description": "Sort order by created_at. Options: asc, desc. Default: desc.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2575,7 +3240,13 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["in_progress", "completed", "failed", "cancelled", "total"],
+                                            "required": [
+                                                "in_progress",
+                                                "completed",
+                                                "failed",
+                                                "cancelled",
+                                                "total"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "metadata": {},
@@ -2589,7 +3260,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["anchor", "days"],
+                                            "required": [
+                                                "anchor",
+                                                "days"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "expires_at": {
@@ -2599,7 +3273,12 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "object", "created_at", "name"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "created_at",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2613,7 +3292,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["data", "has_more"],
+                        "required": [
+                            "data",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2626,9 +3308,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_searchvectorstore",
             "name": "search-vector-store",
-            "output": ["ActionOutput_openai_searchvectorstore"],
-            "scopes": ["vector_stores.read"],
-            "usedModels": ["ActionInput_openai_searchvectorstore", "ActionOutput_openai_searchvectorstore"],
+            "output": [
+                "ActionOutput_openai_searchvectorstore"
+            ],
+            "scopes": [
+                "vector_stores.read"
+            ],
+            "usedModels": [
+                "ActionInput_openai_searchvectorstore",
+                "ActionOutput_openai_searchvectorstore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2672,7 +3361,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["vector_store_id", "query"],
+                        "required": [
+                            "vector_store_id",
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_searchvectorstore": {
@@ -2724,7 +3416,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["file_id", "score"],
+                                    "required": [
+                                        "file_id",
+                                        "score"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2732,10 +3427,18 @@
                                 "type": "boolean"
                             },
                             "next_page": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "search_query", "data", "has_more"],
+                        "required": [
+                            "object",
+                            "search_query",
+                            "data",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2748,9 +3451,16 @@
             "endpoint": null,
             "input": "ActionInput_openai_updatevectorstore",
             "name": "update-vector-store",
-            "output": ["ActionOutput_openai_updatevectorstore"],
-            "scopes": ["vector_stores.write"],
-            "usedModels": ["ActionInput_openai_updatevectorstore", "ActionOutput_openai_updatevectorstore"],
+            "output": [
+                "ActionOutput_openai_updatevectorstore"
+            ],
+            "scopes": [
+                "vector_stores.write"
+            ],
+            "usedModels": [
+                "ActionInput_openai_updatevectorstore",
+                "ActionOutput_openai_updatevectorstore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2778,7 +3488,10 @@
                                                 "maximum": 9007199254740991
                                             }
                                         },
-                                        "required": ["anchor", "days"],
+                                        "required": [
+                                            "anchor",
+                                            "days"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2794,7 +3507,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["vector_store_id"],
+                        "required": [
+                            "vector_store_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_openai_updatevectorstore": {
@@ -2848,7 +3563,13 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["total", "in_progress", "completed", "failed", "cancelled"],
+                                "required": [
+                                    "total",
+                                    "in_progress",
+                                    "completed",
+                                    "failed",
+                                    "cancelled"
+                                ],
                                 "additionalProperties": false
                             },
                             "expires_after": {
@@ -2866,7 +3587,10 @@
                                                 "maximum": 9007199254740991
                                             }
                                         },
-                                        "required": ["anchor", "days"],
+                                        "required": [
+                                            "anchor",
+                                            "days"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2882,7 +3606,13 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "object", "created_at", "name", "file_counts"],
+                        "required": [
+                            "id",
+                            "object",
+                            "created_at",
+                            "name",
+                            "file_counts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2903,12 +3633,16 @@
             ],
             "input": null,
             "name": "batches",
-            "output": ["Batch"],
+            "output": [
+                "Batch"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Batch"],
+            "usedModels": [
+                "Batch"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2945,10 +3679,16 @@
                                                             "type": "string"
                                                         },
                                                         "param": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "line": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -2972,37 +3712,67 @@
                                 "type": "string"
                             },
                             "output_file_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "error_file_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
                             },
                             "in_progress_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "expires_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "finalizing_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "completed_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "failed_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "expired_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "cancelling_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "cancelled_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "request_counts": {
                                 "type": "object",
@@ -3034,12 +3804,16 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3053,12 +3827,16 @@
             ],
             "input": null,
             "name": "files",
-            "output": ["File"],
+            "output": [
+                "File"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["File"],
+            "usedModels": [
+                "File"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3088,15 +3866,22 @@
                                 "type": "string"
                             },
                             "status_details": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3110,12 +3895,16 @@
             ],
             "input": null,
             "name": "fine-tuning-jobs",
-            "output": ["FineTuningJob"],
+            "output": [
+                "FineTuningJob"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FineTuningJob"],
+            "usedModels": [
+                "FineTuningJob"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3163,16 +3952,27 @@
                                 "type": "object",
                                 "properties": {
                                     "n_epochs": {
-                                        "type": ["number", "string"]
+                                        "type": [
+                                            "number",
+                                            "string"
+                                        ]
                                     },
                                     "batch_size": {
-                                        "type": ["number", "string"]
+                                        "type": [
+                                            "number",
+                                            "string"
+                                        ]
                                     },
                                     "learning_rate_multiplier": {
-                                        "type": ["number", "string"]
+                                        "type": [
+                                            "number",
+                                            "string"
+                                        ]
                                     }
                                 },
-                                "required": ["n_epochs"],
+                                "required": [
+                                    "n_epochs"
+                                ],
                                 "additionalProperties": false
                             },
                             "metadata": {
@@ -3191,12 +3991,24 @@
                             },
                             "error": {}
                         },
-                        "required": ["id", "object", "model", "created_at", "organization_id", "status", "training_file", "result_files", "hyperparameters"],
+                        "required": [
+                            "id",
+                            "object",
+                            "model",
+                            "created_at",
+                            "organization_id",
+                            "status",
+                            "training_file",
+                            "result_files",
+                            "hyperparameters"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3210,12 +4022,16 @@
             ],
             "input": null,
             "name": "models",
-            "output": ["Model"],
+            "output": [
+                "Model"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Model"],
+            "usedModels": [
+                "Model"
+            ],
             "version": "",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3236,7 +4052,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3255,12 +4073,16 @@
             ],
             "input": null,
             "name": "vector-stores",
-            "output": ["VectorStore"],
+            "output": [
+                "VectorStore"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["VectorStore"],
+            "usedModels": [
+                "VectorStore"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3281,7 +4103,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "usage_bytes": {
                                 "type": "number"
@@ -3305,12 +4130,23 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["in_progress", "completed", "failed", "cancelled", "total"],
+                                "required": [
+                                    "in_progress",
+                                    "completed",
+                                    "failed",
+                                    "cancelled",
+                                    "total"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["in_progress", "completed", "cancelled", "failed"]
+                                "enum": [
+                                    "in_progress",
+                                    "completed",
+                                    "cancelled",
+                                    "failed"
+                                ]
                             },
                             "expires_after": {
                                 "anyOf": [
@@ -3324,7 +4160,10 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["anchor", "days"],
+                                        "required": [
+                                            "anchor",
+                                            "days"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3333,7 +4172,10 @@
                                 ]
                             },
                             "expires_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "last_active_at": {
                                 "type": "number"
@@ -3346,12 +4188,21 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "object", "created_at", "usage_bytes", "file_counts", "status"],
+                        "required": [
+                            "id",
+                            "object",
+                            "created_at",
+                            "usage_bytes",
+                            "file_counts",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_getcreatorinfo",
             "name": "get-creator-info",
-            "output": ["ActionOutput_tiktok_personal_getcreatorinfo"],
-            "scopes": ["video.publish"],
-            "usedModels": ["ActionInput_tiktok_personal_getcreatorinfo", "ActionOutput_tiktok_personal_getcreatorinfo"],
+            "output": [
+                "ActionOutput_tiktok_personal_getcreatorinfo"
+            ],
+            "scopes": [
+                "video.publish"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getcreatorinfo",
+                "ActionOutput_tiktok_personal_getcreatorinfo"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -61,9 +68,17 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_getpublishstatus",
             "name": "get-publish-status",
-            "output": ["ActionOutput_tiktok_personal_getpublishstatus"],
-            "scopes": ["video.upload", "video.publish"],
-            "usedModels": ["ActionInput_tiktok_personal_getpublishstatus", "ActionOutput_tiktok_personal_getpublishstatus"],
+            "output": [
+                "ActionOutput_tiktok_personal_getpublishstatus"
+            ],
+            "scopes": [
+                "video.upload",
+                "video.publish"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getpublishstatus",
+                "ActionOutput_tiktok_personal_getpublishstatus"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -75,7 +90,9 @@
                                 "description": "The publish ID returned when initializing a post. Example: \"v1234567890\""
                             }
                         },
-                        "required": ["publish_id"],
+                        "required": [
+                            "publish_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_personal_getpublishstatus": {
@@ -100,7 +117,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -113,9 +132,18 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_getuserinfo",
             "name": "get-user-info",
-            "output": ["ActionOutput_tiktok_personal_getuserinfo"],
-            "scopes": ["user.info.basic", "user.info.profile", "user.info.stats"],
-            "usedModels": ["ActionInput_tiktok_personal_getuserinfo", "ActionOutput_tiktok_personal_getuserinfo"],
+            "output": [
+                "ActionOutput_tiktok_personal_getuserinfo"
+            ],
+            "scopes": [
+                "user.info.basic",
+                "user.info.profile",
+                "user.info.stats"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getuserinfo",
+                "ActionOutput_tiktok_personal_getuserinfo"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -190,9 +218,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_getuserprofile",
             "name": "get-user-profile",
-            "output": ["ActionOutput_tiktok_personal_getuserprofile"],
-            "scopes": ["user.info.profile"],
-            "usedModels": ["ActionInput_tiktok_personal_getuserprofile", "ActionOutput_tiktok_personal_getuserprofile"],
+            "output": [
+                "ActionOutput_tiktok_personal_getuserprofile"
+            ],
+            "scopes": [
+                "user.info.profile"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getuserprofile",
+                "ActionOutput_tiktok_personal_getuserprofile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -226,9 +261,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_getuserstats",
             "name": "get-user-stats",
-            "output": ["ActionOutput_tiktok_personal_getuserstats"],
-            "scopes": ["user.info.stats"],
-            "usedModels": ["ActionInput_tiktok_personal_getuserstats", "ActionOutput_tiktok_personal_getuserstats"],
+            "output": [
+                "ActionOutput_tiktok_personal_getuserstats"
+            ],
+            "scopes": [
+                "user.info.stats"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getuserstats",
+                "ActionOutput_tiktok_personal_getuserstats"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -265,9 +307,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_getvideo",
             "name": "get-video",
-            "output": ["ActionOutput_tiktok_personal_getvideo"],
-            "scopes": ["video.list"],
-            "usedModels": ["ActionInput_tiktok_personal_getvideo", "ActionOutput_tiktok_personal_getvideo"],
+            "output": [
+                "ActionOutput_tiktok_personal_getvideo"
+            ],
+            "scopes": [
+                "video.list"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_getvideo",
+                "ActionOutput_tiktok_personal_getvideo"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -279,7 +328,9 @@
                                 "description": "TikTok video ID. Example: \"7077642457847991554\""
                             }
                         },
-                        "required": ["video_id"],
+                        "required": [
+                            "video_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_personal_getvideo": {
@@ -331,7 +382,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -344,9 +397,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_initinboxvideoupload",
             "name": "init-inbox-video-upload",
-            "output": ["ActionOutput_tiktok_personal_initinboxvideoupload"],
-            "scopes": ["video.upload"],
-            "usedModels": ["ActionInput_tiktok_personal_initinboxvideoupload", "ActionOutput_tiktok_personal_initinboxvideoupload"],
+            "output": [
+                "ActionOutput_tiktok_personal_initinboxvideoupload"
+            ],
+            "scopes": [
+                "video.upload"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_initinboxvideoupload",
+                "ActionOutput_tiktok_personal_initinboxvideoupload"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -378,7 +438,12 @@
                                                 "maximum": 9007199254740991
                                             }
                                         },
-                                        "required": ["source", "video_size", "chunk_size", "total_chunk_count"],
+                                        "required": [
+                                            "source",
+                                            "video_size",
+                                            "chunk_size",
+                                            "total_chunk_count"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -392,13 +457,18 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["source", "video_url"],
+                                        "required": [
+                                            "source",
+                                            "video_url"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
                             }
                         },
-                        "required": ["source_info"],
+                        "required": [
+                            "source_info"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_personal_initinboxvideoupload": {
@@ -411,7 +481,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["publish_id"],
+                        "required": [
+                            "publish_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -424,9 +496,17 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_initphotoupload",
             "name": "init-photo-upload",
-            "output": ["ActionOutput_tiktok_personal_initphotoupload"],
-            "scopes": ["video.publish", "video.upload"],
-            "usedModels": ["ActionInput_tiktok_personal_initphotoupload", "ActionOutput_tiktok_personal_initphotoupload"],
+            "output": [
+                "ActionOutput_tiktok_personal_initphotoupload"
+            ],
+            "scopes": [
+                "video.publish",
+                "video.upload"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_initphotoupload",
+                "ActionOutput_tiktok_personal_initphotoupload"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -440,7 +520,10 @@
                             },
                             "post_mode": {
                                 "type": "string",
-                                "enum": ["DIRECT_POST", "MEDIA_UPLOAD"],
+                                "enum": [
+                                    "DIRECT_POST",
+                                    "MEDIA_UPLOAD"
+                                ],
                                 "description": "DIRECT_POST or MEDIA_UPLOAD."
                             },
                             "post_info": {
@@ -459,7 +542,12 @@
                                     "privacy_level": {
                                         "description": "Privacy level. Required for DIRECT_POST.",
                                         "type": "string",
-                                        "enum": ["PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY"]
+                                        "enum": [
+                                            "PUBLIC_TO_EVERYONE",
+                                            "MUTUAL_FOLLOW_FRIENDS",
+                                            "FOLLOWER_OF_CREATOR",
+                                            "SELF_ONLY"
+                                        ]
                                     },
                                     "disable_comment": {
                                         "description": "If true, disables comments. Only for DIRECT_POST.",
@@ -506,12 +594,21 @@
                                         "description": "Index of the cover photo, starting from 0."
                                     }
                                 },
-                                "required": ["source", "photo_images", "photo_cover_index"],
+                                "required": [
+                                    "source",
+                                    "photo_images",
+                                    "photo_cover_index"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Media source metadata."
                             }
                         },
-                        "required": ["media_type", "post_mode", "post_info", "source_info"],
+                        "required": [
+                            "media_type",
+                            "post_mode",
+                            "post_info",
+                            "source_info"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_personal_initphotoupload": {
@@ -522,7 +619,9 @@
                                 "description": "Identifier to track the posting action."
                             }
                         },
-                        "required": ["publish_id"],
+                        "required": [
+                            "publish_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -535,9 +634,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_initvideoupload",
             "name": "init-video-upload",
-            "output": ["ActionOutput_tiktok_personal_initvideoupload"],
-            "scopes": ["video.publish"],
-            "usedModels": ["ActionInput_tiktok_personal_initvideoupload", "ActionOutput_tiktok_personal_initvideoupload"],
+            "output": [
+                "ActionOutput_tiktok_personal_initvideoupload"
+            ],
+            "scopes": [
+                "video.publish"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_initvideoupload",
+                "ActionOutput_tiktok_personal_initvideoupload"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -553,7 +659,12 @@
                                     },
                                     "privacy_level": {
                                         "type": "string",
-                                        "enum": ["PUBLIC_TO_EVERYONE", "MUTUAL_FOLLOW_FRIENDS", "FOLLOWER_OF_CREATOR", "SELF_ONLY"],
+                                        "enum": [
+                                            "PUBLIC_TO_EVERYONE",
+                                            "MUTUAL_FOLLOW_FRIENDS",
+                                            "FOLLOWER_OF_CREATOR",
+                                            "SELF_ONLY"
+                                        ],
                                         "description": "Privacy level for the posted video."
                                     },
                                     "disable_duet": {
@@ -580,7 +691,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["privacy_level"],
+                                "required": [
+                                    "privacy_level"
+                                ],
                                 "additionalProperties": false
                             },
                             "source_info": {
@@ -611,7 +724,12 @@
                                                 "description": "Total number of chunks."
                                             }
                                         },
-                                        "required": ["source", "video_size", "chunk_size", "total_chunk_count"],
+                                        "required": [
+                                            "source",
+                                            "video_size",
+                                            "chunk_size",
+                                            "total_chunk_count"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -626,7 +744,10 @@
                                                 "description": "URL of the video. Domain must be verified with TikTok."
                                             }
                                         },
-                                        "required": ["source", "video_url"],
+                                        "required": [
+                                            "source",
+                                            "video_url"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -634,14 +755,20 @@
                             "post_mode": {
                                 "description": "DIRECT_POST to publish immediately, MEDIA_UPLOAD to send to Creator Inbox.",
                                 "type": "string",
-                                "enum": ["DIRECT_POST", "MEDIA_UPLOAD"]
+                                "enum": [
+                                    "DIRECT_POST",
+                                    "MEDIA_UPLOAD"
+                                ]
                             },
                             "media_type": {
                                 "type": "string",
                                 "const": "VIDEO"
                             }
                         },
-                        "required": ["post_info", "source_info"],
+                        "required": [
+                            "post_info",
+                            "source_info"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_personal_initvideoupload": {
@@ -660,7 +787,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["publish_id"],
+                        "required": [
+                            "publish_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -673,9 +802,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_listvideos",
             "name": "list-videos",
-            "output": ["ActionOutput_tiktok_personal_listvideos"],
-            "scopes": ["video.list"],
-            "usedModels": ["ActionInput_tiktok_personal_listvideos", "ActionOutput_tiktok_personal_listvideos"],
+            "output": [
+                "ActionOutput_tiktok_personal_listvideos"
+            ],
+            "scopes": [
+                "video.list"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_listvideos",
+                "ActionOutput_tiktok_personal_listvideos"
+            ],
             "version": "0.0.1",
             "json_schema": {
                 "definitions": {
@@ -751,7 +887,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -762,7 +900,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["videos"],
+                        "required": [
+                            "videos"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -775,9 +915,16 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_personal_queryvideos",
             "name": "query-videos",
-            "output": ["ActionOutput_tiktok_personal_queryvideos"],
-            "scopes": ["video.list"],
-            "usedModels": ["ActionInput_tiktok_personal_queryvideos", "ActionOutput_tiktok_personal_queryvideos"],
+            "output": [
+                "ActionOutput_tiktok_personal_queryvideos"
+            ],
+            "scopes": [
+                "video.list"
+            ],
+            "usedModels": [
+                "ActionInput_tiktok_personal_queryvideos",
+                "ActionOutput_tiktok_personal_queryvideos"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -801,7 +948,9 @@
                                 }
                             }
                         },
-                        "required": ["video_ids"],
+                        "required": [
+                            "video_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_personal_queryvideos": {
@@ -858,12 +1007,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["videos"],
+                        "required": [
+                            "videos"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -884,12 +1037,20 @@
             ],
             "input": null,
             "name": "user-profile",
-            "output": ["UserProfile"],
+            "output": [
+                "UserProfile"
+            ],
             "runs": "every hour",
-            "scopes": ["user.info.basic", "user.info.profile", "user.info.stats"],
+            "scopes": [
+                "user.info.basic",
+                "user.info.profile",
+                "user.info.stats"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserProfile"],
+            "usedModels": [
+                "UserProfile"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -934,7 +1095,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "open_id"],
+                        "required": [
+                            "id",
+                            "open_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -953,12 +1117,18 @@
             ],
             "input": null,
             "name": "videos",
-            "output": ["Video"],
+            "output": [
+                "Video"
+            ],
             "runs": "every hour",
-            "scopes": ["video.list"],
+            "scopes": [
+                "video.list"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Video"],
+            "usedModels": [
+                "Video"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1012,7 +1182,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

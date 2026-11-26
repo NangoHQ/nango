@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_completetaskandverify",
             "name": "complete-task-and-verify",
-            "output": ["ActionOutput_google_tasks_completetaskandverify"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_completetaskandverify", "ActionOutput_google_tasks_completetaskandverify"],
+            "output": [
+                "ActionOutput_google_tasks_completetaskandverify"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_completetaskandverify",
+                "ActionOutput_google_tasks_completetaskandverify"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "ID of the task to mark as completed. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
                             }
                         },
-                        "required": ["tasklist", "task"],
+                        "required": [
+                            "tasklist",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to complete within a task list."
                     },
@@ -160,7 +170,9 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The completed task as read back from the provider after the update."
                             },
@@ -294,14 +306,19 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A Google Tasks task."
                                 },
                                 "description": "Direct subtasks that are completed after the update, i.e. auto-completed as a side effect of completing the task."
                             }
                         },
-                        "required": ["task", "cascadedSubtasks"],
+                        "required": [
+                            "task",
+                            "cascadedSubtasks"
+                        ],
                         "additionalProperties": false,
                         "description": "The verified completed task together with any subtasks that were auto-completed by the cascade."
                     }
@@ -315,9 +332,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_completetask",
             "name": "complete-task",
-            "output": ["ActionOutput_google_tasks_completetask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_completetask", "ActionOutput_google_tasks_completetask"],
+            "output": [
+                "ActionOutput_google_tasks_completetask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_completetask",
+                "ActionOutput_google_tasks_completetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -333,7 +357,10 @@
                                 "description": "Identifier of the task to mark as completed. Example: \"LWlneng5SFhnU2IyN2h4Qg\""
                             }
                         },
-                        "required": ["tasklist", "task"],
+                        "required": [
+                            "tasklist",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to mark as completed."
                     },
@@ -465,7 +492,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The task resource returned after it was marked as completed."
                     }
@@ -479,9 +508,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_google_tasks_createtask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_createtask", "ActionOutput_google_tasks_createtask"],
+            "output": [
+                "ActionOutput_google_tasks_createtask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_createtask",
+                "ActionOutput_google_tasks_createtask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -507,7 +543,10 @@
                             "status": {
                                 "description": "Status of the task. Defaults to \"needsAction\" when omitted.",
                                 "type": "string",
-                                "enum": ["needsAction", "completed"]
+                                "enum": [
+                                    "needsAction",
+                                    "completed"
+                                ]
                             },
                             "parent": {
                                 "description": "Identifier of the parent task to create this task under. Omit to create a top-level task.",
@@ -518,7 +557,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasklist", "title"],
+                        "required": [
+                            "tasklist",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for creating a new task in a Google Tasks list."
                     },
@@ -650,7 +692,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The task created in the Google Tasks list."
                     }
@@ -664,9 +708,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_createtasklist",
             "name": "create-tasklist",
-            "output": ["ActionOutput_google_tasks_createtasklist"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_createtasklist", "ActionOutput_google_tasks_createtasklist"],
+            "output": [
+                "ActionOutput_google_tasks_createtasklist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_createtasklist",
+                "ActionOutput_google_tasks_createtasklist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -678,7 +729,9 @@
                                 "description": "Title of the task list to create. Maximum length is 1024 characters. Example: \"My Tasks\""
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new task list."
                     },
@@ -710,7 +763,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created task list, including its provider-assigned ID and timestamps."
                     }
@@ -724,9 +779,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_google_tasks_deletetask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_deletetask", "ActionOutput_google_tasks_deletetask"],
+            "output": [
+                "ActionOutput_google_tasks_deletetask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_deletetask",
+                "ActionOutput_google_tasks_deletetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -742,7 +804,10 @@
                                 "description": "Task ID to delete. Example: \"YmFJWEFwdXBBTUZ0WkJIdg\""
                             }
                         },
-                        "required": ["tasklist", "task"],
+                        "required": [
+                            "tasklist",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to permanently delete."
                     },
@@ -762,7 +827,11 @@
                                 "description": "True once the provider confirms the deletion. A later fetch of the same task returns a tombstone with deleted set to true."
                             }
                         },
-                        "required": ["id", "tasklist", "deleted"],
+                        "required": [
+                            "id",
+                            "tasklist",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the task was deleted."
                     }
@@ -776,9 +845,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_deletetasklist",
             "name": "delete-tasklist",
-            "output": ["ActionOutput_google_tasks_deletetasklist"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_deletetasklist", "ActionOutput_google_tasks_deletetasklist"],
+            "output": [
+                "ActionOutput_google_tasks_deletetasklist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_deletetasklist",
+                "ActionOutput_google_tasks_deletetasklist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -790,7 +866,9 @@
                                 "description": "Task list ID to delete, or \"@default\" for the authenticated user's default list. Example: \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
                             }
                         },
-                        "required": ["tasklist"],
+                        "required": [
+                            "tasklist"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task list to permanently delete."
                     },
@@ -806,7 +884,10 @@
                                 "description": "True when the provider confirmed the deletion with a 204 No Content response."
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the task list deletion."
                     }
@@ -820,9 +901,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_findorcreatetaskintasklist",
             "name": "find-or-create-task-in-tasklist",
-            "output": ["ActionOutput_google_tasks_findorcreatetaskintasklist"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_findorcreatetaskintasklist", "ActionOutput_google_tasks_findorcreatetaskintasklist"],
+            "output": [
+                "ActionOutput_google_tasks_findorcreatetaskintasklist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_findorcreatetaskintasklist",
+                "ActionOutput_google_tasks_findorcreatetaskintasklist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -844,7 +932,10 @@
                             "status": {
                                 "description": "Task status. Only used when a new task is created; defaults to \"needsAction\" when omitted.",
                                 "type": "string",
-                                "enum": ["needsAction", "completed"]
+                                "enum": [
+                                    "needsAction",
+                                    "completed"
+                                ]
                             },
                             "due": {
                                 "description": "Due date as an RFC 3339 timestamp. Only used when a new task is created; only the date portion is stored.",
@@ -859,7 +950,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["listName", "title"],
+                        "required": [
+                            "listName",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for finding a task by title in the task list with a given name, creating the list and/or the task when missing."
                     },
@@ -994,7 +1088,9 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The existing task that matched, or the newly created task."
                             },
@@ -1026,7 +1122,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The task list that holds the task."
                             },
@@ -1039,7 +1137,12 @@
                                 "description": "True if a new task was created; false if an existing task with the same title was found and returned unchanged."
                             }
                         },
-                        "required": ["task", "tasklist", "tasklistCreated", "taskCreated"],
+                        "required": [
+                            "task",
+                            "tasklist",
+                            "tasklistCreated",
+                            "taskCreated"
+                        ],
                         "additionalProperties": false,
                         "description": "The found or created task, the resolved task list, and whether each one was newly created."
                     }
@@ -1053,9 +1156,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_google_tasks_gettask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_gettask", "ActionOutput_google_tasks_gettask"],
+            "output": [
+                "ActionOutput_google_tasks_gettask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_gettask",
+                "ActionOutput_google_tasks_gettask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1071,7 +1181,10 @@
                                 "description": "Task identifier of the task to retrieve."
                             }
                         },
-                        "required": ["tasklist", "task"],
+                        "required": [
+                            "tasklist",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to retrieve within a specific task list."
                     },
@@ -1203,7 +1316,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The retrieved task, including tombstone fields such as deleted and hidden."
                     }
@@ -1217,9 +1332,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_gettasklistfulltree",
             "name": "get-tasklist-full-tree",
-            "output": ["ActionOutput_google_tasks_gettasklistfulltree"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_gettasklistfulltree", "ActionOutput_google_tasks_gettasklistfulltree"],
+            "output": [
+                "ActionOutput_google_tasks_gettasklistfulltree"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_gettasklistfulltree",
+                "ActionOutput_google_tasks_gettasklistfulltree"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1243,7 +1365,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["tasklist"],
+                        "required": [
+                            "tasklist"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for fetching one task list and reconstructing its full nested task tree."
                     },
@@ -1262,7 +1386,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Metadata of the requested task list."
                             },
@@ -1274,7 +1400,10 @@
                                 "description": "Top-level tasks of the list, each with its subtasks nested under children."
                             }
                         },
-                        "required": ["tasklist", "tree"],
+                        "required": [
+                            "tasklist",
+                            "tree"
+                        ],
                         "additionalProperties": false,
                         "description": "A task list plus all of its tasks reconstructed into a nested parent/child tree.",
                         "definitions": {
@@ -1363,7 +1492,11 @@
                                         "description": "Nested subtasks ordered by position."
                                     }
                                 },
-                                "required": ["id", "links", "children"],
+                                "required": [
+                                    "id",
+                                    "links",
+                                    "children"
+                                ],
                                 "additionalProperties": false
                             }
                         }
@@ -1378,9 +1511,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_gettasklist",
             "name": "get-tasklist",
-            "output": ["ActionOutput_google_tasks_gettasklist"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_gettasklist", "ActionOutput_google_tasks_gettasklist"],
+            "output": [
+                "ActionOutput_google_tasks_gettasklist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_gettasklist",
+                "ActionOutput_google_tasks_gettasklist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1392,7 +1532,9 @@
                                 "description": "Task list identifier, or the literal alias \"@default\" for the authenticated user's default task list. Example: \"@default\" or \"MDQwOTY3MjU2NTE0MjcwODI3ODI6MDow\""
                             }
                         },
-                        "required": ["tasklist"],
+                        "required": [
+                            "tasklist"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies which task list to retrieve."
                     },
@@ -1424,7 +1566,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A Google Tasks task list."
                     }
@@ -1438,9 +1582,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_listtasklists",
             "name": "list-tasklists",
-            "output": ["ActionOutput_google_tasks_listtasklists"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_listtasklists", "ActionOutput_google_tasks_listtasklists"],
+            "output": [
+                "ActionOutput_google_tasks_listtasklists"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_listtasklists",
+                "ActionOutput_google_tasks_listtasklists"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1494,7 +1645,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A Google Tasks task list."
                                 },
@@ -1505,7 +1658,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of the authenticated user's task lists."
                     }
@@ -1519,9 +1674,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_google_tasks_listtasks"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_listtasks", "ActionOutput_google_tasks_listtasks"],
+            "output": [
+                "ActionOutput_google_tasks_listtasks"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_listtasks",
+                "ActionOutput_google_tasks_listtasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1579,7 +1741,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasklist"],
+                        "required": [
+                            "tasklist"
+                        ],
                         "additionalProperties": false,
                         "description": "Filters and pagination for listing tasks in a task list."
                     },
@@ -1716,7 +1880,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A Google Tasks task."
                                 },
@@ -1727,7 +1893,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of tasks from a Google Tasks list."
                     }
@@ -1741,9 +1909,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_movetask",
             "name": "move-task",
-            "output": ["ActionOutput_google_tasks_movetask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_movetask", "ActionOutput_google_tasks_movetask"],
+            "output": [
+                "ActionOutput_google_tasks_movetask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_movetask",
+                "ActionOutput_google_tasks_movetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1760,18 +1935,27 @@
                             },
                             "parent": {
                                 "description": "Identifier of the new parent task. Omit or pass null to move the task to the top level. Must be an existing, non-hidden task in the same list. Example: \"dl85dnNkNF9XNlprcTNaZA\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
                                 "description": "Identifier of the new previous sibling task; the moved task is placed immediately after it. Omit or pass null to move it to the first position among its siblings. Must be an existing, non-hidden task in the same list. Example: \"dl85dnNkNF9XNlprcTNaZA\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "destinationTasklist": {
                                 "description": "Identifier of a different task list to move the task into. Omit to move the task within its current list. Example: \"TVhPREw3WDBsYkJGUlVpMg\"",
                                 "type": "string"
                             }
                         },
-                        "required": ["tasklist", "task"],
+                        "required": [
+                            "tasklist",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to move and the target parent, sibling position, and/or destination list."
                     },
@@ -1903,7 +2087,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The moved task returned by the provider, reflecting its new list, parent, and position."
                     }
@@ -1917,9 +2103,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_patchtask",
             "name": "patch-task",
-            "output": ["ActionOutput_google_tasks_patchtask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_patchtask", "ActionOutput_google_tasks_patchtask"],
+            "output": [
+                "ActionOutput_google_tasks_patchtask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_patchtask",
+                "ActionOutput_google_tasks_patchtask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1940,19 +2133,31 @@
                             },
                             "notes": {
                                 "description": "New free-form notes for the task. Set to null or an empty string to clear the notes. Omit to leave them unchanged.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "description": "New completion status for the task. Omit to leave the current status unchanged.",
                                 "type": "string",
-                                "enum": ["needsAction", "completed"]
+                                "enum": [
+                                    "needsAction",
+                                    "completed"
+                                ]
                             },
                             "due": {
                                 "description": "New due date as an RFC 3339 timestamp; only the date portion is stored. Set to null or an empty string to clear the due date. Omit to leave it unchanged.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["tasklist", "task"],
+                        "required": [
+                            "tasklist",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields to partially update on an existing Google Task; only the provided fields are changed."
                     },
@@ -2084,7 +2289,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The task after the partial update, with all of its current fields."
                     }
@@ -2098,9 +2305,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_reopentask",
             "name": "reopen-task",
-            "output": ["ActionOutput_google_tasks_reopentask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_reopentask", "ActionOutput_google_tasks_reopentask"],
+            "output": [
+                "ActionOutput_google_tasks_reopentask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_reopentask",
+                "ActionOutput_google_tasks_reopentask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2116,7 +2330,10 @@
                                 "description": "ID of the task to reopen. Example: \"WnpnNlRJR2tYYjJGLVFJZg\""
                             }
                         },
-                        "required": ["tasklist", "task"],
+                        "required": [
+                            "tasklist",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to reopen within a task list."
                     },
@@ -2248,7 +2465,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The reopened task as returned by the provider."
                     }
@@ -2262,9 +2481,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_google_tasks_updatetask"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_updatetask", "ActionOutput_google_tasks_updatetask"],
+            "output": [
+                "ActionOutput_google_tasks_updatetask"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_updatetask",
+                "ActionOutput_google_tasks_updatetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2285,14 +2511,20 @@
                             },
                             "notes": {
                                 "description": "Notes describing the task. Maximum length: 8192 characters. Omit or pass null to clear the notes.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "description": "Task status. \"completed\" marks the task done and stamps the completion time; \"needsAction\" reopens it. Omit or pass null to reset it to \"needsAction\".",
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["needsAction", "completed"]
+                                        "enum": [
+                                            "needsAction",
+                                            "completed"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -2301,10 +2533,17 @@
                             },
                             "due": {
                                 "description": "Due date as an RFC 3339 timestamp. Only the date is stored, the time is discarded. Omit or pass null to clear the due date. Example: \"2026-12-31T00:00:00.000Z\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["tasklist", "task", "title"],
+                        "required": [
+                            "tasklist",
+                            "task",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for replacing a task with a full PUT request. Every writable field you omit is cleared."
                     },
@@ -2436,7 +2675,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The task as returned by Google Tasks after the full replacement."
                     }
@@ -2450,9 +2691,16 @@
             "endpoint": null,
             "input": "ActionInput_google_tasks_updatetasklist",
             "name": "update-tasklist",
-            "output": ["ActionOutput_google_tasks_updatetasklist"],
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
-            "usedModels": ["ActionInput_google_tasks_updatetasklist", "ActionOutput_google_tasks_updatetasklist"],
+            "output": [
+                "ActionOutput_google_tasks_updatetasklist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
+            "usedModels": [
+                "ActionInput_google_tasks_updatetasklist",
+                "ActionOutput_google_tasks_updatetasklist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2468,7 +2716,10 @@
                                 "description": "New title for the task list. Maximum length: 1024 characters. Example: \"Groceries\""
                             }
                         },
-                        "required": ["tasklist", "title"],
+                        "required": [
+                            "tasklist",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for renaming a task list."
                     },
@@ -2500,7 +2751,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated task list returned by the provider."
                     }
@@ -2517,12 +2770,18 @@
             "endpoints": [],
             "input": null,
             "name": "task-lists",
-            "output": ["TaskList"],
+            "output": [
+                "TaskList"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TaskList"],
+            "usedModels": [
+                "TaskList"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2555,7 +2814,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A Google Tasks task list."
                     }
@@ -2570,12 +2831,18 @@
             "endpoints": [],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/tasks"],
+            "scopes": [
+                "https://www.googleapis.com/auth/tasks"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2708,13 +2975,19 @@
                                 "description": "Id of the task list that currently contains the task. Updated in place when the task is moved to another list."
                             }
                         },
-                        "required": ["id", "updated", "tasklistId"],
+                        "required": [
+                            "id",
+                            "updated",
+                            "tasklistId"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Google Task. The record id is the Google task id, which is globally unique and survives moves between task lists."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

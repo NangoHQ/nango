@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_gem_createcandidate",
             "name": "create-candidate",
-            "output": ["ActionOutput_gem_createcandidate"],
+            "output": [
+                "ActionOutput_gem_createcandidate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_gem_createcandidate", "ActionOutput_gem_createcandidate"],
+            "usedModels": [
+                "ActionInput_gem_createcandidate",
+                "ActionOutput_gem_createcandidate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -20,13 +25,22 @@
                                 "type": "string"
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "nickname": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "emails": {
                                 "anyOf": [
@@ -42,7 +56,10 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["email_address", "is_primary"],
+                                            "required": [
+                                                "email_address",
+                                                "is_primary"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -52,19 +69,34 @@
                                 ]
                             },
                             "linked_in_handle": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "company": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "location": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "school": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "education_info": {
                                 "anyOf": [
@@ -74,31 +106,58 @@
                                             "type": "object",
                                             "properties": {
                                                 "school": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "parsed_university": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "parsed_school": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "start_date": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "end_date": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "field_of_study": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "parsed_major_1": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "parsed_major_2": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "degree": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "required": [
@@ -127,22 +186,43 @@
                                             "type": "object",
                                             "properties": {
                                                 "company": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "title": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "work_start_date": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "work_end_date": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "is_current": {
-                                                    "type": ["boolean", "null"]
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["company", "title", "work_start_date", "work_end_date", "is_current"],
+                                            "required": [
+                                                "company",
+                                                "title",
+                                                "work_start_date",
+                                                "work_end_date",
+                                                "is_current"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -178,7 +258,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["custom_field_id", "value"],
+                                            "required": [
+                                                "custom_field_id",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -188,7 +271,10 @@
                                 ]
                             },
                             "phone_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "project_ids": {
                                 "anyOf": [
@@ -204,7 +290,10 @@
                                 ]
                             },
                             "sourced_from": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autofill": {
                                 "type": "boolean"
@@ -245,19 +334,34 @@
                                 "type": "string"
                             },
                             "last_updated_at": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "candidate_greenhouse_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "nickname": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "weblink": {
                                 "type": "string"
@@ -274,18 +378,30 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["email_address", "is_primary"],
+                                    "required": [
+                                        "email_address",
+                                        "is_primary"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "phone_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "location": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "linked_in_handle": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "profiles": {
                                 "type": "array",
@@ -302,18 +418,31 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["network", "url", "username"],
+                                    "required": [
+                                        "network",
+                                        "url",
+                                        "username"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "company": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "school": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "education_info": {
                                 "type": "array",
@@ -321,31 +450,58 @@
                                     "type": "object",
                                     "properties": {
                                         "school": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "parsed_university": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "parsed_school": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "start_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "end_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "field_of_study": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "parsed_major_1": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "parsed_major_2": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "degree": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -367,22 +523,43 @@
                                     "type": "object",
                                     "properties": {
                                         "company": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "work_start_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "work_end_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_current": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["company", "title", "work_start_date", "work_end_date", "is_current"],
+                                    "required": [
+                                        "company",
+                                        "title",
+                                        "work_start_date",
+                                        "work_end_date",
+                                        "is_current"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -418,7 +595,13 @@
                                         },
                                         "custom_field_value": {}
                                     },
-                                    "required": ["id", "name", "scope", "value", "value_type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "scope",
+                                        "value",
+                                        "value_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -434,10 +617,17 @@
                                                 "type": "string"
                                             },
                                             "note": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["date", "user_id", "note"],
+                                        "required": [
+                                            "date",
+                                            "user_id",
+                                            "note"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -459,10 +649,16 @@
                                 ]
                             },
                             "sourced_from": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "gem_source": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -503,9 +699,14 @@
             "endpoint": null,
             "input": "ActionInput_gem_createnote",
             "name": "create-note",
-            "output": ["ActionOutput_gem_createnote"],
+            "output": [
+                "ActionOutput_gem_createnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_gem_createnote", "ActionOutput_gem_createnote"],
+            "usedModels": [
+                "ActionInput_gem_createnote",
+                "ActionOutput_gem_createnote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -534,7 +735,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id", "body", "visibility", "candidate_id"],
+                        "required": [
+                            "user_id",
+                            "body",
+                            "visibility",
+                            "candidate_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_gem_createnote": {
@@ -568,7 +774,13 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "first_name",
+                                    "last_name",
+                                    "employee_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "private": {
@@ -587,7 +799,14 @@
                                 ]
                             }
                         },
-                        "required": ["id", "created_at", "body", "user", "private", "visibility"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "body",
+                            "user",
+                            "private",
+                            "visibility"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -600,9 +819,14 @@
             "endpoint": null,
             "input": "ActionInput_gem_updateapplication",
             "name": "update-application",
-            "output": ["ActionOutput_gem_updateapplication"],
+            "output": [
+                "ActionOutput_gem_updateapplication"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_gem_updateapplication", "ActionOutput_gem_updateapplication"],
+            "usedModels": [
+                "ActionInput_gem_updateapplication",
+                "ActionOutput_gem_updateapplication"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -616,7 +840,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["source_id", "application_id"],
+                        "required": [
+                            "source_id",
+                            "application_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_gem_updateapplication": {
@@ -632,7 +859,10 @@
                                 "type": "string"
                             },
                             "rejected_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_activity_at": {
                                 "type": "string"
@@ -647,7 +877,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "public_name"],
+                                "required": [
+                                    "id",
+                                    "public_name"
+                                ],
                                 "additionalProperties": false
                             },
                             "credited_to": {
@@ -674,11 +907,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id", "name", "type"],
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -698,7 +938,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -718,11 +961,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -752,9 +1001,14 @@
             "endpoint": null,
             "input": "ActionInput_gem_uploadresume",
             "name": "upload-resume",
-            "output": ["ActionOutput_gem_uploadresume"],
+            "output": [
+                "ActionOutput_gem_uploadresume"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_gem_uploadresume", "ActionOutput_gem_uploadresume"],
+            "usedModels": [
+                "ActionInput_gem_uploadresume",
+                "ActionOutput_gem_uploadresume"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -771,7 +1025,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["candidate_id", "user_id", "resume_file"],
+                        "required": [
+                            "candidate_id",
+                            "user_id",
+                            "resume_file"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_gem_uploadresume": {
@@ -796,7 +1054,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "candidate_id", "created_at", "user_id", "filename", "download_url"],
+                        "required": [
+                            "id",
+                            "candidate_id",
+                            "created_at",
+                            "user_id",
+                            "filename",
+                            "download_url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -818,12 +1083,17 @@
             ],
             "input": "SyncMetadata_gem_applications",
             "name": "applications",
-            "output": ["Application"],
+            "output": [
+                "Application"
+            ],
             "runs": "every 1h",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Application", "SyncMetadata_gem_applications"],
+            "usedModels": [
+                "Application",
+                "SyncMetadata_gem_applications"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -841,7 +1111,10 @@
                                 "type": "string"
                             },
                             "rejected_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_activity_at": {
                                 "type": "string"
@@ -856,7 +1129,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "public_name"],
+                                "required": [
+                                    "id",
+                                    "public_name"
+                                ],
                                 "additionalProperties": false
                             },
                             "credited_to": {
@@ -883,11 +1159,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id", "name", "type"],
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -907,7 +1190,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -927,11 +1213,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -958,7 +1250,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -973,12 +1267,17 @@
             ],
             "input": "SyncMetadata_gem_candidates",
             "name": "candidates",
-            "output": ["Candidate"],
+            "output": [
+                "Candidate"
+            ],
             "runs": "every 1h",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Candidate", "SyncMetadata_gem_candidates"],
+            "usedModels": [
+                "Candidate",
+                "SyncMetadata_gem_candidates"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -996,10 +1295,16 @@
                                 "type": "string"
                             },
                             "company": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "attachments": {
                                 "type": "array",
@@ -1019,7 +1324,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["filename", "url", "type", "created_at"],
+                                    "required": [
+                                        "filename",
+                                        "url",
+                                        "type",
+                                        "created_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1035,7 +1345,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1054,7 +1367,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["type", "value", "is_primary"],
+                                    "required": [
+                                        "type",
+                                        "value",
+                                        "is_primary"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1067,7 +1384,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1101,7 +1420,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "school_name", "degree", "discipline", "start_date", "end_date"],
+                                    "required": [
+                                        "id",
+                                        "school_name",
+                                        "degree",
+                                        "discipline",
+                                        "start_date",
+                                        "end_date"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1126,7 +1452,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "company_name", "title", "start_date", "end_date"],
+                                    "required": [
+                                        "id",
+                                        "company_name",
+                                        "title",
+                                        "start_date",
+                                        "end_date"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1140,13 +1472,22 @@
                                 "type": "string"
                             },
                             "updated_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_activity": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_private": {
                                 "type": "boolean"
@@ -1166,7 +1507,10 @@
                                             "type": "string"
                                         },
                                         "rejected_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_activity_at": {
                                             "type": "string"
@@ -1181,7 +1525,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "public_name"],
+                                            "required": [
+                                                "id",
+                                                "public_name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "credited_to": {
@@ -1208,11 +1555,18 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["id", "name"],
+                                                            "required": [
+                                                                "id",
+                                                                "name"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["id", "name", "type"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1232,7 +1586,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1252,11 +1609,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "deleted_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -1315,7 +1678,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1330,12 +1695,17 @@
             ],
             "input": "SyncMetadata_gem_jobposts",
             "name": "job-posts",
-            "output": ["JobPost"],
+            "output": [
+                "JobPost"
+            ],
             "runs": "every 1h",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["JobPost", "SyncMetadata_gem_jobposts"],
+            "usedModels": [
+                "JobPost",
+                "SyncMetadata_gem_jobposts"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1356,7 +1726,10 @@
                                 "type": "boolean"
                             },
                             "first_published_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "job_id": {
                                 "type": "string"
@@ -1371,10 +1744,24 @@
                                 "type": "string"
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "title", "active", "live", "first_published_at", "job_id", "content", "created_at", "updated_at", "deleted_at"],
+                        "required": [
+                            "id",
+                            "title",
+                            "active",
+                            "live",
+                            "first_published_at",
+                            "job_id",
+                            "content",
+                            "created_at",
+                            "updated_at",
+                            "deleted_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_gem_jobposts": {
@@ -1384,7 +1771,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1399,12 +1788,17 @@
             ],
             "input": "SyncMetadata_gem_jobstages",
             "name": "job-stages",
-            "output": ["JobStage"],
+            "output": [
+                "JobStage"
+            ],
             "runs": "every 1h",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["JobStage", "SyncMetadata_gem_jobstages"],
+            "usedModels": [
+                "JobStage",
+                "SyncMetadata_gem_jobstages"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1425,7 +1819,10 @@
                                 "type": "string"
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "type": "boolean"
@@ -1474,7 +1871,13 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "first_name",
+                                                    "last_name",
+                                                    "employee_id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1499,16 +1902,26 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "name"],
+                                                        "required": [
+                                                            "id",
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "content", "questions"],
+                                            "required": [
+                                                "id",
+                                                "content",
+                                                "questions"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "deleted_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "job_stage_interview_item_id": {
                                             "type": "string"
@@ -1528,7 +1941,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "created_at", "updated_at", "deleted_at", "active", "job_id", "priority", "interviews"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at",
+                            "updated_at",
+                            "deleted_at",
+                            "active",
+                            "job_id",
+                            "priority",
+                            "interviews"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_gem_jobstages": {
@@ -1538,7 +1961,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1553,12 +1978,17 @@
             ],
             "input": "SyncMetadata_gem_jobs",
             "name": "jobs",
-            "output": ["Job"],
+            "output": [
+                "Job"
+            ],
             "runs": "every 1h",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Job", "SyncMetadata_gem_jobs"],
+            "usedModels": [
+                "Job",
+                "SyncMetadata_gem_jobs"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1588,10 +2018,16 @@
                                 "type": "string"
                             },
                             "closed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_at": {
                                 "type": "string"
@@ -1662,7 +2098,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "parent_id": {
@@ -1726,7 +2164,13 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "first_name",
+                                                        "last_name",
+                                                        "employee_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1758,7 +2202,13 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "first_name",
+                                                        "last_name",
+                                                        "employee_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1790,7 +2240,13 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "first_name",
+                                                        "last_name",
+                                                        "employee_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1822,7 +2278,13 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name", "first_name", "last_name", "employee_id"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "first_name",
+                                                        "last_name",
+                                                        "employee_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1832,7 +2294,12 @@
                                         ]
                                     }
                                 },
-                                "required": ["hiring_managers", "recruiters", "coordinators", "sourcers"],
+                                "required": [
+                                    "hiring_managers",
+                                    "recruiters",
+                                    "coordinators",
+                                    "sourcers"
+                                ],
                                 "additionalProperties": false
                             }
                         },
@@ -1861,7 +2328,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1876,12 +2345,17 @@
             ],
             "input": "SyncMetadata_gem_locations",
             "name": "locations",
-            "output": ["Location"],
+            "output": [
+                "Location"
+            ],
             "runs": "every 1h",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Location", "SyncMetadata_gem_locations"],
+            "usedModels": [
+                "Location",
+                "SyncMetadata_gem_locations"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1902,7 +2376,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "parent_id": {
@@ -1961,12 +2437,17 @@
             ],
             "input": "SyncMetadata_gem_users",
             "name": "users",
-            "output": ["TeamMemberUser"],
+            "output": [
+                "TeamMemberUser"
+            ],
             "runs": "every 1h",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TeamMemberUser", "SyncMetadata_gem_users"],
+            "usedModels": [
+                "TeamMemberUser",
+                "SyncMetadata_gem_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1984,7 +2465,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "email"],
+                        "required": [
+                            "id",
+                            "name",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_gem_users": {

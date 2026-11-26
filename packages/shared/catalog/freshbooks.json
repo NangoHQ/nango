@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_createclient",
             "name": "create-client",
-            "output": ["ActionOutput_freshbooks_createclient"],
-            "scopes": ["user:clients:write"],
-            "usedModels": ["ActionInput_freshbooks_createclient", "ActionOutput_freshbooks_createclient"],
+            "output": [
+                "ActionOutput_freshbooks_createclient"
+            ],
+            "scopes": [
+                "user:clients:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_createclient",
+                "ActionOutput_freshbooks_createclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -57,7 +64,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["fname", "lname", "email"],
+                        "required": [
+                            "fname",
+                            "lname",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_createclient": {
@@ -98,7 +109,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -111,9 +124,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_createestimate",
             "name": "create-estimate",
-            "output": ["ActionOutput_freshbooks_createestimate"],
-            "scopes": ["user:estimates:write"],
-            "usedModels": ["ActionInput_freshbooks_createestimate", "ActionOutput_freshbooks_createestimate"],
+            "output": [
+                "ActionOutput_freshbooks_createestimate"
+            ],
+            "scopes": [
+                "user:estimates:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_createestimate",
+                "ActionOutput_freshbooks_createestimate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -161,17 +181,30 @@
                                                     "description": "Currency code. Example: \"USD\""
                                                 }
                                             },
-                                            "required": ["amount", "code"],
+                                            "required": [
+                                                "amount",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["type", "name", "qty", "unit_cost"],
+                                    "required": [
+                                        "type",
+                                        "name",
+                                        "qty",
+                                        "unit_cost"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Line items for the estimate"
                             }
                         },
-                        "required": ["customerid", "create_date", "currency_code", "lines"],
+                        "required": [
+                            "customerid",
+                            "create_date",
+                            "currency_code",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_createestimate": {
@@ -221,7 +254,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -234,9 +269,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_createexpense",
             "name": "create-expense",
-            "output": ["ActionOutput_freshbooks_createexpense"],
-            "scopes": ["user:expenses:write"],
-            "usedModels": ["ActionInput_freshbooks_createexpense", "ActionOutput_freshbooks_createexpense"],
+            "output": [
+                "ActionOutput_freshbooks_createexpense"
+            ],
+            "scopes": [
+                "user:expenses:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_createexpense",
+                "ActionOutput_freshbooks_createexpense"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -263,7 +305,10 @@
                                         "description": "Currency code. Example: \"USD\""
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "date": {
@@ -275,7 +320,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["amount", "date"],
+                        "required": [
+                            "amount",
+                            "date"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_createexpense": {
@@ -312,7 +360,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -325,9 +375,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_createinvoice",
             "name": "create-invoice",
-            "output": ["ActionOutput_freshbooks_createinvoice"],
-            "scopes": ["user:invoices:write"],
-            "usedModels": ["ActionInput_freshbooks_createinvoice", "ActionOutput_freshbooks_createinvoice"],
+            "output": [
+                "ActionOutput_freshbooks_createinvoice"
+            ],
+            "scopes": [
+                "user:invoices:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_createinvoice",
+                "ActionOutput_freshbooks_createinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -375,17 +432,27 @@
                                                     "description": "Currency code. Example: \"USD\""
                                                 }
                                             },
-                                            "required": ["amount", "code"],
+                                            "required": [
+                                                "amount",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["name", "qty", "unit_cost"],
+                                    "required": [
+                                        "name",
+                                        "qty",
+                                        "unit_cost"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Invoice line items"
                             }
                         },
-                        "required": ["customerid", "lines"],
+                        "required": [
+                            "customerid",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_createinvoice": {
@@ -422,7 +489,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "outstanding": {
@@ -435,7 +505,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "paid": {
@@ -448,7 +521,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "lines": {
@@ -457,13 +533,19 @@
                                     "type": "object",
                                     "properties": {
                                         "type": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
                                         },
                                         "qty": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         },
                                         "unit_cost": {
                                             "type": "object",
@@ -475,7 +557,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "code"],
+                                            "required": [
+                                                "amount",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "amount": {
@@ -488,17 +573,29 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "code"],
+                                            "required": [
+                                                "amount",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "expenseid": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["name", "qty"],
+                                    "required": [
+                                        "name",
+                                        "qty"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -506,19 +603,34 @@
                                 "type": "string"
                             },
                             "notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "terms": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "discount_value": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "vis_state": {
                                 "type": "number"
@@ -548,9 +660,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_createpayment",
             "name": "create-payment",
-            "output": ["ActionOutput_freshbooks_createpayment"],
-            "scopes": ["user:payments:write"],
-            "usedModels": ["ActionInput_freshbooks_createpayment", "ActionOutput_freshbooks_createpayment"],
+            "output": [
+                "ActionOutput_freshbooks_createpayment"
+            ],
+            "scopes": [
+                "user:payments:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_createpayment",
+                "ActionOutput_freshbooks_createpayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -573,7 +692,10 @@
                                         "description": "Currency code. Example: \"USD\""
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "date": {
@@ -605,7 +727,12 @@
                                 "description": "Payment type. Example: \"Cash\""
                             }
                         },
-                        "required": ["invoiceid", "amount", "date", "type"],
+                        "required": [
+                            "invoiceid",
+                            "amount",
+                            "date",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_createpayment": {
@@ -648,7 +775,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -661,9 +790,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_freshbooks_createproject"],
-            "scopes": ["user:projects:write"],
-            "usedModels": ["ActionInput_freshbooks_createproject", "ActionOutput_freshbooks_createproject"],
+            "output": [
+                "ActionOutput_freshbooks_createproject"
+            ],
+            "scopes": [
+                "user:projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_createproject",
+                "ActionOutput_freshbooks_createproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -689,7 +825,10 @@
                             "project_type": {
                                 "description": "Type of project billing.",
                                 "type": "string",
-                                "enum": ["fixed_price", "hourly_rate"]
+                                "enum": [
+                                    "fixed_price",
+                                    "hourly_rate"
+                                ]
                             },
                             "fixed_price": {
                                 "description": "Flat-rate amount charged to the client. Example: \"500.00\"",
@@ -716,7 +855,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["title", "client_id"],
+                        "required": [
+                            "title",
+                            "client_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_createproject": {
@@ -771,7 +913,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "client_id"],
+                        "required": [
+                            "id",
+                            "title",
+                            "client_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -784,9 +930,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_createtimeentry",
             "name": "create-time-entry",
-            "output": ["ActionOutput_freshbooks_createtimeentry"],
-            "scopes": ["user:time_entries:write"],
-            "usedModels": ["ActionInput_freshbooks_createtimeentry", "ActionOutput_freshbooks_createtimeentry"],
+            "output": [
+                "ActionOutput_freshbooks_createtimeentry"
+            ],
+            "scopes": [
+                "user:time_entries:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_createtimeentry",
+                "ActionOutput_freshbooks_createtimeentry"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -807,23 +960,38 @@
                             },
                             "client_id": {
                                 "description": "Client ID associated with the time entry. Example: 567521",
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "identity_id": {
                                 "description": "Identity ID of the teammate logging the time.",
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "project_id": {
                                 "description": "Project ID associated with the time entry.",
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "service_id": {
                                 "description": "Service ID associated with the time entry.",
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "task_id": {
                                 "description": "Task ID associated with the time entry.",
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "note": {
                                 "description": "Note describing the work.",
@@ -842,17 +1010,28 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["is_logged", "started_at", "duration", "client_id"],
+                        "required": [
+                            "is_logged",
+                            "started_at",
+                            "duration",
+                            "client_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_createtimeentry": {
                         "type": "object",
                         "properties": {
                             "id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "identity_id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "is_logged": {
                                 "type": "boolean"
@@ -864,16 +1043,28 @@
                                 "type": "string"
                             },
                             "client_id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "project_id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "task_id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "service_id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "note": {
                                 "type": "string"
@@ -895,7 +1086,11 @@
                             },
                             "timer": {}
                         },
-                        "required": ["id", "is_logged", "started_at"],
+                        "required": [
+                            "id",
+                            "is_logged",
+                            "started_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -908,9 +1103,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_deleteclient",
             "name": "delete-client",
-            "output": ["ActionOutput_freshbooks_deleteclient"],
-            "scopes": ["user:clients:write"],
-            "usedModels": ["ActionInput_freshbooks_deleteclient", "ActionOutput_freshbooks_deleteclient"],
+            "output": [
+                "ActionOutput_freshbooks_deleteclient"
+            ],
+            "scopes": [
+                "user:clients:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_deleteclient",
+                "ActionOutput_freshbooks_deleteclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -922,20 +1124,27 @@
                                 "description": "Client ID. Example: \"567521\""
                             }
                         },
-                        "required": ["clientId"],
+                        "required": [
+                            "clientId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_deleteclient": {
                         "type": "object",
                         "properties": {
                             "id": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "vis_state": {
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -948,9 +1157,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_deleteestimate",
             "name": "delete-estimate",
-            "output": ["ActionOutput_freshbooks_deleteestimate"],
-            "scopes": ["user:estimates:write"],
-            "usedModels": ["ActionInput_freshbooks_deleteestimate", "ActionOutput_freshbooks_deleteestimate"],
+            "output": [
+                "ActionOutput_freshbooks_deleteestimate"
+            ],
+            "scopes": [
+                "user:estimates:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_deleteestimate",
+                "ActionOutput_freshbooks_deleteestimate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -962,7 +1178,9 @@
                                 "description": "FreshBooks estimate ID to archive. Example: \"567521\""
                             }
                         },
-                        "required": ["estimateId"],
+                        "required": [
+                            "estimateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_deleteestimate": {
@@ -986,7 +1204,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "vis_state"],
+                        "required": [
+                            "id",
+                            "vis_state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -999,9 +1220,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_deleteexpense",
             "name": "delete-expense",
-            "output": ["ActionOutput_freshbooks_deleteexpense"],
-            "scopes": ["user:expenses:write"],
-            "usedModels": ["ActionInput_freshbooks_deleteexpense", "ActionOutput_freshbooks_deleteexpense"],
+            "output": [
+                "ActionOutput_freshbooks_deleteexpense"
+            ],
+            "scopes": [
+                "user:expenses:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_deleteexpense",
+                "ActionOutput_freshbooks_deleteexpense"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1013,7 +1241,9 @@
                                 "description": "Expense ID. Example: \"2420459\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_deleteexpense": {
@@ -1026,7 +1256,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1039,9 +1271,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_deleteinvoice",
             "name": "delete-invoice",
-            "output": ["ActionOutput_freshbooks_deleteinvoice"],
-            "scopes": ["user:invoices:write"],
-            "usedModels": ["ActionInput_freshbooks_deleteinvoice", "ActionOutput_freshbooks_deleteinvoice"],
+            "output": [
+                "ActionOutput_freshbooks_deleteinvoice"
+            ],
+            "scopes": [
+                "user:invoices:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_deleteinvoice",
+                "ActionOutput_freshbooks_deleteinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1053,7 +1292,9 @@
                                 "description": "Invoice ID to archive. Example: 453877"
                             }
                         },
-                        "required": ["invoiceId"],
+                        "required": [
+                            "invoiceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_deleteinvoice": {
@@ -1066,7 +1307,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1079,9 +1322,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_deletepayment",
             "name": "delete-payment",
-            "output": ["ActionOutput_freshbooks_deletepayment"],
-            "scopes": ["user:payments:write"],
-            "usedModels": ["ActionInput_freshbooks_deletepayment", "ActionOutput_freshbooks_deletepayment"],
+            "output": [
+                "ActionOutput_freshbooks_deletepayment"
+            ],
+            "scopes": [
+                "user:payments:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_deletepayment",
+                "ActionOutput_freshbooks_deletepayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1093,7 +1343,9 @@
                                 "description": "Payment ID to archive. Example: \"312041\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_deletepayment": {
@@ -1106,7 +1358,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1119,9 +1373,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_deleteproject",
             "name": "delete-project",
-            "output": ["ActionOutput_freshbooks_deleteproject"],
-            "scopes": ["user:projects:write"],
-            "usedModels": ["ActionInput_freshbooks_deleteproject", "ActionOutput_freshbooks_deleteproject"],
+            "output": [
+                "ActionOutput_freshbooks_deleteproject"
+            ],
+            "scopes": [
+                "user:projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_deleteproject",
+                "ActionOutput_freshbooks_deleteproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1133,7 +1394,9 @@
                                 "description": "The project ID to delete. Example: \"123\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_deleteproject": {
@@ -1146,7 +1409,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "projectId"],
+                        "required": [
+                            "success",
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1159,9 +1425,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_deletetimeentry",
             "name": "delete-time-entry",
-            "output": ["ActionOutput_freshbooks_deletetimeentry"],
-            "scopes": ["user:time_entries:write"],
-            "usedModels": ["ActionInput_freshbooks_deletetimeentry", "ActionOutput_freshbooks_deletetimeentry"],
+            "output": [
+                "ActionOutput_freshbooks_deletetimeentry"
+            ],
+            "scopes": [
+                "user:time_entries:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_deletetimeentry",
+                "ActionOutput_freshbooks_deletetimeentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1173,7 +1446,9 @@
                                 "description": "The ID of the time entry to delete. Example: \"123456\""
                             }
                         },
-                        "required": ["timeEntryId"],
+                        "required": [
+                            "timeEntryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_deletetimeentry": {
@@ -1188,7 +1463,10 @@
                                 "description": "Whether the deletion was successful."
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1201,9 +1479,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_getaccountid",
             "name": "get-account-id",
-            "output": ["ActionOutput_freshbooks_getaccountid"],
-            "scopes": ["user:profile:read"],
-            "usedModels": ["ActionInput_freshbooks_getaccountid", "ActionOutput_freshbooks_getaccountid"],
+            "output": [
+                "ActionOutput_freshbooks_getaccountid"
+            ],
+            "scopes": [
+                "user:profile:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_getaccountid",
+                "ActionOutput_freshbooks_getaccountid"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1226,7 +1511,10 @@
                                 "description": "Numeric business identifier for /projects/ and /timetracking/ endpoints. Example: 14719708"
                             }
                         },
-                        "required": ["accountId", "businessId"],
+                        "required": [
+                            "accountId",
+                            "businessId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1239,9 +1527,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_getclient",
             "name": "get-client",
-            "output": ["ActionOutput_freshbooks_getclient"],
-            "scopes": ["user:clients:read"],
-            "usedModels": ["ActionInput_freshbooks_getclient", "ActionOutput_freshbooks_getclient"],
+            "output": [
+                "ActionOutput_freshbooks_getclient"
+            ],
+            "scopes": [
+                "user:clients:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_getclient",
+                "ActionOutput_freshbooks_getclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1253,7 +1548,9 @@
                                 "description": "FreshBooks client ID. Example: \"567521\""
                             }
                         },
-                        "required": ["clientId"],
+                        "required": [
+                            "clientId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_getclient": {
@@ -1263,40 +1560,75 @@
                                 "type": "number"
                             },
                             "fname": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lname": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "note": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "language": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "currency_code": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "vis_state": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1309,9 +1641,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_getexpense",
             "name": "get-expense",
-            "output": ["ActionOutput_freshbooks_getexpense"],
-            "scopes": ["user:expenses:read"],
-            "usedModels": ["ActionInput_freshbooks_getexpense", "ActionOutput_freshbooks_getexpense"],
+            "output": [
+                "ActionOutput_freshbooks_getexpense"
+            ],
+            "scopes": [
+                "user:expenses:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_getexpense",
+                "ActionOutput_freshbooks_getexpense"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1323,7 +1662,9 @@
                                 "description": "Expense ID. Example: \"2420475\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_getexpense": {
@@ -1347,7 +1688,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "code"],
+                                        "required": [
+                                            "amount",
+                                            "code"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1359,7 +1703,10 @@
                                 "type": "string"
                             },
                             "notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "staffid": {
                                 "type": "number"
@@ -1380,7 +1727,10 @@
                                 "type": "string"
                             },
                             "vendor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "projectid": {
                                 "type": "number"
@@ -1395,10 +1745,16 @@
                                 "type": "boolean"
                             },
                             "transactionid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "invoiceid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "ext_invoiceid": {
                                 "type": "number"
@@ -1407,43 +1763,79 @@
                                 "type": "number"
                             },
                             "modern_projectid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "converse_projectid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "background_jobid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "ext_accountid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "profileid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "accountid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "accounting_systemid": {
                                 "type": "string"
                             },
                             "taxAmount1": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "taxAmount2": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "taxName1": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "taxName2": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "taxPercent1": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "taxPercent2": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "markup_percent": {
                                 "type": "string"
@@ -1477,7 +1869,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "expenseid"],
+                        "required": [
+                            "id",
+                            "expenseid"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1490,9 +1885,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_getinvoice",
             "name": "get-invoice",
-            "output": ["ActionOutput_freshbooks_getinvoice"],
-            "scopes": ["user:invoices:read"],
-            "usedModels": ["ActionInput_freshbooks_getinvoice", "ActionOutput_freshbooks_getinvoice"],
+            "output": [
+                "ActionOutput_freshbooks_getinvoice"
+            ],
+            "scopes": [
+                "user:invoices:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_getinvoice",
+                "ActionOutput_freshbooks_getinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1504,7 +1906,9 @@
                                 "description": "Invoice ID. Example: \"453877\""
                             }
                         },
-                        "required": ["invoiceId"],
+                        "required": [
+                            "invoiceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_getinvoice": {
@@ -1532,7 +1936,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "outstanding": {
@@ -1545,7 +1952,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "paid": {
@@ -1558,7 +1968,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
@@ -1586,10 +1999,16 @@
                                 "type": "string"
                             },
                             "terms": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "po_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "discount_value": {
                                 "type": "string"
@@ -1604,7 +2023,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "deposit_status": {
@@ -1647,7 +2069,10 @@
                                 "type": "string"
                             },
                             "vat_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "vat_number": {
                                 "type": "string"
@@ -1680,7 +2105,10 @@
                                 "type": "string"
                             },
                             "date_paid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lines": {
                                 "type": "array",
@@ -1688,7 +2116,12 @@
                             },
                             "presentation": {}
                         },
-                        "required": ["invoiceid", "id", "customerid", "invoice_number"],
+                        "required": [
+                            "invoiceid",
+                            "id",
+                            "customerid",
+                            "invoice_number"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1701,9 +2134,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_getpayment",
             "name": "get-payment",
-            "output": ["ActionOutput_freshbooks_getpayment"],
-            "scopes": ["user:payments:read"],
-            "usedModels": ["ActionInput_freshbooks_getpayment", "ActionOutput_freshbooks_getpayment"],
+            "output": [
+                "ActionOutput_freshbooks_getpayment"
+            ],
+            "scopes": [
+                "user:payments:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_getpayment",
+                "ActionOutput_freshbooks_getpayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1715,7 +2155,9 @@
                                 "description": "Payment ID. Example: \"312041\""
                             }
                         },
-                        "required": ["paymentId"],
+                        "required": [
+                            "paymentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_getpayment": {
@@ -1737,17 +2179,26 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "bulk_paymentid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "clientid": {
                                 "type": "number"
                             },
                             "creditid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "date": {
                                 "type": "string"
@@ -1756,7 +2207,10 @@
                                 "type": "boolean"
                             },
                             "gateway": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "invoiceid": {
                                 "type": "number"
@@ -1765,19 +2219,34 @@
                                 "type": "number"
                             },
                             "note": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "orderid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "overpaymentid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "send_client_notification": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "transactionid": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "type": {
                                 "type": "string"
@@ -1789,7 +2258,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "accounting_systemid", "clientid", "date", "from_credit", "invoiceid", "logid", "type", "updated", "vis_state"],
+                        "required": [
+                            "id",
+                            "accounting_systemid",
+                            "clientid",
+                            "date",
+                            "from_credit",
+                            "invoiceid",
+                            "logid",
+                            "type",
+                            "updated",
+                            "vis_state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1802,9 +2282,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_freshbooks_getproject"],
-            "scopes": ["user:projects:read"],
-            "usedModels": ["ActionInput_freshbooks_getproject", "ActionOutput_freshbooks_getproject"],
+            "output": [
+                "ActionOutput_freshbooks_getproject"
+            ],
+            "scopes": [
+                "user:projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_getproject",
+                "ActionOutput_freshbooks_getproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1813,10 +2300,15 @@
                         "properties": {
                             "projectId": {
                                 "description": "Project ID. Example: 13312426",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_getproject": {
@@ -1829,19 +2321,31 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "client_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "internal": {
                                 "type": "boolean"
                             },
                             "budget": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "billing_method": {
                                 "type": "string"
@@ -1850,7 +2354,10 @@
                                 "type": "string"
                             },
                             "project_manager_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "type": "boolean"
@@ -1868,7 +2375,10 @@
                                 "type": "string"
                             },
                             "logged_duration": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "services": {
                                 "type": "array",
@@ -1881,7 +2391,10 @@
                                 "type": "string"
                             },
                             "retainer_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "expense_markup": {
                                 "type": "string"
@@ -1890,10 +2403,16 @@
                                 "type": "string"
                             },
                             "fixed_price": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "rate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "group": {
                                 "type": "object",
@@ -1931,7 +2450,16 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["id", "identity_id", "role", "first_name", "last_name", "email", "company", "active"],
+                                            "required": [
+                                                "id",
+                                                "identity_id",
+                                                "role",
+                                                "first_name",
+                                                "last_name",
+                                                "email",
+                                                "company",
+                                                "active"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1947,7 +2475,11 @@
                                         ]
                                     }
                                 },
-                                "required": ["id", "members", "pending_invitations"],
+                                "required": [
+                                    "id",
+                                    "members",
+                                    "pending_invitations"
+                                ],
                                 "additionalProperties": false
                             }
                         },
@@ -1980,9 +2512,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_gettimeentry",
             "name": "get-time-entry",
-            "output": ["ActionOutput_freshbooks_gettimeentry"],
-            "scopes": ["user:time_entries:read"],
-            "usedModels": ["ActionInput_freshbooks_gettimeentry", "ActionOutput_freshbooks_gettimeentry"],
+            "output": [
+                "ActionOutput_freshbooks_gettimeentry"
+            ],
+            "scopes": [
+                "user:time_entries:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_gettimeentry",
+                "ActionOutput_freshbooks_gettimeentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1994,7 +2533,9 @@
                                 "description": "Time entry ID. Example: \"343714461\""
                             }
                         },
-                        "required": ["time_entry_id"],
+                        "required": [
+                            "time_entry_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_gettimeentry": {
@@ -2022,10 +2563,16 @@
                                 "type": "string"
                             },
                             "client_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "project_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "pending_client": {
                                 "anyOf": [
@@ -2052,13 +2599,22 @@
                                 ]
                             },
                             "task_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "service_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "note": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "type": "boolean"
@@ -2073,7 +2629,10 @@
                                 "type": "boolean"
                             },
                             "retainer_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "duration": {
                                 "type": "number"
@@ -2113,9 +2672,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_listclients",
             "name": "list-clients",
-            "output": ["ActionOutput_freshbooks_listclients"],
-            "scopes": ["user:clients:read"],
-            "usedModels": ["ActionInput_freshbooks_listclients", "ActionOutput_freshbooks_listclients"],
+            "output": [
+                "ActionOutput_freshbooks_listclients"
+            ],
+            "scopes": [
+                "user:clients:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_listclients",
+                "ActionOutput_freshbooks_listclients"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2150,7 +2716,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2163,9 +2731,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_listestimates",
             "name": "list-estimates",
-            "output": ["ActionOutput_freshbooks_listestimates"],
-            "scopes": ["user:estimates:read"],
-            "usedModels": ["ActionInput_freshbooks_listestimates", "ActionOutput_freshbooks_listestimates"],
+            "output": [
+                "ActionOutput_freshbooks_listestimates"
+            ],
+            "scopes": [
+                "user:estimates:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_listestimates",
+                "ActionOutput_freshbooks_listestimates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2216,7 +2791,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["estimates", "page", "pages", "total", "per_page"],
+                        "required": [
+                            "estimates",
+                            "page",
+                            "pages",
+                            "total",
+                            "per_page"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2229,9 +2810,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_listexpenses",
             "name": "list-expenses",
-            "output": ["ActionOutput_freshbooks_listexpenses"],
-            "scopes": ["user:expenses:read"],
-            "usedModels": ["ActionInput_freshbooks_listexpenses", "ActionOutput_freshbooks_listexpenses"],
+            "output": [
+                "ActionOutput_freshbooks_listexpenses"
+            ],
+            "scopes": [
+                "user:expenses:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_listexpenses",
+                "ActionOutput_freshbooks_listexpenses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2305,7 +2893,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2313,7 +2903,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["expenses"],
+                        "required": [
+                            "expenses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2326,9 +2918,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_listinvoices",
             "name": "list-invoices",
-            "output": ["ActionOutput_freshbooks_listinvoices"],
-            "scopes": ["user:invoices:read"],
-            "usedModels": ["ActionInput_freshbooks_listinvoices", "ActionOutput_freshbooks_listinvoices"],
+            "output": [
+                "ActionOutput_freshbooks_listinvoices"
+            ],
+            "scopes": [
+                "user:invoices:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_listinvoices",
+                "ActionOutput_freshbooks_listinvoices"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2402,7 +3001,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2410,7 +3011,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2423,9 +3026,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_listpayments",
             "name": "list-payments",
-            "output": ["ActionOutput_freshbooks_listpayments"],
-            "scopes": ["user:payments:read"],
-            "usedModels": ["ActionInput_freshbooks_listpayments", "ActionOutput_freshbooks_listpayments"],
+            "output": [
+                "ActionOutput_freshbooks_listpayments"
+            ],
+            "scopes": [
+                "user:payments:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_listpayments",
+                "ActionOutput_freshbooks_listpayments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2480,10 +3090,16 @@
                                             "additionalProperties": {}
                                         },
                                         "bulk_paymentid": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "creditid": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "clientid": {
                                             "type": "number"
@@ -2495,7 +3111,10 @@
                                             "type": "boolean"
                                         },
                                         "gateway": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "invoiceid": {
                                             "type": "number"
@@ -2507,16 +3126,28 @@
                                             "type": "string"
                                         },
                                         "orderid": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "overpaymentid": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "send_client_notification": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "transactionid": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "type": "string"
@@ -2528,7 +3159,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2548,7 +3181,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["payments"],
+                        "required": [
+                            "payments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2561,9 +3196,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_freshbooks_listprojects"],
-            "scopes": ["user:projects:read"],
-            "usedModels": ["ActionInput_freshbooks_listprojects", "ActionOutput_freshbooks_listprojects"],
+            "output": [
+                "ActionOutput_freshbooks_listprojects"
+            ],
+            "scopes": [
+                "user:projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_listprojects",
+                "ActionOutput_freshbooks_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2595,52 +3237,99 @@
                                             "type": "number"
                                         },
                                         "title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "client_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "project_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "complete": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "active": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "internal": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "due_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "budget": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "rate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "fixed_price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "billing_method": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "logged_duration": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2648,7 +3337,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2661,9 +3352,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_listtimeentries",
             "name": "list-time-entries",
-            "output": ["ActionOutput_freshbooks_listtimeentries"],
-            "scopes": ["user:time_entries:read"],
-            "usedModels": ["ActionInput_freshbooks_listtimeentries", "ActionOutput_freshbooks_listtimeentries"],
+            "output": [
+                "ActionOutput_freshbooks_listtimeentries"
+            ],
+            "scopes": [
+                "user:time_entries:read"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_listtimeentries",
+                "ActionOutput_freshbooks_listtimeentries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2705,22 +3403,37 @@
                                             "type": "number"
                                         },
                                         "note": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "duration": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "project_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "client_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "is_logged": {
                                             "type": "boolean"
                                         },
                                         "started_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "active": {
                                             "type": "boolean"
@@ -2745,7 +3458,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2753,7 +3468,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2766,9 +3483,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_sendinvoice",
             "name": "send-invoice",
-            "output": ["ActionOutput_freshbooks_sendinvoice"],
-            "scopes": ["user:invoices:write"],
-            "usedModels": ["ActionInput_freshbooks_sendinvoice", "ActionOutput_freshbooks_sendinvoice"],
+            "output": [
+                "ActionOutput_freshbooks_sendinvoice"
+            ],
+            "scopes": [
+                "user:invoices:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_sendinvoice",
+                "ActionOutput_freshbooks_sendinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2781,11 +3505,17 @@
                             },
                             "method": {
                                 "type": "string",
-                                "enum": ["email", "mark_as_sent"],
+                                "enum": [
+                                    "email",
+                                    "mark_as_sent"
+                                ],
                                 "description": "How to send the invoice. Use \"email\" to email the client, or \"mark_as_sent\" to mark as sent without emailing."
                             }
                         },
-                        "required": ["invoice_id", "method"],
+                        "required": [
+                            "invoice_id",
+                            "method"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_sendinvoice": {
@@ -2798,7 +3528,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2811,9 +3543,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_updateclient",
             "name": "update-client",
-            "output": ["ActionOutput_freshbooks_updateclient"],
-            "scopes": ["user:clients:write"],
-            "usedModels": ["ActionInput_freshbooks_updateclient", "ActionOutput_freshbooks_updateclient"],
+            "output": [
+                "ActionOutput_freshbooks_updateclient"
+            ],
+            "scopes": [
+                "user:clients:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_updateclient",
+                "ActionOutput_freshbooks_updateclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2877,7 +3616,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_updateclient": {
@@ -2929,7 +3670,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2942,9 +3685,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_updateestimate",
             "name": "update-estimate",
-            "output": ["ActionOutput_freshbooks_updateestimate"],
-            "scopes": ["user:estimates:write"],
-            "usedModels": ["ActionInput_freshbooks_updateestimate", "ActionOutput_freshbooks_updateestimate"],
+            "output": [
+                "ActionOutput_freshbooks_updateestimate"
+            ],
+            "scopes": [
+                "user:estimates:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_updateestimate",
+                "ActionOutput_freshbooks_updateestimate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2965,13 +3715,19 @@
                                 "type": "string"
                             },
                             "terms": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notes": {
                                 "type": "string"
                             },
                             "po_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "currency_code": {
                                 "type": "string"
@@ -3039,7 +3795,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "code"],
+                                            "required": [
+                                                "amount",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": {
@@ -3068,7 +3827,9 @@
                                 }
                             }
                         },
-                        "required": ["estimateId"],
+                        "required": [
+                            "estimateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_updateestimate": {
@@ -3099,7 +3860,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "currency_code": {
@@ -3130,7 +3894,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "template": {
@@ -3179,7 +3946,10 @@
                                 "type": "string"
                             },
                             "vat_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "vat_number": {
                                 "type": "string"
@@ -3208,7 +3978,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "code"],
+                                            "required": [
+                                                "amount",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "updated": {
@@ -3230,7 +4003,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "code"],
+                                            "required": [
+                                                "amount",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": {
@@ -3259,7 +4035,15 @@
                                 }
                             }
                         },
-                        "required": ["id", "status", "create_date", "customerid", "estimate_number", "amount", "currency_code"],
+                        "required": [
+                            "id",
+                            "status",
+                            "create_date",
+                            "customerid",
+                            "estimate_number",
+                            "amount",
+                            "currency_code"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3272,9 +4056,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_updateexpense",
             "name": "update-expense",
-            "output": ["ActionOutput_freshbooks_updateexpense"],
-            "scopes": ["user:expenses:write"],
-            "usedModels": ["ActionInput_freshbooks_updateexpense", "ActionOutput_freshbooks_updateexpense"],
+            "output": [
+                "ActionOutput_freshbooks_updateexpense"
+            ],
+            "scopes": [
+                "user:expenses:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_updateexpense",
+                "ActionOutput_freshbooks_updateexpense"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3296,7 +4087,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "code"],
+                                "required": [
+                                    "amount",
+                                    "code"
+                                ],
                                 "additionalProperties": false
                             },
                             "date": {
@@ -3344,7 +4138,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["expenseId"],
+                        "required": [
+                            "expenseId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_updateexpense": {
@@ -3365,7 +4161,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "code"],
+                                        "required": [
+                                            "amount",
+                                            "code"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3374,13 +4173,22 @@
                                 ]
                             },
                             "date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "vendor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "staffid": {
                                 "type": "number"
@@ -3395,10 +4203,16 @@
                                 "type": "number"
                             },
                             "taxPercent1": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "taxPercent2": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "number"
@@ -3407,7 +4221,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3420,9 +4236,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_updateinvoice",
             "name": "update-invoice",
-            "output": ["ActionOutput_freshbooks_updateinvoice"],
-            "scopes": ["user:invoices:write"],
-            "usedModels": ["ActionInput_freshbooks_updateinvoice", "ActionOutput_freshbooks_updateinvoice"],
+            "output": [
+                "ActionOutput_freshbooks_updateinvoice"
+            ],
+            "scopes": [
+                "user:invoices:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_updateinvoice",
+                "ActionOutput_freshbooks_updateinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3435,7 +4258,10 @@
                             },
                             "customerid": {
                                 "description": "Client ID to associate with the invoice.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "create_date": {
                                 "description": "Creation date in YYYY-MM-DD format.",
@@ -3463,7 +4289,10 @@
                             },
                             "discount_value": {
                                 "description": "Discount value.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "discount_description": {
                                 "description": "Discount description.",
@@ -3471,11 +4300,17 @@
                             },
                             "deposit_amount": {
                                 "description": "Deposit amount.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "deposit_percent": {
                                 "description": "Deposit percentage.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "deposit_type": {
                                 "description": "Deposit type.",
@@ -3491,56 +4326,107 @@
                                 }
                             }
                         },
-                        "required": ["invoiceId"],
+                        "required": [
+                            "invoiceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_updateinvoice": {
                         "type": "object",
                         "properties": {
                             "id": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "customerid": {
-                                "type": ["string", "number", "null"]
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "create_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "terms": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "po_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "discount_value": {
-                                "type": ["string", "number", "null"]
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "discount_description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deposit_amount": {
-                                "type": ["string", "number", "null"]
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "deposit_percent": {
-                                "type": ["string", "number", "null"]
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "deposit_type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "vis_state": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "status": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "lines": {
                                 "anyOf": [
@@ -3558,10 +4444,15 @@
                                 ]
                             },
                             "current_organization": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3574,9 +4465,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_freshbooks_updateproject"],
-            "scopes": ["user:projects:write"],
-            "usedModels": ["ActionInput_freshbooks_updateproject", "ActionOutput_freshbooks_updateproject"],
+            "output": [
+                "ActionOutput_freshbooks_updateproject"
+            ],
+            "scopes": [
+                "user:projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_updateproject",
+                "ActionOutput_freshbooks_updateproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3593,22 +4491,34 @@
                             },
                             "description": {
                                 "description": "The project description",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_date": {
                                 "description": "Date of projected completion. Example: 2017-07-12",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "client_id": {
                                 "description": "Unique id of the client being billed for the project",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "project_type": {
                                 "description": "Type of project",
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["fixed_price", "hourly_rate"]
+                                        "enum": [
+                                            "fixed_price",
+                                            "hourly_rate"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -3617,34 +4527,57 @@
                             },
                             "fixed_price": {
                                 "description": "Used for flat-rate projects. Represents the amount being charged",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "budget": {
                                 "description": "Budget for project",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "complete": {
                                 "description": "Whether the project has been completed",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "description": "Whether the project is active",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "internal": {
                                 "description": "Clarifies that the project is internal",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "rate": {
                                 "description": "The hourly rate of the project",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "billing_method": {
                                 "description": "The method of payment for the project",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_updateproject": {
@@ -3660,19 +4593,31 @@
                                         "type": "string"
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "due_date": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "project_type": {
                                         "type": "string"
                                     },
                                     "fixed_price": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "budget": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "complete": {
                                         "type": "boolean"
@@ -3684,13 +4629,22 @@
                                         "type": "boolean"
                                     },
                                     "client_id": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "rate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_method": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "created_at": {
                                         "type": "string"
@@ -3699,7 +4653,10 @@
                                         "type": "string"
                                     },
                                     "logged_duration": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "sample": {
                                         "type": "boolean"
@@ -3790,11 +4747,15 @@
                                         }
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["project"],
+                        "required": [
+                            "project"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3807,9 +4768,16 @@
             "endpoint": null,
             "input": "ActionInput_freshbooks_updatetimeentry",
             "name": "update-time-entry",
-            "output": ["ActionOutput_freshbooks_updatetimeentry"],
-            "scopes": ["user:time_entries:write"],
-            "usedModels": ["ActionInput_freshbooks_updatetimeentry", "ActionOutput_freshbooks_updatetimeentry"],
+            "output": [
+                "ActionOutput_freshbooks_updatetimeentry"
+            ],
+            "scopes": [
+                "user:time_entries:write"
+            ],
+            "usedModels": [
+                "ActionInput_freshbooks_updatetimeentry",
+                "ActionOutput_freshbooks_updatetimeentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3857,7 +4825,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_freshbooks_updatetimeentry": {
@@ -3906,7 +4876,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3922,12 +4894,19 @@
             "endpoints": [],
             "input": "SyncMetadata_freshbooks_clients",
             "name": "clients",
-            "output": ["Client"],
+            "output": [
+                "Client"
+            ],
             "runs": "every hour",
-            "scopes": ["user:clients:read"],
+            "scopes": [
+                "user:clients:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Client", "SyncMetadata_freshbooks_clients"],
+            "usedModels": [
+                "Client",
+                "SyncMetadata_freshbooks_clients"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3939,7 +4918,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "SyncMetadata_freshbooks_clients": {
@@ -3949,12 +4930,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3963,12 +4948,19 @@
             "endpoints": [],
             "input": "SyncMetadata_freshbooks_estimates",
             "name": "estimates",
-            "output": ["Estimate"],
+            "output": [
+                "Estimate"
+            ],
             "runs": "every hour",
-            "scopes": ["user:estimates:read"],
+            "scopes": [
+                "user:estimates:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Estimate", "SyncMetadata_freshbooks_estimates"],
+            "usedModels": [
+                "Estimate",
+                "SyncMetadata_freshbooks_estimates"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4028,7 +5020,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_freshbooks_estimates": {
@@ -4039,12 +5033,16 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4053,12 +5051,19 @@
             "endpoints": [],
             "input": "SyncMetadata_freshbooks_expenses",
             "name": "expenses",
-            "output": ["Expense"],
+            "output": [
+                "Expense"
+            ],
             "runs": "every hour",
-            "scopes": ["user:expenses:read"],
+            "scopes": [
+                "user:expenses:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Expense", "SyncMetadata_freshbooks_expenses"],
+            "usedModels": [
+                "Expense",
+                "SyncMetadata_freshbooks_expenses"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4106,7 +5111,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_freshbooks_expenses": {
@@ -4116,12 +5123,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4130,12 +5141,19 @@
             "endpoints": [],
             "input": "SyncMetadata_freshbooks_invoices",
             "name": "invoices",
-            "output": ["Invoice"],
+            "output": [
+                "Invoice"
+            ],
             "runs": "every hour",
-            "scopes": ["user:invoices:read"],
+            "scopes": [
+                "user:invoices:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invoice", "SyncMetadata_freshbooks_invoices"],
+            "usedModels": [
+                "Invoice",
+                "SyncMetadata_freshbooks_invoices"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4189,7 +5207,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_freshbooks_invoices": {
@@ -4199,12 +5219,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4213,12 +5237,19 @@
             "endpoints": [],
             "input": "SyncMetadata_freshbooks_payments",
             "name": "payments",
-            "output": ["Payment"],
+            "output": [
+                "Payment"
+            ],
             "runs": "every hour",
-            "scopes": ["user:payments:read"],
+            "scopes": [
+                "user:payments:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Payment", "SyncMetadata_freshbooks_payments"],
+            "usedModels": [
+                "Payment",
+                "SyncMetadata_freshbooks_payments"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4266,7 +5297,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_freshbooks_payments": {
@@ -4276,12 +5309,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4290,12 +5327,19 @@
             "endpoints": [],
             "input": "SyncMetadata_freshbooks_projects",
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["user:projects:read"],
+            "scopes": [
+                "user:projects:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project", "SyncMetadata_freshbooks_projects"],
+            "usedModels": [
+                "Project",
+                "SyncMetadata_freshbooks_projects"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4366,7 +5410,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["business_id", "name", "id"],
+                                    "required": [
+                                        "business_id",
+                                        "name",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4412,31 +5460,51 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["first_name", "last_name", "role", "identity_id", "active", "company", "id", "email"],
+                                            "required": [
+                                                "first_name",
+                                                "last_name",
+                                                "role",
+                                                "identity_id",
+                                                "active",
+                                                "company",
+                                                "id",
+                                                "email"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_freshbooks_projects": {
                         "type": "object",
                         "properties": {
                             "businessId": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["businessId"],
+                        "required": [
+                            "businessId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4445,12 +5513,19 @@
             "endpoints": [],
             "input": "SyncMetadata_freshbooks_timeentries",
             "name": "time-entries",
-            "output": ["TimeEntry"],
+            "output": [
+                "TimeEntry"
+            ],
             "runs": "every hour",
-            "scopes": ["user:time_entries:read"],
+            "scopes": [
+                "user:time_entries:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TimeEntry", "SyncMetadata_freshbooks_timeentries"],
+            "usedModels": [
+                "TimeEntry",
+                "SyncMetadata_freshbooks_timeentries"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4501,22 +5576,31 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_freshbooks_timeentries": {
                         "type": "object",
                         "properties": {
                             "businessId": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["businessId"],
+                        "required": [
+                            "businessId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

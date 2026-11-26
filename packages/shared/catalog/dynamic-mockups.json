@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_createcollection",
             "name": "create-collection",
-            "output": ["ActionOutput_dynamic_mockups_createcollection"],
+            "output": [
+                "ActionOutput_dynamic_mockups_createcollection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_createcollection", "ActionOutput_dynamic_mockups_createcollection"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_createcollection",
+                "ActionOutput_dynamic_mockups_createcollection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -22,10 +27,15 @@
                             },
                             "catalog_uuid": {
                                 "description": "Catalog UUID to associate the collection with. Omit to use the account's default catalog.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_createcollection": {
@@ -59,7 +69,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uuid", "workspace_id", "catalog_id", "name", "slug", "is_published", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "uuid",
+                            "workspace_id",
+                            "catalog_id",
+                            "name",
+                            "slug",
+                            "is_published",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -72,9 +92,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_deletepsd",
             "name": "delete-psd",
-            "output": ["ActionOutput_dynamic_mockups_deletepsd"],
+            "output": [
+                "ActionOutput_dynamic_mockups_deletepsd"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_deletepsd", "ActionOutput_dynamic_mockups_deletepsd"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_deletepsd",
+                "ActionOutput_dynamic_mockups_deletepsd"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -90,7 +115,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["psd_uuid"],
+                        "required": [
+                            "psd_uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_deletepsd": {
@@ -103,7 +130,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -116,9 +146,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_getmockanythingproduct",
             "name": "get-mock-anything-product",
-            "output": ["ActionOutput_dynamic_mockups_getmockanythingproduct"],
+            "output": [
+                "ActionOutput_dynamic_mockups_getmockanythingproduct"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_getmockanythingproduct", "ActionOutput_dynamic_mockups_getmockanythingproduct"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_getmockanythingproduct",
+                "ActionOutput_dynamic_mockups_getmockanythingproduct"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -130,7 +165,9 @@
                                 "description": "Product UUID. Example: \"17212ae2-39cf-4af2-abd8-3960dddd1a87\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_getmockanythingproduct": {
@@ -178,7 +215,13 @@
                                             }
                                         }
                                     },
-                                    "required": ["position_id", "location", "name", "surface", "sources"],
+                                    "required": [
+                                        "position_id",
+                                        "location",
+                                        "name",
+                                        "surface",
+                                        "sources"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -194,7 +237,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -205,7 +250,17 @@
                                 }
                             }
                         },
-                        "required": ["uuid", "name", "brand", "style_code", "category", "subcategory", "decorations", "colors", "supported_sizes"],
+                        "required": [
+                            "uuid",
+                            "name",
+                            "brand",
+                            "style_code",
+                            "category",
+                            "subcategory",
+                            "decorations",
+                            "colors",
+                            "supported_sizes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -218,9 +273,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_getmockanythingstatus",
             "name": "get-mock-anything-status",
-            "output": ["ActionOutput_dynamic_mockups_getmockanythingstatus"],
+            "output": [
+                "ActionOutput_dynamic_mockups_getmockanythingstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_getmockanythingstatus", "ActionOutput_dynamic_mockups_getmockanythingstatus"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_getmockanythingstatus",
+                "ActionOutput_dynamic_mockups_getmockanythingstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -232,7 +292,9 @@
                                 "description": "The task ID returned by create-mock-anything. Example: \"444e0bee-a1a8-4bfa-a312-5f0eae1602d3\""
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_getmockanythingstatus": {
@@ -240,7 +302,12 @@
                         "properties": {
                             "state": {
                                 "type": "string",
-                                "enum": ["PENDING", "PROGRESS", "SUCCESS", "FAILURE"]
+                                "enum": [
+                                    "PENDING",
+                                    "PROGRESS",
+                                    "SUCCESS",
+                                    "FAILURE"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -284,7 +351,10 @@
                                                             "type": "number"
                                                         }
                                                     },
-                                                    "required": ["width", "height"],
+                                                    "required": [
+                                                        "width",
+                                                        "height"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "position": {
@@ -297,7 +367,10 @@
                                                             "type": "number"
                                                         }
                                                     },
-                                                    "required": ["top", "left"],
+                                                    "required": [
+                                                        "top",
+                                                        "left"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "print_area_presets": {
@@ -314,11 +387,17 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["location", "name"],
+                                                    "required": [
+                                                        "location",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["uuid", "name"],
+                                            "required": [
+                                                "uuid",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -350,12 +429,18 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["location", "reason"],
+                                            "required": [
+                                                "location",
+                                                "reason"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["uuid", "name"],
+                                "required": [
+                                    "uuid",
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             },
                             "selected_size": {
@@ -365,7 +450,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["state"],
+                        "required": [
+                            "state"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -378,9 +465,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_getmockup",
             "name": "get-mockup",
-            "output": ["ActionOutput_dynamic_mockups_getmockup"],
+            "output": [
+                "ActionOutput_dynamic_mockups_getmockup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_getmockup", "ActionOutput_dynamic_mockups_getmockup"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_getmockup",
+                "ActionOutput_dynamic_mockups_getmockup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -392,7 +484,9 @@
                                 "description": "Mockup UUID. Example: \"fa4ffaad-cef5-4205-99c7-cb03f73f0118\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_getmockup": {
@@ -428,7 +522,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["width", "height"],
+                                            "required": [
+                                                "width",
+                                                "height"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "position": {
@@ -441,7 +538,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["top", "left"],
+                                            "required": [
+                                                "top",
+                                                "left"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "print_area_presets": {
@@ -467,17 +567,27 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["width", "url"],
+                                                            "required": [
+                                                                "width",
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     }
                                                 },
-                                                "required": ["uuid", "name", "thumbnails"],
+                                                "required": [
+                                                    "uuid",
+                                                    "name",
+                                                    "thumbnails"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -493,7 +603,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -509,7 +622,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -525,12 +641,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["width", "url"],
+                                    "required": [
+                                        "width",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["uuid", "name", "thumbnail"],
+                        "required": [
+                            "uuid",
+                            "name",
+                            "thumbnail"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -543,9 +666,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_getmotionmockupstatus",
             "name": "get-motion-mockup-status",
-            "output": ["ActionOutput_dynamic_mockups_getmotionmockupstatus"],
+            "output": [
+                "ActionOutput_dynamic_mockups_getmotionmockupstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_getmotionmockupstatus", "ActionOutput_dynamic_mockups_getmotionmockupstatus"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_getmotionmockupstatus",
+                "ActionOutput_dynamic_mockups_getmotionmockupstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -557,7 +685,9 @@
                                 "description": "The MotionMockups request ID to poll. Example: \"019fd22e-d00d-7771-b9a6-a4bbb3102ee1\""
                             }
                         },
-                        "required": ["requestId"],
+                        "required": [
+                            "requestId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_getmotionmockupstatus": {
@@ -565,7 +695,14 @@
                         "properties": {
                             "status": {
                                 "type": "string",
-                                "enum": ["IN_QUEUE", "PROCESSING", "COMPLETED", "FAILED", "CANCELLED", "ERROR"]
+                                "enum": [
+                                    "IN_QUEUE",
+                                    "PROCESSING",
+                                    "COMPLETED",
+                                    "FAILED",
+                                    "CANCELLED",
+                                    "ERROR"
+                                ]
                             },
                             "video": {
                                 "type": "object",
@@ -583,11 +720,18 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["url", "content_type", "file_name", "file_size"],
+                                "required": [
+                                    "url",
+                                    "content_type",
+                                    "file_name",
+                                    "file_size"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -600,9 +744,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_listcatalogs",
             "name": "list-catalogs",
-            "output": ["ActionOutput_dynamic_mockups_listcatalogs"],
+            "output": [
+                "ActionOutput_dynamic_mockups_listcatalogs"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_listcatalogs", "ActionOutput_dynamic_mockups_listcatalogs"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_listcatalogs",
+                "ActionOutput_dynamic_mockups_listcatalogs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -632,7 +781,11 @@
                                     "type": "number"
                                 }
                             },
-                            "required": ["uuid", "name", "type"],
+                            "required": [
+                                "uuid",
+                                "name",
+                                "type"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -646,9 +799,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_listcollections",
             "name": "list-collections",
-            "output": ["ActionOutput_dynamic_mockups_listcollections"],
+            "output": [
+                "ActionOutput_dynamic_mockups_listcollections"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_listcollections", "ActionOutput_dynamic_mockups_listcollections"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_listcollections",
+                "ActionOutput_dynamic_mockups_listcollections"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -696,12 +854,22 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["uuid", "name", "mockup_count", "created_at", "updated_at", "created_at_timestamp", "updated_at_timestamp"],
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "mockup_count",
+                                        "created_at",
+                                        "updated_at",
+                                        "created_at_timestamp",
+                                        "updated_at_timestamp"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -714,9 +882,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_listmockanythingstyles",
             "name": "list-mock-anything-styles",
-            "output": ["ActionOutput_dynamic_mockups_listmockanythingstyles"],
+            "output": [
+                "ActionOutput_dynamic_mockups_listmockanythingstyles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_listmockanythingstyles", "ActionOutput_dynamic_mockups_listmockanythingstyles"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_listmockanythingstyles",
+                "ActionOutput_dynamic_mockups_listmockanythingstyles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -751,12 +924,18 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "description", "available_with"],
+                                    "required": [
+                                        "id",
+                                        "description",
+                                        "available_with"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["styles"],
+                        "required": [
+                            "styles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -769,9 +948,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_listmockups",
             "name": "list-mockups",
-            "output": ["ActionOutput_dynamic_mockups_listmockups"],
+            "output": [
+                "ActionOutput_dynamic_mockups_listmockups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_listmockups", "ActionOutput_dynamic_mockups_listmockups"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_listmockups",
+                "ActionOutput_dynamic_mockups_listmockups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -835,7 +1019,10 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["width", "height"],
+                                                        "required": [
+                                                            "width",
+                                                            "height"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "position": {
@@ -848,7 +1035,10 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["top", "left"],
+                                                        "required": [
+                                                            "top",
+                                                            "left"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "print_area_presets": {
@@ -871,11 +1061,19 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["location", "name"],
+                                                        "required": [
+                                                            "location",
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["uuid", "name", "size", "position"],
+                                                "required": [
+                                                    "uuid",
+                                                    "name",
+                                                    "size",
+                                                    "position"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -891,7 +1089,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["uuid", "name"],
+                                                "required": [
+                                                    "uuid",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -907,7 +1108,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["uuid", "name"],
+                                                "required": [
+                                                    "uuid",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -923,7 +1127,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["width", "url"],
+                                                "required": [
+                                                    "width",
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -950,7 +1157,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["uuid", "name"],
+                                            "required": [
+                                                "uuid",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "catalog_uuid": {
@@ -963,12 +1173,17 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -981,9 +1196,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_listmotionmockupmodels",
             "name": "list-motion-mockup-models",
-            "output": ["ActionOutput_dynamic_mockups_listmotionmockupmodels"],
+            "output": [
+                "ActionOutput_dynamic_mockups_listmotionmockupmodels"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_listmotionmockupmodels", "ActionOutput_dynamic_mockups_listmotionmockupmodels"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_listmotionmockupmodels",
+                "ActionOutput_dynamic_mockups_listmotionmockupmodels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1027,14 +1247,21 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["audio_off", "audio_on"],
+                                                        "required": [
+                                                            "audio_off",
+                                                            "audio_on"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "estimated_time_minutes": {
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["seconds", "credits", "estimated_time_minutes"],
+                                                "required": [
+                                                    "seconds",
+                                                    "credits",
+                                                    "estimated_time_minutes"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1052,7 +1279,10 @@
                                             ]
                                         },
                                         "default_aspect_ratio": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "supports_aspect_ratio": {
                                             "type": "boolean"
@@ -1074,7 +1304,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["models", "default_model"],
+                        "required": [
+                            "models",
+                            "default_model"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1087,9 +1320,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_searchmockanythingproducts",
             "name": "search-mock-anything-products",
-            "output": ["ActionOutput_dynamic_mockups_searchmockanythingproducts"],
+            "output": [
+                "ActionOutput_dynamic_mockups_searchmockanythingproducts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_searchmockanythingproducts", "ActionOutput_dynamic_mockups_searchmockanythingproducts"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_searchmockanythingproducts",
+                "ActionOutput_dynamic_mockups_searchmockanythingproducts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1101,7 +1339,9 @@
                                 "description": "Search term for the built-in print-on-demand product catalog. Example: \"shirt\""
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_searchmockanythingproducts": {
@@ -1127,26 +1367,42 @@
                                                         "type": "string"
                                                     },
                                                     "width_in": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "height_in": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "is_reference_size": {
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["label", "width_in", "height_in", "is_reference_size"],
+                                                "required": [
+                                                    "label",
+                                                    "width_in",
+                                                    "height_in",
+                                                    "is_reference_size"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["products"],
+                        "required": [
+                            "products"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1159,9 +1415,14 @@
             "endpoint": null,
             "input": "ActionInput_dynamic_mockups_uploadpsd",
             "name": "upload-psd",
-            "output": ["ActionOutput_dynamic_mockups_uploadpsd"],
+            "output": [
+                "ActionOutput_dynamic_mockups_uploadpsd"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dynamic_mockups_uploadpsd", "ActionOutput_dynamic_mockups_uploadpsd"],
+            "usedModels": [
+                "ActionInput_dynamic_mockups_uploadpsd",
+                "ActionOutput_dynamic_mockups_uploadpsd"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1202,7 +1463,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["psd_file_url"],
+                        "required": [
+                            "psd_file_url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynamic_mockups_uploadpsd": {
@@ -1249,7 +1512,10 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1265,7 +1531,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1281,7 +1550,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1297,12 +1569,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["width", "url"],
+                                    "required": [
+                                        "width",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["psd_uuid", "psd_name"],
+                        "required": [
+                            "psd_uuid",
+                            "psd_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1318,12 +1596,16 @@
             "endpoints": [],
             "input": null,
             "name": "catalogs",
-            "output": ["Catalog"],
+            "output": [
+                "Catalog"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Catalog"],
+            "usedModels": [
+                "Catalog"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1347,7 +1629,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1361,12 +1647,16 @@
             "endpoints": [],
             "input": null,
             "name": "collections",
-            "output": ["Collection"],
+            "output": [
+                "Collection"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Collection"],
+            "usedModels": [
+                "Collection"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1390,7 +1680,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1404,12 +1696,16 @@
             "endpoints": [],
             "input": null,
             "name": "mockups",
-            "output": ["Mockup"],
+            "output": [
+                "Mockup"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Mockup"],
+            "usedModels": [
+                "Mockup"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1438,7 +1734,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid"],
+                                    "required": [
+                                        "uuid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1452,11 +1750,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["uuid"],
+                                "required": [
+                                    "uuid"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "uuid"],
+                        "required": [
+                            "id",
+                            "uuid"
+                        ],
                         "additionalProperties": {}
                     }
                 }

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_createactivity",
             "name": "create-activity",
-            "output": ["ActionOutput_strava_web_createactivity"],
-            "scopes": ["activity:write"],
-            "usedModels": ["ActionInput_strava_web_createactivity", "ActionOutput_strava_web_createactivity"],
+            "output": [
+                "ActionOutput_strava_web_createactivity"
+            ],
+            "scopes": [
+                "activity:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_createactivity",
+                "ActionOutput_strava_web_createactivity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -59,7 +66,12 @@
                                 "maximum": 1
                             }
                         },
-                        "required": ["name", "sport_type", "start_date_local", "elapsed_time"],
+                        "required": [
+                            "name",
+                            "sport_type",
+                            "start_date_local",
+                            "elapsed_time"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_createactivity": {
@@ -74,16 +86,28 @@
                                 "type": "string"
                             },
                             "sport_type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_date_local": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "elapsed_time": {
                                 "anyOf": [
@@ -110,10 +134,16 @@
                                 ]
                             },
                             "distance": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "trainer": {
                                 "anyOf": [
@@ -154,7 +184,10 @@
                                 ]
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -167,9 +200,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_exploresegments",
             "name": "explore-segments",
-            "output": ["ActionOutput_strava_web_exploresegments"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_strava_web_exploresegments", "ActionOutput_strava_web_exploresegments"],
+            "output": [
+                "ActionOutput_strava_web_exploresegments"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_exploresegments",
+                "ActionOutput_strava_web_exploresegments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -183,7 +223,10 @@
                             "activity_type": {
                                 "description": "Optional activity type filter. Accepts run or riding.",
                                 "type": "string",
-                                "enum": ["run", "riding"]
+                                "enum": [
+                                    "run",
+                                    "riding"
+                                ]
                             },
                             "min_cat": {
                                 "description": "Optional minimum climb category filter.",
@@ -194,7 +237,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["bounds"],
+                        "required": [
+                            "bounds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_exploresegments": {
@@ -248,12 +293,16 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["segments"],
+                        "required": [
+                            "segments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -266,9 +315,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getactivitystreams",
             "name": "get-activity-streams",
-            "output": ["ActionOutput_strava_web_getactivitystreams"],
-            "scopes": ["activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_getactivitystreams", "ActionOutput_strava_web_getactivitystreams"],
+            "output": [
+                "ActionOutput_strava_web_getactivitystreams"
+            ],
+            "scopes": [
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getactivitystreams",
+                "ActionOutput_strava_web_getactivitystreams"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -287,7 +343,9 @@
                                 }
                             }
                         },
-                        "required": ["activityId"],
+                        "required": [
+                            "activityId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getactivitystreams": {
@@ -312,7 +370,12 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["data", "series_type", "original_size", "resolution"],
+                            "required": [
+                                "data",
+                                "series_type",
+                                "original_size",
+                                "resolution"
+                            ],
                             "additionalProperties": {}
                         }
                     }
@@ -326,9 +389,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getactivityzones",
             "name": "get-activity-zones",
-            "output": ["ActionOutput_strava_web_getactivityzones"],
-            "scopes": ["activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_getactivityzones", "ActionOutput_strava_web_getactivityzones"],
+            "output": [
+                "ActionOutput_strava_web_getactivityzones"
+            ],
+            "scopes": [
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getactivityzones",
+                "ActionOutput_strava_web_getactivityzones"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -340,7 +410,9 @@
                                 "description": "Activity ID. Example: 19350154255"
                             }
                         },
-                        "required": ["activity_id"],
+                        "required": [
+                            "activity_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getactivityzones": {
@@ -401,9 +473,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getactivity",
             "name": "get-activity",
-            "output": ["ActionOutput_strava_web_getactivity"],
-            "scopes": ["activity:read", "activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_getactivity", "ActionOutput_strava_web_getactivity"],
+            "output": [
+                "ActionOutput_strava_web_getactivity"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getactivity",
+                "ActionOutput_strava_web_getactivity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -419,7 +499,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getactivity": {
@@ -462,7 +544,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -475,9 +559,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getathletestats",
             "name": "get-athlete-stats",
-            "output": ["ActionOutput_strava_web_getathletestats"],
-            "scopes": ["read", "activity:read"],
-            "usedModels": ["ActionInput_strava_web_getathletestats", "ActionOutput_strava_web_getathletestats"],
+            "output": [
+                "ActionOutput_strava_web_getathletestats"
+            ],
+            "scopes": [
+                "read",
+                "activity:read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getathletestats",
+                "ActionOutput_strava_web_getathletestats"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -489,7 +581,9 @@
                                 "description": "The identifier of the athlete. Must be the authenticated athlete. Example: 943379048"
                             }
                         },
-                        "required": ["athlete_id"],
+                        "required": [
+                            "athlete_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getathletestats": {
@@ -730,9 +824,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getathletezones",
             "name": "get-athlete-zones",
-            "output": ["ActionOutput_strava_web_getathletezones"],
-            "scopes": ["profile:read_all"],
-            "usedModels": ["ActionInput_strava_web_getathletezones", "ActionOutput_strava_web_getathletezones"],
+            "output": [
+                "ActionOutput_strava_web_getathletezones"
+            ],
+            "scopes": [
+                "profile:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getathletezones",
+                "ActionOutput_strava_web_getathletezones"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -762,12 +863,18 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["min", "max"],
+                                            "required": [
+                                                "min",
+                                                "max"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["custom_zones", "zones"],
+                                "required": [
+                                    "custom_zones",
+                                    "zones"
+                                ],
                                 "additionalProperties": false
                             },
                             "power": {
@@ -785,16 +892,23 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["min", "max"],
+                                            "required": [
+                                                "min",
+                                                "max"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["zones"],
+                                "required": [
+                                    "zones"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["heart_rate"],
+                        "required": [
+                            "heart_rate"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -807,9 +921,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getathlete",
             "name": "get-athlete",
-            "output": ["ActionOutput_strava_web_getathlete"],
-            "scopes": ["read", "profile:read_all"],
-            "usedModels": ["ActionInput_strava_web_getathlete", "ActionOutput_strava_web_getathlete"],
+            "output": [
+                "ActionOutput_strava_web_getathlete"
+            ],
+            "scopes": [
+                "read",
+                "profile:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getathlete",
+                "ActionOutput_strava_web_getathlete"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -879,7 +1001,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -892,9 +1016,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getclub",
             "name": "get-club",
-            "output": ["ActionOutput_strava_web_getclub"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_strava_web_getclub", "ActionOutput_strava_web_getclub"],
+            "output": [
+                "ActionOutput_strava_web_getclub"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getclub",
+                "ActionOutput_strava_web_getclub"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -906,7 +1037,9 @@
                                 "description": "The identifier of the club. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getclub": {
@@ -976,7 +1109,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -989,9 +1124,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getroutestreams",
             "name": "get-route-streams",
-            "output": ["ActionOutput_strava_web_getroutestreams"],
-            "scopes": ["read", "read_all"],
-            "usedModels": ["ActionInput_strava_web_getroutestreams", "ActionOutput_strava_web_getroutestreams"],
+            "output": [
+                "ActionOutput_strava_web_getroutestreams"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getroutestreams",
+                "ActionOutput_strava_web_getroutestreams"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1000,10 +1143,15 @@
                         "properties": {
                             "route_id": {
                                 "description": "The identifier of the route. Example: \"1\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["route_id"],
+                        "required": [
+                            "route_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getroutestreams": {
@@ -1040,7 +1188,9 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["type"],
+                            "required": [
+                                "type"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -1054,9 +1204,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getroute",
             "name": "get-route",
-            "output": ["ActionOutput_strava_web_getroute"],
-            "scopes": ["read", "read_all"],
-            "usedModels": ["ActionInput_strava_web_getroute", "ActionOutput_strava_web_getroute"],
+            "output": [
+                "ActionOutput_strava_web_getroute"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getroute",
+                "ActionOutput_strava_web_getroute"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1065,10 +1223,15 @@
                         "properties": {
                             "id": {
                                 "description": "Route ID. Example: 1",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getroute": {
@@ -1102,7 +1265,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "type": {
@@ -1124,7 +1289,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "distance", "elevation_gain"],
+                        "required": [
+                            "id",
+                            "name",
+                            "distance",
+                            "elevation_gain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1137,9 +1307,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getsegmentstreams",
             "name": "get-segment-streams",
-            "output": ["ActionOutput_strava_web_getsegmentstreams"],
-            "scopes": ["read", "read_all"],
-            "usedModels": ["ActionInput_strava_web_getsegmentstreams", "ActionOutput_strava_web_getsegmentstreams"],
+            "output": [
+                "ActionOutput_strava_web_getsegmentstreams"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getsegmentstreams",
+                "ActionOutput_strava_web_getsegmentstreams"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1158,11 +1336,22 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["distance", "altitude", "latlng", "time", "velocity_smooth", "heartrate", "cadence", "watts"]
+                                    "enum": [
+                                        "distance",
+                                        "altitude",
+                                        "latlng",
+                                        "time",
+                                        "velocity_smooth",
+                                        "heartrate",
+                                        "cadence",
+                                        "watts"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getsegmentstreams": {
@@ -1185,7 +1374,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             },
                             "altitude": {
@@ -1205,7 +1399,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             },
                             "latlng": {
@@ -1225,7 +1424,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             },
                             "time": {
@@ -1245,7 +1449,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             },
                             "velocity_smooth": {
@@ -1265,7 +1474,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             },
                             "heartrate": {
@@ -1285,7 +1499,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             },
                             "cadence": {
@@ -1305,7 +1524,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             },
                             "watts": {
@@ -1325,7 +1549,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["data", "series_type", "original_size", "resolution"],
+                                "required": [
+                                    "data",
+                                    "series_type",
+                                    "original_size",
+                                    "resolution"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
@@ -1341,9 +1570,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getsegment",
             "name": "get-segment",
-            "output": ["ActionOutput_strava_web_getsegment"],
-            "scopes": ["read", "read_all"],
-            "usedModels": ["ActionInput_strava_web_getsegment", "ActionOutput_strava_web_getsegment"],
+            "output": [
+                "ActionOutput_strava_web_getsegment"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getsegment",
+                "ActionOutput_strava_web_getsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1355,7 +1592,9 @@
                                 "description": "The identifier of the segment. Example: 432873"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getsegment": {
@@ -1419,13 +1658,22 @@
                                 "type": "number"
                             },
                             "city": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "country": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "private": {
                                 "type": "boolean"
@@ -1448,16 +1696,24 @@
                                                 "type": "string"
                                             },
                                             "polyline": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "resource_state": {
                                                 "type": "number"
                                             },
                                             "summary_polyline": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1478,7 +1734,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1491,9 +1750,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_getuploadstatus",
             "name": "get-upload-status",
-            "output": ["ActionOutput_strava_web_getuploadstatus"],
-            "scopes": ["activity:write"],
-            "usedModels": ["ActionInput_strava_web_getuploadstatus", "ActionOutput_strava_web_getuploadstatus"],
+            "output": [
+                "ActionOutput_strava_web_getuploadstatus"
+            ],
+            "scopes": [
+                "activity:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_getuploadstatus",
+                "ActionOutput_strava_web_getuploadstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1505,7 +1771,9 @@
                                 "description": "The identifier of the upload. Example: \"123456789\""
                             }
                         },
-                        "required": ["upload_id"],
+                        "required": [
+                            "upload_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_getuploadstatus": {
@@ -1530,7 +1798,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1543,9 +1813,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listactivitycomments",
             "name": "list-activity-comments",
-            "output": ["ActionOutput_strava_web_listactivitycomments"],
-            "scopes": ["activity:read", "activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_listactivitycomments", "ActionOutput_strava_web_listactivitycomments"],
+            "output": [
+                "ActionOutput_strava_web_listactivitycomments"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listactivitycomments",
+                "ActionOutput_strava_web_listactivitycomments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1569,7 +1847,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_listactivitycomments": {
@@ -1587,7 +1867,10 @@
                                             "type": "number"
                                         },
                                         "post_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "resource_state": {
                                             "type": "number"
@@ -1628,7 +1911,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1636,7 +1921,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1649,9 +1936,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listactivitykudoers",
             "name": "list-activity-kudoers",
-            "output": ["ActionOutput_strava_web_listactivitykudoers"],
-            "scopes": ["activity:read", "activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_listactivitykudoers", "ActionOutput_strava_web_listactivitykudoers"],
+            "output": [
+                "ActionOutput_strava_web_listactivitykudoers"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listactivitykudoers",
+                "ActionOutput_strava_web_listactivitykudoers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1675,7 +1970,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["activity_id"],
+                        "required": [
+                            "activity_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_listactivitykudoers": {
@@ -1723,7 +2020,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1731,7 +2030,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1744,9 +2045,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listactivitylaps",
             "name": "list-activity-laps",
-            "output": ["ActionOutput_strava_web_listactivitylaps"],
-            "scopes": ["activity:read", "activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_listactivitylaps", "ActionOutput_strava_web_listactivitylaps"],
+            "output": [
+                "ActionOutput_strava_web_listactivitylaps"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listactivitylaps",
+                "ActionOutput_strava_web_listactivitylaps"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1760,7 +2069,9 @@
                                 "description": "The identifier of the activity. Example: 19350154255"
                             }
                         },
-                        "required": ["activity_id"],
+                        "required": [
+                            "activity_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_listactivitylaps": {
@@ -1790,7 +2101,9 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "athlete": {
@@ -1803,7 +2116,9 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "elapsed_time": {
@@ -1858,12 +2173,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["laps"],
+                        "required": [
+                            "laps"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1876,9 +2195,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listathleteactivities",
             "name": "list-athlete-activities",
-            "output": ["ActionOutput_strava_web_listathleteactivities"],
-            "scopes": ["activity:read", "activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_listathleteactivities", "ActionOutput_strava_web_listathleteactivities"],
+            "output": [
+                "ActionOutput_strava_web_listathleteactivities"
+            ],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listathleteactivities",
+                "ActionOutput_strava_web_listathleteactivities"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1940,10 +2267,16 @@
                                             "type": "string"
                                         },
                                         "sport_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "workout_type": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "start_date": {
                                             "type": "string"
@@ -1958,13 +2291,22 @@
                                             "type": "number"
                                         },
                                         "location_city": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "location_state": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "location_country": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "achievement_count": {
                                             "type": "number"
@@ -1990,13 +2332,19 @@
                                                             "type": "string"
                                                         },
                                                         "summary_polyline": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "resource_state": {
                                                             "type": "number"
                                                         }
                                                     },
-                                                    "required": ["id", "resource_state"],
+                                                    "required": [
+                                                        "id",
+                                                        "resource_state"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 {
@@ -2023,7 +2371,10 @@
                                             "type": "boolean"
                                         },
                                         "gear_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "start_latlng": {
                                             "type": "array",
@@ -2047,10 +2398,16 @@
                                             "type": "boolean"
                                         },
                                         "average_heartrate": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "max_heartrate": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "heartrate_opt_out": {
                                             "type": "boolean"
@@ -2059,19 +2416,31 @@
                                             "type": "boolean"
                                         },
                                         "elev_high": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "elev_low": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "upload_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "upload_id_str": {
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "from_accepted_tag": {
                                             "type": "boolean"
@@ -2086,7 +2455,10 @@
                                             "type": "boolean"
                                         },
                                         "suffer_score": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2107,7 +2479,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2120,9 +2494,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listathleteclubs",
             "name": "list-athlete-clubs",
-            "output": ["ActionOutput_strava_web_listathleteclubs"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_strava_web_listathleteclubs", "ActionOutput_strava_web_listathleteclubs"],
+            "output": [
+                "ActionOutput_strava_web_listathleteclubs"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listathleteclubs",
+                "ActionOutput_strava_web_listathleteclubs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2199,7 +2580,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2207,7 +2590,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2220,9 +2605,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listathleteroutes",
             "name": "list-athlete-routes",
-            "output": ["ActionOutput_strava_web_listathleteroutes"],
-            "scopes": ["read", "read_all"],
-            "usedModels": ["ActionInput_strava_web_listathleteroutes", "ActionOutput_strava_web_listathleteroutes"],
+            "output": [
+                "ActionOutput_strava_web_listathleteroutes"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listathleteroutes",
+                "ActionOutput_strava_web_listathleteroutes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2246,7 +2639,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_listathleteroutes": {
@@ -2269,7 +2664,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "distance": {
                                             "type": "number"
@@ -2309,7 +2707,13 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id", "id_str", "name", "distance", "elevation_gain"],
+                                    "required": [
+                                        "id",
+                                        "id_str",
+                                        "name",
+                                        "distance",
+                                        "elevation_gain"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2317,7 +2721,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2330,9 +2736,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listclubadmins",
             "name": "list-club-admins",
-            "output": ["ActionOutput_strava_web_listclubadmins"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_strava_web_listclubadmins", "ActionOutput_strava_web_listclubadmins"],
+            "output": [
+                "ActionOutput_strava_web_listclubadmins"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listclubadmins",
+                "ActionOutput_strava_web_listclubadmins"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2356,7 +2769,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_listclubadmins": {
@@ -2410,7 +2825,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "resource_state"],
+                                    "required": [
+                                        "id",
+                                        "resource_state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2418,7 +2836,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2431,9 +2851,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listclubmembers",
             "name": "list-club-members",
-            "output": ["ActionOutput_strava_web_listclubmembers"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_strava_web_listclubmembers", "ActionOutput_strava_web_listclubmembers"],
+            "output": [
+                "ActionOutput_strava_web_listclubmembers"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listclubmembers",
+                "ActionOutput_strava_web_listclubmembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2459,7 +2886,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["club_id"],
+                        "required": [
+                            "club_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_listclubmembers": {
@@ -2496,7 +2925,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2509,9 +2940,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_listsegmentefforts",
             "name": "list-segment-efforts",
-            "output": ["ActionOutput_strava_web_listsegmentefforts"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_strava_web_listsegmentefforts", "ActionOutput_strava_web_listsegmentefforts"],
+            "output": [
+                "ActionOutput_strava_web_listsegmentefforts"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_listsegmentefforts",
+                "ActionOutput_strava_web_listsegmentefforts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2539,7 +2977,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["segment_id"],
+                        "required": [
+                            "segment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_listsegmentefforts": {
@@ -2566,7 +3006,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "athlete": {
@@ -2579,7 +3021,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "elapsed_time": {
@@ -2682,14 +3126,22 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "kom_rank": {
-                                    "type": ["number", "null"]
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ]
                                 },
                                 "pr_rank": {
-                                    "type": ["number", "null"]
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ]
                                 },
                                 "achievements": {
                                     "type": "array",
@@ -2699,7 +3151,9 @@
                                     "type": "boolean"
                                 }
                             },
-                            "required": ["id"],
+                            "required": [
+                                "id"
+                            ],
                             "additionalProperties": {}
                         }
                     }
@@ -2713,9 +3167,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_liststarredsegments",
             "name": "list-starred-segments",
-            "output": ["ActionOutput_strava_web_liststarredsegments"],
-            "scopes": ["read", "read_all"],
-            "usedModels": ["ActionInput_strava_web_liststarredsegments", "ActionOutput_strava_web_liststarredsegments"],
+            "output": [
+                "ActionOutput_strava_web_liststarredsegments"
+            ],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_liststarredsegments",
+                "ActionOutput_strava_web_liststarredsegments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2870,13 +3332,19 @@
                                                     "type": "string"
                                                 },
                                                 "pr_rank": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2884,7 +3352,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2897,9 +3367,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_starsegment",
             "name": "star-segment",
-            "output": ["ActionOutput_strava_web_starsegment"],
-            "scopes": ["profile:write"],
-            "usedModels": ["ActionInput_strava_web_starsegment", "ActionOutput_strava_web_starsegment"],
+            "output": [
+                "ActionOutput_strava_web_starsegment"
+            ],
+            "scopes": [
+                "profile:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_starsegment",
+                "ActionOutput_strava_web_starsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2915,7 +3392,10 @@
                                 "description": "If true, star the segment; if false, unstar the segment."
                             }
                         },
-                        "required": ["id", "starred"],
+                        "required": [
+                            "id",
+                            "starred"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_starsegment": {
@@ -3047,13 +3527,22 @@
                                         "type": "object",
                                         "properties": {
                                             "pr_elapsed_time": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "pr_date": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "effort_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3069,13 +3558,22 @@
                                         "type": "object",
                                         "properties": {
                                             "pr_elapsed_time": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "pr_date": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "effort_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3089,7 +3587,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3102,9 +3603,17 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_updateactivity",
             "name": "update-activity",
-            "output": ["ActionOutput_strava_web_updateactivity"],
-            "scopes": ["activity:write", "activity:read_all"],
-            "usedModels": ["ActionInput_strava_web_updateactivity", "ActionOutput_strava_web_updateactivity"],
+            "output": [
+                "ActionOutput_strava_web_updateactivity"
+            ],
+            "scopes": [
+                "activity:write",
+                "activity:read_all"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_updateactivity",
+                "ActionOutput_strava_web_updateactivity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3140,7 +3649,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_updateactivity": {
@@ -3174,7 +3685,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3187,9 +3700,16 @@
             "endpoint": null,
             "input": "ActionInput_strava_web_updateathlete",
             "name": "update-athlete",
-            "output": ["ActionOutput_strava_web_updateathlete"],
-            "scopes": ["profile:write"],
-            "usedModels": ["ActionInput_strava_web_updateathlete", "ActionOutput_strava_web_updateathlete"],
+            "output": [
+                "ActionOutput_strava_web_updateathlete"
+            ],
+            "scopes": [
+                "profile:write"
+            ],
+            "usedModels": [
+                "ActionInput_strava_web_updateathlete",
+                "ActionOutput_strava_web_updateathlete"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3201,7 +3721,9 @@
                                 "description": "The weight of the athlete in kilograms. Example: 70"
                             }
                         },
-                        "required": ["weight"],
+                        "required": [
+                            "weight"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_strava_web_updateathlete": {
@@ -3277,7 +3799,14 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "resource_state", "firstname", "lastname", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "resource_state",
+                            "firstname",
+                            "lastname",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3293,12 +3822,19 @@
             "endpoints": [],
             "input": null,
             "name": "activities",
-            "output": ["Activity"],
+            "output": [
+                "Activity"
+            ],
             "runs": "every hour",
-            "scopes": ["activity:read", "activity:read_all"],
+            "scopes": [
+                "activity:read",
+                "activity:read_all"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Activity"],
+            "usedModels": [
+                "Activity"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3403,12 +3939,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3417,12 +3957,18 @@
             "endpoints": [],
             "input": null,
             "name": "club-activities",
-            "output": ["ClubActivity"],
+            "output": [
+                "ClubActivity"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ClubActivity"],
+            "usedModels": [
+                "ClubActivity"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3455,7 +4001,10 @@
                                 "type": "string"
                             },
                             "workout_type": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "athlete": {
                                 "type": "object",
@@ -3467,7 +4016,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3481,12 +4032,18 @@
             "endpoints": [],
             "input": null,
             "name": "clubs",
-            "output": ["Club"],
+            "output": [
+                "Club"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Club"],
+            "usedModels": [
+                "Club"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3547,12 +4104,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3561,12 +4122,19 @@
             "endpoints": [],
             "input": null,
             "name": "gear",
-            "output": ["Gear"],
+            "output": [
+                "Gear"
+            ],
             "runs": "every hour",
-            "scopes": ["read", "profile:read_all"],
+            "scopes": [
+                "read",
+                "profile:read_all"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Gear"],
+            "usedModels": [
+                "Gear"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3593,7 +4161,10 @@
                                 "type": "string"
                             },
                             "frame_type": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "description": {
                                 "type": "string"
@@ -3602,12 +4173,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3616,12 +4191,19 @@
             "endpoints": [],
             "input": null,
             "name": "routes",
-            "output": ["Route"],
+            "output": [
+                "Route"
+            ],
             "runs": "every hour",
-            "scopes": ["read", "read_all"],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Route"],
+            "usedModels": [
+                "Route"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3681,12 +4263,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3695,12 +4281,19 @@
             "endpoints": [],
             "input": null,
             "name": "starred-segments",
-            "output": ["StarredSegment"],
+            "output": [
+                "StarredSegment"
+            ],
             "runs": "every hour",
-            "scopes": ["read", "read_all"],
+            "scopes": [
+                "read",
+                "read_all"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StarredSegment"],
+            "usedModels": [
+                "StarredSegment"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3814,12 +4407,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

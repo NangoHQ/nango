@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_bill_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_bill_createuser"],
+            "output": [
+                "ActionOutput_bill_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_bill_createuser", "ActionOutput_bill_createuser"],
+            "usedModels": [
+                "ActionInput_bill_createuser",
+                "ActionOutput_bill_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -32,7 +37,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bill_createuser": {
@@ -51,7 +60,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -64,9 +78,14 @@
             "endpoint": null,
             "input": "ActionInput_bill_disableuser",
             "name": "disable-user",
-            "output": ["ActionOutput_bill_disableuser"],
+            "output": [
+                "ActionOutput_bill_disableuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_bill_disableuser", "ActionOutput_bill_disableuser"],
+            "usedModels": [
+                "ActionInput_bill_disableuser",
+                "ActionOutput_bill_disableuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -77,7 +96,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bill_disableuser": {
@@ -87,7 +108,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -109,12 +132,17 @@
             ],
             "input": "SyncMetadata_bill_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_bill_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_bill_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -135,7 +163,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_bill_users": {
@@ -145,7 +178,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

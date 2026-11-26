@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_createwithdrawalrecipient",
             "name": "create-withdrawal-recipient",
-            "output": ["ActionOutput_agentcard_createwithdrawalrecipient"],
+            "output": [
+                "ActionOutput_agentcard_createwithdrawalrecipient"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_createwithdrawalrecipient", "ActionOutput_agentcard_createwithdrawalrecipient"],
+            "usedModels": [
+                "ActionInput_agentcard_createwithdrawalrecipient",
+                "ActionOutput_agentcard_createwithdrawalrecipient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -22,7 +27,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["ach", "international_wire"],
+                                "enum": [
+                                    "ach",
+                                    "international_wire"
+                                ],
                                 "description": "The recipient type. Either 'ach' or 'international_wire'."
                             },
                             "beneficiary_name": {
@@ -54,7 +62,10 @@
                             "account_type": {
                                 "description": "ACH only. Either 'checking' or 'savings'.",
                                 "type": "string",
-                                "enum": ["checking", "savings"]
+                                "enum": [
+                                    "checking",
+                                    "savings"
+                                ]
                             },
                             "iban": {
                                 "description": "International wire: the IBAN (spaces ok, normalized on save).",
@@ -90,7 +101,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["user_id", "type", "beneficiary_name", "country_code"],
+                        "required": [
+                            "user_id",
+                            "type",
+                            "beneficiary_name",
+                            "country_code"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_createwithdrawalrecipient": {
@@ -98,7 +114,9 @@
                         "properties": {
                             "object": {
                                 "type": "string",
-                                "enum": ["withdrawal_recipient"]
+                                "enum": [
+                                    "withdrawal_recipient"
+                                ]
                             },
                             "user_id": {
                                 "type": "string"
@@ -108,7 +126,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["ach", "international_wire"]
+                                "enum": [
+                                    "ach",
+                                    "international_wire"
+                                ]
                             },
                             "nickname": {
                                 "type": "string"
@@ -133,7 +154,10 @@
                             },
                             "account_type": {
                                 "type": "string",
-                                "enum": ["checking", "savings"]
+                                "enum": [
+                                    "checking",
+                                    "savings"
+                                ]
                             },
                             "iban_last4": {
                                 "type": "string"
@@ -145,7 +169,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "user_id", "id", "type", "beneficiary_name", "country_code", "created_at"],
+                        "required": [
+                            "object",
+                            "user_id",
+                            "id",
+                            "type",
+                            "beneficiary_name",
+                            "country_code",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -158,9 +190,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_deletewithdrawalrecipient",
             "name": "delete-withdrawal-recipient",
-            "output": ["ActionOutput_agentcard_deletewithdrawalrecipient"],
+            "output": [
+                "ActionOutput_agentcard_deletewithdrawalrecipient"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_deletewithdrawalrecipient", "ActionOutput_agentcard_deletewithdrawalrecipient"],
+            "usedModels": [
+                "ActionInput_agentcard_deletewithdrawalrecipient",
+                "ActionOutput_agentcard_deletewithdrawalrecipient"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -176,7 +213,10 @@
                                 "description": "The recipient id. Example: \"wrec_2deeccd030ecff23b947b1cf\""
                             }
                         },
-                        "required": ["user_id", "recipient_id"],
+                        "required": [
+                            "user_id",
+                            "recipient_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_deletewithdrawalrecipient": {
@@ -186,7 +226,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["removed"],
+                        "required": [
+                            "removed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -199,9 +241,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_getattachmentstatus",
             "name": "get-attachment-status",
-            "output": ["ActionOutput_agentcard_getattachmentstatus"],
+            "output": [
+                "ActionOutput_agentcard_getattachmentstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_getattachmentstatus", "ActionOutput_agentcard_getattachmentstatus"],
+            "usedModels": [
+                "ActionInput_agentcard_getattachmentstatus",
+                "ActionOutput_agentcard_getattachmentstatus"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -213,7 +260,9 @@
                                 "description": "Connected user ID. Example: \"cmsf6au26004ijl04v86y15yk\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_getattachmentstatus": {
@@ -262,7 +311,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "status"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -275,9 +329,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_getkycstatus",
             "name": "get-kyc-status",
-            "output": ["ActionOutput_agentcard_getkycstatus"],
+            "output": [
+                "ActionOutput_agentcard_getkycstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_getkycstatus", "ActionOutput_agentcard_getkycstatus"],
+            "usedModels": [
+                "ActionInput_agentcard_getkycstatus",
+                "ActionOutput_agentcard_getkycstatus"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -289,7 +348,9 @@
                                 "description": "The connected user ID. Example: \"cmseows7p000fk604g3qee8bs\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_getkycstatus": {
@@ -306,7 +367,9 @@
                                 }
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -319,9 +382,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_introspectcredential",
             "name": "introspect-credential",
-            "output": ["ActionOutput_agentcard_introspectcredential"],
+            "output": [
+                "ActionOutput_agentcard_introspectcredential"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_introspectcredential", "ActionOutput_agentcard_introspectcredential"],
+            "usedModels": [
+                "ActionInput_agentcard_introspectcredential",
+                "ActionOutput_agentcard_introspectcredential"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -341,7 +409,10 @@
                             },
                             "mode": {
                                 "type": "string",
-                                "enum": ["sandbox", "live"]
+                                "enum": [
+                                    "sandbox",
+                                    "live"
+                                ]
                             },
                             "test_mode": {
                                 "type": "boolean"
@@ -350,7 +421,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "organization_id", "mode", "test_mode", "plan"],
+                        "required": [
+                            "object",
+                            "organization_id",
+                            "mode",
+                            "test_mode",
+                            "plan"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -363,9 +440,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_listwithdrawalrecipients",
             "name": "list-withdrawal-recipients",
-            "output": ["ActionOutput_agentcard_listwithdrawalrecipients"],
+            "output": [
+                "ActionOutput_agentcard_listwithdrawalrecipients"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_listwithdrawalrecipients", "ActionOutput_agentcard_listwithdrawalrecipients"],
+            "usedModels": [
+                "ActionInput_agentcard_listwithdrawalrecipients",
+                "ActionOutput_agentcard_listwithdrawalrecipients"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -376,7 +458,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_listwithdrawalrecipients": {
@@ -403,10 +487,16 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["ach", "international_wire"]
+                                            "enum": [
+                                                "ach",
+                                                "international_wire"
+                                            ]
                                         },
                                         "nickname": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "beneficiary_name": {
                                             "type": "string"
@@ -415,22 +505,37 @@
                                             "type": "string"
                                         },
                                         "currency": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "bank_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "account_number_last4": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "routing_number": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "account_type": {
                                             "anyOf": [
                                                 {
                                                     "type": "string",
-                                                    "enum": ["checking", "savings"]
+                                                    "enum": [
+                                                        "checking",
+                                                        "savings"
+                                                    ]
                                                 },
                                                 {
                                                     "type": "null"
@@ -438,10 +543,16 @@
                                             ]
                                         },
                                         "iban_last4": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "swift_code": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -468,7 +579,10 @@
                                 }
                             }
                         },
-                        "required": ["object", "data"],
+                        "required": [
+                            "object",
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -481,9 +595,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_listwithdrawals",
             "name": "list-withdrawals",
-            "output": ["ActionOutput_agentcard_listwithdrawals"],
+            "output": [
+                "ActionOutput_agentcard_listwithdrawals"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_listwithdrawals", "ActionOutput_agentcard_listwithdrawals"],
+            "usedModels": [
+                "ActionInput_agentcard_listwithdrawals",
+                "ActionOutput_agentcard_listwithdrawals"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -495,7 +614,9 @@
                                 "description": "The connected user's id. Example: \"usr_123\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_listwithdrawals": {
@@ -514,11 +635,19 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["requested", "processing", "completed", "rejected"]
+                                            "enum": [
+                                                "requested",
+                                                "processing",
+                                                "completed",
+                                                "rejected"
+                                            ]
                                         },
                                         "rail": {
                                             "type": "string",
-                                            "enum": ["bank", "address"]
+                                            "enum": [
+                                                "bank",
+                                                "address"
+                                            ]
                                         },
                                         "amount_cents": {
                                             "type": "integer",
@@ -552,10 +681,16 @@
                                                 },
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["ach", "international_wire"]
+                                                    "enum": [
+                                                        "ach",
+                                                        "international_wire"
+                                                    ]
                                                 },
                                                 "nickname": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "beneficiary_name": {
                                                     "type": "string"
@@ -564,22 +699,37 @@
                                                     "type": "string"
                                                 },
                                                 "currency": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "bank_name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "account_number_last4": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "routing_number": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "account_type": {
                                                     "anyOf": [
                                                         {
                                                             "type": "string",
-                                                            "enum": ["checking", "savings"]
+                                                            "enum": [
+                                                                "checking",
+                                                                "savings"
+                                                            ]
                                                         },
                                                         {
                                                             "type": "null"
@@ -587,25 +737,48 @@
                                                     ]
                                                 },
                                                 "iban_last4": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "swift_code": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "created_at": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["object", "user_id", "id", "type", "beneficiary_name", "country_code", "created_at"],
+                                            "required": [
+                                                "object",
+                                                "user_id",
+                                                "id",
+                                                "type",
+                                                "beneficiary_name",
+                                                "country_code",
+                                                "created_at"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "user_id", "status", "rail", "amount_cents", "created_at"],
+                                    "required": [
+                                        "id",
+                                        "user_id",
+                                        "status",
+                                        "rail",
+                                        "amount_cents",
+                                        "created_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["withdrawals"],
+                        "required": [
+                            "withdrawals"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -618,9 +791,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_recordconsent",
             "name": "record-consent",
-            "output": ["ActionOutput_agentcard_recordconsent"],
+            "output": [
+                "ActionOutput_agentcard_recordconsent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_recordconsent", "ActionOutput_agentcard_recordconsent"],
+            "usedModels": [
+                "ActionInput_agentcard_recordconsent",
+                "ActionOutput_agentcard_recordconsent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -637,7 +815,9 @@
                                 "maxLength": 64
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_recordconsent": {
@@ -660,7 +840,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "created_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -673,9 +858,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_refreshconnection",
             "name": "refresh-connection",
-            "output": ["ActionOutput_agentcard_refreshconnection"],
+            "output": [
+                "ActionOutput_agentcard_refreshconnection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_refreshconnection", "ActionOutput_agentcard_refreshconnection"],
+            "usedModels": [
+                "ActionInput_agentcard_refreshconnection",
+                "ActionOutput_agentcard_refreshconnection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -687,7 +877,9 @@
                                 "description": "The refresh token from the most recent verify or refresh call. Example: \"rct_4d5e6f…\""
                             }
                         },
-                        "required": ["refresh_token"],
+                        "required": [
+                            "refresh_token"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_refreshconnection": {
@@ -716,7 +908,13 @@
                                 "description": "Seconds until the access token expires (3600 = one hour)."
                             }
                         },
-                        "required": ["object", "access_token", "refresh_token", "token_type", "expires_in"],
+                        "required": [
+                            "object",
+                            "access_token",
+                            "refresh_token",
+                            "token_type",
+                            "expires_in"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -729,9 +927,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_simulatekycoutcome",
             "name": "simulate-kyc-outcome",
-            "output": ["ActionOutput_agentcard_simulatekycoutcome"],
+            "output": [
+                "ActionOutput_agentcard_simulatekycoutcome"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_simulatekycoutcome", "ActionOutput_agentcard_simulatekycoutcome"],
+            "usedModels": [
+                "ActionInput_agentcard_simulatekycoutcome",
+                "ActionOutput_agentcard_simulatekycoutcome"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -744,7 +947,11 @@
                             },
                             "outcome": {
                                 "type": "string",
-                                "enum": ["approved", "rejected", "requires_input"],
+                                "enum": [
+                                    "approved",
+                                    "rejected",
+                                    "requires_input"
+                                ],
                                 "description": "The verdict to apply."
                             },
                             "reason": {
@@ -752,7 +959,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id", "outcome"],
+                        "required": [
+                            "user_id",
+                            "outcome"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_simulatekycoutcome": {
@@ -792,7 +1002,9 @@
                                 }
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -805,9 +1017,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_startcardattachment",
             "name": "start-card-attachment",
-            "output": ["ActionOutput_agentcard_startcardattachment"],
+            "output": [
+                "ActionOutput_agentcard_startcardattachment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_startcardattachment", "ActionOutput_agentcard_startcardattachment"],
+            "usedModels": [
+                "ActionInput_agentcard_startcardattachment",
+                "ActionOutput_agentcard_startcardattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -821,10 +1038,15 @@
                             "display": {
                                 "description": "Display mode for the attachment flow. Defaults to \"hosted\".",
                                 "type": "string",
-                                "enum": ["hosted", "headless"]
+                                "enum": [
+                                    "hosted",
+                                    "headless"
+                                ]
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_startcardattachment": {
@@ -881,7 +1103,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "status"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -894,9 +1121,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_startconnect",
             "name": "start-connect",
-            "output": ["ActionOutput_agentcard_startconnect"],
+            "output": [
+                "ActionOutput_agentcard_startconnect"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_startconnect", "ActionOutput_agentcard_startconnect"],
+            "usedModels": [
+                "ActionInput_agentcard_startconnect",
+                "ActionOutput_agentcard_startconnect"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -940,7 +1172,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "channel", "expires_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "channel",
+                            "expires_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -953,9 +1190,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_startphoneverification",
             "name": "start-phone-verification",
-            "output": ["ActionOutput_agentcard_startphoneverification"],
+            "output": [
+                "ActionOutput_agentcard_startphoneverification"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_startphoneverification", "ActionOutput_agentcard_startphoneverification"],
+            "usedModels": [
+                "ActionInput_agentcard_startphoneverification",
+                "ActionOutput_agentcard_startphoneverification"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -973,7 +1215,9 @@
                                 "pattern": "^\\+[1-9]\\d{6,14}$"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_startphoneverification": {
@@ -995,7 +1239,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["object", "status"],
+                        "required": [
+                            "object",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1008,9 +1255,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_submitkycinformation",
             "name": "submit-kyc-information",
-            "output": ["ActionOutput_agentcard_submitkycinformation"],
+            "output": [
+                "ActionOutput_agentcard_submitkycinformation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_submitkycinformation", "ActionOutput_agentcard_submitkycinformation"],
+            "usedModels": [
+                "ActionInput_agentcard_submitkycinformation",
+                "ActionOutput_agentcard_submitkycinformation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1061,7 +1313,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_submitkycinformation": {
@@ -1101,7 +1355,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "status"],
+                        "required": [
+                            "object",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1114,9 +1371,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_verifyconnect",
             "name": "verify-connect",
-            "output": ["ActionOutput_agentcard_verifyconnect"],
+            "output": [
+                "ActionOutput_agentcard_verifyconnect"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_verifyconnect", "ActionOutput_agentcard_verifyconnect"],
+            "usedModels": [
+                "ActionInput_agentcard_verifyconnect",
+                "ActionOutput_agentcard_verifyconnect"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1132,7 +1394,10 @@
                                 "description": "The one-time code the user entered. Always \"111111\" in sandbox."
                             }
                         },
-                        "required": ["connect_id", "code"],
+                        "required": [
+                            "connect_id",
+                            "code"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_verifyconnect": {
@@ -1162,17 +1427,32 @@
                                         "type": "string"
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "phone": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["object", "access_token", "refresh_token", "token_type", "expires_in", "user"],
+                        "required": [
+                            "object",
+                            "access_token",
+                            "refresh_token",
+                            "token_type",
+                            "expires_in",
+                            "user"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1185,9 +1465,14 @@
             "endpoint": null,
             "input": "ActionInput_agentcard_verifyphonecode",
             "name": "verify-phone-code",
-            "output": ["ActionOutput_agentcard_verifyphonecode"],
+            "output": [
+                "ActionOutput_agentcard_verifyphonecode"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_agentcard_verifyphonecode", "ActionOutput_agentcard_verifyphonecode"],
+            "usedModels": [
+                "ActionInput_agentcard_verifyphonecode",
+                "ActionOutput_agentcard_verifyphonecode"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1209,7 +1494,10 @@
                                 "pattern": "^\\+[1-9]\\d{6,14}$"
                             }
                         },
-                        "required": ["user_id", "code"],
+                        "required": [
+                            "user_id",
+                            "code"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_agentcard_verifyphonecode": {
@@ -1221,7 +1509,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["sent", "already_verified", "verified"]
+                                "enum": [
+                                    "sent",
+                                    "already_verified",
+                                    "verified"
+                                ]
                             },
                             "channel": {
                                 "type": "string"
@@ -1233,7 +1525,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["object", "status"],
+                        "required": [
+                            "object",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }

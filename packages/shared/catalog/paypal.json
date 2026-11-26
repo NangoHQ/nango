@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_activatesubscription",
             "name": "activate-subscription",
-            "output": ["ActionOutput_paypal_activatesubscription"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_activatesubscription", "ActionOutput_paypal_activatesubscription"],
+            "output": [
+                "ActionOutput_paypal_activatesubscription"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_activatesubscription",
+                "ActionOutput_paypal_activatesubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -27,7 +34,10 @@
                                 "description": "The reason for reactivating the subscription. Example: \"Reactivating the subscription\""
                             }
                         },
-                        "required": ["subscription_id", "reason"],
+                        "required": [
+                            "subscription_id",
+                            "reason"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_activatesubscription": {
@@ -41,7 +51,10 @@
                             },
                             "error": {}
                         },
-                        "required": ["success", "subscription_id"],
+                        "required": [
+                            "success",
+                            "subscription_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -54,9 +67,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_addordertracking",
             "name": "add-order-tracking",
-            "output": ["ActionOutput_paypal_addordertracking"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_addordertracking", "ActionOutput_paypal_addordertracking"],
+            "output": [
+                "ActionOutput_paypal_addordertracking"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_addordertracking",
+                "ActionOutput_paypal_addordertracking"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -89,7 +109,13 @@
                                 "pattern": "^[\\x21-\\x7E]{1,108}$"
                             }
                         },
-                        "required": ["order_id", "capture_id", "tracking_number", "carrier", "status"],
+                        "required": [
+                            "order_id",
+                            "capture_id",
+                            "tracking_number",
+                            "carrier",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_addordertracking": {
@@ -133,17 +159,25 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["href", "rel", "method"],
+                                                "required": [
+                                                    "href",
+                                                    "rel",
+                                                    "method"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -156,9 +190,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_authorizeorder",
             "name": "authorize-order",
-            "output": ["ActionOutput_paypal_authorizeorder"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_authorizeorder", "ActionOutput_paypal_authorizeorder"],
+            "output": [
+                "ActionOutput_paypal_authorizeorder"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_authorizeorder",
+                "ActionOutput_paypal_authorizeorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -175,7 +216,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,108}$"
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_authorizeorder": {
@@ -222,11 +265,17 @@
                                                                         "type": "string"
                                                                     }
                                                                 },
-                                                                "required": ["currency_code", "value"],
+                                                                "required": [
+                                                                    "currency_code",
+                                                                    "value"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         },
-                                                        "required": ["id", "status"],
+                                                        "required": [
+                                                            "id",
+                                                            "status"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
@@ -252,12 +301,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel"],
+                                    "required": [
+                                        "href",
+                                        "rel"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -270,9 +325,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_cancelinvoice",
             "name": "cancel-invoice",
-            "output": ["ActionOutput_paypal_cancelinvoice"],
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
-            "usedModels": ["ActionInput_paypal_cancelinvoice", "ActionOutput_paypal_cancelinvoice"],
+            "output": [
+                "ActionOutput_paypal_cancelinvoice"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_cancelinvoice",
+                "ActionOutput_paypal_cancelinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -300,7 +362,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["invoice_id"],
+                        "required": [
+                            "invoice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_cancelinvoice": {
@@ -318,9 +382,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_captureauthorizedpayment",
             "name": "capture-authorized-payment",
-            "output": ["ActionOutput_paypal_captureauthorizedpayment"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment/authcapture"],
-            "usedModels": ["ActionInput_paypal_captureauthorizedpayment", "ActionOutput_paypal_captureauthorizedpayment"],
+            "output": [
+                "ActionOutput_paypal_captureauthorizedpayment"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment/authcapture"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_captureauthorizedpayment",
+                "ActionOutput_paypal_captureauthorizedpayment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -345,7 +416,10 @@
                                         "description": "The amount value. Example: \"10.00\""
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "invoice_id": {
@@ -366,7 +440,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,10000}$"
                             }
                         },
-                        "required": ["authorization_id"],
+                        "required": [
+                            "authorization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_captureauthorizedpayment": {
@@ -391,7 +467,10 @@
                                         "description": "The amount value. Example: \"10.00\""
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "final_capture": {
@@ -424,7 +503,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "status", "amount"],
+                        "required": [
+                            "id",
+                            "status",
+                            "amount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -437,9 +520,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_captureorder",
             "name": "capture-order",
-            "output": ["ActionOutput_paypal_captureorder"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_captureorder", "ActionOutput_paypal_captureorder"],
+            "output": [
+                "ActionOutput_paypal_captureorder"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_captureorder",
+                "ActionOutput_paypal_captureorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -456,7 +546,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,108}$"
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_captureorder": {
@@ -555,12 +647,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel"],
+                                    "required": [
+                                        "href",
+                                        "rel"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -573,9 +671,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_confirmorderpaymentsource",
             "name": "confirm-order-payment-source",
-            "output": ["ActionOutput_paypal_confirmorderpaymentsource"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_confirmorderpaymentsource", "ActionOutput_paypal_confirmorderpaymentsource"],
+            "output": [
+                "ActionOutput_paypal_confirmorderpaymentsource"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_confirmorderpaymentsource",
+                "ActionOutput_paypal_confirmorderpaymentsource"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -608,7 +713,10 @@
                                 "pattern": "^[\\x21-\\x7E]{1,108}$"
                             }
                         },
-                        "required": ["id", "payment_source"],
+                        "required": [
+                            "id",
+                            "payment_source"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_confirmorderpaymentsource": {
@@ -655,7 +763,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -673,7 +785,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -686,9 +801,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_createinvoice",
             "name": "create-invoice",
-            "output": ["ActionOutput_paypal_createinvoice"],
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
-            "usedModels": ["ActionInput_paypal_createinvoice", "ActionOutput_paypal_createinvoice"],
+            "output": [
+                "ActionOutput_paypal_createinvoice"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_createinvoice",
+                "ActionOutput_paypal_createinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -736,7 +858,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code"],
+                                "required": [
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false
                             },
                             "invoicer": {
@@ -796,7 +920,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["country_code", "national_number"],
+                                            "required": [
+                                                "country_code",
+                                                "national_number"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -877,7 +1004,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["country_code", "national_number"],
+                                                        "required": [
+                                                            "country_code",
+                                                            "national_number"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -964,7 +1094,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["currency_code", "value"],
+                                            "required": [
+                                                "currency_code",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "tax": {
@@ -987,7 +1120,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "tax_note": {
@@ -1013,7 +1149,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1023,7 +1162,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "quantity", "unit_amount"],
+                                    "required": [
+                                        "name",
+                                        "quantity",
+                                        "unit_amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1047,7 +1190,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency_code", "value"],
+                                                "required": [
+                                                    "currency_code",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1074,7 +1220,10 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["detail", "items"],
+                        "required": [
+                            "detail",
+                            "items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_createinvoice": {
@@ -1208,7 +1357,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["country_code", "national_number"],
+                                                        "required": [
+                                                            "country_code",
+                                                            "national_number"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -1289,7 +1441,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["currency_code", "value"],
+                                            "required": [
+                                                "currency_code",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "tax": {
@@ -1312,7 +1467,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "tax_note": {
@@ -1338,7 +1496,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1348,7 +1509,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "quantity", "unit_amount"],
+                                    "required": [
+                                        "name",
+                                        "quantity",
+                                        "unit_amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1375,7 +1540,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "links": {
@@ -1393,12 +1561,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1411,9 +1586,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_createorder",
             "name": "create-order",
-            "output": ["ActionOutput_paypal_createorder"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_createorder", "ActionOutput_paypal_createorder"],
+            "output": [
+                "ActionOutput_paypal_createorder"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_createorder",
+                "ActionOutput_paypal_createorder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1422,7 +1604,10 @@
                         "properties": {
                             "intent": {
                                 "type": "string",
-                                "enum": ["CAPTURE", "AUTHORIZE"],
+                                "enum": [
+                                    "CAPTURE",
+                                    "AUTHORIZE"
+                                ],
                                 "description": "The intent to capture or authorize payment."
                             },
                             "purchase_units": {
@@ -1451,7 +1636,10 @@
                                                     "description": "Amount value. Example: \"100.00\""
                                                 }
                                             },
-                                            "required": ["currency_code", "value"],
+                                            "required": [
+                                                "currency_code",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "custom_id": {
@@ -1478,7 +1666,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["amount"],
+                                    "required": [
+                                        "amount"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "An array of purchase units."
@@ -1532,7 +1722,10 @@
                                 "pattern": "^[\\x21-\\x7E]{1,108}$"
                             }
                         },
-                        "required": ["intent", "purchase_units"],
+                        "required": [
+                            "intent",
+                            "purchase_units"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_createorder": {
@@ -1601,12 +1794,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1619,9 +1819,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_createplan",
             "name": "create-plan",
-            "output": ["ActionOutput_paypal_createplan"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_createplan", "ActionOutput_paypal_createplan"],
+            "output": [
+                "ActionOutput_paypal_createplan"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_createplan",
+                "ActionOutput_paypal_createplan"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1649,7 +1856,11 @@
                             "status": {
                                 "description": "The initial status of the plan.",
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE", "CREATED"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE",
+                                    "CREATED"
+                                ]
                             },
                             "billing_cycles": {
                                 "minItems": 1,
@@ -1663,7 +1874,12 @@
                                             "properties": {
                                                 "interval_unit": {
                                                     "type": "string",
-                                                    "enum": ["DAY", "WEEK", "MONTH", "YEAR"],
+                                                    "enum": [
+                                                        "DAY",
+                                                        "WEEK",
+                                                        "MONTH",
+                                                        "YEAR"
+                                                    ],
                                                     "description": "The interval at which the subscription is billed."
                                                 },
                                                 "interval_count": {
@@ -1674,13 +1890,19 @@
                                                     "maximum": 365
                                                 }
                                             },
-                                            "required": ["interval_unit", "interval_count"],
+                                            "required": [
+                                                "interval_unit",
+                                                "interval_count"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "The frequency details for this billing cycle."
                                         },
                                         "tenure_type": {
                                             "type": "string",
-                                            "enum": ["REGULAR", "TRIAL"],
+                                            "enum": [
+                                                "REGULAR",
+                                                "TRIAL"
+                                            ],
                                             "description": "The tenure type of the billing cycle."
                                         },
                                         "sequence": {
@@ -1713,13 +1935,19 @@
                                                             "description": "The amount value. Example: \"10.00\""
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "pricing_model": {
                                                     "description": "The pricing model for tiered plans.",
                                                     "type": "string",
-                                                    "enum": ["VOLUME", "TIERED"]
+                                                    "enum": [
+                                                        "VOLUME",
+                                                        "TIERED"
+                                                    ]
                                                 },
                                                 "tiers": {
                                                     "description": "An array of pricing tiers for volume/tiered plans.",
@@ -1748,12 +1976,18 @@
                                                                         "description": "The amount value. Example: \"10.00\""
                                                                     }
                                                                 },
-                                                                "required": ["currency_code", "value"],
+                                                                "required": [
+                                                                    "currency_code",
+                                                                    "value"
+                                                                ],
                                                                 "additionalProperties": false,
                                                                 "description": "The pricing amount for the tier."
                                                             }
                                                         },
-                                                        "required": ["starting_quantity", "amount"],
+                                                        "required": [
+                                                            "starting_quantity",
+                                                            "amount"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
@@ -1761,7 +1995,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["frequency", "tenure_type", "sequence"],
+                                    "required": [
+                                        "frequency",
+                                        "tenure_type",
+                                        "sequence"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "An array of billing cycles for trial and regular billing. Exactly one REGULAR cycle and at most two TRIAL cycles."
@@ -1788,13 +2026,19 @@
                                                 "description": "The amount value. Example: \"10.00\""
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "setup_fee_failure_action": {
                                         "description": "The action if the initial setup fee payment fails.",
                                         "type": "string",
-                                        "enum": ["CONTINUE", "CANCEL"]
+                                        "enum": [
+                                            "CONTINUE",
+                                            "CANCEL"
+                                        ]
                                     },
                                     "payment_failure_threshold": {
                                         "description": "The maximum number of payment failures before suspension.",
@@ -1818,7 +2062,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["percentage"],
+                                "required": [
+                                    "percentage"
+                                ],
                                 "additionalProperties": false
                             },
                             "quantity_supported": {
@@ -1831,7 +2077,11 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["product_id", "name", "billing_cycles"],
+                        "required": [
+                            "product_id",
+                            "name",
+                            "billing_cycles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_createplan": {
@@ -1856,7 +2106,11 @@
                             "status": {
                                 "description": "The plan status.",
                                 "type": "string",
-                                "enum": ["CREATED", "INACTIVE", "ACTIVE"]
+                                "enum": [
+                                    "CREATED",
+                                    "INACTIVE",
+                                    "ACTIVE"
+                                ]
                             },
                             "billing_cycles": {
                                 "type": "array",
@@ -1875,7 +2129,10 @@
                                                     "description": "The interval count."
                                                 }
                                             },
-                                            "required": ["interval_unit", "interval_count"],
+                                            "required": [
+                                                "interval_unit",
+                                                "interval_count"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "tenure_type": {
@@ -1905,7 +2162,10 @@
                                                             "description": "The amount value."
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "pricing_model": {
@@ -1933,11 +2193,17 @@
                                                                         "type": "string"
                                                                     }
                                                                 },
-                                                                "required": ["currency_code", "value"],
+                                                                "required": [
+                                                                    "currency_code",
+                                                                    "value"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         },
-                                                        "required": ["starting_quantity", "amount"],
+                                                        "required": [
+                                                            "starting_quantity",
+                                                            "amount"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -1954,7 +2220,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["frequency", "tenure_type", "sequence"],
+                                    "required": [
+                                        "frequency",
+                                        "tenure_type",
+                                        "sequence"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1974,7 +2244,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "setup_fee_failure_action": {
@@ -2022,12 +2295,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel"],
+                                    "required": [
+                                        "href",
+                                        "rel"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "product_id", "name", "billing_cycles"],
+                        "required": [
+                            "id",
+                            "product_id",
+                            "name",
+                            "billing_cycles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2040,9 +2321,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_createproduct",
             "name": "create-product",
-            "output": ["ActionOutput_paypal_createproduct"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_createproduct", "ActionOutput_paypal_createproduct"],
+            "output": [
+                "ActionOutput_paypal_createproduct"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_createproduct",
+                "ActionOutput_paypal_createproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2057,7 +2345,11 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["PHYSICAL", "DIGITAL", "SERVICE"],
+                                "enum": [
+                                    "PHYSICAL",
+                                    "DIGITAL",
+                                    "SERVICE"
+                                ],
                                 "description": "The product type. Example: \"SERVICE\""
                             },
                             "id": {
@@ -2097,7 +2389,10 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["name", "type"],
+                        "required": [
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_createproduct": {
@@ -2145,12 +2440,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel"],
+                                    "required": [
+                                        "href",
+                                        "rel"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2163,9 +2464,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_createsubscription",
             "name": "create-subscription",
-            "output": ["ActionOutput_paypal_createsubscription"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_createsubscription", "ActionOutput_paypal_createsubscription"],
+            "output": [
+                "ActionOutput_paypal_createsubscription"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_createsubscription",
+                "ActionOutput_paypal_createsubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2199,7 +2507,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "subscriber": {
@@ -2297,7 +2608,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["plan_id"],
+                        "required": [
+                            "plan_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_createsubscription": {
@@ -2335,7 +2648,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "subscriber": {
@@ -2416,12 +2732,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status", "plan_id"],
+                        "required": [
+                            "id",
+                            "status",
+                            "plan_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2434,9 +2758,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_deactivateplan",
             "name": "deactivate-plan",
-            "output": ["ActionOutput_paypal_deactivateplan"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_deactivateplan", "ActionOutput_paypal_deactivateplan"],
+            "output": [
+                "ActionOutput_paypal_deactivateplan"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_deactivateplan",
+                "ActionOutput_paypal_deactivateplan"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2453,7 +2784,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["plan_id"],
+                        "required": [
+                            "plan_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_deactivateplan": {
@@ -2466,7 +2799,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["plan_id", "deactivated"],
+                        "required": [
+                            "plan_id",
+                            "deactivated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2479,9 +2815,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_deleteinvoice",
             "name": "delete-invoice",
-            "output": ["ActionOutput_paypal_deleteinvoice"],
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
-            "usedModels": ["ActionInput_paypal_deleteinvoice", "ActionOutput_paypal_deleteinvoice"],
+            "output": [
+                "ActionOutput_paypal_deleteinvoice"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_deleteinvoice",
+                "ActionOutput_paypal_deleteinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2493,7 +2836,9 @@
                                 "description": "The ID of the draft invoice to delete. Example: \"INV2-CDNR-4VJ3-R9L3-CKGP\""
                             }
                         },
-                        "required": ["invoice_id"],
+                        "required": [
+                            "invoice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_deleteinvoice": {
@@ -2506,7 +2851,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["invoice_id", "deleted"],
+                        "required": [
+                            "invoice_id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2519,9 +2867,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getauthorization",
             "name": "get-authorization",
-            "output": ["ActionOutput_paypal_getauthorization"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment/authcapture"],
-            "usedModels": ["ActionInput_paypal_getauthorization", "ActionOutput_paypal_getauthorization"],
+            "output": [
+                "ActionOutput_paypal_getauthorization"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment/authcapture"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getauthorization",
+                "ActionOutput_paypal_getauthorization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2533,7 +2888,9 @@
                                 "description": "The PayPal authorization ID. Example: \"0VF52814937998046\""
                             }
                         },
-                        "required": ["authorization_id"],
+                        "required": [
+                            "authorization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getauthorization": {
@@ -2555,7 +2912,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "invoice_id": {
@@ -2577,7 +2937,9 @@
                                         }
                                     }
                                 },
-                                "required": ["status"],
+                                "required": [
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             },
                             "payee": {
@@ -2616,12 +2978,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2634,9 +3003,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getcapture",
             "name": "get-capture",
-            "output": ["ActionOutput_paypal_getcapture"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment/authcapture"],
-            "usedModels": ["ActionInput_paypal_getcapture", "ActionOutput_paypal_getcapture"],
+            "output": [
+                "ActionOutput_paypal_getcapture"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment/authcapture"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getcapture",
+                "ActionOutput_paypal_getcapture"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2648,7 +3024,9 @@
                                 "description": "The PayPal capture ID. Example: \"2MU78835H4515710F\""
                             }
                         },
-                        "required": ["capture_id"],
+                        "required": [
+                            "capture_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getcapture": {
@@ -2722,7 +3100,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2735,9 +3116,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getinvoice",
             "name": "get-invoice",
-            "output": ["ActionOutput_paypal_getinvoice"],
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
-            "usedModels": ["ActionInput_paypal_getinvoice", "ActionOutput_paypal_getinvoice"],
+            "output": [
+                "ActionOutput_paypal_getinvoice"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getinvoice",
+                "ActionOutput_paypal_getinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2749,7 +3137,9 @@
                                 "description": "PayPal invoice ID. Example: \"INV2-CDNR-4VJ3-R9L3-CKGP\""
                             }
                         },
-                        "required": ["invoice_id"],
+                        "required": [
+                            "invoice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getinvoice": {
@@ -3302,7 +3692,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3315,9 +3707,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getorder",
             "name": "get-order",
-            "output": ["ActionOutput_paypal_getorder"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_getorder", "ActionOutput_paypal_getorder"],
+            "output": [
+                "ActionOutput_paypal_getorder"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getorder",
+                "ActionOutput_paypal_getorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3329,7 +3728,9 @@
                                 "description": "The PayPal order ID. Example: \"8A79039013362943U\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getorder": {
@@ -3367,7 +3768,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3380,9 +3783,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getplan",
             "name": "get-plan",
-            "output": ["ActionOutput_paypal_getplan"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_getplan", "ActionOutput_paypal_getplan"],
+            "output": [
+                "ActionOutput_paypal_getplan"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getplan",
+                "ActionOutput_paypal_getplan"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3394,7 +3804,9 @@
                                 "description": "The PayPal billing plan ID. Example: \"P-3F897353EP795272HNJKULHQ\""
                             }
                         },
-                        "required": ["plan_id"],
+                        "required": [
+                            "plan_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getplan": {
@@ -3494,7 +3906,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3507,9 +3921,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getproduct",
             "name": "get-product",
-            "output": ["ActionOutput_paypal_getproduct"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_getproduct", "ActionOutput_paypal_getproduct"],
+            "output": [
+                "ActionOutput_paypal_getproduct"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getproduct",
+                "ActionOutput_paypal_getproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3521,7 +3942,9 @@
                                 "description": "The ID of the product to retrieve. Example: \"PROD-42B01413RE336243T\""
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getproduct": {
@@ -3555,7 +3978,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3568,9 +3994,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getrefund",
             "name": "get-refund",
-            "output": ["ActionOutput_paypal_getrefund"],
-            "scopes": ["https://uri.paypal.com/services/payments/refund"],
-            "usedModels": ["ActionInput_paypal_getrefund", "ActionOutput_paypal_getrefund"],
+            "output": [
+                "ActionOutput_paypal_getrefund"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/refund"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getrefund",
+                "ActionOutput_paypal_getrefund"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3582,7 +4015,9 @@
                                 "description": "The PayPal-generated ID for the refund. Example: \"1JU08902781691411\""
                             }
                         },
-                        "required": ["refund_id"],
+                        "required": [
+                            "refund_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getrefund": {
@@ -3601,7 +4036,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
@@ -3623,7 +4061,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "paypal_fee": {
@@ -3636,7 +4077,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "platform_fees": {
@@ -3654,7 +4098,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "payee": {
@@ -3670,7 +4117,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["amount"],
+                                            "required": [
+                                                "amount"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3684,7 +4133,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "total_refunded_amount": {
@@ -3697,7 +4149,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -3730,12 +4185,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3748,9 +4209,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_getsubscription",
             "name": "get-subscription",
-            "output": ["ActionOutput_paypal_getsubscription"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_getsubscription", "ActionOutput_paypal_getsubscription"],
+            "output": [
+                "ActionOutput_paypal_getsubscription"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_getsubscription",
+                "ActionOutput_paypal_getsubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3762,7 +4230,9 @@
                                 "description": "The ID of the subscription. Example: \"I-J865PV7D94N2\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_getsubscription": {
@@ -3799,7 +4269,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "subscriber": {
@@ -3878,7 +4351,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "cycle_executions": {
@@ -3921,7 +4397,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency_code", "value"],
+                                                "required": [
+                                                    "currency_code",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "time": {
@@ -3984,12 +4463,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel"],
+                                    "required": [
+                                        "href",
+                                        "rel"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status", "plan_id"],
+                        "required": [
+                            "id",
+                            "status",
+                            "plan_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4002,9 +4488,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_listdisputes",
             "name": "list-disputes",
-            "output": ["ActionOutput_paypal_listdisputes"],
-            "scopes": ["https://uri.paypal.com/services/disputes/read-seller"],
-            "usedModels": ["ActionInput_paypal_listdisputes", "ActionOutput_paypal_listdisputes"],
+            "output": [
+                "ActionOutput_paypal_listdisputes"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/disputes/read-seller"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_listdisputes",
+                "ActionOutput_paypal_listdisputes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4069,7 +4562,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["dispute_id"],
+                                    "required": [
+                                        "dispute_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4077,7 +4572,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4090,9 +4587,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_listinvoices",
             "name": "list-invoices",
-            "output": ["ActionOutput_paypal_listinvoices"],
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
-            "usedModels": ["ActionInput_paypal_listinvoices", "ActionOutput_paypal_listinvoices"],
+            "output": [
+                "ActionOutput_paypal_listinvoices"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_listinvoices",
+                "ActionOutput_paypal_listinvoices"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4133,7 +4637,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4147,7 +4653,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4160,9 +4668,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_listplans",
             "name": "list-plans",
-            "output": ["ActionOutput_paypal_listplans"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_listplans", "ActionOutput_paypal_listplans"],
+            "output": [
+                "ActionOutput_paypal_listplans"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_listplans",
+                "ActionOutput_paypal_listplans"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4213,7 +4728,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4221,7 +4738,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4234,9 +4753,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_listproducts",
             "name": "list-products",
-            "output": ["ActionOutput_paypal_listproducts"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_listproducts", "ActionOutput_paypal_listproducts"],
+            "output": [
+                "ActionOutput_paypal_listproducts"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_listproducts",
+                "ActionOutput_paypal_listproducts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4296,7 +4822,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4310,7 +4839,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4323,9 +4854,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_recordinvoicepayment",
             "name": "record-invoice-payment",
-            "output": ["ActionOutput_paypal_recordinvoicepayment"],
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
-            "usedModels": ["ActionInput_paypal_recordinvoicepayment", "ActionOutput_paypal_recordinvoicepayment"],
+            "output": [
+                "ActionOutput_paypal_recordinvoicepayment"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_recordinvoicepayment",
+                "ActionOutput_paypal_recordinvoicepayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4338,7 +4876,16 @@
                             },
                             "method": {
                                 "type": "string",
-                                "enum": ["BANK_TRANSFER", "CASH", "CHECK", "CREDIT_CARD", "DEBIT_CARD", "PAYPAL", "WIRE_TRANSFER", "OTHER"],
+                                "enum": [
+                                    "BANK_TRANSFER",
+                                    "CASH",
+                                    "CHECK",
+                                    "CREDIT_CARD",
+                                    "DEBIT_CARD",
+                                    "PAYPAL",
+                                    "WIRE_TRANSFER",
+                                    "OTHER"
+                                ],
                                 "description": "The payment method."
                             },
                             "amount": {
@@ -4353,7 +4900,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "payment_date": {
@@ -4370,7 +4920,10 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["invoice_id", "method"],
+                        "required": [
+                            "invoice_id",
+                            "method"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_recordinvoicepayment": {
@@ -4381,7 +4934,9 @@
                                 "description": "The PayPal-generated ID for the recorded payment."
                             }
                         },
-                        "required": ["payment_id"],
+                        "required": [
+                            "payment_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4394,9 +4949,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_refundcapture",
             "name": "refund-capture",
-            "output": ["ActionOutput_paypal_refundcapture"],
-            "scopes": ["https://uri.paypal.com/services/payments/refund"],
-            "usedModels": ["ActionInput_paypal_refundcapture", "ActionOutput_paypal_refundcapture"],
+            "output": [
+                "ActionOutput_paypal_refundcapture"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/refund"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_refundcapture",
+                "ActionOutput_paypal_refundcapture"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4421,7 +4983,10 @@
                                         "description": "The value, which might be a decimal with two places. Example: \"10.99\""
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "invoice_id": {
@@ -4442,7 +5007,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,10000}$"
                             }
                         },
-                        "required": ["capture_id"],
+                        "required": [
+                            "capture_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_refundcapture": {
@@ -4464,7 +5031,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "seller_payable_breakdown": {
@@ -4480,7 +5050,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "paypal_fee": {
@@ -4493,7 +5066,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "platform_fees": {
@@ -4511,7 +5087,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["currency_code", "value"],
+                                                    "required": [
+                                                        "currency_code",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "payee": {
@@ -4527,7 +5106,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["amount"],
+                                            "required": [
+                                                "amount"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -4541,7 +5122,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "total_refunded_amount": {
@@ -4554,7 +5138,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["currency_code", "value"],
+                                        "required": [
+                                            "currency_code",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -4590,12 +5177,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4608,9 +5202,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_sendinvoice",
             "name": "send-invoice",
-            "output": ["ActionOutput_paypal_sendinvoice"],
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
-            "usedModels": ["ActionInput_paypal_sendinvoice", "ActionOutput_paypal_sendinvoice"],
+            "output": [
+                "ActionOutput_paypal_sendinvoice"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_sendinvoice",
+                "ActionOutput_paypal_sendinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4635,7 +5236,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["invoice_id"],
+                        "required": [
+                            "invoice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_sendinvoice": {
@@ -4663,9 +5266,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_updateordertracking",
             "name": "update-order-tracking",
-            "output": ["ActionOutput_paypal_updateordertracking"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_updateordertracking", "ActionOutput_paypal_updateordertracking"],
+            "output": [
+                "ActionOutput_paypal_updateordertracking"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_updateordertracking",
+                "ActionOutput_paypal_updateordertracking"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4701,7 +5311,11 @@
                                                     "const": "CANCELLED"
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4709,7 +5323,10 @@
                                             "properties": {
                                                 "op": {
                                                     "type": "string",
-                                                    "enum": ["replace", "add"]
+                                                    "enum": [
+                                                        "replace",
+                                                        "add"
+                                                    ]
                                                 },
                                                 "path": {
                                                     "type": "string",
@@ -4719,7 +5336,11 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4752,7 +5373,11 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -4760,7 +5385,11 @@
                                 "description": "JSON Patch operations to apply to the tracker. Supported: replace /status to \"CANCELLED\", replace or add /notify_payer (boolean), replace /items (full array replacement)."
                             }
                         },
-                        "required": ["order_id", "tracker_id", "patches"],
+                        "required": [
+                            "order_id",
+                            "tracker_id",
+                            "patches"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_updateordertracking": {
@@ -4806,11 +5435,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["order_id", "tracker"],
+                        "required": [
+                            "order_id",
+                            "tracker"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4823,9 +5457,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_updateorder",
             "name": "update-order",
-            "output": ["ActionOutput_paypal_updateorder"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment"],
-            "usedModels": ["ActionInput_paypal_updateorder", "ActionOutput_paypal_updateorder"],
+            "output": [
+                "ActionOutput_paypal_updateorder"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_updateorder",
+                "ActionOutput_paypal_updateorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4854,7 +5495,11 @@
                                                     "$ref": "#/definitions/__schema0"
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4871,7 +5516,11 @@
                                                     "$ref": "#/definitions/__schema0"
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4888,7 +5537,11 @@
                                                     "$ref": "#/definitions/__schema0"
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4902,7 +5555,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["op", "path"],
+                                            "required": [
+                                                "op",
+                                                "path"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4919,7 +5575,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["op", "path", "from"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "from"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4936,7 +5596,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["op", "path", "from"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "from"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -4944,7 +5608,10 @@
                                 "description": "JSON Patch operations (RFC 6902)."
                             }
                         },
-                        "required": ["id", "patch"],
+                        "required": [
+                            "id",
+                            "patch"
+                        ],
                         "additionalProperties": false,
                         "definitions": {
                             "__schema0": {
@@ -4988,7 +5655,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5001,9 +5670,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_updateplanpricing",
             "name": "update-plan-pricing",
-            "output": ["ActionOutput_paypal_updateplanpricing"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_updateplanpricing", "ActionOutput_paypal_updateplanpricing"],
+            "output": [
+                "ActionOutput_paypal_updateplanpricing"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_updateplanpricing",
+                "ActionOutput_paypal_updateplanpricing"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5044,13 +5720,19 @@
                                                             "description": "The three-character ISO-4217 currency code. Example: \"USD\""
                                                         }
                                                     },
-                                                    "required": ["value", "currency_code"],
+                                                    "required": [
+                                                        "value",
+                                                        "currency_code"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "pricing_model": {
                                                     "description": "The pricing model for tiered plans. Required when tiers are specified.",
                                                     "type": "string",
-                                                    "enum": ["VOLUME", "TIERED"]
+                                                    "enum": [
+                                                        "VOLUME",
+                                                        "TIERED"
+                                                    ]
                                                 },
                                                 "tiers": {
                                                     "description": "An array of pricing tiers. Required when pricing_model is specified.",
@@ -5079,12 +5761,18 @@
                                                                         "description": "The three-character ISO-4217 currency code. Example: \"USD\""
                                                                     }
                                                                 },
-                                                                "required": ["value", "currency_code"],
+                                                                "required": [
+                                                                    "value",
+                                                                    "currency_code"
+                                                                ],
                                                                 "additionalProperties": false,
                                                                 "description": "The pricing amount for the tier."
                                                             }
                                                         },
-                                                        "required": ["starting_quantity", "amount"],
+                                                        "required": [
+                                                            "starting_quantity",
+                                                            "amount"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
@@ -5093,7 +5781,10 @@
                                             "description": "The updated pricing scheme for this billing cycle."
                                         }
                                     },
-                                    "required": ["billing_cycle_sequence", "pricing_scheme"],
+                                    "required": [
+                                        "billing_cycle_sequence",
+                                        "pricing_scheme"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "One or more billing cycle pricing scheme updates."
@@ -5104,7 +5795,10 @@
                                 "pattern": "^[\\x21-\\x7E]{1,38}$"
                             }
                         },
-                        "required": ["plan_id", "pricing_schemes"],
+                        "required": [
+                            "plan_id",
+                            "pricing_schemes"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_updateplanpricing": {
@@ -5115,7 +5809,9 @@
                                 "description": "The PayPal plan ID that was updated."
                             }
                         },
-                        "required": ["plan_id"],
+                        "required": [
+                            "plan_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5128,9 +5824,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_updateproduct",
             "name": "update-product",
-            "output": ["ActionOutput_paypal_updateproduct"],
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
-            "usedModels": ["ActionInput_paypal_updateproduct", "ActionOutput_paypal_updateproduct"],
+            "output": [
+                "ActionOutput_paypal_updateproduct"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_updateproduct",
+                "ActionOutput_paypal_updateproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5155,13 +5858,22 @@
                                                 },
                                                 "path": {
                                                     "type": "string",
-                                                    "enum": ["/description", "/category", "/image_url", "/home_url"]
+                                                    "enum": [
+                                                        "/description",
+                                                        "/category",
+                                                        "/image_url",
+                                                        "/home_url"
+                                                    ]
                                                 },
                                                 "value": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -5173,13 +5885,22 @@
                                                 },
                                                 "path": {
                                                     "type": "string",
-                                                    "enum": ["/description", "/category", "/image_url", "/home_url"]
+                                                    "enum": [
+                                                        "/description",
+                                                        "/category",
+                                                        "/image_url",
+                                                        "/home_url"
+                                                    ]
                                                 },
                                                 "value": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -5191,10 +5912,18 @@
                                                 },
                                                 "path": {
                                                     "type": "string",
-                                                    "enum": ["/description", "/category", "/image_url", "/home_url"]
+                                                    "enum": [
+                                                        "/description",
+                                                        "/category",
+                                                        "/image_url",
+                                                        "/home_url"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["op", "path"],
+                                            "required": [
+                                                "op",
+                                                "path"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -5202,7 +5931,10 @@
                                 "description": "JSON Patch array (RFC 6902). Only /description, /category, /image_url, and /home_url are patchable."
                             }
                         },
-                        "required": ["product_id", "patch"],
+                        "required": [
+                            "product_id",
+                            "patch"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_updateproduct": {
@@ -5213,7 +5945,9 @@
                                 "description": "The ID of the updated product."
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5226,9 +5960,16 @@
             "endpoint": null,
             "input": "ActionInput_paypal_voidauthorizedpayment",
             "name": "void-authorized-payment",
-            "output": ["ActionOutput_paypal_voidauthorizedpayment"],
-            "scopes": ["https://uri.paypal.com/services/payments/payment/authcapture"],
-            "usedModels": ["ActionInput_paypal_voidauthorizedpayment", "ActionOutput_paypal_voidauthorizedpayment"],
+            "output": [
+                "ActionOutput_paypal_voidauthorizedpayment"
+            ],
+            "scopes": [
+                "https://uri.paypal.com/services/payments/payment/authcapture"
+            ],
+            "usedModels": [
+                "ActionInput_paypal_voidauthorizedpayment",
+                "ActionOutput_paypal_voidauthorizedpayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5245,7 +5986,9 @@
                                 "pattern": "^[\\x21-\\x7E]{1,10000}$"
                             }
                         },
-                        "required": ["authorization_id"],
+                        "required": [
+                            "authorization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_paypal_voidauthorizedpayment": {
@@ -5267,7 +6010,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["currency_code", "value"],
+                                "required": [
+                                    "currency_code",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "invoice_id": {
@@ -5286,7 +6032,9 @@
                                         }
                                     }
                                 },
-                                "required": ["status"],
+                                "required": [
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             },
                             "expiration_time": {
@@ -5313,12 +6061,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["href", "rel", "method"],
+                                    "required": [
+                                        "href",
+                                        "rel",
+                                        "method"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5334,12 +6089,18 @@
             "endpoints": [],
             "input": null,
             "name": "disputes",
-            "output": ["Dispute"],
+            "output": [
+                "Dispute"
+            ],
             "runs": "every hour",
-            "scopes": ["https://uri.paypal.com/services/disputes/read-seller"],
+            "scopes": [
+                "https://uri.paypal.com/services/disputes/read-seller"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Dispute"],
+            "usedModels": [
+                "Dispute"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5393,12 +6154,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "dispute_id", "create_time", "update_time"],
+                        "required": [
+                            "id",
+                            "dispute_id",
+                            "create_time",
+                            "update_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5407,12 +6175,18 @@
             "endpoints": [],
             "input": null,
             "name": "invoices",
-            "output": ["Invoice"],
+            "output": [
+                "Invoice"
+            ],
             "runs": "every hour",
-            "scopes": ["https://uri.paypal.com/services/invoicing"],
+            "scopes": [
+                "https://uri.paypal.com/services/invoicing"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invoice"],
+            "usedModels": [
+                "Invoice"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5442,12 +6216,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5456,12 +6234,18 @@
             "endpoints": [],
             "input": null,
             "name": "plans",
-            "output": ["Plan"],
+            "output": [
+                "Plan"
+            ],
             "runs": "every hour",
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Plan"],
+            "usedModels": [
+                "Plan"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5602,12 +6386,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5616,12 +6404,18 @@
             "endpoints": [],
             "input": null,
             "name": "products",
-            "output": ["Product"],
+            "output": [
+                "Product"
+            ],
             "runs": "every hour",
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Product"],
+            "usedModels": [
+                "Product"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5657,12 +6451,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5671,12 +6469,18 @@
             "endpoints": [],
             "input": null,
             "name": "subscriptions",
-            "output": ["Subscription"],
+            "output": [
+                "Subscription"
+            ],
             "runs": "every hour",
-            "scopes": ["https://uri.paypal.com/services/subscriptions"],
+            "scopes": [
+                "https://uri.paypal.com/services/subscriptions"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subscription"],
+            "usedModels": [
+                "Subscription"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5772,12 +6576,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5786,12 +6595,18 @@
             "endpoints": [],
             "input": null,
             "name": "transactions",
-            "output": ["Transaction"],
+            "output": [
+                "Transaction"
+            ],
             "runs": "every hour",
-            "scopes": ["https://uri.paypal.com/services/reporting/search/read"],
+            "scopes": [
+                "https://uri.paypal.com/services/reporting/search/read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Transaction"],
+            "usedModels": [
+                "Transaction"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5848,12 +6663,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "transaction_id"],
+                        "required": [
+                            "id",
+                            "transaction_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

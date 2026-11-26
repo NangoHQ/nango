@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_lastpass_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_lastpass_createuser"],
+            "output": [
+                "ActionOutput_lastpass_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lastpass_createuser", "ActionOutput_lastpass_createuser"],
+            "usedModels": [
+                "ActionInput_lastpass_createuser",
+                "ActionOutput_lastpass_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -44,7 +49,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lastpass_createuser": {
@@ -63,7 +72,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -76,9 +90,14 @@
             "endpoint": null,
             "input": "ActionInput_lastpass_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_lastpass_deleteuser"],
+            "output": [
+                "ActionOutput_lastpass_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lastpass_deleteuser", "ActionOutput_lastpass_deleteuser"],
+            "usedModels": [
+                "ActionInput_lastpass_deleteuser",
+                "ActionOutput_lastpass_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -89,7 +108,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lastpass_deleteuser": {
@@ -99,7 +120,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -121,12 +144,17 @@
             ],
             "input": "SyncMetadata_lastpass_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_lastpass_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_lastpass_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -147,7 +175,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lastpass_users": {

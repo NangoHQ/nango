@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_addeventattachment",
             "name": "add-event-attachment",
-            "output": ["ActionOutput_outlook_addeventattachment"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_addeventattachment", "ActionOutput_outlook_addeventattachment"],
+            "output": [
+                "ActionOutput_outlook_addeventattachment"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_addeventattachment",
+                "ActionOutput_outlook_addeventattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -33,7 +40,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["eventId", "name", "contentBytes"],
+                        "required": [
+                            "eventId",
+                            "name",
+                            "contentBytes"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_addeventattachment": {
@@ -58,7 +69,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -71,9 +85,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_addmessageattachment",
             "name": "add-message-attachment",
-            "output": ["ActionOutput_outlook_addmessageattachment"],
-            "scopes": ["Mail.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_addmessageattachment", "ActionOutput_outlook_addmessageattachment"],
+            "output": [
+                "ActionOutput_outlook_addmessageattachment"
+            ],
+            "scopes": [
+                "Mail.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_addmessageattachment",
+                "ActionOutput_outlook_addmessageattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -97,7 +118,12 @@
                                 "description": "The base64-encoded content of the file. Example: \"JVBERi0xLjQK...\""
                             }
                         },
-                        "required": ["messageId", "fileName", "contentType", "contentBytes"],
+                        "required": [
+                            "messageId",
+                            "fileName",
+                            "contentType",
+                            "contentBytes"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_addmessageattachment": {
@@ -116,7 +142,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -129,9 +158,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_cancelevent",
             "name": "cancel-event",
-            "output": ["ActionOutput_outlook_cancelevent"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_cancelevent", "ActionOutput_outlook_cancelevent"],
+            "output": [
+                "ActionOutput_outlook_cancelevent"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_cancelevent",
+                "ActionOutput_outlook_cancelevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -147,7 +183,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["eventId"],
+                        "required": [
+                            "eventId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_cancelevent": {
@@ -157,7 +195,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -170,9 +210,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_copymessage",
             "name": "copy-message",
-            "output": ["ActionOutput_outlook_copymessage"],
-            "scopes": ["Mail.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_copymessage", "ActionOutput_outlook_copymessage"],
+            "output": [
+                "ActionOutput_outlook_copymessage"
+            ],
+            "scopes": [
+                "Mail.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_copymessage",
+                "ActionOutput_outlook_copymessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -188,7 +235,10 @@
                                 "description": "The ID of the destination mail folder, or a well-known folder name such as \"inbox\", \"drafts\", \"sentitems\", \"deleteditems\"."
                             }
                         },
-                        "required": ["messageId", "destinationId"],
+                        "required": [
+                            "messageId",
+                            "destinationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_copymessage": {
@@ -225,7 +275,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -238,9 +290,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_createcalendar",
             "name": "create-calendar",
-            "output": ["ActionOutput_outlook_createcalendar"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_createcalendar", "ActionOutput_outlook_createcalendar"],
+            "output": [
+                "ActionOutput_outlook_createcalendar"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_createcalendar",
+                "ActionOutput_outlook_createcalendar"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -269,7 +328,9 @@
                                 ]
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_createcalendar": {
@@ -282,7 +343,10 @@
                                 "type": "string"
                             },
                             "color": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "canShare": {
                                 "type": "boolean"
@@ -303,7 +367,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -316,9 +383,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_createdraftmessage",
             "name": "create-draft-message",
-            "output": ["ActionOutput_outlook_createdraftmessage"],
-            "scopes": ["Mail.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_createdraftmessage", "ActionOutput_outlook_createdraftmessage"],
+            "output": [
+                "ActionOutput_outlook_createdraftmessage"
+            ],
+            "scopes": [
+                "Mail.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_createdraftmessage",
+                "ActionOutput_outlook_createdraftmessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -334,7 +408,10 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["text", "html"],
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ],
                                         "description": "Content type: \"text\" or \"html\""
                                     },
                                     "content": {
@@ -342,7 +419,10 @@
                                         "description": "Body content of the message"
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Body of the message"
                             },
@@ -364,11 +444,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -390,11 +474,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -416,18 +504,26 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "importance": {
                                 "description": "Importance level. Example: \"normal\"",
                                 "type": "string",
-                                "enum": ["low", "normal", "high"]
+                                "enum": [
+                                    "low",
+                                    "normal",
+                                    "high"
+                                ]
                             },
                             "isReadReceiptRequested": {
                                 "description": "Whether a read receipt was requested",
@@ -438,7 +534,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["subject", "body"],
+                        "required": [
+                            "subject",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_createdraftmessage": {
@@ -455,7 +554,10 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["text", "html"],
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ],
                                         "description": "Content type: \"text\" or \"html\""
                                     },
                                     "content": {
@@ -463,7 +565,10 @@
                                         "description": "Body content of the message"
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "toRecipients": {
@@ -483,11 +588,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -508,11 +617,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -533,17 +646,25 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "importance": {
                                 "type": "string",
-                                "enum": ["low", "normal", "high"]
+                                "enum": [
+                                    "low",
+                                    "normal",
+                                    "high"
+                                ]
                             },
                             "isDraft": {
                                 "type": "boolean"
@@ -558,7 +679,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -571,9 +694,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_createevent",
             "name": "create-event",
-            "output": ["ActionOutput_outlook_createevent"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_createevent", "ActionOutput_outlook_createevent"],
+            "output": [
+                "ActionOutput_outlook_createevent"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_createevent",
+                "ActionOutput_outlook_createevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -600,7 +730,10 @@
                                         "description": "Time zone for start time. Example: \"UTC\" or \"Pacific Standard Time\""
                                     }
                                 },
-                                "required": ["dateTime", "timeZone"],
+                                "required": [
+                                    "dateTime",
+                                    "timeZone"
+                                ],
                                 "additionalProperties": false
                             },
                             "end": {
@@ -615,7 +748,10 @@
                                         "description": "Time zone for end time. Example: \"UTC\" or \"Pacific Standard Time\""
                                     }
                                 },
-                                "required": ["dateTime", "timeZone"],
+                                "required": [
+                                    "dateTime",
+                                    "timeZone"
+                                ],
                                 "additionalProperties": false
                             },
                             "body": {
@@ -624,14 +760,19 @@
                                     "contentType": {
                                         "description": "Body content type.",
                                         "type": "string",
-                                        "enum": ["text", "html"]
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ]
                                     },
                                     "content": {
                                         "type": "string",
                                         "description": "Event body/description content."
                                     }
                                 },
-                                "required": ["content"],
+                                "required": [
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "location": {
@@ -642,7 +783,9 @@
                                         "description": "Location display name. Example: \"Conference Room A\""
                                     }
                                 },
-                                "required": ["displayName"],
+                                "required": [
+                                    "displayName"
+                                ],
                                 "additionalProperties": false
                             },
                             "attendees": {
@@ -663,15 +806,23 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["required", "optional", "resource"]
+                                            "enum": [
+                                                "required",
+                                                "optional",
+                                                "resource"
+                                            ]
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -682,18 +833,39 @@
                             "onlineMeetingProvider": {
                                 "description": "Online meeting provider.",
                                 "type": "string",
-                                "enum": ["teamsForBusiness", "skypeForBusiness", "skypeForConsumer", "unknown"]
+                                "enum": [
+                                    "teamsForBusiness",
+                                    "skypeForBusiness",
+                                    "skypeForConsumer",
+                                    "unknown"
+                                ]
                             },
                             "sensitivity": {
                                 "type": "string",
-                                "enum": ["normal", "personal", "private", "confidential"]
+                                "enum": [
+                                    "normal",
+                                    "personal",
+                                    "private",
+                                    "confidential"
+                                ]
                             },
                             "showAs": {
                                 "type": "string",
-                                "enum": ["free", "tentative", "busy", "oof", "workingElsewhere", "unknown"]
+                                "enum": [
+                                    "free",
+                                    "tentative",
+                                    "busy",
+                                    "oof",
+                                    "workingElsewhere",
+                                    "unknown"
+                                ]
                             }
                         },
-                        "required": ["subject", "start", "end"],
+                        "required": [
+                            "subject",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_createevent": {
@@ -715,7 +887,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["dateTime", "timeZone"],
+                                "required": [
+                                    "dateTime",
+                                    "timeZone"
+                                ],
                                 "additionalProperties": false
                             },
                             "end": {
@@ -728,7 +903,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["dateTime", "timeZone"],
+                                "required": [
+                                    "dateTime",
+                                    "timeZone"
+                                ],
                                 "additionalProperties": false
                             },
                             "body": {
@@ -771,7 +949,11 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["required", "optional", "resource"]
+                                            "enum": [
+                                                "required",
+                                                "optional",
+                                                "resource"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -806,7 +988,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -819,9 +1003,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_createmailfolder",
             "name": "create-mail-folder",
-            "output": ["ActionOutput_outlook_createmailfolder"],
-            "scopes": ["Mail.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_createmailfolder", "ActionOutput_outlook_createmailfolder"],
+            "output": [
+                "ActionOutput_outlook_createmailfolder"
+            ],
+            "scopes": [
+                "Mail.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_createmailfolder",
+                "ActionOutput_outlook_createmailfolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -841,7 +1032,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["parentFolderId", "displayName"],
+                        "required": [
+                            "parentFolderId",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_createmailfolder": {
@@ -869,7 +1063,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "displayName"],
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -882,9 +1079,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_deletecalendar",
             "name": "delete-calendar",
-            "output": ["ActionOutput_outlook_deletecalendar"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_deletecalendar", "ActionOutput_outlook_deletecalendar"],
+            "output": [
+                "ActionOutput_outlook_deletecalendar"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_deletecalendar",
+                "ActionOutput_outlook_deletecalendar"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -896,7 +1100,9 @@
                                 "description": "The ID of the calendar to delete. Example: \"AAMkAGI...\""
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_deletecalendar": {
@@ -909,7 +1115,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "calendarId"],
+                        "required": [
+                            "success",
+                            "calendarId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -922,9 +1131,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_deleteevent",
             "name": "delete-event",
-            "output": ["ActionOutput_outlook_deleteevent"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_deleteevent", "ActionOutput_outlook_deleteevent"],
+            "output": [
+                "ActionOutput_outlook_deleteevent"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_deleteevent",
+                "ActionOutput_outlook_deleteevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -940,7 +1156,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_id"],
+                        "required": [
+                            "event_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_deleteevent": {
@@ -953,7 +1171,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -966,9 +1187,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_deletemessage",
             "name": "delete-message",
-            "output": ["ActionOutput_outlook_deletemessage"],
-            "scopes": ["Mail.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_deletemessage", "ActionOutput_outlook_deletemessage"],
+            "output": [
+                "ActionOutput_outlook_deletemessage"
+            ],
+            "scopes": [
+                "Mail.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_deletemessage",
+                "ActionOutput_outlook_deletemessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -980,7 +1208,9 @@
                                 "description": "The unique identifier of the message to delete. Example: \"AAMkAGVmMDEzM...\""
                             }
                         },
-                        "required": ["messageId"],
+                        "required": [
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_deletemessage": {
@@ -991,7 +1221,9 @@
                                 "description": "Whether the deletion was successful"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1004,9 +1236,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_downloadmessageattachment",
             "name": "download-message-attachment",
-            "output": ["ActionOutput_outlook_downloadmessageattachment"],
-            "scopes": ["Mail.Read"],
-            "usedModels": ["ActionInput_outlook_downloadmessageattachment", "ActionOutput_outlook_downloadmessageattachment"],
+            "output": [
+                "ActionOutput_outlook_downloadmessageattachment"
+            ],
+            "scopes": [
+                "Mail.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_downloadmessageattachment",
+                "ActionOutput_outlook_downloadmessageattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1022,7 +1261,10 @@
                                 "description": "The ID of the attachment to download. Example: \"AAMkAGVmMD...\""
                             }
                         },
-                        "required": ["messageId", "attachmentId"],
+                        "required": [
+                            "messageId",
+                            "attachmentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_downloadmessageattachment": {
@@ -1041,7 +1283,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["content", "contentType"],
+                        "required": [
+                            "content",
+                            "contentType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1054,9 +1299,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_getcalendar",
             "name": "get-calendar",
-            "output": ["ActionOutput_outlook_getcalendar"],
-            "scopes": ["Calendars.Read"],
-            "usedModels": ["ActionInput_outlook_getcalendar", "ActionOutput_outlook_getcalendar"],
+            "output": [
+                "ActionOutput_outlook_getcalendar"
+            ],
+            "scopes": [
+                "Calendars.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_getcalendar",
+                "ActionOutput_outlook_getcalendar"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1068,7 +1320,9 @@
                                 "description": "The unique identifier of the calendar. Example: \"AAMkAGI2TGuLAAA=\""
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_getcalendar": {
@@ -1129,7 +1383,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1142,9 +1398,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_getevent",
             "name": "get-event",
-            "output": ["ActionOutput_outlook_getevent"],
-            "scopes": ["Calendars.Read"],
-            "usedModels": ["ActionInput_outlook_getevent", "ActionOutput_outlook_getevent"],
+            "output": [
+                "ActionOutput_outlook_getevent"
+            ],
+            "scopes": [
+                "Calendars.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_getevent",
+                "ActionOutput_outlook_getevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1164,7 +1427,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["eventId"],
+                        "required": [
+                            "eventId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_getevent": {
@@ -1174,16 +1439,28 @@
                                 "type": "string"
                             },
                             "subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bodyPreview": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bodyContentType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bodyContent": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start": {
                                 "anyOf": [
@@ -1224,10 +1501,16 @@
                                 ]
                             },
                             "locationDisplayName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locationType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locations": {
                                 "anyOf": [
@@ -1237,16 +1520,28 @@
                                             "type": "object",
                                             "properties": {
                                                 "displayName": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "locationType": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "uniqueId": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "uniqueIdType": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -1265,16 +1560,28 @@
                                             "type": "object",
                                             "properties": {
                                                 "type": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "response": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "emailName": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "emailAddress": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -1286,28 +1593,52 @@
                                 ]
                             },
                             "organizerName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organizerAddress": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "isOrganizer": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "isCancelled": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "isAllDay": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "importance": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "showAs": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sensitivity": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "recurrence": {
                                 "anyOf": [
@@ -1320,16 +1651,28 @@
                                                         "type": "object",
                                                         "properties": {
                                                             "type": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "interval": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "month": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "dayOfMonth": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "daysOfWeek": {
                                                                 "anyOf": [
@@ -1345,10 +1688,16 @@
                                                                 ]
                                                             },
                                                             "firstDayOfWeek": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "index": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
                                                         "additionalProperties": false
@@ -1364,16 +1713,28 @@
                                                         "type": "object",
                                                         "properties": {
                                                             "type": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "startDate": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "endDate": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "numberOfOccurrences": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
                                                         "additionalProperties": false
@@ -1392,34 +1753,63 @@
                                 ]
                             },
                             "seriesMasterId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "webLink": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "onlineMeetingUrl": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastModifiedDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "iCalUId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "response": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "responseTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1432,9 +1822,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_getmessage",
             "name": "get-message",
-            "output": ["ActionOutput_outlook_getmessage"],
-            "scopes": ["Mail.Read"],
-            "usedModels": ["ActionInput_outlook_getmessage", "ActionOutput_outlook_getmessage"],
+            "output": [
+                "ActionOutput_outlook_getmessage"
+            ],
+            "scopes": [
+                "Mail.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_getmessage",
+                "ActionOutput_outlook_getmessage"
+            ],
             "version": "1.1.0",
             "json_schema": {
                 "definitions": {
@@ -1450,7 +1847,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["messageId"],
+                        "required": [
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_getmessage": {
@@ -1615,12 +2014,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1633,9 +2036,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_listcalendarevents",
             "name": "list-calendar-events",
-            "output": ["ActionOutput_outlook_listcalendarevents"],
-            "scopes": ["Calendars.Read"],
-            "usedModels": ["ActionInput_outlook_listcalendarevents", "ActionOutput_outlook_listcalendarevents"],
+            "output": [
+                "ActionOutput_outlook_listcalendarevents"
+            ],
+            "scopes": [
+                "Calendars.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_listcalendarevents",
+                "ActionOutput_outlook_listcalendarevents"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1711,7 +2121,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1719,7 +2131,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1732,9 +2146,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_listcalendars",
             "name": "list-calendars",
-            "output": ["ActionOutput_outlook_listcalendars"],
-            "scopes": ["Calendars.Read"],
-            "usedModels": ["ActionInput_outlook_listcalendars", "ActionOutput_outlook_listcalendars"],
+            "output": [
+                "ActionOutput_outlook_listcalendars"
+            ],
+            "scopes": [
+                "Calendars.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_listcalendars",
+                "ActionOutput_outlook_listcalendars"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1794,7 +2215,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1802,7 +2225,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["calendars"],
+                        "required": [
+                            "calendars"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1815,9 +2240,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_listeventattachments",
             "name": "list-event-attachments",
-            "output": ["ActionOutput_outlook_listeventattachments"],
-            "scopes": ["Calendars.Read"],
-            "usedModels": ["ActionInput_outlook_listeventattachments", "ActionOutput_outlook_listeventattachments"],
+            "output": [
+                "ActionOutput_outlook_listeventattachments"
+            ],
+            "scopes": [
+                "Calendars.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_listeventattachments",
+                "ActionOutput_outlook_listeventattachments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1829,7 +2261,9 @@
                                 "description": "The ID of the event to list attachments for. Example: \"AAMkAGVmMDEzMTM4LTZmYWUtNDdkNC1hMDZiLTU1OGY5OTZhYmY4OABGAAAAAAAiQ8W967B7TKBjgx9rVEURBwAiIsqMbYjsT5e-T7KzowPTAAAAAAENAAAiIsqMbYjsT5e-T7KzowPTAAAa_WKzAAA=\""
                             }
                         },
-                        "required": ["eventId"],
+                        "required": [
+                            "eventId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_listeventattachments": {
@@ -1859,7 +2293,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1868,7 +2304,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["attachments"],
+                        "required": [
+                            "attachments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1881,9 +2319,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_listmailfolderchildren",
             "name": "list-mail-folder-children",
-            "output": ["ActionOutput_outlook_listmailfolderchildren"],
-            "scopes": ["Mail.Read"],
-            "usedModels": ["ActionInput_outlook_listmailfolderchildren", "ActionOutput_outlook_listmailfolderchildren"],
+            "output": [
+                "ActionOutput_outlook_listmailfolderchildren"
+            ],
+            "scopes": [
+                "Mail.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_listmailfolderchildren",
+                "ActionOutput_outlook_listmailfolderchildren"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1903,7 +2348,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_listmailfolderchildren": {
@@ -1939,7 +2386,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1948,7 +2397,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1961,9 +2412,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_listmailfolders",
             "name": "list-mail-folders",
-            "output": ["ActionOutput_outlook_listmailfolders"],
-            "scopes": ["Mail.Read"],
-            "usedModels": ["ActionInput_outlook_listmailfolders", "ActionOutput_outlook_listmailfolders"],
+            "output": [
+                "ActionOutput_outlook_listmailfolders"
+            ],
+            "scopes": [
+                "Mail.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_listmailfolders",
+                "ActionOutput_outlook_listmailfolders"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2013,7 +2471,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2022,7 +2482,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2035,9 +2497,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_listmessageattachments",
             "name": "list-message-attachments",
-            "output": ["ActionOutput_outlook_listmessageattachments"],
-            "scopes": ["Mail.Read"],
-            "usedModels": ["ActionInput_outlook_listmessageattachments", "ActionOutput_outlook_listmessageattachments"],
+            "output": [
+                "ActionOutput_outlook_listmessageattachments"
+            ],
+            "scopes": [
+                "Mail.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_listmessageattachments",
+                "ActionOutput_outlook_listmessageattachments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2049,7 +2518,9 @@
                                 "description": "The unique identifier of the message to list attachments for. Example: \"AAMkAGVmMD...\""
                             }
                         },
-                        "required": ["messageId"],
+                        "required": [
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_listmessageattachments": {
@@ -2085,12 +2556,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["attachments"],
+                        "required": [
+                            "attachments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2103,9 +2578,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_listmessages",
             "name": "list-messages",
-            "output": ["ActionOutput_outlook_listmessages"],
-            "scopes": ["Mail.Read"],
-            "usedModels": ["ActionInput_outlook_listmessages", "ActionOutput_outlook_listmessages"],
+            "output": [
+                "ActionOutput_outlook_listmessages"
+            ],
+            "scopes": [
+                "Mail.Read"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_listmessages",
+                "ActionOutput_outlook_listmessages"
+            ],
             "version": "1.1.0",
             "json_schema": {
                 "definitions": {
@@ -2257,7 +2739,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2265,7 +2749,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2278,9 +2764,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_movemessage",
             "name": "move-message",
-            "output": ["ActionOutput_outlook_movemessage"],
-            "scopes": ["Mail.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_movemessage", "ActionOutput_outlook_movemessage"],
+            "output": [
+                "ActionOutput_outlook_movemessage"
+            ],
+            "scopes": [
+                "Mail.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_movemessage",
+                "ActionOutput_outlook_movemessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2296,7 +2789,10 @@
                                 "description": "The unique identifier of the destination mail folder. Example: \"AAMkAGVmMDEzMjA...\""
                             }
                         },
-                        "required": ["messageId", "destinationId"],
+                        "required": [
+                            "messageId",
+                            "destinationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_movemessage": {
@@ -2318,7 +2814,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "parentFolderId"],
+                        "required": [
+                            "id",
+                            "parentFolderId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2331,9 +2830,17 @@
             "endpoint": null,
             "input": "ActionInput_outlook_replyalltomessage",
             "name": "reply-all-to-message",
-            "output": ["ActionOutput_outlook_replyalltomessage"],
-            "scopes": ["Mail.ReadWrite", "Mail.Send"],
-            "usedModels": ["ActionInput_outlook_replyalltomessage", "ActionOutput_outlook_replyalltomessage"],
+            "output": [
+                "ActionOutput_outlook_replyalltomessage"
+            ],
+            "scopes": [
+                "Mail.ReadWrite",
+                "Mail.Send"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_replyalltomessage",
+                "ActionOutput_outlook_replyalltomessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2358,17 +2865,25 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["text", "html"]
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ]
                                     },
                                     "content": {
                                         "type": "string"
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["messageId"],
+                        "required": [
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_replyalltomessage": {
@@ -2382,7 +2897,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2395,9 +2912,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_replytomessage",
             "name": "reply-to-message",
-            "output": ["ActionOutput_outlook_replytomessage"],
-            "scopes": ["Mail.Send"],
-            "usedModels": ["ActionInput_outlook_replytomessage", "ActionOutput_outlook_replytomessage"],
+            "output": [
+                "ActionOutput_outlook_replytomessage"
+            ],
+            "scopes": [
+                "Mail.Send"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_replytomessage",
+                "ActionOutput_outlook_replytomessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2413,7 +2937,10 @@
                                 "description": "The plain text body of the reply message. Example: \"Thank you for your email. I will get back to you soon.\""
                             }
                         },
-                        "required": ["messageId", "comment"],
+                        "required": [
+                            "messageId",
+                            "comment"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_replytomessage": {
@@ -2489,7 +3016,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["messageId", "success"],
+                        "required": [
+                            "messageId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2502,9 +3032,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_senddraftmessage",
             "name": "send-draft-message",
-            "output": ["ActionOutput_outlook_senddraftmessage"],
-            "scopes": ["Mail.Send"],
-            "usedModels": ["ActionInput_outlook_senddraftmessage", "ActionOutput_outlook_senddraftmessage"],
+            "output": [
+                "ActionOutput_outlook_senddraftmessage"
+            ],
+            "scopes": [
+                "Mail.Send"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_senddraftmessage",
+                "ActionOutput_outlook_senddraftmessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2516,7 +3053,9 @@
                                 "description": "The unique identifier of the draft message to send. Example: \"AAMkAGVmMDEz...\""
                             }
                         },
-                        "required": ["message_id"],
+                        "required": [
+                            "message_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_senddraftmessage": {
@@ -2531,7 +3070,10 @@
                                 "description": "The ID of the draft that was sent. This equals the input draft ID; the send endpoint returns no body to confirm the sent item ID."
                             }
                         },
-                        "required": ["success", "message_id"],
+                        "required": [
+                            "success",
+                            "message_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2544,9 +3086,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_sendmail",
             "name": "send-mail",
-            "output": ["ActionOutput_outlook_sendmail"],
-            "scopes": ["Mail.Send"],
-            "usedModels": ["ActionInput_outlook_sendmail", "ActionOutput_outlook_sendmail"],
+            "output": [
+                "ActionOutput_outlook_sendmail"
+            ],
+            "scopes": [
+                "Mail.Send"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_sendmail",
+                "ActionOutput_outlook_sendmail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2565,7 +3114,10 @@
                                         "properties": {
                                             "contentType": {
                                                 "type": "string",
-                                                "enum": ["text", "html"],
+                                                "enum": [
+                                                    "text",
+                                                    "html"
+                                                ],
                                                 "description": "The content type of the body. Example: \"html\""
                                             },
                                             "content": {
@@ -2573,7 +3125,10 @@
                                                 "description": "The content of the body. Example: \"Hello world\""
                                             }
                                         },
-                                        "required": ["contentType", "content"],
+                                        "required": [
+                                            "contentType",
+                                            "content"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "toRecipients": {
@@ -2593,11 +3148,15 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["address"],
+                                                    "required": [
+                                                        "address"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["emailAddress"],
+                                            "required": [
+                                                "emailAddress"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": "The recipients of the message"
@@ -2620,11 +3179,15 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["address"],
+                                                    "required": [
+                                                        "address"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["emailAddress"],
+                                            "required": [
+                                                "emailAddress"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2646,11 +3209,15 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["address"],
+                                                    "required": [
+                                                        "address"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["emailAddress"],
+                                            "required": [
+                                                "emailAddress"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2672,21 +3239,33 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["address"],
+                                                    "required": [
+                                                        "address"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["emailAddress"],
+                                            "required": [
+                                                "emailAddress"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
                                     "importance": {
                                         "description": "The importance of the message. Example: \"normal\"",
                                         "type": "string",
-                                        "enum": ["low", "normal", "high"]
+                                        "enum": [
+                                            "low",
+                                            "normal",
+                                            "high"
+                                        ]
                                     }
                                 },
-                                "required": ["subject", "body", "toRecipients"],
+                                "required": [
+                                    "subject",
+                                    "body",
+                                    "toRecipients"
+                                ],
                                 "additionalProperties": false
                             },
                             "saveToSentItems": {
@@ -2694,7 +3273,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_sendmail": {
@@ -2707,7 +3288,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2720,9 +3303,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_updatecalendar",
             "name": "update-calendar",
-            "output": ["ActionOutput_outlook_updatecalendar"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_updatecalendar", "ActionOutput_outlook_updatecalendar"],
+            "output": [
+                "ActionOutput_outlook_updatecalendar"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_updatecalendar",
+                "ActionOutput_outlook_updatecalendar"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2742,7 +3332,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_updatecalendar": {
@@ -2758,7 +3350,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2771,9 +3365,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_updateevent",
             "name": "update-event",
-            "output": ["ActionOutput_outlook_updateevent"],
-            "scopes": ["Calendars.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_updateevent", "ActionOutput_outlook_updateevent"],
+            "output": [
+                "ActionOutput_outlook_updateevent"
+            ],
+            "scopes": [
+                "Calendars.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_updateevent",
+                "ActionOutput_outlook_updateevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2794,7 +3395,10 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["text", "html"]
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ]
                                     },
                                     "content": {
                                         "type": "string"
@@ -2818,15 +3422,23 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["required", "optional", "resource"]
+                                            "enum": [
+                                                "required",
+                                                "optional",
+                                                "resource"
+                                            ]
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2842,7 +3454,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["dateTime"],
+                                "required": [
+                                    "dateTime"
+                                ],
                                 "additionalProperties": false
                             },
                             "end": {
@@ -2857,7 +3471,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["dateTime"],
+                                "required": [
+                                    "dateTime"
+                                ],
                                 "additionalProperties": false
                             },
                             "location": {
@@ -2892,7 +3508,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["eventId"],
+                        "required": [
+                            "eventId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_updateevent": {
@@ -2931,14 +3549,18 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "type": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["emailAddress"],
+                                    "required": [
+                                        "emailAddress"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3006,7 +3628,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3019,9 +3643,16 @@
             "endpoint": null,
             "input": "ActionInput_outlook_updatemessage",
             "name": "update-message",
-            "output": ["ActionOutput_outlook_updatemessage"],
-            "scopes": ["Mail.ReadWrite"],
-            "usedModels": ["ActionInput_outlook_updatemessage", "ActionOutput_outlook_updatemessage"],
+            "output": [
+                "ActionOutput_outlook_updatemessage"
+            ],
+            "scopes": [
+                "Mail.ReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_outlook_updatemessage",
+                "ActionOutput_outlook_updatemessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3042,7 +3673,10 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["text", "html"],
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ],
                                         "description": "The content type of the body."
                                     },
                                     "content": {
@@ -3050,7 +3684,10 @@
                                         "description": "The content of the body."
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "categories": {
@@ -3070,15 +3707,23 @@
                                 "properties": {
                                     "flagStatus": {
                                         "type": "string",
-                                        "enum": ["notFlagged", "complete", "flagged"],
+                                        "enum": [
+                                            "notFlagged",
+                                            "complete",
+                                            "flagged"
+                                        ],
                                         "description": "The flag status of the message."
                                     }
                                 },
-                                "required": ["flagStatus"],
+                                "required": [
+                                    "flagStatus"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["messageId"],
+                        "required": [
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_outlook_updatemessage": {
@@ -3100,7 +3745,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "categories": {
@@ -3119,11 +3767,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["flagStatus"],
+                                "required": [
+                                    "flagStatus"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3144,12 +3796,18 @@
             ],
             "input": null,
             "name": "calendars",
-            "output": ["Calendar"],
+            "output": [
+                "Calendar"
+            ],
             "runs": "every hour",
-            "scopes": ["Calendars.Read"],
+            "scopes": [
+                "Calendars.Read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Calendar"],
+            "usedModels": [
+                "Calendar"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3191,12 +3849,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3210,12 +3872,19 @@
             ],
             "input": "SyncMetadata_outlook_events",
             "name": "events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every hour",
-            "scopes": ["Calendars.Read"],
+            "scopes": [
+                "Calendars.Read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event", "SyncMetadata_outlook_events"],
+            "usedModels": [
+                "Event",
+                "SyncMetadata_outlook_events"
+            ],
             "version": "3.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3248,7 +3917,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["dateTime", "timeZone"],
+                                "required": [
+                                    "dateTime",
+                                    "timeZone"
+                                ],
                                 "additionalProperties": false
                             },
                             "end": {
@@ -3261,7 +3933,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["dateTime", "timeZone"],
+                                "required": [
+                                    "dateTime",
+                                    "timeZone"
+                                ],
                                 "additionalProperties": false
                             },
                             "location": {
@@ -3334,7 +4009,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_outlook_events": {
@@ -3350,7 +4027,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3364,12 +4043,18 @@
             ],
             "input": null,
             "name": "mail-folders",
-            "output": ["MailFolder"],
+            "output": [
+                "MailFolder"
+            ],
             "runs": "every hour",
-            "scopes": ["Mail.Read"],
+            "scopes": [
+                "Mail.Read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MailFolder"],
+            "usedModels": [
+                "MailFolder"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3410,12 +4095,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "displayName"],
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3429,12 +4119,18 @@
             ],
             "input": null,
             "name": "messages",
-            "output": ["Message"],
+            "output": [
+                "Message"
+            ],
             "runs": "every hour",
-            "scopes": ["Mail.Read"],
+            "scopes": [
+                "Mail.Read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Message"],
+            "usedModels": [
+                "Message"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3554,12 +4250,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "folderId"],
+                        "required": [
+                            "id",
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

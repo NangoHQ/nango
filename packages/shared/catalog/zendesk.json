@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_createcategory",
             "name": "create-category",
-            "output": ["ActionOutput_zendesk_createcategory"],
-            "scopes": ["hc:write"],
-            "usedModels": ["ActionInput_zendesk_createcategory", "ActionOutput_zendesk_createcategory"],
+            "output": [
+                "ActionOutput_zendesk_createcategory"
+            ],
+            "scopes": [
+                "hc:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_createcategory",
+                "ActionOutput_zendesk_createcategory"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -35,7 +42,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["name", "locale"],
+                        "required": [
+                            "name",
+                            "locale"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_createcategory": {
@@ -77,7 +87,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "locale", "created_at", "updated_at", "html_url", "url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "locale",
+                            "created_at",
+                            "updated_at",
+                            "html_url",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -90,9 +108,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_createorganization",
             "name": "create-organization",
-            "output": ["ActionOutput_zendesk_createorganization"],
-            "scopes": ["organizations:write"],
-            "usedModels": ["ActionInput_zendesk_createorganization", "ActionOutput_zendesk_createorganization"],
+            "output": [
+                "ActionOutput_zendesk_createorganization"
+            ],
+            "scopes": [
+                "organizations:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_createorganization",
+                "ActionOutput_zendesk_createorganization"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -140,7 +165,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_createorganization": {
@@ -196,7 +223,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "domain_names", "shared_tickets", "shared_comments", "tags", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "domain_names",
+                            "shared_tickets",
+                            "shared_comments",
+                            "tags",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -209,9 +245,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_createsection",
             "name": "create-section",
-            "output": ["ActionOutput_zendesk_createsection"],
-            "scopes": ["hc:write"],
-            "usedModels": ["ActionInput_zendesk_createsection", "ActionOutput_zendesk_createsection"],
+            "output": [
+                "ActionOutput_zendesk_createsection"
+            ],
+            "scopes": [
+                "hc:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_createsection",
+                "ActionOutput_zendesk_createsection"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -247,7 +290,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["category_id", "name", "locale"],
+                        "required": [
+                            "category_id",
+                            "name",
+                            "locale"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_createsection": {
@@ -296,7 +343,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "locale"],
+                        "required": [
+                            "id",
+                            "name",
+                            "locale"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -309,9 +360,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_createticket",
             "name": "create-ticket",
-            "output": ["ActionOutput_zendesk_createticket"],
-            "scopes": ["tickets:write"],
-            "usedModels": ["ActionInput_zendesk_createticket", "ActionOutput_zendesk_createticket"],
+            "output": [
+                "ActionOutput_zendesk_createticket"
+            ],
+            "scopes": [
+                "tickets:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_createticket",
+                "ActionOutput_zendesk_createticket"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -337,12 +395,24 @@
                             "priority": {
                                 "description": "Priority of the ticket.",
                                 "type": "string",
-                                "enum": ["urgent", "high", "normal", "low"]
+                                "enum": [
+                                    "urgent",
+                                    "high",
+                                    "normal",
+                                    "low"
+                                ]
                             },
                             "status": {
                                 "description": "Status of the ticket.",
                                 "type": "string",
-                                "enum": ["new", "open", "pending", "hold", "solved", "closed"]
+                                "enum": [
+                                    "new",
+                                    "open",
+                                    "pending",
+                                    "hold",
+                                    "solved",
+                                    "closed"
+                                ]
                             },
                             "tags": {
                                 "description": "Tags applied to the ticket. Example: [\"printer\", \"urgent\"]",
@@ -354,10 +424,18 @@
                             "type": {
                                 "description": "Type of ticket.",
                                 "type": "string",
-                                "enum": ["problem", "incident", "question", "task"]
+                                "enum": [
+                                    "problem",
+                                    "incident",
+                                    "question",
+                                    "task"
+                                ]
                             }
                         },
-                        "required": ["subject", "comment"],
+                        "required": [
+                            "subject",
+                            "comment"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_createticket": {
@@ -412,7 +490,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "url", "subject", "status", "created_at", "updated_at", "requester_id", "submitter_id", "tags"],
+                        "required": [
+                            "id",
+                            "url",
+                            "subject",
+                            "status",
+                            "created_at",
+                            "updated_at",
+                            "requester_id",
+                            "submitter_id",
+                            "tags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -425,9 +513,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_zendesk_createuser"],
-            "scopes": ["users:write"],
-            "usedModels": ["ActionInput_zendesk_createuser", "ActionOutput_zendesk_createuser"],
+            "output": [
+                "ActionOutput_zendesk_createuser"
+            ],
+            "scopes": [
+                "users:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_createuser",
+                "ActionOutput_zendesk_createuser"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -449,7 +544,11 @@
                             "role": {
                                 "description": "The role of the user. Example: \"end-user\"",
                                 "type": "string",
-                                "enum": ["end-user", "agent", "admin"]
+                                "enum": [
+                                    "end-user",
+                                    "agent",
+                                    "admin"
+                                ]
                             },
                             "external_id": {
                                 "description": "A unique identifier from your external system. Example: \"ext-123\"",
@@ -484,7 +583,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_createuser": {
@@ -555,7 +656,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -568,9 +672,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_zendesk_deleteuser"],
-            "scopes": ["users:write"],
-            "usedModels": ["ActionInput_zendesk_deleteuser", "ActionOutput_zendesk_deleteuser"],
+            "output": [
+                "ActionOutput_zendesk_deleteuser"
+            ],
+            "scopes": [
+                "users:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_deleteuser",
+                "ActionOutput_zendesk_deleteuser"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -582,7 +693,9 @@
                                 "description": "The ID of the user to delete. Example: \"1234567890\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_deleteuser": {
@@ -597,7 +710,10 @@
                                 "description": "The ID of the deleted user"
                             }
                         },
-                        "required": ["success", "userId"],
+                        "required": [
+                            "success",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -610,9 +726,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getarticle",
             "name": "get-article",
-            "output": ["ActionOutput_zendesk_getarticle"],
-            "scopes": ["hc:read"],
-            "usedModels": ["ActionInput_zendesk_getarticle", "ActionOutput_zendesk_getarticle"],
+            "output": [
+                "ActionOutput_zendesk_getarticle"
+            ],
+            "scopes": [
+                "hc:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getarticle",
+                "ActionOutput_zendesk_getarticle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -624,7 +747,9 @@
                                 "description": "The unique ID of the article. Example: 360026053753"
                             }
                         },
-                        "required": ["article_id"],
+                        "required": [
+                            "article_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getarticle": {
@@ -721,7 +846,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -734,9 +862,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getgroup",
             "name": "get-group",
-            "output": ["ActionOutput_zendesk_getgroup"],
-            "scopes": ["groups:read"],
-            "usedModels": ["ActionInput_zendesk_getgroup", "ActionOutput_zendesk_getgroup"],
+            "output": [
+                "ActionOutput_zendesk_getgroup"
+            ],
+            "scopes": [
+                "groups:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getgroup",
+                "ActionOutput_zendesk_getgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -748,7 +883,9 @@
                                 "description": "Group ID. Example: 123456"
                             }
                         },
-                        "required": ["group_id"],
+                        "required": [
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getgroup": {
@@ -773,7 +910,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -786,9 +926,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_zendesk_getorganization"],
-            "scopes": ["organizations:read"],
-            "usedModels": ["ActionInput_zendesk_getorganization", "ActionOutput_zendesk_getorganization"],
+            "output": [
+                "ActionOutput_zendesk_getorganization"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getorganization",
+                "ActionOutput_zendesk_getorganization"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -800,7 +947,9 @@
                                 "description": "The ID of the organization to retrieve. Example: 35436"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getorganization": {
@@ -859,7 +1008,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -872,9 +1024,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getticketcomments",
             "name": "get-ticket-comments",
-            "output": ["ActionOutput_zendesk_getticketcomments"],
-            "scopes": ["tickets:read"],
-            "usedModels": ["ActionInput_zendesk_getticketcomments", "ActionOutput_zendesk_getticketcomments"],
+            "output": [
+                "ActionOutput_zendesk_getticketcomments"
+            ],
+            "scopes": [
+                "tickets:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getticketcomments",
+                "ActionOutput_zendesk_getticketcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -894,7 +1053,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["ticket_id"],
+                        "required": [
+                            "ticket_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getticketcomments": {
@@ -953,7 +1114,10 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["id", "file_name"],
+                                                "required": [
+                                                    "id",
+                                                    "file_name"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -968,7 +1132,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -976,7 +1142,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -989,9 +1157,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getticketfield",
             "name": "get-ticket-field",
-            "output": ["ActionOutput_zendesk_getticketfield"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_zendesk_getticketfield", "ActionOutput_zendesk_getticketfield"],
+            "output": [
+                "ActionOutput_zendesk_getticketfield"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getticketfield",
+                "ActionOutput_zendesk_getticketfield"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1003,7 +1178,9 @@
                                 "description": "The ID of the ticket field. Example: 123"
                             }
                         },
-                        "required": ["ticketFieldId"],
+                        "required": [
+                            "ticketFieldId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getticketfield": {
@@ -1093,7 +1270,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "value"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1115,7 +1296,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "value"],
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1129,7 +1313,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "type", "title"],
+                        "required": [
+                            "id",
+                            "url",
+                            "type",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1142,9 +1331,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getticketform",
             "name": "get-ticket-form",
-            "output": ["ActionOutput_zendesk_getticketform"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_zendesk_getticketform", "ActionOutput_zendesk_getticketform"],
+            "output": [
+                "ActionOutput_zendesk_getticketform"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getticketform",
+                "ActionOutput_zendesk_getticketform"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1156,7 +1352,9 @@
                                 "description": "The ID of the ticket form to retrieve. Example: 123"
                             }
                         },
-                        "required": ["ticket_form_id"],
+                        "required": [
+                            "ticket_form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getticketform": {
@@ -1222,7 +1420,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1235,9 +1436,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getticket",
             "name": "get-ticket",
-            "output": ["ActionOutput_zendesk_getticket"],
-            "scopes": ["tickets:read"],
-            "usedModels": ["ActionInput_zendesk_getticket", "ActionOutput_zendesk_getticket"],
+            "output": [
+                "ActionOutput_zendesk_getticket"
+            ],
+            "scopes": [
+                "tickets:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getticket",
+                "ActionOutput_zendesk_getticket"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1246,14 +1454,19 @@
                         "properties": {
                             "ticket_id": {
                                 "description": "Ticket ID to retrieve. Example: \"1\" or 1",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "include": {
                                 "description": "Comma-separated list of sideloads to include. Example: \"users,organizations,groups\". See: https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/#sideloads",
                                 "type": "string"
                             }
                         },
-                        "required": ["ticket_id"],
+                        "required": [
+                            "ticket_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getticket": {
@@ -1305,7 +1518,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "url", "subject", "status"],
+                        "required": [
+                            "id",
+                            "url",
+                            "subject",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1318,9 +1536,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_zendesk_getuser"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_zendesk_getuser", "ActionOutput_zendesk_getuser"],
+            "output": [
+                "ActionOutput_zendesk_getuser"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_getuser",
+                "ActionOutput_zendesk_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1332,7 +1557,9 @@
                                 "description": "The ID of the user to retrieve. Example: \"123456\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_getuser": {
@@ -1387,7 +1614,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1400,9 +1629,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listarticles",
             "name": "list-articles",
-            "output": ["ActionOutput_zendesk_listarticles"],
-            "scopes": ["hc:read"],
-            "usedModels": ["ActionInput_zendesk_listarticles", "ActionOutput_zendesk_listarticles"],
+            "output": [
+                "ActionOutput_zendesk_listarticles"
+            ],
+            "scopes": [
+                "hc:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listarticles",
+                "ActionOutput_zendesk_listarticles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1420,12 +1656,21 @@
                             "sort_by": {
                                 "description": "Sort field. Default is position.",
                                 "type": "string",
-                                "enum": ["position", "title", "created_at", "updated_at", "edited_at"]
+                                "enum": [
+                                    "position",
+                                    "title",
+                                    "created_at",
+                                    "updated_at",
+                                    "edited_at"
+                                ]
                             },
                             "sort_order": {
                                 "description": "Sort order. Default is asc.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "label_names": {
                                 "description": "Comma-separated list of label names to filter by. Up to 10 labels.",
@@ -1523,7 +1768,10 @@
                                             "type": "string"
                                         },
                                         "user_segment_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "user_segment_ids": {
                                             "type": "array",
@@ -1538,7 +1786,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "locale", "title"],
+                                    "required": [
+                                        "id",
+                                        "locale",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1546,7 +1798,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["articles"],
+                        "required": [
+                            "articles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1559,9 +1813,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_zendesk_listgroups"],
-            "scopes": ["groups:read"],
-            "usedModels": ["ActionInput_zendesk_listgroups", "ActionOutput_zendesk_listgroups"],
+            "output": [
+                "ActionOutput_zendesk_listgroups"
+            ],
+            "scopes": [
+                "groups:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listgroups",
+                "ActionOutput_zendesk_listgroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1611,7 +1872,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "url", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "url",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1619,7 +1886,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1632,9 +1901,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listmacros",
             "name": "list-macros",
-            "output": ["ActionOutput_zendesk_listmacros"],
-            "scopes": ["macros:read"],
-            "usedModels": ["ActionInput_zendesk_listmacros", "ActionOutput_zendesk_listmacros"],
+            "output": [
+                "ActionOutput_zendesk_listmacros"
+            ],
+            "scopes": [
+                "macros:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listmacros",
+                "ActionOutput_zendesk_listmacros"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1658,7 +1934,12 @@
                             "access": {
                                 "description": "Filter macros by access level",
                                 "type": "string",
-                                "enum": ["personal", "agents", "shared", "account"]
+                                "enum": [
+                                    "personal",
+                                    "agents",
+                                    "shared",
+                                    "account"
+                                ]
                             },
                             "category": {
                                 "description": "Filter macros by category ID",
@@ -1679,12 +1960,23 @@
                             "sort_by": {
                                 "description": "Sort field. Defaults to alphabetical",
                                 "type": "string",
-                                "enum": ["alphabetical", "created_at", "updated_at", "usage_1h", "usage_24h", "usage_7d", "usage_30d"]
+                                "enum": [
+                                    "alphabetical",
+                                    "created_at",
+                                    "updated_at",
+                                    "usage_1h",
+                                    "usage_24h",
+                                    "usage_7d",
+                                    "usage_30d"
+                                ]
                             },
                             "sort_order": {
                                 "description": "Sort order. Defaults to asc for alphabetical and position sort, desc for others",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1732,7 +2024,10 @@
                                                     },
                                                     "value": {}
                                                 },
-                                                "required": ["field", "value"],
+                                                "required": [
+                                                    "field",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1768,7 +2063,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1776,7 +2074,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["macros"],
+                        "required": [
+                            "macros"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1789,9 +2089,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_zendesk_listorganizations"],
-            "scopes": ["organizations:read"],
-            "usedModels": ["ActionInput_zendesk_listorganizations", "ActionOutput_zendesk_listorganizations"],
+            "output": [
+                "ActionOutput_zendesk_listorganizations"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listorganizations",
+                "ActionOutput_zendesk_listorganizations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1823,7 +2130,10 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -1838,13 +2148,22 @@
                                             }
                                         },
                                         "details": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "group_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "shared_tickets": {
                                             "type": "boolean"
@@ -1859,7 +2178,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1867,7 +2188,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1880,9 +2203,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listticketfields",
             "name": "list-ticket-fields",
-            "output": ["ActionOutput_zendesk_listticketfields"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_zendesk_listticketfields", "ActionOutput_zendesk_listticketfields"],
+            "output": [
+                "ActionOutput_zendesk_listticketfields"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listticketfields",
+                "ActionOutput_zendesk_listticketfields"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1975,7 +2305,12 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id", "url", "type", "title"],
+                                    "required": [
+                                        "id",
+                                        "url",
+                                        "type",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1983,7 +2318,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1996,9 +2333,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listticketforms",
             "name": "list-ticket-forms",
-            "output": ["ActionOutput_zendesk_listticketforms"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_zendesk_listticketforms", "ActionOutput_zendesk_listticketforms"],
+            "output": [
+                "ActionOutput_zendesk_listticketforms"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listticketforms",
+                "ActionOutput_zendesk_listticketforms"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2057,7 +2401,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2065,7 +2412,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2078,9 +2427,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listtickets",
             "name": "list-tickets",
-            "output": ["ActionOutput_zendesk_listtickets"],
-            "scopes": ["tickets:read"],
-            "usedModels": ["ActionInput_zendesk_listtickets", "ActionOutput_zendesk_listtickets"],
+            "output": [
+                "ActionOutput_zendesk_listtickets"
+            ],
+            "scopes": [
+                "tickets:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listtickets",
+                "ActionOutput_zendesk_listtickets"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2227,7 +2583,10 @@
                                                     },
                                                     "value": {}
                                                 },
-                                                "required": ["id", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2283,7 +2642,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "url", "status"],
+                                    "required": [
+                                        "id",
+                                        "url",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of tickets"
@@ -2297,7 +2660,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["tickets"],
+                        "required": [
+                            "tickets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2310,9 +2675,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_zendesk_listusers"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_zendesk_listusers", "ActionOutput_zendesk_listusers"],
+            "output": [
+                "ActionOutput_zendesk_listusers"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listusers",
+                "ActionOutput_zendesk_listusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2368,7 +2740,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2376,7 +2750,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2389,9 +2765,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_listviews",
             "name": "list-views",
-            "output": ["ActionOutput_zendesk_listviews"],
-            "scopes": ["ticket_views:read"],
-            "usedModels": ["ActionInput_zendesk_listviews", "ActionOutput_zendesk_listviews"],
+            "output": [
+                "ActionOutput_zendesk_listviews"
+            ],
+            "scopes": [
+                "ticket_views:read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_listviews",
+                "ActionOutput_zendesk_listviews"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2438,7 +2821,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2446,7 +2832,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["views"],
+                        "required": [
+                            "views"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2459,9 +2847,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_searchtickets",
             "name": "search-tickets",
-            "output": ["ActionOutput_zendesk_searchtickets"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_zendesk_searchtickets", "ActionOutput_zendesk_searchtickets"],
+            "output": [
+                "ActionOutput_zendesk_searchtickets"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_searchtickets",
+                "ActionOutput_zendesk_searchtickets"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -2475,12 +2870,21 @@
                             "sort_by": {
                                 "description": "Sort field. Defaults to relevance.",
                                 "type": "string",
-                                "enum": ["updated_at", "created_at", "priority", "status", "ticket_type"]
+                                "enum": [
+                                    "updated_at",
+                                    "created_at",
+                                    "priority",
+                                    "status",
+                                    "ticket_type"
+                                ]
                             },
                             "sort_order": {
                                 "description": "Sort order. Defaults to desc.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "page": {
                                 "description": "Page number for offset pagination.",
@@ -2489,7 +2893,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_searchtickets": {
@@ -2516,7 +2922,10 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "via": {
                                             "type": "object",
@@ -2534,25 +2943,43 @@
                                             "type": "string"
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "subject": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "raw_subject": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "priority": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string"
                                         },
                                         "recipient": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "requester_id": {
                                             "type": "number"
@@ -2561,13 +2988,22 @@
                                             "type": "number"
                                         },
                                         "assignee_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "organization_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "group_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "collaborator_ids": {
                                             "type": "array",
@@ -2588,10 +3024,16 @@
                                             }
                                         },
                                         "forum_topic_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "problem_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "has_incidents": {
                                             "type": "boolean"
@@ -2600,7 +3042,10 @@
                                             "type": "boolean"
                                         },
                                         "due_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "tags": {
                                             "type": "array",
@@ -2618,7 +3063,10 @@
                                                     },
                                                     "value": {}
                                                 },
-                                                "required": ["id", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2631,7 +3079,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["score"],
+                                                    "required": [
+                                                        "score"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 {
@@ -2655,7 +3105,10 @@
                                                     },
                                                     "value": {}
                                                 },
-                                                "required": ["id", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2666,7 +3119,10 @@
                                             }
                                         },
                                         "ticket_form_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "brand_id": {
                                             "type": "number"
@@ -2678,12 +3134,23 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "url", "created_at", "updated_at", "status", "requester_id", "submitter_id"],
+                                    "required": [
+                                        "id",
+                                        "url",
+                                        "created_at",
+                                        "updated_at",
+                                        "status",
+                                        "requester_id",
+                                        "submitter_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["count", "tickets"],
+                        "required": [
+                            "count",
+                            "tickets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2696,9 +3163,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_updateorganization",
             "name": "update-organization",
-            "output": ["ActionOutput_zendesk_updateorganization"],
-            "scopes": ["organizations:write"],
-            "usedModels": ["ActionInput_zendesk_updateorganization", "ActionOutput_zendesk_updateorganization"],
+            "output": [
+                "ActionOutput_zendesk_updateorganization"
+            ],
+            "scopes": [
+                "organizations:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_updateorganization",
+                "ActionOutput_zendesk_updateorganization"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2715,15 +3189,24 @@
                             },
                             "notes": {
                                 "description": "Any notes about the organization. Set to null to clear. Example: \"Primary customer\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "details": {
                                 "description": "Any details about the organization, such as the address. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_id": {
                                 "description": "A unique external ID to associate organizations to an external record. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "group_id": {
                                 "description": "New tickets from users in this organization are automatically put in this group. Example: 234",
@@ -2752,7 +3235,9 @@
                                 }
                             }
                         },
-                        "required": ["organizationId"],
+                        "required": [
+                            "organizationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_updateorganization": {
@@ -2805,7 +3290,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2818,9 +3305,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_updateticket",
             "name": "update-ticket",
-            "output": ["ActionOutput_zendesk_updateticket"],
-            "scopes": ["tickets:write"],
-            "usedModels": ["ActionInput_zendesk_updateticket", "ActionOutput_zendesk_updateticket"],
+            "output": [
+                "ActionOutput_zendesk_updateticket"
+            ],
+            "scopes": [
+                "tickets:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_updateticket",
+                "ActionOutput_zendesk_updateticket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2838,12 +3332,24 @@
                             "status": {
                                 "description": "The status of the ticket.",
                                 "type": "string",
-                                "enum": ["new", "open", "pending", "hold", "solved", "closed"]
+                                "enum": [
+                                    "new",
+                                    "open",
+                                    "pending",
+                                    "hold",
+                                    "solved",
+                                    "closed"
+                                ]
                             },
                             "priority": {
                                 "description": "The priority of the ticket.",
                                 "type": "string",
-                                "enum": ["urgent", "high", "normal", "low"]
+                                "enum": [
+                                    "urgent",
+                                    "high",
+                                    "normal",
+                                    "low"
+                                ]
                             },
                             "assignee_id": {
                                 "description": "The ID of the agent to assign the ticket to.",
@@ -2876,10 +3382,17 @@
                                         },
                                         "value": {
                                             "description": "The value to set for the custom field.",
-                                            "type": ["string", "number", "boolean"]
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2900,11 +3413,15 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["body"],
+                                "required": [
+                                    "body"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["ticket_id"],
+                        "required": [
+                            "ticket_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_updateticket": {
@@ -2967,10 +3484,17 @@
                                             "type": "number"
                                         },
                                         "value": {
-                                            "type": ["string", "number", "boolean", "null"]
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2981,7 +3505,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "status", "requester_id", "submitter_id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "url",
+                            "status",
+                            "requester_id",
+                            "submitter_id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2994,9 +3526,16 @@
             "endpoint": null,
             "input": "ActionInput_zendesk_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_zendesk_updateuser"],
-            "scopes": ["users:write"],
-            "usedModels": ["ActionInput_zendesk_updateuser", "ActionOutput_zendesk_updateuser"],
+            "output": [
+                "ActionOutput_zendesk_updateuser"
+            ],
+            "scopes": [
+                "users:write"
+            ],
+            "usedModels": [
+                "ActionInput_zendesk_updateuser",
+                "ActionOutput_zendesk_updateuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3038,7 +3577,11 @@
                             "role": {
                                 "description": "The user's role.",
                                 "type": "string",
-                                "enum": ["end-user", "agent", "admin"]
+                                "enum": [
+                                    "end-user",
+                                    "agent",
+                                    "admin"
+                                ]
                             },
                             "customRoleId": {
                                 "description": "A custom role ID if the user is an agent on Enterprise plan.",
@@ -3092,7 +3635,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zendesk_updateuser": {
@@ -3175,7 +3720,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3196,12 +3743,18 @@
             ],
             "input": null,
             "name": "articles",
-            "output": ["Article"],
+            "output": [
+                "Article"
+            ],
             "runs": "every hour",
-            "scopes": ["hc:read"],
+            "scopes": [
+                "hc:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Article"],
+            "usedModels": [
+                "Article"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3318,12 +3871,21 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "created_at", "locale", "title", "updated_at", "url"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "locale",
+                            "title",
+                            "updated_at",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3337,12 +3899,18 @@
             ],
             "input": null,
             "name": "categories",
-            "output": ["Category"],
+            "output": [
+                "Category"
+            ],
             "runs": "every hour",
-            "scopes": ["hc:read"],
+            "scopes": [
+                "hc:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Category"],
+            "usedModels": [
+                "Category"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3386,12 +3954,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "locale", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "locale",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3406,12 +3982,18 @@
             ],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
-            "scopes": ["groups:read"],
+            "scopes": [
+                "groups:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3447,12 +4029,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3466,12 +4053,18 @@
             ],
             "input": null,
             "name": "macros",
-            "output": ["Macro"],
+            "output": [
+                "Macro"
+            ],
             "runs": "every hour",
-            "scopes": ["macros:read"],
+            "scopes": [
+                "macros:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Macro"],
+            "usedModels": [
+                "Macro"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3506,21 +4099,33 @@
                                     "type": "object",
                                     "properties": {
                                         "field": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "value": {}
                                     },
-                                    "required": ["field", "value"],
+                                    "required": [
+                                        "field",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "title", "active"],
+                        "required": [
+                            "id",
+                            "title",
+                            "active"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3534,12 +4139,18 @@
             ],
             "input": null,
             "name": "organizations",
-            "output": ["Organization"],
+            "output": [
+                "Organization"
+            ],
             "runs": "every hour",
-            "scopes": ["organizations:read"],
+            "scopes": [
+                "organizations:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Organization"],
+            "usedModels": [
+                "Organization"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3593,12 +4204,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "created_at", "updated_at", "url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at",
+                            "updated_at",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3612,12 +4231,18 @@
             ],
             "input": null,
             "name": "sections",
-            "output": ["Section"],
+            "output": [
+                "Section"
+            ],
             "runs": "every hour",
-            "scopes": ["hc:read"],
+            "scopes": [
+                "hc:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Section"],
+            "usedModels": [
+                "Section"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3668,12 +4293,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "locale", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "locale",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3687,12 +4320,19 @@
             ],
             "input": "SyncMetadata_zendesk_ticketcomments",
             "name": "ticket-comments",
-            "output": ["TicketComment"],
+            "output": [
+                "TicketComment"
+            ],
             "runs": "every hour",
-            "scopes": ["tickets:read"],
+            "scopes": [
+                "tickets:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TicketComment", "SyncMetadata_zendesk_ticketcomments"],
+            "usedModels": [
+                "TicketComment",
+                "SyncMetadata_zendesk_ticketcomments"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3731,7 +4371,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "ticket_id", "author_id", "created_at"],
+                        "required": [
+                            "id",
+                            "ticket_id",
+                            "author_id",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_zendesk_ticketcomments": {
@@ -3744,12 +4389,16 @@
                                 }
                             }
                         },
-                        "required": ["ticket_ids"],
+                        "required": [
+                            "ticket_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3763,12 +4412,18 @@
             ],
             "input": null,
             "name": "ticket-fields",
-            "output": ["TicketField"],
+            "output": [
+                "TicketField"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TicketField"],
+            "usedModels": [
+                "TicketField"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3879,12 +4534,20 @@
                                 }
                             }
                         },
-                        "required": ["id", "type", "title", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "title",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3898,12 +4561,18 @@
             ],
             "input": null,
             "name": "ticket-forms",
-            "output": ["TicketForm"],
+            "output": [
+                "TicketForm"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TicketForm"],
+            "usedModels": [
+                "TicketForm"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3972,12 +4641,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3991,12 +4664,18 @@
             ],
             "input": null,
             "name": "tickets",
-            "output": ["Ticket"],
+            "output": [
+                "Ticket"
+            ],
             "runs": "every hour",
-            "scopes": ["tickets:read"],
+            "scopes": [
+                "tickets:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Ticket"],
+            "usedModels": [
+                "Ticket"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4114,7 +4793,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4128,12 +4809,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["users:read"],
+            "scopes": [
+                "users:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4187,12 +4874,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4206,12 +4900,18 @@
             ],
             "input": null,
             "name": "views",
-            "output": ["View"],
+            "output": [
+                "View"
+            ],
             "runs": "every hour",
-            "scopes": ["ticket_views:read"],
+            "scopes": [
+                "ticket_views:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["View"],
+            "usedModels": [
+                "View"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4255,12 +4955,17 @@
                             },
                             "restriction": {}
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

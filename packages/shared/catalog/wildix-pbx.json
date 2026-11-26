@@ -14,12 +14,17 @@
             ],
             "input": "SyncMetadata_wildix_pbx_colleagues",
             "name": "colleagues",
-            "output": ["WildixPbxColleague"],
+            "output": [
+                "WildixPbxColleague"
+            ],
             "runs": "every 1 hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["WildixPbxColleague", "SyncMetadata_wildix_pbx_colleagues"],
+            "usedModels": [
+                "WildixPbxColleague",
+                "SyncMetadata_wildix_pbx_colleagues"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -49,7 +54,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "extension", "email", "mobilePhone", "licenseType", "language"],
+                        "required": [
+                            "id",
+                            "name",
+                            "extension",
+                            "email",
+                            "mobilePhone",
+                            "licenseType",
+                            "language"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_wildix_pbx_colleagues": {

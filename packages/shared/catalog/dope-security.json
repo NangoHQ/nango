@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_addcustomcategoryurls",
             "name": "add-custom-category-urls",
-            "output": ["ActionOutput_dope_security_addcustomcategoryurls"],
+            "output": [
+                "ActionOutput_dope_security_addcustomcategoryurls"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_addcustomcategoryurls", "ActionOutput_dope_security_addcustomcategoryurls"],
+            "usedModels": [
+                "ActionInput_dope_security_addcustomcategoryurls",
+                "ActionOutput_dope_security_addcustomcategoryurls"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -33,7 +38,10 @@
                                 "description": "URLs to add. Example: [\"*.example.com\"]"
                             }
                         },
-                        "required": ["customCategoryName", "urls"],
+                        "required": [
+                            "customCategoryName",
+                            "urls"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_addcustomcategoryurls": {
@@ -49,7 +57,10 @@
                                 }
                             }
                         },
-                        "required": ["customCategoryName", "addedUrls"],
+                        "required": [
+                            "customCategoryName",
+                            "addedUrls"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -62,9 +73,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_createcustomcategory",
             "name": "create-custom-category",
-            "output": ["ActionOutput_dope_security_createcustomcategory"],
+            "output": [
+                "ActionOutput_dope_security_createcustomcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_createcustomcategory", "ActionOutput_dope_security_createcustomcategory"],
+            "usedModels": [
+                "ActionInput_dope_security_createcustomcategory",
+                "ActionOutput_dope_security_createcustomcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -79,7 +95,9 @@
                                 "description": "Custom category name. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"MyCategory\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_createcustomcategory": {
@@ -89,7 +107,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -102,9 +122,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_createpolicy",
             "name": "create-policy",
-            "output": ["ActionOutput_dope_security_createpolicy"],
+            "output": [
+                "ActionOutput_dope_security_createpolicy"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_createpolicy", "ActionOutput_dope_security_createpolicy"],
+            "usedModels": [
+                "ActionInput_dope_security_createpolicy",
+                "ActionOutput_dope_security_createpolicy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -118,7 +143,9 @@
                                 "description": "The name of the policy to create. Max 32 characters, no special characters (#!@$%^*?./\\)."
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_createpolicy": {
@@ -128,7 +155,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -141,9 +170,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_deletecustomcategoryurl",
             "name": "delete-custom-category-url",
-            "output": ["ActionOutput_dope_security_deletecustomcategoryurl"],
+            "output": [
+                "ActionOutput_dope_security_deletecustomcategoryurl"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_deletecustomcategoryurl", "ActionOutput_dope_security_deletecustomcategoryurl"],
+            "usedModels": [
+                "ActionInput_dope_security_deletecustomcategoryurl",
+                "ActionOutput_dope_security_deletecustomcategoryurl"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -163,7 +197,10 @@
                                 "description": "URL to delete from the custom category. Example: \"*.registry-seed-test.example.com\""
                             }
                         },
-                        "required": ["customCategoryName", "url"],
+                        "required": [
+                            "customCategoryName",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_deletecustomcategoryurl": {
@@ -179,7 +216,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "customCategoryName", "deletedUrl"],
+                        "required": [
+                            "success",
+                            "customCategoryName",
+                            "deletedUrl"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -192,9 +233,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_deletecustomcategoryurls",
             "name": "delete-custom-category-urls",
-            "output": ["ActionOutput_dope_security_deletecustomcategoryurls"],
+            "output": [
+                "ActionOutput_dope_security_deletecustomcategoryurls"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_deletecustomcategoryurls", "ActionOutput_dope_security_deletecustomcategoryurls"],
+            "usedModels": [
+                "ActionInput_dope_security_deletecustomcategoryurls",
+                "ActionOutput_dope_security_deletecustomcategoryurls"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -209,7 +255,9 @@
                                 "description": "Name of the custom category to clear URLs from. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory1\""
                             }
                         },
-                        "required": ["customCategoryName"],
+                        "required": [
+                            "customCategoryName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_deletecustomcategoryurls": {
@@ -220,7 +268,9 @@
                                 "description": "Whether the URLs were successfully removed from the custom category."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -233,9 +283,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_deletecustomcategory",
             "name": "delete-custom-category",
-            "output": ["ActionOutput_dope_security_deletecustomcategory"],
+            "output": [
+                "ActionOutput_dope_security_deletecustomcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_deletecustomcategory", "ActionOutput_dope_security_deletecustomcategory"],
+            "usedModels": [
+                "ActionInput_dope_security_deletecustomcategory",
+                "ActionOutput_dope_security_deletecustomcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -250,7 +305,9 @@
                                 "description": "The name of the custom category to delete. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory2\""
                             }
                         },
-                        "required": ["customCategoryName"],
+                        "required": [
+                            "customCategoryName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_deletecustomcategory": {
@@ -263,7 +320,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "customCategoryName"],
+                        "required": [
+                            "success",
+                            "customCategoryName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -276,9 +336,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_deletepolicyapplicationbypasses",
             "name": "delete-policy-application-bypasses",
-            "output": ["ActionOutput_dope_security_deletepolicyapplicationbypasses"],
+            "output": [
+                "ActionOutput_dope_security_deletepolicyapplicationbypasses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_deletepolicyapplicationbypasses", "ActionOutput_dope_security_deletepolicyapplicationbypasses"],
+            "usedModels": [
+                "ActionInput_dope_security_deletepolicyapplicationbypasses",
+                "ActionOutput_dope_security_deletepolicyapplicationbypasses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -304,7 +369,9 @@
                                 }
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_deletepolicyapplicationbypasses": {
@@ -314,7 +381,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -327,9 +396,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_deletepolicyurlbypasses",
             "name": "delete-policy-url-bypasses",
-            "output": ["ActionOutput_dope_security_deletepolicyurlbypasses"],
+            "output": [
+                "ActionOutput_dope_security_deletepolicyurlbypasses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_deletepolicyurlbypasses", "ActionOutput_dope_security_deletepolicyurlbypasses"],
+            "usedModels": [
+                "ActionInput_dope_security_deletepolicyurlbypasses",
+                "ActionOutput_dope_security_deletepolicyurlbypasses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -351,7 +425,10 @@
                                 "description": "Array of custom URL bypass entries to remove. Example: [\"*.example.com\"]"
                             }
                         },
-                        "required": ["policyName", "urls"],
+                        "required": [
+                            "policyName",
+                            "urls"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_deletepolicyurlbypasses": {
@@ -367,7 +444,10 @@
                                 }
                             }
                         },
-                        "required": ["policyName", "deletedUrls"],
+                        "required": [
+                            "policyName",
+                            "deletedUrls"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -380,9 +460,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_deletepolicy",
             "name": "delete-policy",
-            "output": ["ActionOutput_dope_security_deletepolicy"],
+            "output": [
+                "ActionOutput_dope_security_deletepolicy"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_deletepolicy", "ActionOutput_dope_security_deletepolicy"],
+            "usedModels": [
+                "ActionInput_dope_security_deletepolicy",
+                "ActionOutput_dope_security_deletepolicy"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -395,7 +480,9 @@
                                 "description": "The name of the custom policy to delete. Example: \"MyPolicy\""
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_deletepolicy": {
@@ -408,7 +495,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "policyName"],
+                        "required": [
+                            "success",
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -421,9 +511,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_getpolicyapplicationbypasses",
             "name": "get-policy-application-bypasses",
-            "output": ["ActionOutput_dope_security_getpolicyapplicationbypasses"],
+            "output": [
+                "ActionOutput_dope_security_getpolicyapplicationbypasses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_getpolicyapplicationbypasses", "ActionOutput_dope_security_getpolicyapplicationbypasses"],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicyapplicationbypasses",
+                "ActionOutput_dope_security_getpolicyapplicationbypasses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -435,7 +530,9 @@
                                 "description": "Policy name. Example: \"RegistrySeedPolicy1\""
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_getpolicyapplicationbypasses": {
@@ -465,7 +562,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -487,7 +586,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -507,10 +608,16 @@
                                                 },
                                                 "state": {
                                                     "type": "string",
-                                                    "enum": ["applied", "ignored"]
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["name", "state"],
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -524,10 +631,16 @@
                                                 },
                                                 "state": {
                                                     "type": "string",
-                                                    "enum": ["applied", "ignored"]
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["name", "state"],
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -535,7 +648,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["inheritsFromBase"],
+                        "required": [
+                            "inheritsFromBase"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -548,9 +663,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_getpolicyassignments",
             "name": "get-policy-assignments",
-            "output": ["ActionOutput_dope_security_getpolicyassignments"],
+            "output": [
+                "ActionOutput_dope_security_getpolicyassignments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_getpolicyassignments", "ActionOutput_dope_security_getpolicyassignments"],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicyassignments",
+                "ActionOutput_dope_security_getpolicyassignments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -562,7 +682,9 @@
                                 "description": "Policy name. Example: \"RegistrySeedPolicy1\""
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_getpolicyassignments": {
@@ -583,7 +705,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["email", "name"],
+                                            "required": [
+                                                "email",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -602,16 +727,25 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["email", "name", "membersCount"],
+                                            "required": [
+                                                "email",
+                                                "name",
+                                                "membersCount"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["users", "groups"],
+                                "required": [
+                                    "users",
+                                    "groups"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -624,9 +758,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_getpolicycontent",
             "name": "get-policy-content",
-            "output": ["ActionOutput_dope_security_getpolicycontent"],
+            "output": [
+                "ActionOutput_dope_security_getpolicycontent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_getpolicycontent", "ActionOutput_dope_security_getpolicycontent"],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicycontent",
+                "ActionOutput_dope_security_getpolicycontent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -638,7 +777,9 @@
                                 "description": "The name of the policy to retrieve content for. Example: \"Base Policy\""
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_getpolicycontent": {
@@ -688,17 +829,24 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["restriction"],
+                                                        "required": [
+                                                            "restriction"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["restriction"],
+                                            "required": [
+                                                "restriction"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["inheritsFromBase", "restrictions"],
+                                "required": [
+                                    "inheritsFromBase",
+                                    "restrictions"
+                                ],
                                 "additionalProperties": false
                             },
                             "customCategories": {
@@ -742,21 +890,31 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["restriction"],
+                                                        "required": [
+                                                            "restriction"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["restriction"],
+                                            "required": [
+                                                "restriction"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["inheritsFromBase", "restrictions"],
+                                "required": [
+                                    "inheritsFromBase",
+                                    "restrictions"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["categories", "customCategories"],
+                        "required": [
+                            "categories",
+                            "customCategories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -769,9 +927,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_getpolicysslinspection",
             "name": "get-policy-ssl-inspection",
-            "output": ["ActionOutput_dope_security_getpolicysslinspection"],
+            "output": [
+                "ActionOutput_dope_security_getpolicysslinspection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_getpolicysslinspection", "ActionOutput_dope_security_getpolicysslinspection"],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicysslinspection",
+                "ActionOutput_dope_security_getpolicysslinspection"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -783,7 +946,9 @@
                                 "description": "Policy name. Example: \"RegistrySeedPolicy1\""
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_getpolicysslinspection": {
@@ -797,14 +962,22 @@
                                     },
                                     "state": {
                                         "type": "string",
-                                        "enum": ["enabled", "disabled"]
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
                                     }
                                 },
-                                "required": ["inheritsFromBase", "state"],
+                                "required": [
+                                    "inheritsFromBase",
+                                    "state"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["sslInspection"],
+                        "required": [
+                            "sslInspection"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -817,9 +990,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_getpolicyurlbypasses",
             "name": "get-policy-url-bypasses",
-            "output": ["ActionOutput_dope_security_getpolicyurlbypasses"],
+            "output": [
+                "ActionOutput_dope_security_getpolicyurlbypasses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_getpolicyurlbypasses", "ActionOutput_dope_security_getpolicyurlbypasses"],
+            "usedModels": [
+                "ActionInput_dope_security_getpolicyurlbypasses",
+                "ActionOutput_dope_security_getpolicyurlbypasses"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -831,7 +1009,9 @@
                                 "description": "Policy name. Example: \"RegistrySeedPolicy1\""
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_getpolicyurlbypasses": {
@@ -861,7 +1041,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -875,19 +1057,31 @@
                                                 },
                                                 "state": {
                                                     "type": "string",
-                                                    "enum": ["applied", "ignored"]
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["name", "state"],
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["inheritsFromBase", "custom", "default"],
+                                "required": [
+                                    "inheritsFromBase",
+                                    "custom",
+                                    "default"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -900,9 +1094,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_listcustomcategories",
             "name": "list-custom-categories",
-            "output": ["ActionOutput_dope_security_listcustomcategories"],
+            "output": [
+                "ActionOutput_dope_security_listcustomcategories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_listcustomcategories", "ActionOutput_dope_security_listcustomcategories"],
+            "usedModels": [
+                "ActionInput_dope_security_listcustomcategories",
+                "ActionOutput_dope_security_listcustomcategories"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -929,7 +1128,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["categories"],
+                        "required": [
+                            "categories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -942,9 +1143,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_listcustomcategoryurls",
             "name": "list-custom-category-urls",
-            "output": ["ActionOutput_dope_security_listcustomcategoryurls"],
+            "output": [
+                "ActionOutput_dope_security_listcustomcategoryurls"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_listcustomcategoryurls", "ActionOutput_dope_security_listcustomcategoryurls"],
+            "usedModels": [
+                "ActionInput_dope_security_listcustomcategoryurls",
+                "ActionOutput_dope_security_listcustomcategoryurls"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -959,7 +1165,9 @@
                                 "description": "Name of the custom category. Must be 1-32 characters and must not contain: # ! @ $ % ^ * ? . / \\. Example: \"RegistrySeedCategory1\""
                             }
                         },
-                        "required": ["customCategoryName"],
+                        "required": [
+                            "customCategoryName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_listcustomcategoryurls": {
@@ -972,7 +1180,9 @@
                                 }
                             }
                         },
-                        "required": ["urls"],
+                        "required": [
+                            "urls"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -985,9 +1195,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_listendpoints",
             "name": "list-endpoints",
-            "output": ["ActionOutput_dope_security_listendpoints"],
+            "output": [
+                "ActionOutput_dope_security_listendpoints"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_listendpoints", "ActionOutput_dope_security_listendpoints"],
+            "usedModels": [
+                "ActionInput_dope_security_listendpoints",
+                "ActionOutput_dope_security_listendpoints"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1019,7 +1234,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["healthy", "error", "dormant", "disabled"]
+                                    "enum": [
+                                        "healthy",
+                                        "error",
+                                        "dormant",
+                                        "disabled"
+                                    ]
                                 }
                             },
                             "debugState": {
@@ -1027,13 +1247,20 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["0", "1", "2"]
+                                    "enum": [
+                                        "0",
+                                        "1",
+                                        "2"
+                                    ]
                                 }
                             },
                             "fallbackMode": {
                                 "description": "Filter by the fallback mode.",
                                 "type": "string",
-                                "enum": ["true", "false"]
+                                "enum": [
+                                    "true",
+                                    "false"
+                                ]
                             },
                             "locationId": {
                                 "description": "Filter by this exact location id - with an underscore separating the case sensitive city and country values e.g. \"City_Country\".",
@@ -1147,7 +1374,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1160,9 +1389,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_listpolicies",
             "name": "list-policies",
-            "output": ["ActionOutput_dope_security_listpolicies"],
+            "output": [
+                "ActionOutput_dope_security_listpolicies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_listpolicies", "ActionOutput_dope_security_listpolicies"],
+            "usedModels": [
+                "ActionInput_dope_security_listpolicies",
+                "ActionOutput_dope_security_listpolicies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1182,7 +1416,10 @@
                             "order": {
                                 "description": "Sort order for policy names. Defaults to asc.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1203,13 +1440,20 @@
                                         },
                                         "sslInspection": {
                                             "type": "string",
-                                            "enum": ["enabled", "disabled"]
+                                            "enum": [
+                                                "enabled",
+                                                "disabled"
+                                            ]
                                         },
                                         "clashCount": {
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["policyName", "updatedAt", "sslInspection"],
+                                    "required": [
+                                        "policyName",
+                                        "updatedAt",
+                                        "sslInspection"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1217,7 +1461,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["policies"],
+                        "required": [
+                            "policies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1230,9 +1476,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_replacecustomcategoryurls",
             "name": "replace-custom-category-urls",
-            "output": ["ActionOutput_dope_security_replacecustomcategoryurls"],
+            "output": [
+                "ActionOutput_dope_security_replacecustomcategoryurls"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_replacecustomcategoryurls", "ActionOutput_dope_security_replacecustomcategoryurls"],
+            "usedModels": [
+                "ActionInput_dope_security_replacecustomcategoryurls",
+                "ActionOutput_dope_security_replacecustomcategoryurls"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1254,7 +1505,10 @@
                                 "description": "URLs to replace in the category. Example: [\"*.example.com\", \"*.other.com\"]"
                             }
                         },
-                        "required": ["customCategoryName", "urls"],
+                        "required": [
+                            "customCategoryName",
+                            "urls"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_replacecustomcategoryurls": {
@@ -1270,7 +1524,10 @@
                                 }
                             }
                         },
-                        "required": ["customCategoryName", "urls"],
+                        "required": [
+                            "customCategoryName",
+                            "urls"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1283,9 +1540,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_updatepolicyapplicationbypasses",
             "name": "update-policy-application-bypasses",
-            "output": ["ActionOutput_dope_security_updatepolicyapplicationbypasses"],
+            "output": [
+                "ActionOutput_dope_security_updatepolicyapplicationbypasses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_updatepolicyapplicationbypasses", "ActionOutput_dope_security_updatepolicyapplicationbypasses"],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyapplicationbypasses",
+                "ActionOutput_dope_security_updatepolicyapplicationbypasses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1319,7 +1581,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1338,7 +1602,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -1361,11 +1627,17 @@
                                                 },
                                                 "state": {
                                                     "type": "string",
-                                                    "enum": ["applied", "ignored"],
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ],
                                                     "description": "Whether this default entry is applied or ignored."
                                                 }
                                             },
-                                            "required": ["name", "state"],
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1381,11 +1653,17 @@
                                                 },
                                                 "state": {
                                                     "type": "string",
-                                                    "enum": ["applied", "ignored"],
+                                                    "enum": [
+                                                        "applied",
+                                                        "ignored"
+                                                    ],
                                                     "description": "Whether this default entry is applied or ignored."
                                                 }
                                             },
-                                            "required": ["name", "state"],
+                                            "required": [
+                                                "name",
+                                                "state"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -1393,7 +1671,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_updatepolicyapplicationbypasses": {
@@ -1403,7 +1683,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1416,9 +1698,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_updatepolicyassignments",
             "name": "update-policy-assignments",
-            "output": ["ActionOutput_dope_security_updatepolicyassignments"],
+            "output": [
+                "ActionOutput_dope_security_updatepolicyassignments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_updatepolicyassignments", "ActionOutput_dope_security_updatepolicyassignments"],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyassignments",
+                "ActionOutput_dope_security_updatepolicyassignments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1444,7 +1731,9 @@
                                 }
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_updatepolicyassignments": {
@@ -1465,7 +1754,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email", "name"],
+                                    "required": [
+                                        "email",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1484,12 +1776,20 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["email", "name", "membersCount"],
+                                    "required": [
+                                        "email",
+                                        "name",
+                                        "membersCount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["policyName", "users", "groups"],
+                        "required": [
+                            "policyName",
+                            "users",
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1502,9 +1802,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_updatepolicyexceptions",
             "name": "update-policy-exceptions",
-            "output": ["ActionOutput_dope_security_updatepolicyexceptions"],
+            "output": [
+                "ActionOutput_dope_security_updatepolicyexceptions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_updatepolicyexceptions", "ActionOutput_dope_security_updatepolicyexceptions"],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyexceptions",
+                "ActionOutput_dope_security_updatepolicyexceptions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1531,13 +1836,19 @@
                                         "properties": {
                                             "restriction": {
                                                 "type": "string",
-                                                "enum": ["ALLOW", "BLOCK", "WARNING"]
+                                                "enum": [
+                                                    "ALLOW",
+                                                    "BLOCK",
+                                                    "WARNING"
+                                                ]
                                             },
                                             "page": {
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["restriction"],
+                                        "required": [
+                                            "restriction"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 }
@@ -1558,19 +1869,27 @@
                                         "properties": {
                                             "restriction": {
                                                 "type": "string",
-                                                "enum": ["ALLOW", "BLOCK", "WARNING"]
+                                                "enum": [
+                                                    "ALLOW",
+                                                    "BLOCK",
+                                                    "WARNING"
+                                                ]
                                             },
                                             "page": {
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["restriction"],
+                                        "required": [
+                                            "restriction"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 }
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_updatepolicyexceptions": {
@@ -1580,7 +1899,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1593,9 +1914,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_updatepolicyrestrictions",
             "name": "update-policy-restrictions",
-            "output": ["ActionOutput_dope_security_updatepolicyrestrictions"],
+            "output": [
+                "ActionOutput_dope_security_updatepolicyrestrictions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_updatepolicyrestrictions", "ActionOutput_dope_security_updatepolicyrestrictions"],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyrestrictions",
+                "ActionOutput_dope_security_updatepolicyrestrictions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1616,12 +1942,19 @@
                                 },
                                 "additionalProperties": {
                                     "type": "string",
-                                    "enum": ["ALLOW", "BLOCK", "WARNING"]
+                                    "enum": [
+                                        "ALLOW",
+                                        "BLOCK",
+                                        "WARNING"
+                                    ]
                                 },
                                 "description": "Map of category names to restriction values."
                             }
                         },
-                        "required": ["policyName", "categories"],
+                        "required": [
+                            "policyName",
+                            "categories"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_updatepolicyrestrictions": {
@@ -1642,12 +1975,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["restriction"],
+                                    "required": [
+                                        "restriction"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1660,9 +1997,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_updatepolicysslinspection",
             "name": "update-policy-ssl-inspection",
-            "output": ["ActionOutput_dope_security_updatepolicysslinspection"],
+            "output": [
+                "ActionOutput_dope_security_updatepolicysslinspection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_updatepolicysslinspection", "ActionOutput_dope_security_updatepolicysslinspection"],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicysslinspection",
+                "ActionOutput_dope_security_updatepolicysslinspection"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1676,14 +2018,19 @@
                             "state": {
                                 "description": "Set a custom SSL inspection state. Mutually exclusive with inheritsFromBase.",
                                 "type": "string",
-                                "enum": ["enabled", "disabled"]
+                                "enum": [
+                                    "enabled",
+                                    "disabled"
+                                ]
                             },
                             "inheritsFromBase": {
                                 "description": "Reset to inherit from the base policy. Mutually exclusive with state.",
                                 "type": "boolean"
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_updatepolicysslinspection": {
@@ -1697,7 +2044,10 @@
                                 "properties": {
                                     "state": {
                                         "type": "string",
-                                        "enum": ["enabled", "disabled"]
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
                                     },
                                     "inheritsFromBase": {
                                         "type": "boolean"
@@ -1706,7 +2056,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["policyName", "sslInspection"],
+                        "required": [
+                            "policyName",
+                            "sslInspection"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1719,9 +2072,14 @@
             "endpoint": null,
             "input": "ActionInput_dope_security_updatepolicyurlbypasses",
             "name": "update-policy-url-bypasses",
-            "output": ["ActionOutput_dope_security_updatepolicyurlbypasses"],
+            "output": [
+                "ActionOutput_dope_security_updatepolicyurlbypasses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dope_security_updatepolicyurlbypasses", "ActionOutput_dope_security_updatepolicyurlbypasses"],
+            "usedModels": [
+                "ActionInput_dope_security_updatepolicyurlbypasses",
+                "ActionOutput_dope_security_updatepolicyurlbypasses"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1753,7 +2111,9 @@
                                             "maxLength": 256
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1769,16 +2129,24 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["applied", "ignored"],
+                                            "enum": [
+                                                "applied",
+                                                "ignored"
+                                            ],
                                             "description": "Toggle state for this default entry"
                                         }
                                     },
-                                    "required": ["name", "state"],
+                                    "required": [
+                                        "name",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["policyName"],
+                        "required": [
+                            "policyName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dope_security_updatepolicyurlbypasses": {
@@ -1805,7 +2173,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1819,15 +2189,25 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["applied", "ignored"]
+                                            "enum": [
+                                                "applied",
+                                                "ignored"
+                                            ]
                                         }
                                     },
-                                    "required": ["name", "state"],
+                                    "required": [
+                                        "name",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["inheritsFromBase", "custom", "default"],
+                        "required": [
+                            "inheritsFromBase",
+                            "custom",
+                            "default"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1843,12 +2223,16 @@
             "endpoints": [],
             "input": null,
             "name": "custom-categories",
-            "output": ["CustomCategory"],
+            "output": [
+                "CustomCategory"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CustomCategory"],
+            "usedModels": [
+                "CustomCategory"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1869,12 +2253,18 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "urls"],
+                        "required": [
+                            "id",
+                            "name",
+                            "urls"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1883,12 +2273,16 @@
             "endpoints": [],
             "input": null,
             "name": "endpoints",
-            "output": ["Endpoint"],
+            "output": [
+                "Endpoint"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Endpoint"],
+            "usedModels": [
+                "Endpoint"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1975,12 +2369,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1989,12 +2387,16 @@
             "endpoints": [],
             "input": null,
             "name": "policies",
-            "output": ["Policy"],
+            "output": [
+                "Policy"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Policy"],
+            "usedModels": [
+                "Policy"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2013,18 +2415,28 @@
                             },
                             "sslInspection": {
                                 "type": "string",
-                                "enum": ["enabled", "disabled"]
+                                "enum": [
+                                    "enabled",
+                                    "disabled"
+                                ]
                             },
                             "clashCount": {
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "policyName", "updatedAt", "sslInspection"],
+                        "required": [
+                            "id",
+                            "policyName",
+                            "updatedAt",
+                            "sslInspection"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

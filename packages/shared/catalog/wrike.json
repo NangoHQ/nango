@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_wrike_createfolder"],
+            "output": [
+                "ActionOutput_wrike_createfolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_createfolder", "ActionOutput_wrike_createfolder"],
+            "usedModels": [
+                "ActionInput_wrike_createfolder",
+                "ActionOutput_wrike_createfolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -55,7 +60,10 @@
                                     "contractType": {
                                         "description": "Contract type of the project.",
                                         "type": "string",
-                                        "enum": ["Billable", "NonBillable"]
+                                        "enum": [
+                                            "Billable",
+                                            "NonBillable"
+                                        ]
                                     },
                                     "budget": {
                                         "description": "Project budget as a whole number. Decimal values are rejected by the API.",
@@ -67,7 +75,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["parentFolderId", "title"],
+                        "required": [
+                            "parentFolderId",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Wrike folder or project."
                     },
@@ -268,7 +279,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "The created Wrike folder or project."
                     }
@@ -282,9 +296,16 @@
             "endpoint": null,
             "input": "ActionInput_wrike_createtaskcomment",
             "name": "create-task-comment",
-            "output": ["ActionOutput_wrike_createtaskcomment"],
-            "scopes": ["wsReadWrite"],
-            "usedModels": ["ActionInput_wrike_createtaskcomment", "ActionOutput_wrike_createtaskcomment"],
+            "output": [
+                "ActionOutput_wrike_createtaskcomment"
+            ],
+            "scopes": [
+                "wsReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_wrike_createtaskcomment",
+                "ActionOutput_wrike_createtaskcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -301,7 +322,10 @@
                                 "description": "Comment text; must not be empty. Example: \"Looks good, shipping this.\"."
                             }
                         },
-                        "required": ["taskId", "text"],
+                        "required": [
+                            "taskId",
+                            "text"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for posting a new comment on a Wrike task."
                     },
@@ -340,7 +364,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The comment created on the Wrike task."
                     }
@@ -354,9 +380,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_createtaskdependency",
             "name": "create-task-dependency",
-            "output": ["ActionOutput_wrike_createtaskdependency"],
+            "output": [
+                "ActionOutput_wrike_createtaskdependency"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_createtaskdependency", "ActionOutput_wrike_createtaskdependency"],
+            "usedModels": [
+                "ActionInput_wrike_createtaskdependency",
+                "ActionOutput_wrike_createtaskdependency"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -374,14 +405,22 @@
                             "relationType": {
                                 "description": "Relationship between the two tasks. Defaults to \"FinishToStart\" (the successor cannot start until the predecessor finishes).",
                                 "type": "string",
-                                "enum": ["FinishToFinish", "StartToStart", "StartToFinish", "FinishToStart"]
+                                "enum": [
+                                    "FinishToFinish",
+                                    "StartToStart",
+                                    "StartToFinish",
+                                    "FinishToStart"
+                                ]
                             },
                             "lagTime": {
                                 "description": "Delay between the tasks in minutes. Positive values are lag time, negative values are lead time. Example: 0",
                                 "type": "number"
                             }
                         },
-                        "required": ["predecessorTaskId", "successorTaskId"],
+                        "required": [
+                            "predecessorTaskId",
+                            "successorTaskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a predecessor/successor dependency link between two Wrike tasks."
                     },
@@ -409,7 +448,13 @@
                                 "description": "Lag or lead time in minutes. Positive numbers are lag time and negative numbers are lead time."
                             }
                         },
-                        "required": ["id", "predecessorId", "successorId", "relationType", "lagTime"],
+                        "required": [
+                            "id",
+                            "predecessorId",
+                            "successorId",
+                            "relationType",
+                            "lagTime"
+                        ],
                         "additionalProperties": false,
                         "description": "The dependency link created between the predecessor and successor tasks."
                     }
@@ -423,9 +468,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_wrike_createtask"],
+            "output": [
+                "ActionOutput_wrike_createtask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_createtask", "ActionOutput_wrike_createtask"],
+            "usedModels": [
+                "ActionInput_wrike_createtask",
+                "ActionOutput_wrike_createtask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -475,7 +525,10 @@
                                 }
                             }
                         },
-                        "required": ["folderId", "title"],
+                        "required": [
+                            "folderId",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Wrike task."
                     },
@@ -585,7 +638,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created Wrike task."
                     }
@@ -599,9 +655,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_createtimelog",
             "name": "create-timelog",
-            "output": ["ActionOutput_wrike_createtimelog"],
+            "output": [
+                "ActionOutput_wrike_createtimelog"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_createtimelog", "ActionOutput_wrike_createtimelog"],
+            "usedModels": [
+                "ActionInput_wrike_createtimelog",
+                "ActionOutput_wrike_createtimelog"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -628,7 +689,12 @@
                                 "description": "Comment describing the work performed. Example: \"Worked on sprint planning\""
                             }
                         },
-                        "required": ["taskId", "hours", "trackedDate", "comment"],
+                        "required": [
+                            "taskId",
+                            "hours",
+                            "trackedDate",
+                            "comment"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for logging a time entry against a Wrike task."
                     },
@@ -668,7 +734,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "taskId", "userId", "hours", "trackedDate", "createdDate", "updatedDate"],
+                        "required": [
+                            "id",
+                            "taskId",
+                            "userId",
+                            "hours",
+                            "trackedDate",
+                            "createdDate",
+                            "updatedDate"
+                        ],
                         "additionalProperties": false,
                         "description": "The timelog entry created by the provider."
                     }
@@ -682,9 +756,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_wrike_deletecomment"],
+            "output": [
+                "ActionOutput_wrike_deletecomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_deletecomment", "ActionOutput_wrike_deletecomment"],
+            "usedModels": [
+                "ActionInput_wrike_deletecomment",
+                "ActionOutput_wrike_deletecomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -696,7 +775,9 @@
                                 "description": "The ID of the Wrike comment to permanently delete (an opaque string, not the numeric permalink id)."
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifier of the Wrike comment to permanently delete."
                     },
@@ -712,7 +793,10 @@
                                 "description": "True when the comment was permanently deleted. Wrike comments have no Recycle Bin, so this is final."
                             }
                         },
-                        "required": ["commentId", "deleted"],
+                        "required": [
+                            "commentId",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the permanent comment deletion."
                     }
@@ -726,9 +810,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_deletefoldersafely",
             "name": "delete-folder-safely",
-            "output": ["ActionOutput_wrike_deletefoldersafely"],
+            "output": [
+                "ActionOutput_wrike_deletefoldersafely"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_deletefoldersafely", "ActionOutput_wrike_deletefoldersafely"],
+            "usedModels": [
+                "ActionInput_wrike_deletefoldersafely",
+                "ActionOutput_wrike_deletefoldersafely"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -744,7 +833,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for safely deleting a Wrike folder or project, optionally confirming the cascade of its tasks."
                     },
@@ -758,7 +849,9 @@
                             "blockedBy": {
                                 "description": "Reason deletion was blocked. Present with value \"has_tasks\" when the folder or any of its child folders still contains tasks and confirm was not true.",
                                 "type": "string",
-                                "enum": ["has_tasks"]
+                                "enum": [
+                                    "has_tasks"
+                                ]
                             },
                             "taskCount": {
                                 "description": "Number of tasks found inside the folder and its child folders before deletion was attempted.",
@@ -776,7 +869,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["deleted"],
+                        "required": [
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the safe folder deletion attempt."
                     }
@@ -790,9 +885,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_deletefolder",
             "name": "delete-folder",
-            "output": ["ActionOutput_wrike_deletefolder"],
+            "output": [
+                "ActionOutput_wrike_deletefolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_deletefolder", "ActionOutput_wrike_deletefolder"],
+            "usedModels": [
+                "ActionInput_wrike_deletefolder",
+                "ActionOutput_wrike_deletefolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -805,7 +905,9 @@
                                 "description": "ID of the folder to delete. Example: \"MQAAAAEQ_HoD\"."
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false,
                         "description": "Path parameters for deleting a Wrike folder."
                     },
@@ -961,7 +1063,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The folder object as returned by Wrike after the delete request."
                     }
@@ -975,9 +1079,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_deletetaskdependency",
             "name": "delete-task-dependency",
-            "output": ["ActionOutput_wrike_deletetaskdependency"],
+            "output": [
+                "ActionOutput_wrike_deletetaskdependency"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_deletetaskdependency", "ActionOutput_wrike_deletetaskdependency"],
+            "usedModels": [
+                "ActionInput_wrike_deletetaskdependency",
+                "ActionOutput_wrike_deletetaskdependency"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -989,7 +1098,9 @@
                                 "description": "Composite dependency link ID to remove (for example \"MgAAAAERG-AHMwAAAAERG-AK\"), not either task ID. Get it from create-task-dependency or list-task-dependencies."
                             }
                         },
-                        "required": ["dependencyId"],
+                        "required": [
+                            "dependencyId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the dependency link to remove."
                     },
@@ -1009,7 +1120,11 @@
                                 "description": "True once the provider confirms the dependency link has been removed."
                             }
                         },
-                        "required": ["kind", "dependencyId", "deleted"],
+                        "required": [
+                            "kind",
+                            "dependencyId",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the dependency link was removed."
                     }
@@ -1023,9 +1138,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_wrike_deletetask"],
+            "output": [
+                "ActionOutput_wrike_deletetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_deletetask", "ActionOutput_wrike_deletetask"],
+            "usedModels": [
+                "ActionInput_wrike_deletetask",
+                "ActionOutput_wrike_deletetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1037,7 +1157,9 @@
                                 "description": "ID of the task to delete. Example: \"MAAAAAEQ_HoO\"."
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for soft-deleting a task."
                     },
@@ -1072,7 +1194,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The task that was soft-deleted and moved to the Recycle Bin."
                     }
@@ -1086,9 +1210,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_deletetimelog",
             "name": "delete-timelog",
-            "output": ["ActionOutput_wrike_deletetimelog"],
+            "output": [
+                "ActionOutput_wrike_deletetimelog"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_deletetimelog", "ActionOutput_wrike_deletetimelog"],
+            "usedModels": [
+                "ActionInput_wrike_deletetimelog",
+                "ActionOutput_wrike_deletetimelog"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1100,7 +1229,9 @@
                                 "description": "ID of the timelog (time entry) to permanently delete. Example: \"IEAG5DAKJQAC56AI\""
                             }
                         },
-                        "required": ["timelogId"],
+                        "required": [
+                            "timelogId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the Wrike timelog (time entry) to permanently delete."
                     },
@@ -1116,7 +1247,10 @@
                                 "description": "True once the provider confirms the timelog is gone; failures throw instead of returning false."
                             }
                         },
-                        "required": ["timelogId", "deleted"],
+                        "required": [
+                            "timelogId",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the requested timelog was permanently deleted."
                     }
@@ -1130,9 +1264,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_findorcreatefolderandcreatetask",
             "name": "find-or-create-folder-and-create-task",
-            "output": ["ActionOutput_wrike_findorcreatefolderandcreatetask"],
+            "output": [
+                "ActionOutput_wrike_findorcreatefolderandcreatetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_findorcreatefolderandcreatetask", "ActionOutput_wrike_findorcreatefolderandcreatetask"],
+            "usedModels": [
+                "ActionInput_wrike_findorcreatefolderandcreatetask",
+                "ActionOutput_wrike_findorcreatefolderandcreatetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1174,7 +1313,15 @@
                                     "status": {
                                         "description": "Project status.",
                                         "type": "string",
-                                        "enum": ["Red", "OnHold", "Yellow", "Completed", "Custom", "Cancelled", "Green"]
+                                        "enum": [
+                                            "Red",
+                                            "OnHold",
+                                            "Yellow",
+                                            "Completed",
+                                            "Custom",
+                                            "Cancelled",
+                                            "Green"
+                                        ]
                                     },
                                     "customStatusId": {
                                         "description": "Project custom status ID, used when status is \"Custom\".",
@@ -1189,7 +1336,10 @@
                                     "contractType": {
                                         "description": "Project contract type.",
                                         "type": "string",
-                                        "enum": ["Billable", "NonBillable"]
+                                        "enum": [
+                                            "Billable",
+                                            "NonBillable"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -1206,12 +1356,21 @@
                             "taskStatus": {
                                 "description": "Status of the task.",
                                 "type": "string",
-                                "enum": ["Active", "Deferred", "Completed", "Cancelled"]
+                                "enum": [
+                                    "Active",
+                                    "Deferred",
+                                    "Completed",
+                                    "Cancelled"
+                                ]
                             },
                             "taskImportance": {
                                 "description": "Importance of the task.",
                                 "type": "string",
-                                "enum": ["High", "Low", "Normal"]
+                                "enum": [
+                                    "High",
+                                    "Low",
+                                    "Normal"
+                                ]
                             },
                             "taskDates": {
                                 "description": "Scheduling dates for the task. Omit to create a backlog task.",
@@ -1220,7 +1379,11 @@
                                     "type": {
                                         "description": "Task date type. Omit for a backlog task.",
                                         "type": "string",
-                                        "enum": ["Milestone", "Backlog", "Planned"]
+                                        "enum": [
+                                            "Milestone",
+                                            "Backlog",
+                                            "Planned"
+                                        ]
                                     },
                                     "start": {
                                         "description": "Start date/time, format yyyy-MM-ddTHH:mm:ss. Requires a due date or duration.",
@@ -1277,7 +1440,10 @@
                                             "description": "Value to set for the custom field."
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1288,10 +1454,17 @@
                             "taskBillingType": {
                                 "description": "Billing type for the task timelogs.",
                                 "type": "string",
-                                "enum": ["Billable", "NonBillable"]
+                                "enum": [
+                                    "Billable",
+                                    "NonBillable"
+                                ]
                             }
                         },
-                        "required": ["parentFolderId", "folderName", "taskTitle"],
+                        "required": [
+                            "parentFolderId",
+                            "folderName",
+                            "taskTitle"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for finding or creating a folder/project by title under a parent folder, then creating a task inside it."
                     },
@@ -1386,12 +1559,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The newly created task."
                             }
                         },
-                        "required": ["folderId", "folderWasCreated", "task"],
+                        "required": [
+                            "folderId",
+                            "folderWasCreated",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "The resolved folder/project ID, whether it was newly created, and the newly created task."
                     }
@@ -1405,9 +1584,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_getattachment",
             "name": "get-attachment",
-            "output": ["ActionOutput_wrike_getattachment"],
+            "output": [
+                "ActionOutput_wrike_getattachment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_getattachment", "ActionOutput_wrike_getattachment"],
+            "usedModels": [
+                "ActionInput_wrike_getattachment",
+                "ActionOutput_wrike_getattachment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1420,7 +1604,9 @@
                                 "description": "The opaque Wrike attachment ID to retrieve metadata for. Example: \"IEAG5DAKIYX57P5D\""
                             }
                         },
-                        "required": ["attachmentId"],
+                        "required": [
+                            "attachmentId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input identifying which Wrike attachment to retrieve."
                     },
@@ -1450,7 +1636,17 @@
                             "type": {
                                 "description": "The attachment source/storage type. \"Wrike\" means the file content is stored by Wrike.",
                                 "type": "string",
-                                "enum": ["Google", "DAM", "OneDrive", "Wrike", "External", "Box", "SharePoint", "DropBox", "Whiteboard"]
+                                "enum": [
+                                    "Google",
+                                    "DAM",
+                                    "OneDrive",
+                                    "Wrike",
+                                    "External",
+                                    "Box",
+                                    "SharePoint",
+                                    "DropBox",
+                                    "Whiteboard"
+                                ]
                             },
                             "contentType": {
                                 "description": "The MIME content type of the attachment. Example: \"image/jpeg\"",
@@ -1512,7 +1708,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Metadata for a single Wrike attachment."
                     }
@@ -1526,9 +1724,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_wrike_getcontact"],
+            "output": [
+                "ActionOutput_wrike_getcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_getcontact", "ActionOutput_wrike_getcontact"],
+            "usedModels": [
+                "ActionInput_wrike_getcontact",
+                "ActionOutput_wrike_getcontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1540,7 +1743,9 @@
                                 "description": "ID of the contact (user, group, or bot) to retrieve. Example: \"KUAZR5CO\""
                             }
                         },
-                        "required": ["contactId"],
+                        "required": [
+                            "contactId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Wrike contact by ID."
                     },
@@ -1554,7 +1759,12 @@
                             "type": {
                                 "description": "Contact type: Person, Group, Robot, or Asset.",
                                 "type": "string",
-                                "enum": ["Group", "Asset", "Person", "Robot"]
+                                "enum": [
+                                    "Group",
+                                    "Asset",
+                                    "Person",
+                                    "Robot"
+                                ]
                             },
                             "firstName": {
                                 "description": "Contact first name.",
@@ -1581,7 +1791,10 @@
                                         "role": {
                                             "description": "Role of the contact in the account.",
                                             "type": "string",
-                                            "enum": ["User", "Collaborator"]
+                                            "enum": [
+                                                "User",
+                                                "Collaborator"
+                                            ]
                                         },
                                         "external": {
                                             "description": "Whether the contact is external to the account.",
@@ -1655,7 +1868,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Wrike contact (user, group, bot, or asset) with its profile details."
                     }
@@ -1669,9 +1884,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_wrike_getcurrentuser"],
+            "output": [
+                "ActionOutput_wrike_getcurrentuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_getcurrentuser", "ActionOutput_wrike_getcurrentuser"],
+            "usedModels": [
+                "ActionInput_wrike_getcurrentuser",
+                "ActionOutput_wrike_getcurrentuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1770,13 +1990,25 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["accountId", "email", "role", "admin", "owner", "active"],
+                                    "required": [
+                                        "accountId",
+                                        "email",
+                                        "role",
+                                        "admin",
+                                        "owner",
+                                        "active"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Account profiles for the authenticated user. A Nango connection maps to exactly one Wrike account, so this normally contains a single entry for the connection account."
                             }
                         },
-                        "required": ["id", "type", "me", "profiles"],
+                        "required": [
+                            "id",
+                            "type",
+                            "me",
+                            "profiles"
+                        ],
                         "additionalProperties": false,
                         "description": "Contact record of the Wrike user tied to the current connection."
                     }
@@ -1790,9 +2022,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_getcustomfield",
             "name": "get-custom-field",
-            "output": ["ActionOutput_wrike_getcustomfield"],
+            "output": [
+                "ActionOutput_wrike_getcustomfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_getcustomfield", "ActionOutput_wrike_getcustomfield"],
+            "usedModels": [
+                "ActionInput_wrike_getcustomfield",
+                "ActionOutput_wrike_getcustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1805,7 +2042,9 @@
                                 "description": "ID of the custom field definition to retrieve. Example: \"ABCDEFGHIJKLMNOP\""
                             }
                         },
-                        "required": ["customFieldId"],
+                        "required": [
+                            "customFieldId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single custom field definition by its ID."
                     },
@@ -1903,7 +2142,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["value"],
+                                            "required": [
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1947,12 +2188,20 @@
                                         }
                                     }
                                 },
-                                "required": ["readOnly"],
+                                "required": [
+                                    "readOnly"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Type-specific configuration for the field, including dropdown options, currency, and numeric settings"
                             }
                         },
-                        "required": ["id", "accountId", "title", "type", "settings"],
+                        "required": [
+                            "id",
+                            "accountId",
+                            "title",
+                            "type",
+                            "settings"
+                        ],
                         "additionalProperties": false,
                         "description": "A Wrike custom field definition, including its type-specific settings such as dropdown options, currency, and numeric configuration."
                     }
@@ -1966,9 +2215,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_getfolder",
             "name": "get-folder",
-            "output": ["ActionOutput_wrike_getfolder"],
+            "output": [
+                "ActionOutput_wrike_getfolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_getfolder", "ActionOutput_wrike_getfolder"],
+            "usedModels": [
+                "ActionInput_wrike_getfolder",
+                "ActionOutput_wrike_getfolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1980,7 +2234,9 @@
                                 "description": "ID of the Wrike folder or project to retrieve. Example: \"MQAAAAEQ_HoI\""
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Wrike folder or project by ID."
                     },
@@ -2001,15 +2257,24 @@
                             },
                             "description": {
                                 "description": "Folder or project description; may be an empty string.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "briefDescription": {
                                 "description": "Short folder description, returned when the briefDescription field is requested.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Folder color name, or \"None\" when no color is set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdDate": {
                                 "description": "Creation timestamp in ISO 8601 UTC. Example: \"2026-10-07T01:48:56Z\"",
@@ -2078,7 +2343,10 @@
                                             "description": "Metadata entry value."
                                         }
                                     },
-                                    "required": ["key", "value"],
+                                    "required": [
+                                        "key",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2094,10 +2362,15 @@
                                         },
                                         "value": {
                                             "description": "Value stored for this custom field on the folder; null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2111,7 +2384,10 @@
                             },
                             "customItemTypeId": {
                                 "description": "Custom item type ID, when the folder uses a custom type.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "project": {
                                 "description": "Present only when the folder is a Project; contains project-specific fields.",
@@ -2130,7 +2406,10 @@
                                     },
                                     "customStatusId": {
                                         "description": "Custom workflow status ID of the project. Example: \"IEAG5DAKJMHVMQVI\"",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "createdDate": {
                                         "description": "Project creation timestamp in ISO 8601 UTC. Example: \"2026-10-07T01:48:56Z\"",
@@ -2138,23 +2417,38 @@
                                     },
                                     "status": {
                                         "description": "Project status. Example: \"Green\".",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "startDate": {
                                         "description": "Project start date. Example: \"2026-10-01\".",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "endDate": {
                                         "description": "Project end date. Example: \"2026-12-31\".",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "completedDate": {
                                         "description": "Project completion timestamp in ISO 8601 UTC.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "contractType": {
                                         "description": "Project contract type: \"Billable\" or \"NonBillable\".",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "finance": {
                                         "description": "Project finance details, when available.",
@@ -2162,27 +2456,45 @@
                                         "properties": {
                                             "budget": {
                                                 "description": "Planned budget for the project.",
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "actualCost": {
                                                 "description": "Actual cost incurred by the project.",
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "actualFees": {
                                                 "description": "Actual fees billed for the project.",
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "plannedCost": {
                                                 "description": "Planned cost for the project.",
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "plannedFees": {
                                                 "description": "Planned fees for the project.",
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "currency": {
                                                 "description": "Currency code for the finance amounts. Example: \"USD\".",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -2191,7 +2503,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "title", "scope"],
+                        "required": [
+                            "id",
+                            "title",
+                            "scope"
+                        ],
                         "additionalProperties": false,
                         "description": "A Wrike folder or project."
                     }
@@ -2205,9 +2521,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_gettaskfullcontext",
             "name": "get-task-full-context",
-            "output": ["ActionOutput_wrike_gettaskfullcontext"],
+            "output": [
+                "ActionOutput_wrike_gettaskfullcontext"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_gettaskfullcontext", "ActionOutput_wrike_gettaskfullcontext"],
+            "usedModels": [
+                "ActionInput_wrike_gettaskfullcontext",
+                "ActionOutput_wrike_gettaskfullcontext"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2219,7 +2540,9 @@
                                 "description": "ID of the task to gather full context for. Example: \"MAAAAAEQ_HoO\"."
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task whose full context should be fetched."
                     },
@@ -2425,7 +2748,10 @@
                                                     "description": "Value stored for this custom field on the task."
                                                 }
                                             },
-                                            "required": ["id", "value"],
+                                            "required": [
+                                                "id",
+                                                "value"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "A custom field value attached to a task or folder."
                                         }
@@ -2445,13 +2771,18 @@
                                                     "description": "Metadata entry value."
                                                 }
                                             },
-                                            "required": ["key", "value"],
+                                            "required": [
+                                                "key",
+                                                "value"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "A key/value metadata entry isolated per client application."
                                         }
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The task record itself, including status, dates, assignees, dependencies, and custom fields."
                             },
@@ -2613,7 +2944,10 @@
                                                             "description": "Value stored for this custom field on the task."
                                                         }
                                                     },
-                                                    "required": ["id", "value"],
+                                                    "required": [
+                                                        "id",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "A custom field value attached to a task or folder."
                                                 }
@@ -2633,13 +2967,18 @@
                                                             "description": "Metadata entry value."
                                                         }
                                                     },
-                                                    "required": ["key", "value"],
+                                                    "required": [
+                                                        "key",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "A key/value metadata entry isolated per client application."
                                                 }
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "The parent folder or project record returned by the Wrike API."
                                     },
@@ -2722,11 +3061,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "email", "firstName"],
+                                            "required": [
+                                                "id",
+                                                "email",
+                                                "firstName"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A comment posted on the task."
                                 },
@@ -2790,14 +3135,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A time-tracking entry logged against the task."
                                 },
                                 "description": "All timelog entries logged against the task. Empty array when there are none."
                             }
                         },
-                        "required": ["task", "parentFolder", "comments", "timelogs"],
+                        "required": [
+                            "task",
+                            "parentFolder",
+                            "comments",
+                            "timelogs"
+                        ],
                         "additionalProperties": false,
                         "description": "A single task merged with its comments, timelogs, and parent folder/project metadata."
                     }
@@ -2811,9 +3163,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_wrike_gettask"],
+            "output": [
+                "ActionOutput_wrike_gettask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_gettask", "ActionOutput_wrike_gettask"],
+            "usedModels": [
+                "ActionInput_wrike_gettask",
+                "ActionOutput_wrike_gettask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2825,7 +3182,9 @@
                                 "description": "The unique identifier of the Wrike task to retrieve. Example: \"MAAAAAEQ_HoO\"."
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Wrike task by ID."
                     },
@@ -2882,12 +3241,21 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["Active", "Deferred", "Completed", "Cancelled"],
+                                "enum": [
+                                    "Active",
+                                    "Deferred",
+                                    "Completed",
+                                    "Cancelled"
+                                ],
                                 "description": "Task status."
                             },
                             "importance": {
                                 "type": "string",
-                                "enum": ["High", "Low", "Normal"],
+                                "enum": [
+                                    "High",
+                                    "Low",
+                                    "Normal"
+                                ],
                                 "description": "Task importance."
                             },
                             "createdDate": {
@@ -2907,7 +3275,11 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["Backlog", "Planned", "Milestone"],
+                                        "enum": [
+                                            "Backlog",
+                                            "Planned",
+                                            "Milestone"
+                                        ],
                                         "description": "Date type: \"Backlog\" when no dates are set, \"Planned\" when start/due are set, or \"Milestone\" for a due-date-only task."
                                     },
                                     "start": {
@@ -2927,13 +3299,22 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Scheduling dates and their type."
                             },
                             "scope": {
                                 "type": "string",
-                                "enum": ["WsTask", "RbTask", "WsFolder", "RbFolder", "WsRoot", "RbRoot"],
+                                "enum": [
+                                    "WsTask",
+                                    "RbTask",
+                                    "WsFolder",
+                                    "RbFolder",
+                                    "WsRoot",
+                                    "RbRoot"
+                                ],
                                 "description": "Storage scope of the task: \"WsTask\" for an active task, \"RbTask\" for a task in the Recycle Bin."
                             },
                             "authorIds": {
@@ -3006,7 +3387,10 @@
                                             "description": "Metadata entry value."
                                         }
                                     },
-                                    "required": ["key", "value"],
+                                    "required": [
+                                        "key",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3025,12 +3409,25 @@
                                             "description": "Value stored for this task in that custom field, serialized as a string."
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "accountId", "title", "status", "importance", "createdDate", "updatedDate", "dates", "scope"],
+                        "required": [
+                            "id",
+                            "accountId",
+                            "title",
+                            "status",
+                            "importance",
+                            "createdDate",
+                            "updatedDate",
+                            "dates",
+                            "scope"
+                        ],
                         "additionalProperties": false,
                         "description": "A Wrike task including its status, dates, assignees, hierarchy IDs and custom field values."
                     }
@@ -3044,9 +3441,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listattachments",
             "name": "list-attachments",
-            "output": ["ActionOutput_wrike_listattachments"],
+            "output": [
+                "ActionOutput_wrike_listattachments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listattachments", "ActionOutput_wrike_listattachments"],
+            "usedModels": [
+                "ActionInput_wrike_listattachments",
+                "ActionOutput_wrike_listattachments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3066,7 +3468,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["start"],
+                                "required": [
+                                    "start"
+                                ],
                                 "additionalProperties": false
                             },
                             "versions": {
@@ -3173,13 +3577,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attachment metadata records across the account. No file contents are downloaded."
                             }
                         },
-                        "required": ["attachments"],
+                        "required": [
+                            "attachments"
+                        ],
                         "additionalProperties": false,
                         "description": "Attachment metadata returned by the Wrike account-wide attachments listing."
                     }
@@ -3193,9 +3601,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_wrike_listcontacts"],
+            "output": [
+                "ActionOutput_wrike_listcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listcontacts", "ActionOutput_wrike_listcontacts"],
+            "usedModels": [
+                "ActionInput_wrike_listcontacts",
+                "ActionOutput_wrike_listcontacts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3319,13 +3732,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "All contacts visible to the account: users, groups, and bot/robot accounts."
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false,
                         "description": "All contacts visible to the account, including users, groups, and bot/robot accounts."
                     }
@@ -3339,9 +3756,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listcustomfields",
             "name": "list-custom-fields",
-            "output": ["ActionOutput_wrike_listcustomfields"],
+            "output": [
+                "ActionOutput_wrike_listcustomfields"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listcustomfields", "ActionOutput_wrike_listcustomfields"],
+            "usedModels": [
+                "ActionInput_wrike_listcustomfields",
+                "ActionOutput_wrike_listcustomfields"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3477,7 +3899,9 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["value"],
+                                                        "required": [
+                                                            "value"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3521,17 +3945,26 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["readOnly"],
+                                            "required": [
+                                                "readOnly"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "accountId", "title", "type"],
+                                    "required": [
+                                        "id",
+                                        "accountId",
+                                        "title",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Custom field definitions configured on the account."
                             }
                         },
-                        "required": ["customFields"],
+                        "required": [
+                            "customFields"
+                        ],
                         "additionalProperties": false,
                         "description": "Custom field definitions configured on this Wrike account."
                     }
@@ -3545,9 +3978,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listfoldersubtree",
             "name": "list-folder-subtree",
-            "output": ["ActionOutput_wrike_listfoldersubtree"],
+            "output": [
+                "ActionOutput_wrike_listfoldersubtree"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listfoldersubtree", "ActionOutput_wrike_listfoldersubtree"],
+            "usedModels": [
+                "ActionInput_wrike_listfoldersubtree",
+                "ActionOutput_wrike_listfoldersubtree"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3559,7 +3997,9 @@
                                 "description": "ID of the folder or project whose full descendant subtree should be listed. Example: \"MQAAAAEQ_HoD\""
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the Wrike folder or project whose subtree should be listed."
                     },
@@ -3649,13 +4089,19 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "depth", "childIds"],
+                                    "required": [
+                                        "id",
+                                        "depth",
+                                        "childIds"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Flat list containing the requested folder and every descendant folder/project at any depth."
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false,
                         "description": "The requested folder and all of its descendant folders/projects."
                     }
@@ -3669,9 +4115,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listfoldertasks",
             "name": "list-folder-tasks",
-            "output": ["ActionOutput_wrike_listfoldertasks"],
+            "output": [
+                "ActionOutput_wrike_listfoldertasks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listfoldertasks", "ActionOutput_wrike_listfoldertasks"],
+            "usedModels": [
+                "ActionInput_wrike_listfoldertasks",
+                "ActionOutput_wrike_listfoldertasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3709,7 +4160,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false,
                         "description": "Filters for listing the tasks directly contained in a folder or project."
                     },
@@ -3917,7 +4370,10 @@
                                                         "description": "Metadata entry value, serialized as a string."
                                                     }
                                                 },
-                                                "required": ["key", "value"],
+                                                "required": [
+                                                    "key",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3936,7 +4392,10 @@
                                                         "description": "Value stored in the custom field for this task."
                                                     }
                                                 },
-                                                "required": ["id", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3985,12 +4444,17 @@
                                                                             "description": "Effort allocated to the assignee on that day, in minutes."
                                                                         }
                                                                     },
-                                                                    "required": ["date", "effortMinutes"],
+                                                                    "required": [
+                                                                        "date",
+                                                                        "effortMinutes"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             }
                                                         },
-                                                        "required": ["userId"],
+                                                        "required": [
+                                                            "userId"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
@@ -4051,7 +4515,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Tasks that live directly in the requested folder or project."
@@ -4061,7 +4527,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of tasks directly contained in the requested folder or project, plus a token for the next page."
                     }
@@ -4075,9 +4543,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listfolders",
             "name": "list-folders",
-            "output": ["ActionOutput_wrike_listfolders"],
+            "output": [
+                "ActionOutput_wrike_listfolders"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listfolders", "ActionOutput_wrike_listfolders"],
+            "usedModels": [
+                "ActionInput_wrike_listfolders",
+                "ActionOutput_wrike_listfolders"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4270,7 +4743,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": {},
                                     "description": "A Wrike folder or project."
                                 },
@@ -4281,7 +4757,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["kind", "folders"],
+                        "required": [
+                            "kind",
+                            "folders"
+                        ],
                         "additionalProperties": false,
                         "description": "Folders and projects returned by the account, plus the response shape and next-page token."
                     }
@@ -4295,9 +4774,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listspaces",
             "name": "list-spaces",
-            "output": ["ActionOutput_wrike_listspaces"],
+            "output": [
+                "ActionOutput_wrike_listspaces"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listspaces", "ActionOutput_wrike_listspaces"],
+            "usedModels": [
+                "ActionInput_wrike_listspaces",
+                "ActionOutput_wrike_listspaces"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4325,7 +4809,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["Locked", "Personal", "Private", "Public"]
+                                    "enum": [
+                                        "Locked",
+                                        "Personal",
+                                        "Private",
+                                        "Public"
+                                    ]
                                 }
                             },
                             "fields": {
@@ -4333,7 +4822,10 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["members", "workScheduleId"]
+                                    "enum": [
+                                        "members",
+                                        "workScheduleId"
+                                    ]
                                 }
                             }
                         },
@@ -4363,7 +4855,12 @@
                                         "accessType": {
                                             "description": "Access level of the Space.",
                                             "type": "string",
-                                            "enum": ["Locked", "Personal", "Private", "Public"]
+                                            "enum": [
+                                                "Locked",
+                                                "Personal",
+                                                "Private",
+                                                "Public"
+                                            ]
                                         },
                                         "archived": {
                                             "description": "Whether the Space is archived.",
@@ -4422,18 +4919,27 @@
                                                         "description": "Whether the member is a Space manager."
                                                     }
                                                 },
-                                                "required": ["id", "accessRoleId", "isManager"],
+                                                "required": [
+                                                    "id",
+                                                    "accessRoleId",
+                                                    "isManager"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Account Spaces matching the provided filters, ordered as returned by the provider."
                             }
                         },
-                        "required": ["spaces"],
+                        "required": [
+                            "spaces"
+                        ],
                         "additionalProperties": false,
                         "description": "Spaces (top-level containers for folders and projects) in the account."
                     }
@@ -4447,9 +4953,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listtaskattachments",
             "name": "list-task-attachments",
-            "output": ["ActionOutput_wrike_listtaskattachments"],
+            "output": [
+                "ActionOutput_wrike_listtaskattachments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listtaskattachments", "ActionOutput_wrike_listtaskattachments"],
+            "usedModels": [
+                "ActionInput_wrike_listtaskattachments",
+                "ActionOutput_wrike_listtaskattachments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4469,7 +4980,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the attachment metadata of a Wrike task."
                     },
@@ -4565,13 +5078,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attachment metadata records for the task. Empty when the task has no attachments."
                             }
                         },
-                        "required": ["attachments"],
+                        "required": [
+                            "attachments"
+                        ],
                         "additionalProperties": false,
                         "description": "Attachment metadata records returned for a Wrike task."
                     }
@@ -4585,9 +5102,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listtaskcomments",
             "name": "list-task-comments",
-            "output": ["ActionOutput_wrike_listtaskcomments"],
+            "output": [
+                "ActionOutput_wrike_listtaskcomments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listtaskcomments", "ActionOutput_wrike_listtaskcomments"],
+            "usedModels": [
+                "ActionInput_wrike_listtaskcomments",
+                "ActionOutput_wrike_listtaskcomments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4603,7 +5125,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the comments posted on a Wrike task."
                     },
@@ -4683,17 +5207,28 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "email", "firstName"],
+                                            "required": [
+                                                "id",
+                                                "email",
+                                                "firstName"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "authorId", "text", "createdDate"],
+                                    "required": [
+                                        "id",
+                                        "authorId",
+                                        "text",
+                                        "createdDate"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Comments posted on the task, in the order returned by Wrike."
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false,
                         "description": "Comments posted on the specified task."
                     }
@@ -4707,9 +5242,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listtaskdependencies",
             "name": "list-task-dependencies",
-            "output": ["ActionOutput_wrike_listtaskdependencies"],
+            "output": [
+                "ActionOutput_wrike_listtaskdependencies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listtaskdependencies", "ActionOutput_wrike_listtaskdependencies"],
+            "usedModels": [
+                "ActionInput_wrike_listtaskdependencies",
+                "ActionOutput_wrike_listtaskdependencies"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4721,7 +5261,9 @@
                                 "description": "Wrike task ID whose dependencies should be listed. Example: \"MAAAAAEQ_HoO\""
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the dependency relationships of a Wrike task."
                     },
@@ -4747,7 +5289,12 @@
                                         },
                                         "relationType": {
                                             "type": "string",
-                                            "enum": ["FinishToFinish", "StartToStart", "StartToFinish", "FinishToStart"],
+                                            "enum": [
+                                                "FinishToFinish",
+                                                "StartToStart",
+                                                "StartToFinish",
+                                                "FinishToStart"
+                                            ],
                                             "description": "Dependency relationship type."
                                         },
                                         "lagTime": {
@@ -4755,13 +5302,21 @@
                                             "description": "Lag (positive) or lead (negative) time in minutes. Project dependencies are always a multiple of 480."
                                         }
                                     },
-                                    "required": ["id", "predecessorId", "successorId", "relationType", "lagTime"],
+                                    "required": [
+                                        "id",
+                                        "predecessorId",
+                                        "successorId",
+                                        "relationType",
+                                        "lagTime"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Dependency relationships involving the task, in either direction."
                             }
                         },
-                        "required": ["dependencies"],
+                        "required": [
+                            "dependencies"
+                        ],
                         "additionalProperties": false,
                         "description": "Dependency relationships involving the requested Wrike task."
                     }
@@ -4775,9 +5330,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listtasktimelogs",
             "name": "list-task-timelogs",
-            "output": ["ActionOutput_wrike_listtasktimelogs"],
+            "output": [
+                "ActionOutput_wrike_listtasktimelogs"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listtasktimelogs", "ActionOutput_wrike_listtasktimelogs"],
+            "usedModels": [
+                "ActionInput_wrike_listtasktimelogs",
+                "ActionOutput_wrike_listtasktimelogs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4803,11 +5363,19 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["approvalStatus", "lockStatus", "exportStatus", "billingType", "finance"]
+                                    "enum": [
+                                        "approvalStatus",
+                                        "lockStatus",
+                                        "exportStatus",
+                                        "billingType",
+                                        "finance"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing time-tracking entries logged against a specific task."
                     },
@@ -4858,22 +5426,39 @@
                                         "billingType": {
                                             "description": "Billing type. Only present when requested via fields.",
                                             "type": "string",
-                                            "enum": ["Billable", "NonBillable"]
+                                            "enum": [
+                                                "Billable",
+                                                "NonBillable"
+                                            ]
                                         },
                                         "approvalStatus": {
                                             "description": "Timesheet approval status. Only present when requested via fields.",
                                             "type": "string",
-                                            "enum": ["Draft", "NotSubmitted", "Approved", "Rejected", "Cancelled", "Pending"]
+                                            "enum": [
+                                                "Draft",
+                                                "NotSubmitted",
+                                                "Approved",
+                                                "Rejected",
+                                                "Cancelled",
+                                                "Pending"
+                                            ]
                                         },
                                         "exportStatus": {
                                             "description": "Export status. Only present when requested via fields.",
                                             "type": "string",
-                                            "enum": ["NotExported", "Exported", "ReadyForExport"]
+                                            "enum": [
+                                                "NotExported",
+                                                "Exported",
+                                                "ReadyForExport"
+                                            ]
                                         },
                                         "lockStatus": {
                                             "description": "Timelog lock status. Only present when requested via fields.",
                                             "type": "string",
-                                            "enum": ["Locked", "Unlocked"]
+                                            "enum": [
+                                                "Locked",
+                                                "Unlocked"
+                                            ]
                                         },
                                         "finance": {
                                             "description": "Finance details. Only present when requested via fields.",
@@ -4895,7 +5480,15 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "taskId", "userId", "hours", "trackedDate", "createdDate", "updatedDate"],
+                                    "required": [
+                                        "id",
+                                        "taskId",
+                                        "userId",
+                                        "hours",
+                                        "trackedDate",
+                                        "createdDate",
+                                        "updatedDate"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Time entries logged against the task."
@@ -4905,7 +5498,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["timelogs"],
+                        "required": [
+                            "timelogs"
+                        ],
                         "additionalProperties": false,
                         "description": "Time-tracking entries logged against the requested task, with an optional pagination cursor."
                     }
@@ -4919,9 +5514,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_wrike_listtasks"],
+            "output": [
+                "ActionOutput_wrike_listtasks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listtasks", "ActionOutput_wrike_listtasks"],
+            "usedModels": [
+                "ActionInput_wrike_listtasks",
+                "ActionOutput_wrike_listtasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5056,7 +5656,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Tasks matching the requested filters."
@@ -5066,7 +5669,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of tasks with an optional pagination token."
                     }
@@ -5080,9 +5685,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listtimelogs",
             "name": "list-timelogs",
-            "output": ["ActionOutput_wrike_listtimelogs"],
+            "output": [
+                "ActionOutput_wrike_listtimelogs"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listtimelogs", "ActionOutput_wrike_listtimelogs"],
+            "usedModels": [
+                "ActionInput_wrike_listtimelogs",
+                "ActionOutput_wrike_listtimelogs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5157,7 +5767,10 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["Billable", "NonBillable"]
+                                    "enum": [
+                                        "Billable",
+                                        "NonBillable"
+                                    ]
                                 }
                             },
                             "fields": {
@@ -5165,7 +5778,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["approvalStatus", "lockStatus", "exportStatus", "billingType"]
+                                    "enum": [
+                                        "approvalStatus",
+                                        "lockStatus",
+                                        "exportStatus",
+                                        "billingType"
+                                    ]
                                 }
                             }
                         },
@@ -5219,22 +5837,39 @@
                                         "billingType": {
                                             "description": "Billing type; only present when requested via the \"fields\" input.",
                                             "type": "string",
-                                            "enum": ["Billable", "NonBillable"]
+                                            "enum": [
+                                                "Billable",
+                                                "NonBillable"
+                                            ]
                                         },
                                         "approvalStatus": {
                                             "description": "Timesheet approval status; only present when requested via the \"fields\" input.",
                                             "type": "string",
-                                            "enum": ["Draft", "NotSubmitted", "Approved", "Rejected", "Cancelled", "Pending"]
+                                            "enum": [
+                                                "Draft",
+                                                "NotSubmitted",
+                                                "Approved",
+                                                "Rejected",
+                                                "Cancelled",
+                                                "Pending"
+                                            ]
                                         },
                                         "lockStatus": {
                                             "description": "Lock status; only present when requested via the \"fields\" input.",
                                             "type": "string",
-                                            "enum": ["Locked", "Unlocked"]
+                                            "enum": [
+                                                "Locked",
+                                                "Unlocked"
+                                            ]
                                         },
                                         "exportStatus": {
                                             "description": "Export status; only present when requested via the \"fields\" input.",
                                             "type": "string",
-                                            "enum": ["NotExported", "Exported", "ReadyForExport"]
+                                            "enum": [
+                                                "NotExported",
+                                                "Exported",
+                                                "ReadyForExport"
+                                            ]
                                         },
                                         "finance": {
                                             "description": "Financial details for the timelog, when available.",
@@ -5256,7 +5891,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Timelog entries matching the requested filters."
@@ -5266,7 +5903,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["timelogs"],
+                        "required": [
+                            "timelogs"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of Wrike timelog entries and the token needed to fetch the next page."
                     }
@@ -5280,9 +5919,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_listworkflows",
             "name": "list-workflows",
-            "output": ["ActionOutput_wrike_listworkflows"],
+            "output": [
+                "ActionOutput_wrike_listworkflows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_listworkflows", "ActionOutput_wrike_listworkflows"],
+            "usedModels": [
+                "ActionInput_wrike_listworkflows",
+                "ActionOutput_wrike_listworkflows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5354,19 +5998,34 @@
                                                         "description": "Whether the status is hidden from the Wrike UI."
                                                     }
                                                 },
-                                                "required": ["id", "name", "group", "standard", "standardName", "hidden"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "group",
+                                                    "standard",
+                                                    "standardName",
+                                                    "hidden"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "The custom statuses defined on this workflow."
                                         }
                                     },
-                                    "required": ["id", "name", "standard", "hidden", "customStatuses"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "standard",
+                                        "hidden",
+                                        "customStatuses"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "All account-wide workflows configured on the account, each with its custom statuses."
                             }
                         },
-                        "required": ["workflows"],
+                        "required": [
+                            "workflows"
+                        ],
                         "additionalProperties": false,
                         "description": "The account-wide workflows, each with its custom statuses."
                     }
@@ -5380,9 +6039,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_restorefolder",
             "name": "restore-folder",
-            "output": ["ActionOutput_wrike_restorefolder"],
+            "output": [
+                "ActionOutput_wrike_restorefolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_restorefolder", "ActionOutput_wrike_restorefolder"],
+            "usedModels": [
+                "ActionInput_wrike_restorefolder",
+                "ActionOutput_wrike_restorefolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5394,7 +6058,9 @@
                                 "description": "Wrike API ID of the soft-deleted folder to restore from the Recycle Bin. Example: \"MQAAAAERHC3x\""
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for restoring a soft-deleted Wrike folder from the Recycle Bin."
                     },
@@ -5412,7 +6078,14 @@
                             "scope": {
                                 "description": "Folder tree scope after restore; \"WsFolder\" for an active folder and \"WsRoot\" for the account root.",
                                 "type": "string",
-                                "enum": ["WsTask", "RbRoot", "RbFolder", "WsFolder", "WsRoot", "RbTask"]
+                                "enum": [
+                                    "WsTask",
+                                    "RbRoot",
+                                    "RbFolder",
+                                    "WsFolder",
+                                    "WsRoot",
+                                    "RbTask"
+                                ]
                             },
                             "parentIds": {
                                 "description": "IDs of the folders the restored folder now lives under; after restore this reverts to the original parent instead of the Recycle Bin.",
@@ -5487,7 +6160,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "The restored Wrike folder, including its scope and restored parent location."
                     }
@@ -5501,9 +6177,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_settaskcustomfield",
             "name": "set-task-custom-field",
-            "output": ["ActionOutput_wrike_settaskcustomfield"],
+            "output": [
+                "ActionOutput_wrike_settaskcustomfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_settaskcustomfield", "ActionOutput_wrike_settaskcustomfield"],
+            "usedModels": [
+                "ActionInput_wrike_settaskcustomfield",
+                "ActionOutput_wrike_settaskcustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5520,10 +6201,18 @@
                             },
                             "value": {
                                 "description": "Value to store for the custom field. Must match the field type (for a DropDown field it must exactly match one of the configured options, case-sensitive; numeric, currency, percentage and duration fields are still sent as strings). Pass null to clear the value.",
-                                "type": ["string", "number", "null"]
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["taskId", "customFieldId", "value"],
+                        "required": [
+                            "taskId",
+                            "customFieldId",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for setting or clearing a custom field value on a Wrike task."
                     },
@@ -5540,7 +6229,10 @@
                             },
                             "value": {
                                 "description": "Value now stored on the task for the custom field; null when the field is not set after the update.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "customFields": {
                                 "type": "array",
@@ -5556,13 +6248,21 @@
                                             "description": "Value stored on the task for this custom field."
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "All custom field values set on the task after the update."
                             }
                         },
-                        "required": ["taskId", "customFieldId", "value", "customFields"],
+                        "required": [
+                            "taskId",
+                            "customFieldId",
+                            "value",
+                            "customFields"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of setting or clearing a custom field value, including the custom fields set on the task afterward."
                     }
@@ -5576,9 +6276,16 @@
             "endpoint": null,
             "input": "ActionInput_wrike_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_wrike_updatecomment"],
-            "scopes": ["wsReadWrite"],
-            "usedModels": ["ActionInput_wrike_updatecomment", "ActionOutput_wrike_updatecomment"],
+            "output": [
+                "ActionOutput_wrike_updatecomment"
+            ],
+            "scopes": [
+                "wsReadWrite"
+            ],
+            "usedModels": [
+                "ActionInput_wrike_updatecomment",
+                "ActionOutput_wrike_updatecomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5595,7 +6302,10 @@
                                 "description": "New text for the comment. Cannot be empty; Wrike special HTML syntax is supported."
                             }
                         },
-                        "required": ["commentId", "text"],
+                        "required": [
+                            "commentId",
+                            "text"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the comment to update and the replacement text."
                     },
@@ -5638,7 +6348,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false,
                         "description": "The comment as it appears after the update."
                     }
@@ -5652,9 +6365,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_updatefolder",
             "name": "update-folder",
-            "output": ["ActionOutput_wrike_updatefolder"],
+            "output": [
+                "ActionOutput_wrike_updatefolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_updatefolder", "ActionOutput_wrike_updatefolder"],
+            "usedModels": [
+                "ActionInput_wrike_updatefolder",
+                "ActionOutput_wrike_updatefolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5678,11 +6396,17 @@
                                 "properties": {
                                     "startDate": {
                                         "description": "New project start date in yyyy-MM-dd format. Pass null to clear the existing start date.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "endDate": {
                                         "description": "New project end date in yyyy-MM-dd format. Pass null to clear the existing end date.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "customStatusId": {
                                         "description": "Project custom status ID from the customStatuses of the account workflow (see list-workflows). Example: \"IEAG5DAKJMHVMQVI\".",
@@ -5707,7 +6431,9 @@
                                 "description": "Project-only fields to update. Supplying any of them to a plain folder converts that folder into a project."
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields to change on a Wrike folder or project. Only the provided fields are updated."
                     },
@@ -5783,7 +6509,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The folder or project as it exists after the update."
                     }
@@ -5797,9 +6525,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_wrike_updatetask"],
+            "output": [
+                "ActionOutput_wrike_updatetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_updatetask", "ActionOutput_wrike_updatetask"],
+            "usedModels": [
+                "ActionInput_wrike_updatetask",
+                "ActionOutput_wrike_updatetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5821,7 +6554,12 @@
                             "status": {
                                 "description": "Status group to set. Use customStatusId to pick a specific custom status.",
                                 "type": "string",
-                                "enum": ["Active", "Deferred", "Completed", "Cancelled"]
+                                "enum": [
+                                    "Active",
+                                    "Deferred",
+                                    "Completed",
+                                    "Cancelled"
+                                ]
                             },
                             "customStatusId": {
                                 "description": "ID of a custom workflow status to assign. Get IDs from the workflows endpoint.",
@@ -5830,7 +6568,11 @@
                             "importance": {
                                 "description": "Task importance.",
                                 "type": "string",
-                                "enum": ["High", "Normal", "Low"]
+                                "enum": [
+                                    "High",
+                                    "Normal",
+                                    "Low"
+                                ]
                             },
                             "dates": {
                                 "description": "Task scheduling fields to change. Sent as a partial JSON object.",
@@ -5855,7 +6597,11 @@
                                     "type": {
                                         "description": "Schedule type: Milestone, Backlog, or Planned.",
                                         "type": "string",
-                                        "enum": ["Milestone", "Backlog", "Planned"]
+                                        "enum": [
+                                            "Milestone",
+                                            "Backlog",
+                                            "Planned"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -5875,7 +6621,9 @@
                                 }
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Task fields to update. Only the provided fields are changed; omitted fields are left as-is."
                     },
@@ -5960,7 +6708,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated task as returned by the provider."
                     }
@@ -5974,9 +6724,14 @@
             "endpoint": null,
             "input": "ActionInput_wrike_updatetimelog",
             "name": "update-timelog",
-            "output": ["ActionOutput_wrike_updatetimelog"],
+            "output": [
+                "ActionOutput_wrike_updatetimelog"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wrike_updatetimelog", "ActionOutput_wrike_updatetimelog"],
+            "usedModels": [
+                "ActionInput_wrike_updatetimelog",
+                "ActionOutput_wrike_updatetimelog"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6000,7 +6755,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["timelogId"],
+                        "required": [
+                            "timelogId"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields identifying the timelog to update and the values to change."
                     },
@@ -6079,7 +6836,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated timelog record returned by Wrike."
                     }
@@ -6096,12 +6855,16 @@
             "endpoints": [],
             "input": null,
             "name": "comments",
-            "output": ["Comment"],
+            "output": [
+                "Comment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Comment"],
+            "usedModels": [
+                "Comment"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6177,11 +6940,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "email", "firstName"],
+                                "required": [
+                                    "id",
+                                    "email",
+                                    "firstName"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "authorId", "text", "createdDate"],
+                        "required": [
+                            "id",
+                            "authorId",
+                            "text",
+                            "createdDate"
+                        ],
                         "additionalProperties": false,
                         "description": "A comment (Regular or Email) posted on a Wrike task, folder, or project."
                     }
@@ -6196,12 +6968,16 @@
             "endpoints": [],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6216,7 +6992,12 @@
                             "type": {
                                 "description": "Contact type: Person, Group, Robot, or Asset.",
                                 "type": "string",
-                                "enum": ["Group", "Asset", "Person", "Robot"]
+                                "enum": [
+                                    "Group",
+                                    "Asset",
+                                    "Person",
+                                    "Robot"
+                                ]
                             },
                             "firstName": {
                                 "description": "The contact's first name.",
@@ -6292,7 +7073,10 @@
                                             "description": "Metadata entry value."
                                         }
                                     },
-                                    "required": ["key", "value"],
+                                    "required": [
+                                        "key",
+                                        "value"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A key/value metadata entry attached to the contact."
                                 }
@@ -6313,7 +7097,10 @@
                                         },
                                         "role": {
                                             "type": "string",
-                                            "enum": ["User", "Collaborator"],
+                                            "enum": [
+                                                "User",
+                                                "Collaborator"
+                                            ],
                                             "description": "The role the contact holds in this account."
                                         },
                                         "external": {
@@ -6333,13 +7120,22 @@
                                             "description": "Whether the contact is active in the account."
                                         }
                                     },
-                                    "required": ["accountId", "role", "external", "admin", "owner", "active"],
+                                    "required": [
+                                        "accountId",
+                                        "role",
+                                        "external",
+                                        "admin",
+                                        "owner",
+                                        "active"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A contact profile for one account accessible to the requesting user."
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A Wrike contact (user, group, robot, or asset) visible to the account."
                     }
@@ -6354,12 +7150,16 @@
             "endpoints": [],
             "input": null,
             "name": "folders",
-            "output": ["Folder"],
+            "output": [
+                "Folder"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Folder"],
+            "usedModels": [
+                "Folder"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6483,13 +7283,19 @@
                                 ]
                             }
                         },
-                        "required": ["id", "title", "isProject"],
+                        "required": [
+                            "id",
+                            "title",
+                            "isProject"
+                        ],
                         "additionalProperties": false,
                         "description": "An active Wrike folder or project."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6498,12 +7304,16 @@
             "endpoints": [],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6616,7 +7426,10 @@
                                             "description": "Value of the custom field set on this task."
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6648,13 +7461,17 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A Wrike task, including its folder relationships, subtask/supertask and dependency links, and custom field values."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6663,12 +7480,16 @@
             "endpoints": [],
             "input": null,
             "name": "timelogs",
-            "output": ["Timelog"],
+            "output": [
+                "Timelog"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Timelog"],
+            "usedModels": [
+                "Timelog"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6748,13 +7569,23 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "taskId", "userId", "hours", "createdDate", "updatedDate", "trackedDate"],
+                        "required": [
+                            "id",
+                            "taskId",
+                            "userId",
+                            "hours",
+                            "createdDate",
+                            "updatedDate",
+                            "trackedDate"
+                        ],
                         "additionalProperties": false,
                         "description": "A Wrike time-tracking entry (timelog)."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_metabase_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_metabase_createuser"],
+            "output": [
+                "ActionOutput_metabase_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_metabase_createuser", "ActionOutput_metabase_createuser"],
+            "usedModels": [
+                "ActionInput_metabase_createuser",
+                "ActionOutput_metabase_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -26,7 +31,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_metabase_createuser": {
@@ -48,7 +57,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -61,9 +75,14 @@
             "endpoint": null,
             "input": "ActionInput_metabase_disableuser",
             "name": "disable-user",
-            "output": ["ActionOutput_metabase_disableuser"],
+            "output": [
+                "ActionOutput_metabase_disableuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_metabase_disableuser", "ActionOutput_metabase_disableuser"],
+            "usedModels": [
+                "ActionInput_metabase_disableuser",
+                "ActionOutput_metabase_disableuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -74,7 +93,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_metabase_disableuser": {
@@ -84,7 +105,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -97,9 +120,14 @@
             "endpoint": null,
             "input": "ActionInput_metabase_enableuser",
             "name": "enable-user",
-            "output": ["ActionOutput_metabase_enableuser"],
+            "output": [
+                "ActionOutput_metabase_enableuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_metabase_enableuser", "ActionOutput_metabase_enableuser"],
+            "usedModels": [
+                "ActionInput_metabase_enableuser",
+                "ActionOutput_metabase_enableuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -110,7 +138,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_metabase_enableuser": {
@@ -120,7 +150,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -133,9 +165,14 @@
             "endpoint": null,
             "input": "ActionInput_metabase_fetchuser",
             "name": "fetch-user",
-            "output": ["ActionOutput_metabase_fetchuser"],
+            "output": [
+                "ActionOutput_metabase_fetchuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_metabase_fetchuser", "ActionOutput_metabase_fetchuser"],
+            "usedModels": [
+                "ActionInput_metabase_fetchuser",
+                "ActionOutput_metabase_fetchuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -146,7 +183,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_metabase_fetchuser": {
@@ -168,7 +207,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -181,9 +225,14 @@
             "endpoint": null,
             "input": "ActionInput_metabase_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_metabase_updateuser"],
+            "output": [
+                "ActionOutput_metabase_updateuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_metabase_updateuser", "ActionOutput_metabase_updateuser"],
+            "usedModels": [
+                "ActionInput_metabase_updateuser",
+                "ActionOutput_metabase_updateuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -194,25 +243,51 @@
                                 "type": "number"
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_group_manager": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "locale": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_superuser": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "email", "first_name", "last_name", "is_group_manager", "locale", "is_superuser"],
+                        "required": [
+                            "id",
+                            "email",
+                            "first_name",
+                            "last_name",
+                            "is_group_manager",
+                            "locale",
+                            "is_superuser"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_metabase_updateuser": {
@@ -222,7 +297,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -244,12 +321,17 @@
             ],
             "input": "SyncMetadata_metabase_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_metabase_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_metabase_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -273,7 +355,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_metabase_users": {

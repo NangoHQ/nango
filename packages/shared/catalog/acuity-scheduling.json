@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_cancelappointment",
             "name": "cancel-appointment",
-            "output": ["ActionOutput_acuity_scheduling_cancelappointment"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_cancelappointment", "ActionOutput_acuity_scheduling_cancelappointment"],
+            "output": [
+                "ActionOutput_acuity_scheduling_cancelappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_cancelappointment",
+                "ActionOutput_acuity_scheduling_cancelappointment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -31,7 +38,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_cancelappointment": {
@@ -83,7 +92,10 @@
                                 "type": "number"
                             },
                             "classID": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "duration": {
                                 "type": "string"
@@ -98,7 +110,10 @@
                                 "type": "string"
                             },
                             "certificate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "confirmationPage": {
                                 "type": "string"
@@ -164,9 +179,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_checkavailabilitytimes",
             "name": "check-availability-times",
-            "output": ["ActionOutput_acuity_scheduling_checkavailabilitytimes"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_checkavailabilitytimes", "ActionOutput_acuity_scheduling_checkavailabilitytimes"],
+            "output": [
+                "ActionOutput_acuity_scheduling_checkavailabilitytimes"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_checkavailabilitytimes",
+                "ActionOutput_acuity_scheduling_checkavailabilitytimes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -186,7 +208,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["datetime", "appointmentTypeID"],
+                        "required": [
+                            "datetime",
+                            "appointmentTypeID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_checkavailabilitytimes": {
@@ -211,7 +236,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["datetime", "appointmentTypeID", "valid"],
+                        "required": [
+                            "datetime",
+                            "appointmentTypeID",
+                            "valid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -224,9 +253,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_checkcertificate",
             "name": "check-certificate",
-            "output": ["ActionOutput_acuity_scheduling_checkcertificate"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_checkcertificate", "ActionOutput_acuity_scheduling_checkcertificate"],
+            "output": [
+                "ActionOutput_acuity_scheduling_checkcertificate"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_checkcertificate",
+                "ActionOutput_acuity_scheduling_checkcertificate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -246,7 +282,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["certificate", "appointmentTypeID"],
+                        "required": [
+                            "certificate",
+                            "appointmentTypeID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_checkcertificate": {
@@ -270,7 +309,10 @@
                             },
                             "orderID": {
                                 "description": "Order ID associated with the certificate. Example: null",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "appointmentTypeIDs": {
                                 "description": "Appointment type IDs the certificate applies to. Example: [1]",
@@ -303,18 +345,26 @@
                             },
                             "remainingMinutes": {
                                 "description": "Remaining minutes on the certificate. Example: null",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "expiration": {
                                 "description": "Expiration date of the certificate. Example: null",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "error": {
                                 "description": "Error message if the certificate is invalid.",
                                 "type": "string"
                             }
                         },
-                        "required": ["valid"],
+                        "required": [
+                            "valid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -327,9 +377,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_createappointment",
             "name": "create-appointment",
-            "output": ["ActionOutput_acuity_scheduling_createappointment"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_createappointment", "ActionOutput_acuity_scheduling_createappointment"],
+            "output": [
+                "ActionOutput_acuity_scheduling_createappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createappointment",
+                "ActionOutput_acuity_scheduling_createappointment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -387,7 +444,10 @@
                                             "description": "Field value. Example: \"Party time!\""
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -414,7 +474,9 @@
                                             "description": "Label ID. Example: 24774624"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -431,7 +493,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["datetime", "appointmentTypeID", "firstName", "lastName", "email"],
+                        "required": [
+                            "datetime",
+                            "appointmentTypeID",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_createappointment": {
@@ -547,12 +615,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "color"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "color"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "datetime"],
+                        "required": [
+                            "id",
+                            "datetime"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -565,9 +640,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_createblock",
             "name": "create-block",
-            "output": ["ActionOutput_acuity_scheduling_createblock"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_createblock", "ActionOutput_acuity_scheduling_createblock"],
+            "output": [
+                "ActionOutput_acuity_scheduling_createblock"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createblock",
+                "ActionOutput_acuity_scheduling_createblock"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -591,7 +673,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["start", "end", "calendarID"],
+                        "required": [
+                            "start",
+                            "end",
+                            "calendarID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_createblock": {
@@ -616,7 +702,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -629,9 +717,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_createcertificate",
             "name": "create-certificate",
-            "output": ["ActionOutput_acuity_scheduling_createcertificate"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_createcertificate", "ActionOutput_acuity_scheduling_createcertificate"],
+            "output": [
+                "ActionOutput_acuity_scheduling_createcertificate"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createcertificate",
+                "ActionOutput_acuity_scheduling_createcertificate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -682,10 +777,15 @@
                             },
                             "orderID": {
                                 "description": "Associated order ID, null if created via API.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -698,9 +798,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_createclient",
             "name": "create-client",
-            "output": ["ActionOutput_acuity_scheduling_createclient"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_createclient", "ActionOutput_acuity_scheduling_createclient"],
+            "output": [
+                "ActionOutput_acuity_scheduling_createclient"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_createclient",
+                "ActionOutput_acuity_scheduling_createclient"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -728,7 +835,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName"],
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_createclient": {
@@ -750,7 +860,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName"],
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -763,9 +876,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_deleteblock",
             "name": "delete-block",
-            "output": ["ActionOutput_acuity_scheduling_deleteblock"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_deleteblock", "ActionOutput_acuity_scheduling_deleteblock"],
+            "output": [
+                "ActionOutput_acuity_scheduling_deleteblock"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_deleteblock",
+                "ActionOutput_acuity_scheduling_deleteblock"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -777,7 +897,9 @@
                                 "description": "The ID of the block to delete. Example: 1234"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_deleteblock": {
@@ -790,7 +912,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -803,9 +928,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_deletecertificate",
             "name": "delete-certificate",
-            "output": ["ActionOutput_acuity_scheduling_deletecertificate"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_deletecertificate", "ActionOutput_acuity_scheduling_deletecertificate"],
+            "output": [
+                "ActionOutput_acuity_scheduling_deletecertificate"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_deletecertificate",
+                "ActionOutput_acuity_scheduling_deletecertificate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -817,7 +949,9 @@
                                 "description": "Certificate ID. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_deletecertificate": {
@@ -881,7 +1015,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -894,9 +1030,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_deleteclient",
             "name": "delete-client",
-            "output": ["ActionOutput_acuity_scheduling_deleteclient"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_deleteclient", "ActionOutput_acuity_scheduling_deleteclient"],
+            "output": [
+                "ActionOutput_acuity_scheduling_deleteclient"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_deleteclient",
+                "ActionOutput_acuity_scheduling_deleteclient"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -916,7 +1059,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName"],
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_deleteclient": {
@@ -926,7 +1072,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -939,9 +1087,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_getappointmentpayments",
             "name": "get-appointment-payments",
-            "output": ["ActionOutput_acuity_scheduling_getappointmentpayments"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_getappointmentpayments", "ActionOutput_acuity_scheduling_getappointmentpayments"],
+            "output": [
+                "ActionOutput_acuity_scheduling_getappointmentpayments"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getappointmentpayments",
+                "ActionOutput_acuity_scheduling_getappointmentpayments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -955,7 +1110,9 @@
                                 "description": "Appointment ID. Example: 1722092210"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_getappointmentpayments": {
@@ -983,7 +1140,9 @@
                                 }
                             }
                         },
-                        "required": ["payments"],
+                        "required": [
+                            "payments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -996,9 +1155,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_getappointment",
             "name": "get-appointment",
-            "output": ["ActionOutput_acuity_scheduling_getappointment"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_getappointment", "ActionOutput_acuity_scheduling_getappointment"],
+            "output": [
+                "ActionOutput_acuity_scheduling_getappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getappointment",
+                "ActionOutput_acuity_scheduling_getappointment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1014,7 +1180,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_getappointment": {
@@ -1101,7 +1269,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1131,7 +1301,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1144,9 +1316,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_getblock",
             "name": "get-block",
-            "output": ["ActionOutput_acuity_scheduling_getblock"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_getblock", "ActionOutput_acuity_scheduling_getblock"],
+            "output": [
+                "ActionOutput_acuity_scheduling_getblock"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getblock",
+                "ActionOutput_acuity_scheduling_getblock"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1158,7 +1337,9 @@
                                 "description": "Blocked time ID. Example: 9990960594"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_getblock": {
@@ -1194,7 +1375,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "calendarID", "serviceGroupID", "calendarTimezone", "start", "end", "managed"],
+                        "required": [
+                            "id",
+                            "calendarID",
+                            "serviceGroupID",
+                            "calendarTimezone",
+                            "start",
+                            "end",
+                            "managed"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1207,9 +1396,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_getme",
             "name": "get-me",
-            "output": ["ActionOutput_acuity_scheduling_getme"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_getme", "ActionOutput_acuity_scheduling_getme"],
+            "output": [
+                "ActionOutput_acuity_scheduling_getme"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getme",
+                "ActionOutput_acuity_scheduling_getme"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1249,7 +1445,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1262,9 +1460,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_getmeta",
             "name": "get-meta",
-            "output": ["ActionOutput_acuity_scheduling_getmeta"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_getmeta", "ActionOutput_acuity_scheduling_getmeta"],
+            "output": [
+                "ActionOutput_acuity_scheduling_getmeta"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getmeta",
+                "ActionOutput_acuity_scheduling_getmeta"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1295,9 +1500,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_getorder",
             "name": "get-order",
-            "output": ["ActionOutput_acuity_scheduling_getorder"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_getorder", "ActionOutput_acuity_scheduling_getorder"],
+            "output": [
+                "ActionOutput_acuity_scheduling_getorder"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_getorder",
+                "ActionOutput_acuity_scheduling_getorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1309,7 +1521,9 @@
                                 "description": "Order ID. Example: 1234"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_getorder": {
@@ -1363,12 +1577,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1381,9 +1599,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listappointmentaddons",
             "name": "list-appointment-addons",
-            "output": ["ActionOutput_acuity_scheduling_listappointmentaddons"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listappointmentaddons", "ActionOutput_acuity_scheduling_listappointmentaddons"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listappointmentaddons"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listappointmentaddons",
+                "ActionOutput_acuity_scheduling_listappointmentaddons"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1416,12 +1641,20 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "duration", "price", "private"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "duration",
+                                        "price",
+                                        "private"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["addons"],
+                        "required": [
+                            "addons"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1434,9 +1667,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listappointmenttypes",
             "name": "list-appointment-types",
-            "output": ["ActionOutput_acuity_scheduling_listappointmenttypes"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listappointmenttypes", "ActionOutput_acuity_scheduling_listappointmenttypes"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listappointmenttypes"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listappointmenttypes",
+                "ActionOutput_acuity_scheduling_listappointmenttypes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1462,7 +1702,10 @@
                                             "type": "number"
                                         },
                                         "active": {
-                                            "type": ["string", "boolean"]
+                                            "type": [
+                                                "string",
+                                                "boolean"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -1489,7 +1732,10 @@
                                             "type": "string"
                                         },
                                         "classSize": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "paddingAfter": {
                                             "type": "number"
@@ -1504,12 +1750,16 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1522,9 +1772,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listappointments",
             "name": "list-appointments",
-            "output": ["ActionOutput_acuity_scheduling_listappointments"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listappointments", "ActionOutput_acuity_scheduling_listappointments"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listappointments"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listappointments",
+                "ActionOutput_acuity_scheduling_listappointments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1646,7 +1903,10 @@
                                             }
                                         },
                                         "classID": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "duration": {
                                             "type": "string"
@@ -1667,7 +1927,10 @@
                                             "type": "string"
                                         },
                                         "certificate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "confirmationPage": {
                                             "type": "string"
@@ -1712,12 +1975,21 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["id", "fieldID", "name", "value"],
+                                                                    "required": [
+                                                                        "id",
+                                                                        "fieldID",
+                                                                        "name",
+                                                                        "value"
+                                                                    ],
                                                                     "additionalProperties": {}
                                                                 }
                                                             }
                                                         },
-                                                        "required": ["id", "name", "values"],
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "values"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 },
@@ -1743,7 +2015,11 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "name", "color"],
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "color"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 },
@@ -1792,7 +2068,9 @@
                                 }
                             }
                         },
-                        "required": ["appointments"],
+                        "required": [
+                            "appointments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1805,9 +2083,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listavailabilityclasses",
             "name": "list-availability-classes",
-            "output": ["ActionOutput_acuity_scheduling_listavailabilityclasses"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listavailabilityclasses", "ActionOutput_acuity_scheduling_listavailabilityclasses"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listavailabilityclasses"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listavailabilityclasses",
+                "ActionOutput_acuity_scheduling_listavailabilityclasses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1904,7 +2189,9 @@
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1917,9 +2204,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listavailabilitydates",
             "name": "list-availability-dates",
-            "output": ["ActionOutput_acuity_scheduling_listavailabilitydates"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listavailabilitydates", "ActionOutput_acuity_scheduling_listavailabilitydates"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listavailabilitydates"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listavailabilitydates",
+                "ActionOutput_acuity_scheduling_listavailabilitydates"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1950,7 +2244,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["month", "appointmentTypeID"],
+                        "required": [
+                            "month",
+                            "appointmentTypeID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_listavailabilitydates": {
@@ -1964,7 +2261,9 @@
                                 "description": "Array of available date strings in YYYY-MM-DD format."
                             }
                         },
-                        "required": ["dates"],
+                        "required": [
+                            "dates"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1977,9 +2276,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listavailabilitytimes",
             "name": "list-availability-times",
-            "output": ["ActionOutput_acuity_scheduling_listavailabilitytimes"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listavailabilitytimes", "ActionOutput_acuity_scheduling_listavailabilitytimes"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listavailabilitytimes"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listavailabilitytimes",
+                "ActionOutput_acuity_scheduling_listavailabilitytimes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2017,7 +2323,10 @@
                                 }
                             }
                         },
-                        "required": ["date", "appointmentTypeID"],
+                        "required": [
+                            "date",
+                            "appointmentTypeID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_listavailabilitytimes": {
@@ -2033,7 +2342,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["times"],
+                        "required": [
+                            "times"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2046,9 +2357,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listblocks",
             "name": "list-blocks",
-            "output": ["ActionOutput_acuity_scheduling_listblocks"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listblocks", "ActionOutput_acuity_scheduling_listblocks"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listblocks"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listblocks",
+                "ActionOutput_acuity_scheduling_listblocks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2115,12 +2433,20 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["id", "description", "end", "start", "calendarID"],
+                                    "required": [
+                                        "id",
+                                        "description",
+                                        "end",
+                                        "start",
+                                        "calendarID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2133,9 +2459,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listcalendars",
             "name": "list-calendars",
-            "output": ["ActionOutput_acuity_scheduling_listcalendars"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listcalendars", "ActionOutput_acuity_scheduling_listcalendars"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listcalendars"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listcalendars",
+                "ActionOutput_acuity_scheduling_listcalendars"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2179,12 +2512,17 @@
                                         "thumbnail": {},
                                         "isValid": {}
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["calendars"],
+                        "required": [
+                            "calendars"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2197,9 +2535,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listcertificates",
             "name": "list-certificates",
-            "output": ["ActionOutput_acuity_scheduling_listcertificates"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listcertificates", "ActionOutput_acuity_scheduling_listcertificates"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listcertificates"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listcertificates",
+                "ActionOutput_acuity_scheduling_listcertificates"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2276,12 +2621,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["certificates"],
+                        "required": [
+                            "certificates"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2294,9 +2643,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listclients",
             "name": "list-clients",
-            "output": ["ActionOutput_acuity_scheduling_listclients"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listclients", "ActionOutput_acuity_scheduling_listclients"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listclients"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listclients",
+                "ActionOutput_acuity_scheduling_listclients"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2338,7 +2694,9 @@
                                 }
                             }
                         },
-                        "required": ["clients"],
+                        "required": [
+                            "clients"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2351,9 +2709,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listforms",
             "name": "list-forms",
-            "output": ["ActionOutput_acuity_scheduling_listforms"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listforms", "ActionOutput_acuity_scheduling_listforms"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listforms"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listforms",
+                "ActionOutput_acuity_scheduling_listforms"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2409,12 +2774,23 @@
                                                 }
                                             }
                                         },
-                                        "required": ["id", "name", "required", "type"],
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "required",
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 }
                             },
-                            "required": ["id", "name", "hidden", "appointmentTypeIDs", "fields"],
+                            "required": [
+                                "id",
+                                "name",
+                                "hidden",
+                                "appointmentTypeIDs",
+                                "fields"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -2428,9 +2804,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listlabels",
             "name": "list-labels",
-            "output": ["ActionOutput_acuity_scheduling_listlabels"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listlabels", "ActionOutput_acuity_scheduling_listlabels"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listlabels"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listlabels",
+                "ActionOutput_acuity_scheduling_listlabels"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2457,7 +2840,11 @@
                                     "description": "Label color. Example: \"yellow\""
                                 }
                             },
-                            "required": ["id", "name", "color"],
+                            "required": [
+                                "id",
+                                "name",
+                                "color"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -2471,9 +2858,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listorders",
             "name": "list-orders",
-            "output": ["ActionOutput_acuity_scheduling_listorders"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listorders", "ActionOutput_acuity_scheduling_listorders"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listorders"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listorders",
+                "ActionOutput_acuity_scheduling_listorders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2524,7 +2918,9 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["id"],
+                            "required": [
+                                "id"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -2538,9 +2934,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_listproducts",
             "name": "list-products",
-            "output": ["ActionOutput_acuity_scheduling_listproducts"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_listproducts", "ActionOutput_acuity_scheduling_listproducts"],
+            "output": [
+                "ActionOutput_acuity_scheduling_listproducts"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_listproducts",
+                "ActionOutput_acuity_scheduling_listproducts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2602,12 +3005,18 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2620,9 +3029,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_rescheduleappointment",
             "name": "reschedule-appointment",
-            "output": ["ActionOutput_acuity_scheduling_rescheduleappointment"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_rescheduleappointment", "ActionOutput_acuity_scheduling_rescheduleappointment"],
+            "output": [
+                "ActionOutput_acuity_scheduling_rescheduleappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_rescheduleappointment",
+                "ActionOutput_acuity_scheduling_rescheduleappointment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2639,14 +3055,20 @@
                             },
                             "calendarID": {
                                 "description": "Calendar ID. Omit or pass null for auto-select.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "timezone": {
                                 "description": "Timezone for the appointment.",
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "datetime"],
+                        "required": [
+                            "id",
+                            "datetime"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_rescheduleappointment": {
@@ -2656,7 +3078,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2669,9 +3093,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_updateappointment",
             "name": "update-appointment",
-            "output": ["ActionOutput_acuity_scheduling_updateappointment"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_updateappointment", "ActionOutput_acuity_scheduling_updateappointment"],
+            "output": [
+                "ActionOutput_acuity_scheduling_updateappointment"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_updateappointment",
+                "ActionOutput_acuity_scheduling_updateappointment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2709,7 +3140,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2726,7 +3160,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2737,7 +3173,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_updateappointment": {
@@ -2780,7 +3218,10 @@
                                 "type": "string"
                             },
                             "amountPaid": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "type": {
                                 "type": "string"
@@ -2789,10 +3230,16 @@
                                 "type": "number"
                             },
                             "classID": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "duration": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "calendar": {
                                 "type": "string"
@@ -2804,7 +3251,10 @@
                                 "type": "string"
                             },
                             "certificate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "confirmationPage": {
                                 "type": "string"
@@ -2869,7 +3319,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2885,12 +3337,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2903,9 +3360,16 @@
             "endpoint": null,
             "input": "ActionInput_acuity_scheduling_updateclient",
             "name": "update-client",
-            "output": ["ActionOutput_acuity_scheduling_updateclient"],
-            "scopes": ["api-v1"],
-            "usedModels": ["ActionInput_acuity_scheduling_updateclient", "ActionOutput_acuity_scheduling_updateclient"],
+            "output": [
+                "ActionOutput_acuity_scheduling_updateclient"
+            ],
+            "scopes": [
+                "api-v1"
+            ],
+            "usedModels": [
+                "ActionInput_acuity_scheduling_updateclient",
+                "ActionOutput_acuity_scheduling_updateclient"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2933,7 +3397,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName"],
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_acuity_scheduling_updateclient": {
@@ -2952,7 +3419,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName"],
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2968,12 +3438,18 @@
             "endpoints": [],
             "input": null,
             "name": "appointment-types",
-            "output": ["AppointmentType"],
+            "output": [
+                "AppointmentType"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AppointmentType"],
+            "usedModels": [
+                "AppointmentType"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3012,7 +3488,10 @@
                                 "type": "string"
                             },
                             "classSize": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "paddingAfter": {
                                 "type": "number"
@@ -3027,7 +3506,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3041,12 +3522,18 @@
             "endpoints": [],
             "input": null,
             "name": "appointments",
-            "output": ["Appointment"],
+            "output": [
+                "Appointment"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Appointment"],
+            "usedModels": [
+                "Appointment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3137,7 +3624,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3155,12 +3644,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "datetime"],
+                        "required": [
+                            "id",
+                            "datetime"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3169,12 +3663,18 @@
             "endpoints": [],
             "input": null,
             "name": "blocks",
-            "output": ["Block"],
+            "output": [
+                "Block"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Block"],
+            "usedModels": [
+                "Block"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3201,7 +3701,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3215,12 +3717,18 @@
             "endpoints": [],
             "input": null,
             "name": "calendars",
-            "output": ["Calendar"],
+            "output": [
+                "Calendar"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Calendar"],
+            "usedModels": [
+                "Calendar"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3250,7 +3758,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3264,12 +3774,18 @@
             "endpoints": [],
             "input": null,
             "name": "certificates",
-            "output": ["Certificate"],
+            "output": [
+                "Certificate"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Certificate"],
+            "usedModels": [
+                "Certificate"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3320,7 +3836,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "certificate"],
+                        "required": [
+                            "id",
+                            "certificate"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3334,12 +3853,18 @@
             "endpoints": [],
             "input": null,
             "name": "clients",
-            "output": ["Client"],
+            "output": [
+                "Client"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Client"],
+            "usedModels": [
+                "Client"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3367,7 +3892,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3381,12 +3910,18 @@
             "endpoints": [],
             "input": null,
             "name": "forms",
-            "output": ["Form"],
+            "output": [
+                "Form"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Form"],
+            "usedModels": [
+                "Form"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3443,12 +3978,18 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3462,12 +4003,18 @@
             "endpoints": [],
             "input": null,
             "name": "labels",
-            "output": ["Label"],
+            "output": [
+                "Label"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Label"],
+            "usedModels": [
+                "Label"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3488,7 +4035,11 @@
                                 "description": "Label color"
                             }
                         },
-                        "required": ["id", "name", "color"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3502,12 +4053,18 @@
             "endpoints": [],
             "input": null,
             "name": "orders",
-            "output": ["Order"],
+            "output": [
+                "Order"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Order"],
+            "usedModels": [
+                "Order"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3546,7 +4103,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3560,12 +4119,18 @@
             "endpoints": [],
             "input": null,
             "name": "products",
-            "output": ["Product"],
+            "output": [
+                "Product"
+            ],
             "runs": "every hour",
-            "scopes": ["api-v1"],
+            "scopes": [
+                "api-v1"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Product"],
+            "usedModels": [
+                "Product"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3613,7 +4178,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

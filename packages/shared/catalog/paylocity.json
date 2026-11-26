@@ -15,12 +15,23 @@
             ],
             "input": "SyncMetadata_paylocity_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
-            "scopes": ["address", "all", "email", "offline_access", "openid"],
+            "scopes": [
+                "address",
+                "all",
+                "email",
+                "offline_access",
+                "openid"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_paylocity_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_paylocity_users"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -41,7 +52,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_paylocity_users": {

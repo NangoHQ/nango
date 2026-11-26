@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_batchcreaterecords",
             "name": "batch-create-records",
-            "output": ["ActionOutput_airtable_batchcreaterecords"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_batchcreaterecords", "ActionOutput_airtable_batchcreaterecords"],
+            "output": [
+                "ActionOutput_airtable_batchcreaterecords"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_batchcreaterecords",
+                "ActionOutput_airtable_batchcreaterecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -39,7 +46,9 @@
                                             "description": "Field values for the record. Keys are field names or IDs."
                                         }
                                     },
-                                    "required": ["fields"],
+                                    "required": [
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of records to create. Maximum 10 records per request."
@@ -49,7 +58,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "records"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "records"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_batchcreaterecords": {
@@ -74,12 +87,18 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "createdTime", "fields"],
+                                    "required": [
+                                        "id",
+                                        "createdTime",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -92,9 +111,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_batchdeleterecords",
             "name": "batch-delete-records",
-            "output": ["ActionOutput_airtable_batchdeleterecords"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_batchdeleterecords", "ActionOutput_airtable_batchdeleterecords"],
+            "output": [
+                "ActionOutput_airtable_batchdeleterecords"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_batchdeleterecords",
+                "ActionOutput_airtable_batchdeleterecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -119,7 +145,11 @@
                                 "description": "Array of record IDs to delete. Minimum 1, maximum 10. Example: [\"rec1234567890abcd\"]"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "recordIds"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "recordIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_batchdeleterecords": {
@@ -137,12 +167,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "deleted"],
+                                    "required": [
+                                        "id",
+                                        "deleted"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -155,9 +190,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_batchreplacerecords",
             "name": "batch-replace-records",
-            "output": ["ActionOutput_airtable_batchreplacerecords"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_batchreplacerecords", "ActionOutput_airtable_batchreplacerecords"],
+            "output": [
+                "ActionOutput_airtable_batchreplacerecords"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_batchreplacerecords",
+                "ActionOutput_airtable_batchreplacerecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -190,7 +232,10 @@
                                             "description": "Field values to set on the record."
                                         }
                                     },
-                                    "required": ["id", "fields"],
+                                    "required": [
+                                        "id",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of records to replace."
@@ -200,7 +245,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "records"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "records"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_batchreplacerecords": {
@@ -225,12 +274,16 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -243,9 +296,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_batchupdaterecords",
             "name": "batch-update-records",
-            "output": ["ActionOutput_airtable_batchupdaterecords"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_batchupdaterecords", "ActionOutput_airtable_batchupdaterecords"],
+            "output": [
+                "ActionOutput_airtable_batchupdaterecords"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_batchupdaterecords",
+                "ActionOutput_airtable_batchupdaterecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -278,7 +338,10 @@
                                             "description": "Fields to update for this record."
                                         }
                                     },
-                                    "required": ["id", "fields"],
+                                    "required": [
+                                        "id",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of records to update."
@@ -288,7 +351,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["base_id", "table_id_or_name", "records"],
+                        "required": [
+                            "base_id",
+                            "table_id_or_name",
+                            "records"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_batchupdaterecords": {
@@ -313,12 +380,16 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -331,9 +402,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_createbase",
             "name": "create-base",
-            "output": ["ActionOutput_airtable_createbase"],
-            "scopes": ["schema.bases:write"],
-            "usedModels": ["ActionInput_airtable_createbase", "ActionOutput_airtable_createbase"],
+            "output": [
+                "ActionOutput_airtable_createbase"
+            ],
+            "scopes": [
+                "schema.bases:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_createbase",
+                "ActionOutput_airtable_createbase"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -387,19 +465,29 @@
                                                         "additionalProperties": {}
                                                     }
                                                 },
-                                                "required": ["name", "type"],
+                                                "required": [
+                                                    "name",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Fields to create in this table."
                                         }
                                     },
-                                    "required": ["name", "fields"],
+                                    "required": [
+                                        "name",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Tables to create in the new base."
                             }
                         },
-                        "required": ["workspaceId", "name", "tables"],
+                        "required": [
+                            "workspaceId",
+                            "name",
+                            "tables"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_createbase": {
@@ -440,7 +528,11 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -459,17 +551,30 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "primaryFieldId",
+                                        "fields",
+                                        "views"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "tables"],
+                        "required": [
+                            "id",
+                            "tables"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -482,9 +587,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_airtable_createcomment"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_createcomment", "ActionOutput_airtable_createcomment"],
+            "output": [
+                "ActionOutput_airtable_createcomment"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_createcomment",
+                "ActionOutput_airtable_createcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -508,7 +620,12 @@
                                 "description": "Comment text. Example: \"Hello from Nango!\""
                             }
                         },
-                        "required": ["base_id", "table_id_or_name", "record_id", "text"],
+                        "required": [
+                            "base_id",
+                            "table_id_or_name",
+                            "record_id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_createcomment": {
@@ -530,7 +647,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "email", "name"],
+                                "required": [
+                                    "id",
+                                    "email",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "text": {
@@ -543,7 +664,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "author", "text", "created_time"],
+                        "required": [
+                            "id",
+                            "author",
+                            "text",
+                            "created_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -556,9 +682,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_createfield",
             "name": "create-field",
-            "output": ["ActionOutput_airtable_createfield"],
-            "scopes": ["schema.bases:write"],
-            "usedModels": ["ActionInput_airtable_createfield", "ActionOutput_airtable_createfield"],
+            "output": [
+                "ActionOutput_airtable_createfield"
+            ],
+            "scopes": [
+                "schema.bases:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_createfield",
+                "ActionOutput_airtable_createfield"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -594,7 +727,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["base_id", "table_id", "name", "type"],
+                        "required": [
+                            "base_id",
+                            "table_id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_createfield": {
@@ -620,7 +758,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -633,9 +775,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_createrecord",
             "name": "create-record",
-            "output": ["ActionOutput_airtable_createrecord"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_createrecord", "ActionOutput_airtable_createrecord"],
+            "output": [
+                "ActionOutput_airtable_createrecord"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_createrecord",
+                "ActionOutput_airtable_createrecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -659,7 +808,11 @@
                                 "description": "Field values keyed by field name or field ID."
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "fields"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_createrecord": {
@@ -679,7 +832,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "createdTime", "fields"],
+                        "required": [
+                            "id",
+                            "createdTime",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -692,9 +849,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_createtable",
             "name": "create-table",
-            "output": ["ActionOutput_airtable_createtable"],
-            "scopes": ["schema.bases:write"],
-            "usedModels": ["ActionInput_airtable_createtable", "ActionOutput_airtable_createtable"],
+            "output": [
+                "ActionOutput_airtable_createtable"
+            ],
+            "scopes": [
+                "schema.bases:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_createtable",
+                "ActionOutput_airtable_createtable"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -735,7 +899,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["name", "type"],
+                                    "required": [
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "An array of field definitions conforming to the Airtable field model."
@@ -745,7 +912,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["baseId", "name", "fields"],
+                        "required": [
+                            "baseId",
+                            "name",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_createtable": {
@@ -788,7 +959,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -807,12 +982,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                        "required": [
+                            "id",
+                            "name",
+                            "primaryFieldId",
+                            "fields",
+                            "views"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -825,9 +1010,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_airtable_createwebhook"],
-            "scopes": ["webhook:manage"],
-            "usedModels": ["ActionInput_airtable_createwebhook", "ActionOutput_airtable_createwebhook"],
+            "output": [
+                "ActionOutput_airtable_createwebhook"
+            ],
+            "scopes": [
+                "webhook:manage"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_createwebhook",
+                "ActionOutput_airtable_createwebhook"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -891,7 +1083,9 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["dataTypes"],
+                                                "required": [
+                                                    "dataTypes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "includes": {
@@ -924,16 +1118,24 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["filters"],
+                                        "required": [
+                                            "filters"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["options"],
+                                "required": [
+                                    "options"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The webhook specification defining what changes to watch."
                             }
                         },
-                        "required": ["baseId", "notificationUrl", "specification"],
+                        "required": [
+                            "baseId",
+                            "notificationUrl",
+                            "specification"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_createwebhook": {
@@ -952,7 +1154,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "macSecretBase64"],
+                        "required": [
+                            "id",
+                            "macSecretBase64"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -965,9 +1170,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_airtable_deletecomment"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_deletecomment", "ActionOutput_airtable_deletecomment"],
+            "output": [
+                "ActionOutput_airtable_deletecomment"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_deletecomment",
+                "ActionOutput_airtable_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -991,7 +1203,12 @@
                                 "description": "The ID of the comment to delete. Example: \"com1234567890abcd\""
                             }
                         },
-                        "required": ["base_id", "table_id_or_name", "record_id", "row_comment_id"],
+                        "required": [
+                            "base_id",
+                            "table_id_or_name",
+                            "record_id",
+                            "row_comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_deletecomment": {
@@ -1004,7 +1221,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1017,9 +1236,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_deleterecord",
             "name": "delete-record",
-            "output": ["ActionOutput_airtable_deleterecord"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_deleterecord", "ActionOutput_airtable_deleterecord"],
+            "output": [
+                "ActionOutput_airtable_deleterecord"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_deleterecord",
+                "ActionOutput_airtable_deleterecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1039,7 +1265,11 @@
                                 "description": "Airtable record ID. Example: \"recXXXXXXXXXXXXXX\""
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "recordId"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_deleterecord": {
@@ -1052,7 +1282,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["deleted", "id"],
+                        "required": [
+                            "deleted",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1065,9 +1298,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_airtable_deletewebhook"],
-            "scopes": ["webhook:manage"],
-            "usedModels": ["ActionInput_airtable_deletewebhook", "ActionOutput_airtable_deletewebhook"],
+            "output": [
+                "ActionOutput_airtable_deletewebhook"
+            ],
+            "scopes": [
+                "webhook:manage"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_deletewebhook",
+                "ActionOutput_airtable_deletewebhook"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1083,7 +1323,10 @@
                                 "description": "The ID of the webhook to delete. Example: \"achXXXXXXXXXXXXXX\""
                             }
                         },
-                        "required": ["base_id", "webhook_id"],
+                        "required": [
+                            "base_id",
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_deletewebhook": {
@@ -1099,7 +1342,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "base_id", "webhook_id"],
+                        "required": [
+                            "success",
+                            "base_id",
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1112,9 +1359,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_getbasecollaborators",
             "name": "get-base-collaborators",
-            "output": ["ActionOutput_airtable_getbasecollaborators"],
-            "scopes": ["schema.bases:read"],
-            "usedModels": ["ActionInput_airtable_getbasecollaborators", "ActionOutput_airtable_getbasecollaborators"],
+            "output": [
+                "ActionOutput_airtable_getbasecollaborators"
+            ],
+            "scopes": [
+                "schema.bases:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_getbasecollaborators",
+                "ActionOutput_airtable_getbasecollaborators"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1126,7 +1380,9 @@
                                 "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
                             }
                         },
-                        "required": ["baseId"],
+                        "required": [
+                            "baseId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_getbasecollaborators": {
@@ -1253,7 +1509,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1266,9 +1524,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_getbaseschema",
             "name": "get-base-schema",
-            "output": ["ActionOutput_airtable_getbaseschema"],
-            "scopes": ["schema.bases:read"],
-            "usedModels": ["ActionInput_airtable_getbaseschema", "ActionOutput_airtable_getbaseschema"],
+            "output": [
+                "ActionOutput_airtable_getbaseschema"
+            ],
+            "scopes": [
+                "schema.bases:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_getbaseschema",
+                "ActionOutput_airtable_getbaseschema"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1280,7 +1545,9 @@
                                 "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
                             }
                         },
-                        "required": ["baseId"],
+                        "required": [
+                            "baseId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_getbaseschema": {
@@ -1328,7 +1595,11 @@
                                                         "additionalProperties": {}
                                                     }
                                                 },
-                                                "required": ["id", "name", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1347,17 +1618,29 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "primaryFieldId",
+                                        "fields",
+                                        "views"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["tables"],
+                        "required": [
+                            "tables"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1370,9 +1653,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_getrecord",
             "name": "get-record",
-            "output": ["ActionOutput_airtable_getrecord"],
-            "scopes": ["data.records:read"],
-            "usedModels": ["ActionInput_airtable_getrecord", "ActionOutput_airtable_getrecord"],
+            "output": [
+                "ActionOutput_airtable_getrecord"
+            ],
+            "scopes": [
+                "data.records:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_getrecord",
+                "ActionOutput_airtable_getrecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1394,7 +1684,10 @@
                             "cellFormat": {
                                 "description": "The cell format to request. Defaults to json.",
                                 "type": "string",
-                                "enum": ["json", "string"]
+                                "enum": [
+                                    "json",
+                                    "string"
+                                ]
                             },
                             "timeZone": {
                                 "description": "Time zone to use for formatting dates when cell_format is string.",
@@ -1409,7 +1702,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "recordId"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_getrecord": {
@@ -1429,7 +1726,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1442,9 +1741,14 @@
             "endpoint": null,
             "input": "ActionInput_airtable_getuserinfo",
             "name": "get-user-info",
-            "output": ["ActionOutput_airtable_getuserinfo"],
+            "output": [
+                "ActionOutput_airtable_getuserinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_airtable_getuserinfo", "ActionOutput_airtable_getuserinfo"],
+            "usedModels": [
+                "ActionInput_airtable_getuserinfo",
+                "ActionOutput_airtable_getuserinfo"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1469,7 +1773,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1482,9 +1788,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_listbases",
             "name": "list-bases",
-            "output": ["ActionOutput_airtable_listbases"],
-            "scopes": ["schema.bases:read"],
-            "usedModels": ["ActionInput_airtable_listbases", "ActionOutput_airtable_listbases"],
+            "output": [
+                "ActionOutput_airtable_listbases"
+            ],
+            "scopes": [
+                "schema.bases:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_listbases",
+                "ActionOutput_airtable_listbases"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1516,7 +1829,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1524,7 +1840,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1537,9 +1855,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_airtable_listcomments"],
-            "scopes": ["data.records:read"],
-            "usedModels": ["ActionInput_airtable_listcomments", "ActionOutput_airtable_listcomments"],
+            "output": [
+                "ActionOutput_airtable_listcomments"
+            ],
+            "scopes": [
+                "data.records:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_listcomments",
+                "ActionOutput_airtable_listcomments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1569,7 +1894,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "recordId"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_listcomments": {
@@ -1596,7 +1925,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "text": {
@@ -1609,7 +1940,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "author", "text", "createdTime"],
+                                    "required": [
+                                        "id",
+                                        "author",
+                                        "text",
+                                        "createdTime"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1618,7 +1954,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1631,9 +1969,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_listrecords",
             "name": "list-records",
-            "output": ["ActionOutput_airtable_listrecords"],
-            "scopes": ["data.records:read"],
-            "usedModels": ["ActionInput_airtable_listrecords", "ActionOutput_airtable_listrecords"],
+            "output": [
+                "ActionOutput_airtable_listrecords"
+            ],
+            "scopes": [
+                "data.records:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_listrecords",
+                "ActionOutput_airtable_listrecords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1676,10 +2021,15 @@
                                         "direction": {
                                             "description": "Sort direction.",
                                             "type": "string",
-                                            "enum": ["asc", "desc"]
+                                            "enum": [
+                                                "asc",
+                                                "desc"
+                                            ]
                                         }
                                     },
-                                    "required": ["field"],
+                                    "required": [
+                                        "field"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1698,14 +2048,20 @@
                             "cellFormat": {
                                 "description": "Cell format.",
                                 "type": "string",
-                                "enum": ["json", "string"]
+                                "enum": [
+                                    "json",
+                                    "string"
+                                ]
                             },
                             "offset": {
                                 "description": "Pagination offset from previous response.",
                                 "type": "string"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_listrecords": {
@@ -1730,7 +2086,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "createdTime", "fields"],
+                                    "required": [
+                                        "id",
+                                        "createdTime",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1739,7 +2099,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1752,9 +2114,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_listviews",
             "name": "list-views",
-            "output": ["ActionOutput_airtable_listviews"],
-            "scopes": ["schema.bases:read"],
-            "usedModels": ["ActionInput_airtable_listviews", "ActionOutput_airtable_listviews"],
+            "output": [
+                "ActionOutput_airtable_listviews"
+            ],
+            "scopes": [
+                "schema.bases:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_listviews",
+                "ActionOutput_airtable_listviews"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1766,7 +2135,9 @@
                                 "description": "Airtable base ID. Example: \"appXXXXXXXXXXXXXX\""
                             }
                         },
-                        "required": ["base_id"],
+                        "required": [
+                            "base_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_listviews": {
@@ -1787,12 +2158,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["views"],
+                        "required": [
+                            "views"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1805,9 +2182,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_listwebhookpayloads",
             "name": "list-webhook-payloads",
-            "output": ["ActionOutput_airtable_listwebhookpayloads"],
-            "scopes": ["webhook:manage"],
-            "usedModels": ["ActionInput_airtable_listwebhookpayloads", "ActionOutput_airtable_listwebhookpayloads"],
+            "output": [
+                "ActionOutput_airtable_listwebhookpayloads"
+            ],
+            "scopes": [
+                "webhook:manage"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_listwebhookpayloads",
+                "ActionOutput_airtable_listwebhookpayloads"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1831,7 +2215,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["base_id", "webhook_id"],
+                        "required": [
+                            "base_id",
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_listwebhookpayloads": {
@@ -1856,7 +2243,9 @@
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["source"],
+                                            "required": [
+                                                "source"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "baseTransactionNumber": {
@@ -1895,7 +2284,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["actionMetadata", "baseTransactionNumber", "payloadFormat", "timestamp"],
+                                    "required": [
+                                        "actionMetadata",
+                                        "baseTransactionNumber",
+                                        "payloadFormat",
+                                        "timestamp"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1906,7 +2300,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["payloads", "cursor", "might_have_more"],
+                        "required": [
+                            "payloads",
+                            "cursor",
+                            "might_have_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1919,9 +2317,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_airtable_listwebhooks"],
-            "scopes": ["webhook:manage"],
-            "usedModels": ["ActionInput_airtable_listwebhooks", "ActionOutput_airtable_listwebhooks"],
+            "output": [
+                "ActionOutput_airtable_listwebhooks"
+            ],
+            "scopes": [
+                "webhook:manage"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_listwebhooks",
+                "ActionOutput_airtable_listwebhooks"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1933,7 +2338,9 @@
                                 "description": "Airtable base ID. Example: \"appJxrbEgLaF00M2f\""
                             }
                         },
-                        "required": ["baseId"],
+                        "required": [
+                            "baseId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_listwebhooks": {
@@ -1987,7 +2394,9 @@
                                                                                     "type": "string"
                                                                                 }
                                                                             },
-                                                                            "required": ["viewId"],
+                                                                            "required": [
+                                                                                "viewId"
+                                                                            ],
                                                                             "additionalProperties": false
                                                                         },
                                                                         "formPageSubmission": {
@@ -1997,7 +2406,9 @@
                                                                                     "type": "string"
                                                                                 }
                                                                             },
-                                                                            "required": ["pageId"],
+                                                                            "required": [
+                                                                                "pageId"
+                                                                            ],
                                                                             "additionalProperties": false
                                                                         }
                                                                     },
@@ -2016,7 +2427,9 @@
                                                                     }
                                                                 }
                                                             },
-                                                            "required": ["dataTypes"],
+                                                            "required": [
+                                                                "dataTypes"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "includes": {
@@ -2046,11 +2459,15 @@
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["filters"],
+                                                    "required": [
+                                                        "filters"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["options"],
+                                            "required": [
+                                                "options"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "notificationUrl": {
@@ -2084,11 +2501,15 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["message"],
+                                                    "required": [
+                                                        "message"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["success"],
+                                            "required": [
+                                                "success"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "areNotificationsEnabled": {
@@ -2104,12 +2525,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "specification", "cursorForNextPayload", "areNotificationsEnabled", "isHookEnabled"],
+                                    "required": [
+                                        "id",
+                                        "specification",
+                                        "cursorForNextPayload",
+                                        "areNotificationsEnabled",
+                                        "isHookEnabled"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["webhooks"],
+                        "required": [
+                            "webhooks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2122,9 +2551,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_refreshwebhook",
             "name": "refresh-webhook",
-            "output": ["ActionOutput_airtable_refreshwebhook"],
-            "scopes": ["webhook:manage"],
-            "usedModels": ["ActionInput_airtable_refreshwebhook", "ActionOutput_airtable_refreshwebhook"],
+            "output": [
+                "ActionOutput_airtable_refreshwebhook"
+            ],
+            "scopes": [
+                "webhook:manage"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_refreshwebhook",
+                "ActionOutput_airtable_refreshwebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2140,7 +2576,10 @@
                                 "description": "The ID of the webhook to refresh. Example: \"achXXXXXXXXXXXXXX\""
                             }
                         },
-                        "required": ["baseId", "webhookId"],
+                        "required": [
+                            "baseId",
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_refreshwebhook": {
@@ -2162,9 +2601,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_replacerecord",
             "name": "replace-record",
-            "output": ["ActionOutput_airtable_replacerecord"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_replacerecord", "ActionOutput_airtable_replacerecord"],
+            "output": [
+                "ActionOutput_airtable_replacerecord"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_replacerecord",
+                "ActionOutput_airtable_replacerecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2196,7 +2642,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "recordId", "fields"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "recordId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_replacerecord": {
@@ -2216,7 +2667,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "createdTime", "fields"],
+                        "required": [
+                            "id",
+                            "createdTime",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2229,9 +2684,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_setwebhooknotifications",
             "name": "set-webhook-notifications",
-            "output": ["ActionOutput_airtable_setwebhooknotifications"],
-            "scopes": ["webhook:manage"],
-            "usedModels": ["ActionInput_airtable_setwebhooknotifications", "ActionOutput_airtable_setwebhooknotifications"],
+            "output": [
+                "ActionOutput_airtable_setwebhooknotifications"
+            ],
+            "scopes": [
+                "webhook:manage"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_setwebhooknotifications",
+                "ActionOutput_airtable_setwebhooknotifications"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2251,7 +2713,11 @@
                                 "description": "Whether to enable or disable notifications for the webhook."
                             }
                         },
-                        "required": ["baseId", "webhookId", "enable"],
+                        "required": [
+                            "baseId",
+                            "webhookId",
+                            "enable"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_setwebhooknotifications": {
@@ -2276,7 +2742,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2289,9 +2757,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_airtable_updatecomment"],
-            "scopes": ["data.recordComments:write"],
-            "usedModels": ["ActionInput_airtable_updatecomment", "ActionOutput_airtable_updatecomment"],
+            "output": [
+                "ActionOutput_airtable_updatecomment"
+            ],
+            "scopes": [
+                "data.recordComments:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_updatecomment",
+                "ActionOutput_airtable_updatecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2319,7 +2794,13 @@
                                 "description": "The updated comment text."
                             }
                         },
-                        "required": ["base_id", "table_id_or_name", "record_id", "row_comment_id", "text"],
+                        "required": [
+                            "base_id",
+                            "table_id_or_name",
+                            "record_id",
+                            "row_comment_id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_updatecomment": {
@@ -2341,7 +2822,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "email", "name"],
+                                "required": [
+                                    "id",
+                                    "email",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "text": {
@@ -2354,7 +2839,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "author", "text", "created_time"],
+                        "required": [
+                            "id",
+                            "author",
+                            "text",
+                            "created_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2367,9 +2857,17 @@
             "endpoint": null,
             "input": "ActionInput_airtable_updatefield",
             "name": "update-field",
-            "output": ["ActionOutput_airtable_updatefield"],
-            "scopes": ["data.records:write", "schema.bases:write"],
-            "usedModels": ["ActionInput_airtable_updatefield", "ActionOutput_airtable_updatefield"],
+            "output": [
+                "ActionOutput_airtable_updatefield"
+            ],
+            "scopes": [
+                "data.records:write",
+                "schema.bases:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_updatefield",
+                "ActionOutput_airtable_updatefield"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2394,7 +2892,10 @@
                             },
                             "description": {
                                 "description": "The new description for the field. If provided, must be a string no longer than 20,000 characters. Pass null to clear the description.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "options": {
                                 "description": "Field-type-specific options to update. Only certain options are mutable depending on the field type.",
@@ -2405,7 +2906,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["baseId", "tableId", "columnId"],
+                        "required": [
+                            "baseId",
+                            "tableId",
+                            "columnId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_updatefield": {
@@ -2425,7 +2930,11 @@
                             },
                             "options": {}
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2438,9 +2947,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_updaterecord",
             "name": "update-record",
-            "output": ["ActionOutput_airtable_updaterecord"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_updaterecord", "ActionOutput_airtable_updaterecord"],
+            "output": [
+                "ActionOutput_airtable_updaterecord"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_updaterecord",
+                "ActionOutput_airtable_updaterecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2472,7 +2988,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "recordId", "fields"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "recordId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_updaterecord": {
@@ -2492,7 +3013,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "createdTime", "fields"],
+                        "required": [
+                            "id",
+                            "createdTime",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2505,9 +3030,17 @@
             "endpoint": null,
             "input": "ActionInput_airtable_updatetable",
             "name": "update-table",
-            "output": ["ActionOutput_airtable_updatetable"],
-            "scopes": ["schema.bases:read", "schema.bases:write"],
-            "usedModels": ["ActionInput_airtable_updatetable", "ActionOutput_airtable_updatetable"],
+            "output": [
+                "ActionOutput_airtable_updatetable"
+            ],
+            "scopes": [
+                "schema.bases:read",
+                "schema.bases:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_updatetable",
+                "ActionOutput_airtable_updatetable"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2551,7 +3084,10 @@
                                         "type": "boolean"
                                     },
                                     "predecessorFieldId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "reschedulingMode": {
                                         "type": "string"
@@ -2575,7 +3111,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["baseId", "tableIdOrName"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_updatetable": {
@@ -2608,7 +3147,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "options": {
                                             "anyOf": [
@@ -2623,7 +3165,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2642,12 +3188,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "primaryFieldId", "fields", "views"],
+                        "required": [
+                            "id",
+                            "name",
+                            "primaryFieldId",
+                            "fields",
+                            "views"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2660,9 +3216,17 @@
             "endpoint": null,
             "input": "ActionInput_airtable_uploadattachment",
             "name": "upload-attachment",
-            "output": ["ActionOutput_airtable_uploadattachment"],
-            "scopes": ["data.records:write", "schema.bases:read"],
-            "usedModels": ["ActionInput_airtable_uploadattachment", "ActionOutput_airtable_uploadattachment"],
+            "output": [
+                "ActionOutput_airtable_uploadattachment"
+            ],
+            "scopes": [
+                "data.records:write",
+                "schema.bases:read"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_uploadattachment",
+                "ActionOutput_airtable_uploadattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2694,7 +3258,14 @@
                                 "description": "The file content as a base64-encoded string."
                             }
                         },
-                        "required": ["base_id", "record_id", "attachment_field_id_or_name", "content_type", "filename", "file"],
+                        "required": [
+                            "base_id",
+                            "record_id",
+                            "attachment_field_id_or_name",
+                            "content_type",
+                            "filename",
+                            "file"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_uploadattachment": {
@@ -2714,7 +3285,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "fields"],
+                        "required": [
+                            "id",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2727,9 +3301,16 @@
             "endpoint": null,
             "input": "ActionInput_airtable_upsertrecords",
             "name": "upsert-records",
-            "output": ["ActionOutput_airtable_upsertrecords"],
-            "scopes": ["data.records:write"],
-            "usedModels": ["ActionInput_airtable_upsertrecords", "ActionOutput_airtable_upsertrecords"],
+            "output": [
+                "ActionOutput_airtable_upsertrecords"
+            ],
+            "scopes": [
+                "data.records:write"
+            ],
+            "usedModels": [
+                "ActionInput_airtable_upsertrecords",
+                "ActionOutput_airtable_upsertrecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2769,7 +3350,9 @@
                                             "description": "The field values for the record."
                                         }
                                     },
-                                    "required": ["fields"],
+                                    "required": [
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The records to upsert."
@@ -2787,7 +3370,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["baseId", "tableIdOrName", "fieldsToMergeOn", "records"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName",
+                            "fieldsToMergeOn",
+                            "records"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_airtable_upsertrecords": {
@@ -2812,7 +3400,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "createdTime", "fields"],
+                                    "required": [
+                                        "id",
+                                        "createdTime",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2829,7 +3421,11 @@
                                 }
                             }
                         },
-                        "required": ["records", "updatedRecords", "createdRecords"],
+                        "required": [
+                            "records",
+                            "updatedRecords",
+                            "createdRecords"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2850,12 +3446,18 @@
             ],
             "input": null,
             "name": "bases",
-            "output": ["Base"],
+            "output": [
+                "Base"
+            ],
             "runs": "every hour",
-            "scopes": ["schema.bases:read"],
+            "scopes": [
+                "schema.bases:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Base"],
+            "usedModels": [
+                "Base"
+            ],
             "version": "2.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2874,12 +3476,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2893,12 +3499,19 @@
             ],
             "input": "SyncMetadata_airtable_records",
             "name": "records",
-            "output": ["AirtableRecord"],
+            "output": [
+                "AirtableRecord"
+            ],
             "runs": "every hour",
-            "scopes": ["data.records:read"],
+            "scopes": [
+                "data.records:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AirtableRecord", "SyncMetadata_airtable_records"],
+            "usedModels": [
+                "AirtableRecord",
+                "SyncMetadata_airtable_records"
+            ],
             "version": "",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2920,7 +3533,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "createdTime"],
+                        "required": [
+                            "id",
+                            "createdTime"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_airtable_records": {
@@ -2945,10 +3561,15 @@
                                         },
                                         "direction": {
                                             "type": "string",
-                                            "enum": ["asc", "desc"]
+                                            "enum": [
+                                                "asc",
+                                                "desc"
+                                            ]
                                         }
                                     },
-                                    "required": ["field"],
+                                    "required": [
+                                        "field"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2962,12 +3583,17 @@
                                 }
                             }
                         },
-                        "required": ["baseId", "tableIdOrName"],
+                        "required": [
+                            "baseId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2981,12 +3607,18 @@
             ],
             "input": null,
             "name": "tables",
-            "output": ["Table"],
+            "output": [
+                "Table"
+            ],
             "runs": "every day",
-            "scopes": ["schema.bases:read"],
+            "scopes": [
+                "schema.bases:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Table"],
+            "usedModels": [
+                "Table"
+            ],
             "version": "2.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3034,7 +3666,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3053,17 +3689,31 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "baseId", "baseName", "primaryFieldId", "fields", "views"],
+                        "required": [
+                            "id",
+                            "name",
+                            "baseId",
+                            "baseName",
+                            "primaryFieldId",
+                            "fields",
+                            "views"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3077,12 +3727,18 @@
             ],
             "input": null,
             "name": "views",
-            "output": ["View"],
+            "output": [
+                "View"
+            ],
             "runs": "every hour",
-            "scopes": ["schema.bases:read"],
+            "scopes": [
+                "schema.bases:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["View"],
+            "usedModels": [
+                "View"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3109,12 +3765,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "base_id", "table_id"],
+                        "required": [
+                            "id",
+                            "base_id",
+                            "table_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3128,12 +3790,20 @@
             ],
             "input": "SyncMetadata_airtable_webhooks",
             "name": "webhooks",
-            "output": ["Webhook"],
+            "output": [
+                "Webhook"
+            ],
             "runs": "every hour",
-            "scopes": ["webhook:manage", "schema.bases:read"],
+            "scopes": [
+                "webhook:manage",
+                "schema.bases:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webhook", "SyncMetadata_airtable_webhooks"],
+            "usedModels": [
+                "Webhook",
+                "SyncMetadata_airtable_webhooks"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3201,7 +3871,13 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "baseId", "isHookEnabled", "areNotificationsEnabled", "cursorForNextPayload"],
+                        "required": [
+                            "id",
+                            "baseId",
+                            "isHookEnabled",
+                            "areNotificationsEnabled",
+                            "cursorForNextPayload"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_airtable_webhooks": {
@@ -3215,7 +3891,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

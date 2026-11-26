@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_createmeetingregistrant",
             "name": "create-meeting-registrant",
-            "output": ["ActionOutput_zoom_createmeetingregistrant"],
-            "scopes": ["meeting:write:admin", "meeting:write"],
-            "usedModels": ["ActionInput_zoom_createmeetingregistrant", "ActionOutput_zoom_createmeetingregistrant"],
+            "output": [
+                "ActionOutput_zoom_createmeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:write:admin",
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createmeetingregistrant",
+                "ActionOutput_zoom_createmeetingregistrant"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -109,7 +117,11 @@
                                 }
                             }
                         },
-                        "required": ["meeting_id", "email", "first_name"],
+                        "required": [
+                            "meeting_id",
+                            "email",
+                            "first_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_createmeetingregistrant": {
@@ -143,9 +155,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_createmeeting",
             "name": "create-meeting",
-            "output": ["ActionOutput_zoom_createmeeting"],
-            "scopes": ["meeting:write"],
-            "usedModels": ["ActionInput_zoom_createmeeting", "ActionOutput_zoom_createmeeting"],
+            "output": [
+                "ActionOutput_zoom_createmeeting"
+            ],
+            "scopes": [
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createmeeting",
+                "ActionOutput_zoom_createmeeting"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -205,13 +224,19 @@
                                     },
                                     "auto_recording": {
                                         "type": "string",
-                                        "enum": ["local", "cloud", "none"]
+                                        "enum": [
+                                            "local",
+                                            "cloud",
+                                            "none"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_createmeeting": {
@@ -282,7 +307,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -295,9 +322,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_zoom_createuser"],
-            "scopes": ["user:write:admin", "user:write"],
-            "usedModels": ["ActionInput_zoom_createuser", "ActionOutput_zoom_createuser"],
+            "output": [
+                "ActionOutput_zoom_createuser"
+            ],
+            "scopes": [
+                "user:write:admin",
+                "user:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createuser",
+                "ActionOutput_zoom_createuser"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -306,7 +341,12 @@
                         "properties": {
                             "action": {
                                 "type": "string",
-                                "enum": ["create", "autoCreate", "custCreate", "ssoCreate"]
+                                "enum": [
+                                    "create",
+                                    "autoCreate",
+                                    "custCreate",
+                                    "ssoCreate"
+                                ]
                             },
                             "user_info": {
                                 "type": "object",
@@ -344,11 +384,17 @@
                                         ]
                                     }
                                 },
-                                "required": ["email", "type"],
+                                "required": [
+                                    "email",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["action", "user_info"],
+                        "required": [
+                            "action",
+                            "user_info"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_createuser": {
@@ -387,7 +433,11 @@
                                 ]
                             }
                         },
-                        "required": ["id", "email", "type"],
+                        "required": [
+                            "id",
+                            "email",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -400,9 +450,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_createwebinar",
             "name": "create-webinar",
-            "output": ["ActionOutput_zoom_createwebinar"],
-            "scopes": ["webinar:write", "webinar:write:admin"],
-            "usedModels": ["ActionInput_zoom_createwebinar", "ActionOutput_zoom_createwebinar"],
+            "output": [
+                "ActionOutput_zoom_createwebinar"
+            ],
+            "scopes": [
+                "webinar:write",
+                "webinar:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_createwebinar",
+                "ActionOutput_zoom_createwebinar"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -476,7 +534,11 @@
                                     },
                                     "auto_recording": {
                                         "type": "string",
-                                        "enum": ["local", "cloud", "none"]
+                                        "enum": [
+                                            "local",
+                                            "cloud",
+                                            "none"
+                                        ]
                                     },
                                     "approval_type": {
                                         "type": "integer",
@@ -487,7 +549,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["topic"],
+                        "required": [
+                            "topic"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_createwebinar": {
@@ -587,7 +651,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "settings": {
@@ -719,9 +785,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_deletemeetingregistrant",
             "name": "delete-meeting-registrant",
-            "output": ["ActionOutput_zoom_deletemeetingregistrant"],
-            "scopes": ["meeting:write", "meeting:write:admin"],
-            "usedModels": ["ActionInput_zoom_deletemeetingregistrant", "ActionOutput_zoom_deletemeetingregistrant"],
+            "output": [
+                "ActionOutput_zoom_deletemeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:write",
+                "meeting:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deletemeetingregistrant",
+                "ActionOutput_zoom_deletemeetingregistrant"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -741,7 +815,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["meetingId", "registrantId"],
+                        "required": [
+                            "meetingId",
+                            "registrantId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_deletemeetingregistrant": {
@@ -757,7 +834,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["meetingId", "registrantId", "deleted"],
+                        "required": [
+                            "meetingId",
+                            "registrantId",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -770,9 +851,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_deletemeeting",
             "name": "delete-meeting",
-            "output": ["ActionOutput_zoom_deletemeeting"],
-            "scopes": ["meeting:write"],
-            "usedModels": ["ActionInput_zoom_deletemeeting", "ActionOutput_zoom_deletemeeting"],
+            "output": [
+                "ActionOutput_zoom_deletemeeting"
+            ],
+            "scopes": [
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deletemeeting",
+                "ActionOutput_zoom_deletemeeting"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -789,7 +877,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["meetingId"],
+                        "required": [
+                            "meetingId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_deletemeeting": {
@@ -802,7 +892,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "meetingId"],
+                        "required": [
+                            "success",
+                            "meetingId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -815,14 +908,19 @@
             "endpoint": null,
             "input": "ActionInput_zoom_deleterecording",
             "name": "delete-recording",
-            "output": ["ActionOutput_zoom_deleterecording"],
+            "output": [
+                "ActionOutput_zoom_deleterecording"
+            ],
             "scopes": [
                 "recording:write",
                 "recording:write:admin",
                 "cloud_recording:delete:meeting_recording",
                 "cloud_recording:delete:meeting_recording:admin"
             ],
-            "usedModels": ["ActionInput_zoom_deleterecording", "ActionOutput_zoom_deleterecording"],
+            "usedModels": [
+                "ActionInput_zoom_deleterecording",
+                "ActionOutput_zoom_deleterecording"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -836,10 +934,15 @@
                             "action": {
                                 "description": "The recording delete action. \"trash\" moves the recording to trash (default), \"delete\" permanently deletes the recording.",
                                 "type": "string",
-                                "enum": ["trash", "delete"]
+                                "enum": [
+                                    "trash",
+                                    "delete"
+                                ]
                             }
                         },
-                        "required": ["meeting_id"],
+                        "required": [
+                            "meeting_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_deleterecording": {
@@ -855,7 +958,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["meeting_id", "deleted"],
+                        "required": [
+                            "meeting_id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -868,9 +974,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_zoom_deleteuser"],
-            "scopes": ["user:write:admin", "user:write"],
-            "usedModels": ["ActionInput_zoom_deleteuser", "ActionOutput_zoom_deleteuser"],
+            "output": [
+                "ActionOutput_zoom_deleteuser"
+            ],
+            "scopes": [
+                "user:write:admin",
+                "user:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deleteuser",
+                "ActionOutput_zoom_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -884,7 +998,10 @@
                             "action": {
                                 "description": "Delete action: disassociate (default) removes the user from the account; delete permanently removes the user.",
                                 "type": "string",
-                                "enum": ["disassociate", "delete"]
+                                "enum": [
+                                    "disassociate",
+                                    "delete"
+                                ]
                             },
                             "transfer_email": {
                                 "description": "Email address of the user to transfer meetings, webinars, and recordings to before deletion.",
@@ -903,7 +1020,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_deleteuser": {
@@ -914,7 +1033,9 @@
                                 "description": "The ID of the deleted or archived user."
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -927,9 +1048,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_deletewebinar",
             "name": "delete-webinar",
-            "output": ["ActionOutput_zoom_deletewebinar"],
-            "scopes": ["webinar:write:admin", "webinar:write"],
-            "usedModels": ["ActionInput_zoom_deletewebinar", "ActionOutput_zoom_deletewebinar"],
+            "output": [
+                "ActionOutput_zoom_deletewebinar"
+            ],
+            "scopes": [
+                "webinar:write:admin",
+                "webinar:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_deletewebinar",
+                "ActionOutput_zoom_deletewebinar"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -941,7 +1070,9 @@
                                 "description": "The unique identifier of the webinar to delete. Example: \"123456789\""
                             }
                         },
-                        "required": ["webinar_id"],
+                        "required": [
+                            "webinar_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_deletewebinar": {
@@ -954,7 +1085,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "webinar_id"],
+                        "required": [
+                            "success",
+                            "webinar_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -967,9 +1101,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_zoom_getcurrentuser"],
-            "scopes": ["user:read"],
-            "usedModels": ["ActionInput_zoom_getcurrentuser", "ActionOutput_zoom_getcurrentuser"],
+            "output": [
+                "ActionOutput_zoom_getcurrentuser"
+            ],
+            "scopes": [
+                "user:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getcurrentuser",
+                "ActionOutput_zoom_getcurrentuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1036,7 +1177,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "email", "type"],
+                        "required": [
+                            "id",
+                            "email",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1049,9 +1194,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_getmeetingregistrant",
             "name": "get-meeting-registrant",
-            "output": ["ActionOutput_zoom_getmeetingregistrant"],
-            "scopes": ["meeting:read:registrant:admin"],
-            "usedModels": ["ActionInput_zoom_getmeetingregistrant", "ActionOutput_zoom_getmeetingregistrant"],
+            "output": [
+                "ActionOutput_zoom_getmeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:read:registrant:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getmeetingregistrant",
+                "ActionOutput_zoom_getmeetingregistrant"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1067,7 +1219,10 @@
                                 "description": "The registrant ID. Example: \"ESJWWYqvTDWFGNUqJzB_bQ\""
                             }
                         },
-                        "required": ["meetingId", "registrantId"],
+                        "required": [
+                            "meetingId",
+                            "registrantId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_getmeetingregistrant": {
@@ -1149,7 +1304,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "first_name", "email"],
+                        "required": [
+                            "id",
+                            "first_name",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1162,9 +1321,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_getmeeting",
             "name": "get-meeting",
-            "output": ["ActionOutput_zoom_getmeeting"],
-            "scopes": ["meeting:read", "meeting:read:admin"],
-            "usedModels": ["ActionInput_zoom_getmeeting", "ActionOutput_zoom_getmeeting"],
+            "output": [
+                "ActionOutput_zoom_getmeeting"
+            ],
+            "scopes": [
+                "meeting:read",
+                "meeting:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getmeeting",
+                "ActionOutput_zoom_getmeeting"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1176,7 +1343,9 @@
                                 "description": "The meeting ID in long format. Example: 1234555466"
                             }
                         },
-                        "required": ["meeting_id"],
+                        "required": [
+                            "meeting_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_getmeeting": {
@@ -1270,7 +1439,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "settings": {
@@ -1317,7 +1488,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["host_id", "id", "uuid", "type"],
+                        "required": [
+                            "host_id",
+                            "id",
+                            "uuid",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1330,9 +1506,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_getrecording",
             "name": "get-recording",
-            "output": ["ActionOutput_zoom_getrecording"],
-            "scopes": ["recording:read:admin", "recording:read"],
-            "usedModels": ["ActionInput_zoom_getrecording", "ActionOutput_zoom_getrecording"],
+            "output": [
+                "ActionOutput_zoom_getrecording"
+            ],
+            "scopes": [
+                "recording:read:admin",
+                "recording:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getrecording",
+                "ActionOutput_zoom_getrecording"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1344,7 +1528,9 @@
                                 "description": "The meeting ID or UUID. Example: \"123456789\""
                             }
                         },
-                        "required": ["meeting_id"],
+                        "required": [
+                            "meeting_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_getrecording": {
@@ -1495,9 +1681,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_zoom_getuser"],
-            "scopes": ["user:read:admin", "user:read"],
-            "usedModels": ["ActionInput_zoom_getuser", "ActionOutput_zoom_getuser"],
+            "output": [
+                "ActionOutput_zoom_getuser"
+            ],
+            "scopes": [
+                "user:read:admin",
+                "user:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getuser",
+                "ActionOutput_zoom_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1509,7 +1703,9 @@
                                 "description": "The user ID or email address of the user. For user-level apps, pass \"me\" as the value for userId."
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_getuser": {
@@ -1663,7 +1859,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1676,9 +1874,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_getwebinar",
             "name": "get-webinar",
-            "output": ["ActionOutput_zoom_getwebinar"],
-            "scopes": ["webinar:read:admin", "webinar:read"],
-            "usedModels": ["ActionInput_zoom_getwebinar", "ActionOutput_zoom_getwebinar"],
+            "output": [
+                "ActionOutput_zoom_getwebinar"
+            ],
+            "scopes": [
+                "webinar:read:admin",
+                "webinar:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_getwebinar",
+                "ActionOutput_zoom_getwebinar"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1690,7 +1896,9 @@
                                 "description": "The webinar ID in long format. Example: 123456789"
                             }
                         },
-                        "required": ["webinarId"],
+                        "required": [
+                            "webinarId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_getwebinar": {
@@ -1812,7 +2020,13 @@
                                 }
                             }
                         },
-                        "required": ["uuid", "id", "host_id", "topic", "type"],
+                        "required": [
+                            "uuid",
+                            "id",
+                            "host_id",
+                            "topic",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1825,9 +2039,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_listmeetingregistrants",
             "name": "list-meeting-registrants",
-            "output": ["ActionOutput_zoom_listmeetingregistrants"],
-            "scopes": ["meeting:read:list_registrants:admin"],
-            "usedModels": ["ActionInput_zoom_listmeetingregistrants", "ActionOutput_zoom_listmeetingregistrants"],
+            "output": [
+                "ActionOutput_zoom_listmeetingregistrants"
+            ],
+            "scopes": [
+                "meeting:read:list_registrants:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listmeetingregistrants",
+                "ActionOutput_zoom_listmeetingregistrants"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1851,7 +2072,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["meeting_id"],
+                        "required": [
+                            "meeting_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_listmeetingregistrants": {
@@ -1938,7 +2161,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email", "first_name"],
+                                    "required": [
+                                        "email",
+                                        "first_name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1952,7 +2178,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["registrants"],
+                        "required": [
+                            "registrants"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1965,9 +2193,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_listmeetings",
             "name": "list-meetings",
-            "output": ["ActionOutput_zoom_listmeetings"],
-            "scopes": ["meeting:read:admin", "meeting:read"],
-            "usedModels": ["ActionInput_zoom_listmeetings", "ActionOutput_zoom_listmeetings"],
+            "output": [
+                "ActionOutput_zoom_listmeetings"
+            ],
+            "scopes": [
+                "meeting:read:admin",
+                "meeting:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listmeetings",
+                "ActionOutput_zoom_listmeetings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1981,7 +2217,11 @@
                             "type": {
                                 "description": "The meeting types to query.",
                                 "type": "string",
-                                "enum": ["scheduled", "live", "upcoming"]
+                                "enum": [
+                                    "scheduled",
+                                    "live",
+                                    "upcoming"
+                                ]
                             },
                             "page_size": {
                                 "description": "The number of records returned within a single API call. Max 300.",
@@ -1994,7 +2234,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_listmeetings": {
@@ -2061,7 +2303,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["meetings"],
+                        "required": [
+                            "meetings"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2074,9 +2318,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_listrecordings",
             "name": "list-recordings",
-            "output": ["ActionOutput_zoom_listrecordings"],
-            "scopes": ["recording:read:admin", "recording:read"],
-            "usedModels": ["ActionInput_zoom_listrecordings", "ActionOutput_zoom_listrecordings"],
+            "output": [
+                "ActionOutput_zoom_listrecordings"
+            ],
+            "scopes": [
+                "recording:read:admin",
+                "recording:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listrecordings",
+                "ActionOutput_zoom_listrecordings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2112,7 +2364,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_listrecordings": {
@@ -2208,7 +2462,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2225,7 +2481,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["meetings"],
+                        "required": [
+                            "meetings"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2238,9 +2496,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_zoom_listusers"],
-            "scopes": ["user:read:admin"],
-            "usedModels": ["ActionInput_zoom_listusers", "ActionOutput_zoom_listusers"],
+            "output": [
+                "ActionOutput_zoom_listusers"
+            ],
+            "scopes": [
+                "user:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listusers",
+                "ActionOutput_zoom_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2254,7 +2519,11 @@
                             "status": {
                                 "description": "User status filter.",
                                 "type": "string",
-                                "enum": ["active", "inactive", "pending"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "pending"
+                                ]
                             },
                             "page_size": {
                                 "description": "Number of records per page. Default: 30, max: 300.",
@@ -2354,7 +2623,11 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id", "email", "type"],
+                                    "required": [
+                                        "id",
+                                        "email",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2382,7 +2655,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2395,9 +2670,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_listwebinars",
             "name": "list-webinars",
-            "output": ["ActionOutput_zoom_listwebinars"],
-            "scopes": ["webinar:read:admin", "webinar:read"],
-            "usedModels": ["ActionInput_zoom_listwebinars", "ActionOutput_zoom_listwebinars"],
+            "output": [
+                "ActionOutput_zoom_listwebinars"
+            ],
+            "scopes": [
+                "webinar:read:admin",
+                "webinar:read"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_listwebinars",
+                "ActionOutput_zoom_listwebinars"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2469,7 +2752,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "uuid", "host_id", "topic"],
+                                    "required": [
+                                        "id",
+                                        "uuid",
+                                        "host_id",
+                                        "topic"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2487,7 +2775,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["webinars"],
+                        "required": [
+                            "webinars"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2500,9 +2790,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_updatemeetingregistrant",
             "name": "update-meeting-registrant",
-            "output": ["ActionOutput_zoom_updatemeetingregistrant"],
-            "scopes": ["meeting:write:admin", "meeting:write"],
-            "usedModels": ["ActionInput_zoom_updatemeetingregistrant", "ActionOutput_zoom_updatemeetingregistrant"],
+            "output": [
+                "ActionOutput_zoom_updatemeetingregistrant"
+            ],
+            "scopes": [
+                "meeting:write:admin",
+                "meeting:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updatemeetingregistrant",
+                "ActionOutput_zoom_updatemeetingregistrant"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2523,7 +2821,11 @@
                             },
                             "action": {
                                 "type": "string",
-                                "enum": ["approve", "cancel", "deny"],
+                                "enum": [
+                                    "approve",
+                                    "cancel",
+                                    "deny"
+                                ],
                                 "description": "The status action to apply. Example: \"approve\""
                             },
                             "occurrence_id": {
@@ -2531,7 +2833,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["meeting_id", "registrant_id", "email", "action"],
+                        "required": [
+                            "meeting_id",
+                            "registrant_id",
+                            "email",
+                            "action"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_updatemeetingregistrant": {
@@ -2548,10 +2855,19 @@
                             },
                             "action": {
                                 "type": "string",
-                                "enum": ["approve", "cancel", "deny"]
+                                "enum": [
+                                    "approve",
+                                    "cancel",
+                                    "deny"
+                                ]
                             }
                         },
-                        "required": ["success", "meeting_id", "registrant_id", "action"],
+                        "required": [
+                            "success",
+                            "meeting_id",
+                            "registrant_id",
+                            "action"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2564,9 +2880,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_updatemeeting",
             "name": "update-meeting",
-            "output": ["ActionOutput_zoom_updatemeeting"],
-            "scopes": ["meeting:write", "meeting:write:admin"],
-            "usedModels": ["ActionInput_zoom_updatemeeting", "ActionOutput_zoom_updatemeeting"],
+            "output": [
+                "ActionOutput_zoom_updatemeeting"
+            ],
+            "scopes": [
+                "meeting:write",
+                "meeting:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updatemeeting",
+                "ActionOutput_zoom_updatemeeting"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2606,7 +2930,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["meetingId"],
+                        "required": [
+                            "meetingId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_updatemeeting": {
@@ -2622,9 +2948,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_zoom_updateuser"],
-            "scopes": ["user:write:admin"],
-            "usedModels": ["ActionInput_zoom_updateuser", "ActionOutput_zoom_updateuser"],
+            "output": [
+                "ActionOutput_zoom_updateuser"
+            ],
+            "scopes": [
+                "user:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updateuser",
+                "ActionOutput_zoom_updateuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2676,7 +3009,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_updateuser": {
@@ -2689,7 +3024,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["userId", "updated"],
+                        "required": [
+                            "userId",
+                            "updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2702,9 +3040,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_updatewebinar",
             "name": "update-webinar",
-            "output": ["ActionOutput_zoom_updatewebinar"],
-            "scopes": ["webinar:write:admin", "webinar:write"],
-            "usedModels": ["ActionInput_zoom_updatewebinar", "ActionOutput_zoom_updatewebinar"],
+            "output": [
+                "ActionOutput_zoom_updatewebinar"
+            ],
+            "scopes": [
+                "webinar:write:admin",
+                "webinar:write"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_updatewebinar",
+                "ActionOutput_zoom_updatewebinar"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2765,7 +3111,11 @@
                                     },
                                     "auto_recording": {
                                         "type": "string",
-                                        "enum": ["local", "cloud", "none"]
+                                        "enum": [
+                                            "local",
+                                            "cloud",
+                                            "none"
+                                        ]
                                     },
                                     "meeting_authentication": {
                                         "type": "boolean"
@@ -2795,7 +3145,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["webinar_id"],
+                        "required": [
+                            "webinar_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_updatewebinar": {
@@ -2808,7 +3160,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "webinar_id"],
+                        "required": [
+                            "success",
+                            "webinar_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2829,12 +3184,19 @@
             ],
             "input": null,
             "name": "meetings",
-            "output": ["Meeting"],
+            "output": [
+                "Meeting"
+            ],
             "runs": "every hour",
-            "scopes": ["meeting:read:admin", "meeting:read"],
+            "scopes": [
+                "meeting:read:admin",
+                "meeting:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Meeting"],
+            "usedModels": [
+                "Meeting"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2876,12 +3238,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2895,12 +3261,19 @@
             ],
             "input": null,
             "name": "recordings",
-            "output": ["Recording"],
+            "output": [
+                "Recording"
+            ],
             "runs": "every hour",
-            "scopes": ["recording:read:admin", "recording:read"],
+            "scopes": [
+                "recording:read:admin",
+                "recording:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Recording"],
+            "usedModels": [
+                "Recording"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2942,12 +3315,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uuid"],
+                        "required": [
+                            "id",
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2961,12 +3339,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["user:read:admin"],
+            "scopes": [
+                "user:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3026,12 +3410,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3045,12 +3433,19 @@
             ],
             "input": null,
             "name": "webinars",
-            "output": ["Webinar"],
+            "output": [
+                "Webinar"
+            ],
             "runs": "every hour",
-            "scopes": ["webinar:read:admin", "webinar:read"],
+            "scopes": [
+                "webinar:read:admin",
+                "webinar:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webinar"],
+            "usedModels": [
+                "Webinar"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3094,7 +3489,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

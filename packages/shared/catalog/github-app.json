@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_github_app_repositories",
             "name": "repositories",
-            "output": ["ActionOutput_github_app_repositories"],
+            "output": [
+                "ActionOutput_github_app_repositories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_github_app_repositories", "ActionOutput_github_app_repositories"],
+            "usedModels": [
+                "ActionInput_github_app_repositories",
+                "ActionOutput_github_app_repositories"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -73,7 +78,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "disabled": {
                                             "type": "boolean"
@@ -130,7 +138,10 @@
                                             "type": "boolean"
                                         },
                                         "homepage": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "hooks_url": {
                                             "type": "string"
@@ -160,7 +171,10 @@
                                             "type": "string"
                                         },
                                         "language": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "languages_url": {
                                             "type": "string"
@@ -177,7 +191,10 @@
                                                             "type": "string"
                                                         },
                                                         "url": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "spdx_id": {
                                                             "type": "string"
@@ -186,10 +203,19 @@
                                                             "type": "string"
                                                         },
                                                         "html_url": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["key", "name", "url", "spdx_id", "node_id"],
+                                                    "required": [
+                                                        "key",
+                                                        "name",
+                                                        "url",
+                                                        "spdx_id",
+                                                        "node_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -204,7 +230,10 @@
                                             "type": "string"
                                         },
                                         "mirror_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -323,7 +352,13 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["admin", "maintain", "pull", "push", "triage"],
+                                            "required": [
+                                                "admin",
+                                                "maintain",
+                                                "pull",
+                                                "push",
+                                                "triage"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "private": {
@@ -482,7 +517,9 @@
                                 }
                             }
                         },
-                        "required": ["repositories"],
+                        "required": [
+                            "repositories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -495,9 +532,16 @@
             "endpoint": null,
             "input": "ActionInput_github_app_searchcode",
             "name": "search-code",
-            "output": ["ActionOutput_github_app_searchcode"],
-            "scopes": ["contents:read"],
-            "usedModels": ["ActionInput_github_app_searchcode", "ActionOutput_github_app_searchcode"],
+            "output": [
+                "ActionOutput_github_app_searchcode"
+            ],
+            "scopes": [
+                "contents:read"
+            ],
+            "usedModels": [
+                "ActionInput_github_app_searchcode",
+                "ActionOutput_github_app_searchcode"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -512,12 +556,17 @@
                             "sort": {
                                 "description": "Sort order for results. The only supported value is \"indexed\", which sorts by how recently GitHub indexed the file.",
                                 "type": "string",
-                                "enum": ["indexed"]
+                                "enum": [
+                                    "indexed"
+                                ]
                             },
                             "order": {
                                 "description": "Direction of the sort. Only applies when sort is provided.",
                                 "type": "string",
-                                "enum": ["desc", "asc"]
+                                "enum": [
+                                    "desc",
+                                    "asc"
+                                ]
                             },
                             "per_page": {
                                 "description": "Number of results to return per page, from 1 to 100. GitHub defaults to 30.",
@@ -532,7 +581,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["q"],
+                        "required": [
+                            "q"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for searching code across GitHub repositories."
                     },
@@ -609,7 +660,10 @@
                                                 },
                                                 "description": {
                                                     "description": "Repository description, or null when none is set.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "fork": {
                                                     "type": "boolean",
@@ -637,12 +691,27 @@
                                                             "description": "Web URL of the repository owner profile."
                                                         }
                                                     },
-                                                    "required": ["login", "id", "avatar_url", "html_url"],
+                                                    "required": [
+                                                        "login",
+                                                        "id",
+                                                        "avatar_url",
+                                                        "html_url"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "Owner of the repository."
                                                 }
                                             },
-                                            "required": ["id", "node_id", "name", "full_name", "private", "html_url", "description", "fork", "owner"],
+                                            "required": [
+                                                "id",
+                                                "node_id",
+                                                "name",
+                                                "full_name",
+                                                "private",
+                                                "html_url",
+                                                "description",
+                                                "fork",
+                                                "owner"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Repository that contains the matching file."
                                         },
@@ -658,7 +727,10 @@
                                         },
                                         "language": {
                                             "description": "Detected programming language of the file, or null when GitHub cannot detect one.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_modified_at": {
                                             "description": "Timestamp when the file was last modified.",
@@ -672,7 +744,16 @@
                                             }
                                         }
                                     },
-                                    "required": ["name", "path", "sha", "url", "html_url", "git_url", "repository", "score"],
+                                    "required": [
+                                        "name",
+                                        "path",
+                                        "sha",
+                                        "url",
+                                        "html_url",
+                                        "git_url",
+                                        "repository",
+                                        "score"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Matching code files for the requested page."
@@ -684,7 +765,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["total_count", "incomplete_results", "items"],
+                        "required": [
+                            "total_count",
+                            "incomplete_results",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of GitHub code search results."
                     }
@@ -698,9 +783,16 @@
             "endpoint": null,
             "input": "ActionInput_github_app_searchcommits",
             "name": "search-commits",
-            "output": ["ActionOutput_github_app_searchcommits"],
-            "scopes": ["contents:read"],
-            "usedModels": ["ActionInput_github_app_searchcommits", "ActionOutput_github_app_searchcommits"],
+            "output": [
+                "ActionOutput_github_app_searchcommits"
+            ],
+            "scopes": [
+                "contents:read"
+            ],
+            "usedModels": [
+                "ActionInput_github_app_searchcommits",
+                "ActionOutput_github_app_searchcommits"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -715,12 +807,18 @@
                             "sort": {
                                 "description": "Field to sort results by. Omit for best-match ordering.",
                                 "type": "string",
-                                "enum": ["author-date", "committer-date"]
+                                "enum": [
+                                    "author-date",
+                                    "committer-date"
+                                ]
                             },
                             "order": {
                                 "description": "Sort direction. Ignored unless sort is provided. Example: \"desc\".",
                                 "type": "string",
-                                "enum": ["desc", "asc"]
+                                "enum": [
+                                    "desc",
+                                    "asc"
+                                ]
                             },
                             "per_page": {
                                 "description": "Number of results per page, from 1 to 100. Defaults to 30.",
@@ -735,7 +833,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["q"],
+                        "required": [
+                            "q"
+                        ],
                         "additionalProperties": false,
                         "description": "Search query and pagination options for finding commits with the GitHub commit search API."
                     },
@@ -788,15 +888,24 @@
                                                     "properties": {
                                                         "name": {
                                                             "description": "Name recorded on the Git commit.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "email": {
                                                             "description": "Email address recorded on the Git commit.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "date": {
                                                             "description": "ISO 8601 timestamp recorded on the Git commit.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -809,15 +918,24 @@
                                                             "properties": {
                                                                 "name": {
                                                                     "description": "Name recorded on the Git commit.",
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "email": {
                                                                     "description": "Email address recorded on the Git commit.",
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "date": {
                                                                     "description": "ISO 8601 timestamp recorded on the Git commit.",
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 }
                                                             },
                                                             "additionalProperties": false
@@ -849,22 +967,36 @@
                                                         },
                                                         "payload": {
                                                             "description": "Signed payload, or null when not present.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "signature": {
                                                             "description": "Signature value, or null when not present.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "verified_at": {
                                                             "description": "ISO 8601 verification timestamp, or null when not verified.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["verified", "reason"],
+                                                    "required": [
+                                                        "verified",
+                                                        "reason"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["message"],
+                                            "required": [
+                                                "message"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Git commit details, including message and author identities."
                                         },
@@ -888,11 +1020,17 @@
                                                         },
                                                         "name": {
                                                             "description": "Display name of the account, if set.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "email": {
                                                             "description": "Public email address of the account, if set.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "avatar_url": {
                                                             "description": "URL of the account avatar image.",
@@ -911,7 +1049,10 @@
                                                             "type": "boolean"
                                                         }
                                                     },
-                                                    "required": ["login", "id"],
+                                                    "required": [
+                                                        "login",
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -939,11 +1080,17 @@
                                                         },
                                                         "name": {
                                                             "description": "Display name of the account, if set.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "email": {
                                                             "description": "Public email address of the account, if set.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "avatar_url": {
                                                             "description": "URL of the account avatar image.",
@@ -962,7 +1109,10 @@
                                                             "type": "boolean"
                                                         }
                                                     },
-                                                    "required": ["login", "id"],
+                                                    "required": [
+                                                        "login",
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1021,7 +1171,10 @@
                                                 },
                                                 "description": {
                                                     "description": "Repository description, or null when none is set.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "fork": {
                                                     "description": "Whether the repository is a fork.",
@@ -1037,7 +1190,10 @@
                                                 },
                                                 "language": {
                                                     "description": "Primary language of the repository, or null when undetected.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "stargazers_count": {
                                                     "description": "Number of users who starred the repository.",
@@ -1060,11 +1216,17 @@
                                                         },
                                                         "name": {
                                                             "description": "Display name of the account, if set.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "email": {
                                                             "description": "Public email address of the account, if set.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "avatar_url": {
                                                             "description": "URL of the account avatar image.",
@@ -1083,12 +1245,22 @@
                                                             "type": "boolean"
                                                         }
                                                     },
-                                                    "required": ["login", "id"],
+                                                    "required": [
+                                                        "login",
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "Owner account of the repository."
                                                 }
                                             },
-                                            "required": ["id", "name", "full_name", "private", "html_url", "owner"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "full_name",
+                                                "private",
+                                                "html_url",
+                                                "owner"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Repository containing the commit."
                                         },
@@ -1097,7 +1269,14 @@
                                             "description": "Search relevance score assigned by GitHub."
                                         }
                                     },
-                                    "required": ["sha", "url", "html_url", "commit", "repository", "score"],
+                                    "required": [
+                                        "sha",
+                                        "url",
+                                        "html_url",
+                                        "commit",
+                                        "repository",
+                                        "score"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Commits matching the search query on the requested page."
@@ -1109,7 +1288,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["total_count", "incomplete_results", "items"],
+                        "required": [
+                            "total_count",
+                            "incomplete_results",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of GitHub commit search results."
                     }
@@ -1123,9 +1306,17 @@
             "endpoint": null,
             "input": "ActionInput_github_app_searchissuesandpullrequests",
             "name": "search-issues-and-pull-requests",
-            "output": ["ActionOutput_github_app_searchissuesandpullrequests"],
-            "scopes": ["issues:read", "pull_requests:read"],
-            "usedModels": ["ActionInput_github_app_searchissuesandpullrequests", "ActionOutput_github_app_searchissuesandpullrequests"],
+            "output": [
+                "ActionOutput_github_app_searchissuesandpullrequests"
+            ],
+            "scopes": [
+                "issues:read",
+                "pull_requests:read"
+            ],
+            "usedModels": [
+                "ActionInput_github_app_searchissuesandpullrequests",
+                "ActionOutput_github_app_searchissuesandpullrequests"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1143,12 +1334,18 @@
                             "type": {
                                 "description": "Restrict results to issues (is:issue) or pull requests (is:pr). Omit to return both.",
                                 "type": "string",
-                                "enum": ["issue", "pull_request"]
+                                "enum": [
+                                    "issue",
+                                    "pull_request"
+                                ]
                             },
                             "state": {
                                 "description": "Restrict results to open or closed issues and pull requests.",
                                 "type": "string",
-                                "enum": ["open", "closed"]
+                                "enum": [
+                                    "open",
+                                    "closed"
+                                ]
                             },
                             "label": {
                                 "description": "Only include items carrying this label. Example: \"bug\".",
@@ -1182,7 +1379,10 @@
                             "order": {
                                 "description": "Sort direction for the selected sort field. Defaults to \"desc\".",
                                 "type": "string",
-                                "enum": ["desc", "asc"]
+                                "enum": [
+                                    "desc",
+                                    "asc"
+                                ]
                             },
                             "per_page": {
                                 "description": "Number of results per page, from 1 to 100. Defaults to 30.",
@@ -1269,7 +1469,11 @@
                                                     "description": "URL of the user profile on GitHub."
                                                 }
                                             },
-                                            "required": ["login", "id", "html_url"],
+                                            "required": [
+                                                "login",
+                                                "id",
+                                                "html_url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "labels": {
@@ -1317,7 +1521,11 @@
                                                         "description": "URL of the user profile on GitHub."
                                                     }
                                                 },
-                                                "required": ["login", "id", "html_url"],
+                                                "required": [
+                                                    "login",
+                                                    "id",
+                                                    "html_url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1385,7 +1593,18 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "number", "title", "state", "html_url", "url", "labels", "created_at", "updated_at", "is_pull_request"],
+                                    "required": [
+                                        "id",
+                                        "number",
+                                        "title",
+                                        "state",
+                                        "html_url",
+                                        "url",
+                                        "labels",
+                                        "created_at",
+                                        "updated_at",
+                                        "is_pull_request"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Issues and pull requests matching the query for the requested page."
@@ -1397,7 +1616,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["total_count", "incomplete_results", "items"],
+                        "required": [
+                            "total_count",
+                            "incomplete_results",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Paginated GitHub issue and pull request search results."
                     }
@@ -1411,9 +1634,16 @@
             "endpoint": null,
             "input": "ActionInput_github_app_searchlabels",
             "name": "search-labels",
-            "output": ["ActionOutput_github_app_searchlabels"],
-            "scopes": ["metadata:read"],
-            "usedModels": ["ActionInput_github_app_searchlabels", "ActionOutput_github_app_searchlabels"],
+            "output": [
+                "ActionOutput_github_app_searchlabels"
+            ],
+            "scopes": [
+                "metadata:read"
+            ],
+            "usedModels": [
+                "ActionInput_github_app_searchlabels",
+                "ActionOutput_github_app_searchlabels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1434,12 +1664,18 @@
                             "sort": {
                                 "description": "Field used to sort the results. Defaults to best match when omitted.",
                                 "type": "string",
-                                "enum": ["created", "updated"]
+                                "enum": [
+                                    "created",
+                                    "updated"
+                                ]
                             },
                             "order": {
                                 "description": "Sort direction, applied only when sort is set. Defaults to \"desc\".",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "per_page": {
                                 "description": "Number of results to return per page, from 1 to 100. Defaults to 30.",
@@ -1454,7 +1690,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["repository_id", "q"],
+                        "required": [
+                            "repository_id",
+                            "q"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for searching labels in a GitHub repository."
                     },
@@ -1504,11 +1743,17 @@
                                         },
                                         "description": {
                                             "description": "Description of the label, or null when it has none.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "archived_at": {
                                             "description": "ISO 8601 timestamp when the label was archived, or null when it is not archived.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "archived_by": {
                                             "anyOf": [
@@ -1538,7 +1783,13 @@
                                                             "description": "GitHub profile URL of the user who archived the label."
                                                         }
                                                     },
-                                                    "required": ["login", "id", "node_id", "avatar_url", "html_url"],
+                                                    "required": [
+                                                        "login",
+                                                        "id",
+                                                        "node_id",
+                                                        "avatar_url",
+                                                        "html_url"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1552,7 +1803,18 @@
                                             "description": "Relevance score assigned by GitHub search."
                                         }
                                     },
-                                    "required": ["id", "node_id", "url", "name", "color", "default", "description", "archived_at", "archived_by", "score"],
+                                    "required": [
+                                        "id",
+                                        "node_id",
+                                        "url",
+                                        "name",
+                                        "color",
+                                        "default",
+                                        "description",
+                                        "archived_at",
+                                        "archived_by",
+                                        "score"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Labels matching the search query, ordered by the requested sort."
@@ -1564,7 +1826,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["total_count", "incomplete_results", "items"],
+                        "required": [
+                            "total_count",
+                            "incomplete_results",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of label search results from a GitHub repository."
                     }
@@ -1578,9 +1844,16 @@
             "endpoint": null,
             "input": "ActionInput_github_app_searchrepositories",
             "name": "search-repositories",
-            "output": ["ActionOutput_github_app_searchrepositories"],
-            "scopes": ["metadata:read"],
-            "usedModels": ["ActionInput_github_app_searchrepositories", "ActionOutput_github_app_searchrepositories"],
+            "output": [
+                "ActionOutput_github_app_searchrepositories"
+            ],
+            "scopes": [
+                "metadata:read"
+            ],
+            "usedModels": [
+                "ActionInput_github_app_searchrepositories",
+                "ActionOutput_github_app_searchrepositories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1595,12 +1868,20 @@
                             "sort": {
                                 "description": "Field to sort results by. Defaults to GitHub best-match relevance when omitted.",
                                 "type": "string",
-                                "enum": ["stars", "forks", "help-wanted-issues", "updated"]
+                                "enum": [
+                                    "stars",
+                                    "forks",
+                                    "help-wanted-issues",
+                                    "updated"
+                                ]
                             },
                             "order": {
                                 "description": "Sort direction. Defaults to \"desc\" when `sort` is provided.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "per_page": {
                                 "description": "Number of results per page, from 1 to 100. Defaults to 30.",
@@ -1615,7 +1896,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["q"],
+                        "required": [
+                            "q"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for searching GitHub repositories."
                     },
@@ -1682,7 +1965,10 @@
                                                 },
                                                 "gravatar_id": {
                                                     "description": "The owner Gravatar ID, or null when not set.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "url": {
                                                     "type": "string",
@@ -1701,7 +1987,17 @@
                                                     "description": "Whether the owner is a GitHub site administrator."
                                                 }
                                             },
-                                            "required": ["login", "id", "node_id", "avatar_url", "gravatar_id", "url", "html_url", "type", "site_admin"],
+                                            "required": [
+                                                "login",
+                                                "id",
+                                                "node_id",
+                                                "avatar_url",
+                                                "gravatar_id",
+                                                "url",
+                                                "html_url",
+                                                "type",
+                                                "site_admin"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "The account that owns the repository."
                                         },
@@ -1711,7 +2007,10 @@
                                         },
                                         "description": {
                                             "description": "The repository description, or null when none is set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "fork": {
                                             "type": "boolean",
@@ -1731,11 +2030,17 @@
                                         },
                                         "pushed_at": {
                                             "description": "The ISO 8601 timestamp of the last push, or null when never pushed.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "homepage": {
                                             "description": "The repository homepage URL, or null when none is set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "size": {
                                             "type": "integer",
@@ -1757,7 +2062,10 @@
                                         },
                                         "language": {
                                             "description": "The primary programming language, or null when undetected.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "forks_count": {
                                             "type": "integer",
@@ -1806,18 +2114,29 @@
                                                         },
                                                         "spdx_id": {
                                                             "description": "The SPDX license identifier, or null when unavailable.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "url": {
                                                             "description": "The API URL for the license, or null when unavailable.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "node_id": {
                                                             "description": "The GraphQL node ID of the license.",
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["key", "name", "spdx_id", "url"],
+                                                    "required": [
+                                                        "key",
+                                                        "name",
+                                                        "spdx_id",
+                                                        "url"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1874,7 +2193,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["total_count", "incomplete_results", "items"],
+                        "required": [
+                            "total_count",
+                            "incomplete_results",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of GitHub repository search results."
                     }
@@ -1888,9 +2211,16 @@
             "endpoint": null,
             "input": "ActionInput_github_app_searchtopics",
             "name": "search-topics",
-            "output": ["ActionOutput_github_app_searchtopics"],
-            "scopes": ["metadata:read"],
-            "usedModels": ["ActionInput_github_app_searchtopics", "ActionOutput_github_app_searchtopics"],
+            "output": [
+                "ActionOutput_github_app_searchtopics"
+            ],
+            "scopes": [
+                "metadata:read"
+            ],
+            "usedModels": [
+                "ActionInput_github_app_searchtopics",
+                "ActionOutput_github_app_searchtopics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1915,7 +2245,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["q"],
+                        "required": [
+                            "q"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for searching GitHub topics."
                     },
@@ -1941,23 +2273,38 @@
                                         },
                                         "display_name": {
                                             "description": "Display name of the topic, or null when it has none.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "short_description": {
                                             "description": "Short description shown on topic pages, or null when absent.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
                                             "description": "Longer topic description, or null when absent.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_by": {
                                             "description": "User or organization that created the topic, or null when unknown.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "released": {
                                             "description": "Release information for the topic, or null when unspecified.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string",
@@ -1981,11 +2328,17 @@
                                         },
                                         "repository_count": {
                                             "description": "Number of repositories using the topic, or null when unavailable.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "logo_url": {
                                             "description": "URL of the topic logo, or null when there is none.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "related": {
                                             "description": "Related topics, or null when none are returned.",
@@ -2092,7 +2445,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["total_count", "incomplete_results", "items"],
+                        "required": [
+                            "total_count",
+                            "incomplete_results",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Topics matching the search query along with match metadata."
                     }
@@ -2106,9 +2463,16 @@
             "endpoint": null,
             "input": "ActionInput_github_app_searchusers",
             "name": "search-users",
-            "output": ["ActionOutput_github_app_searchusers"],
-            "scopes": ["metadata:read"],
-            "usedModels": ["ActionInput_github_app_searchusers", "ActionOutput_github_app_searchusers"],
+            "output": [
+                "ActionOutput_github_app_searchusers"
+            ],
+            "scopes": [
+                "metadata:read"
+            ],
+            "usedModels": [
+                "ActionInput_github_app_searchusers",
+                "ActionOutput_github_app_searchusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2123,12 +2487,19 @@
                             "sort": {
                                 "description": "Field used to sort the results. Defaults to best match when omitted.",
                                 "type": "string",
-                                "enum": ["followers", "repositories", "joined"]
+                                "enum": [
+                                    "followers",
+                                    "repositories",
+                                    "joined"
+                                ]
                             },
                             "order": {
                                 "description": "Sort direction for the selected sort field. Ignored when sort is omitted.",
                                 "type": "string",
-                                "enum": ["desc", "asc"]
+                                "enum": [
+                                    "desc",
+                                    "asc"
+                                ]
                             },
                             "per_page": {
                                 "description": "Number of results per page, from 1 to 100. GitHub defaults to 30.",
@@ -2143,7 +2514,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["q"],
+                        "required": [
+                            "q"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for searching GitHub user and organization accounts using user-search qualifiers."
                     },
@@ -2209,31 +2582,52 @@
                                         },
                                         "name": {
                                             "description": "Display name of the account, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "bio": {
                                             "description": "Profile biography, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "company": {
                                             "description": "Company listed on the profile, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "blog": {
                                             "description": "Blog or website listed on the profile, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "location": {
                                             "description": "Location listed on the profile, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
                                             "description": "Public email address, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "hireable": {
                                             "description": "Whether the account is marked as available for hire, or null when not set.",
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "public_repos": {
                                             "description": "Number of public repositories owned by the account.",
@@ -2269,10 +2663,18 @@
                                         },
                                         "suspended_at": {
                                             "description": "ISO 8601 timestamp when the account was suspended, or null when active.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["login", "id", "type", "score"],
+                                    "required": [
+                                        "login",
+                                        "id",
+                                        "type",
+                                        "score"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "User and organization accounts returned for the requested page."
@@ -2284,7 +2686,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["total_count", "incomplete_results", "items"],
+                        "required": [
+                            "total_count",
+                            "incomplete_results",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "User and organization accounts matching the search query."
                     }
@@ -2307,12 +2713,17 @@
             ],
             "input": "SyncMetadata_github_app_commits",
             "name": "commits",
-            "output": ["GithubCommit"],
+            "output": [
+                "GithubCommit"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GithubCommit", "SyncMetadata_github_app_commits"],
+            "usedModels": [
+                "GithubCommit",
+                "SyncMetadata_github_app_commits"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2339,7 +2750,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "message": {
@@ -2349,7 +2762,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "branch", "author", "message", "date"],
+                        "required": [
+                            "id",
+                            "url",
+                            "branch",
+                            "author",
+                            "message",
+                            "date"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_github_app_commits": {
@@ -2368,12 +2788,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["owner", "repo"],
+                        "required": [
+                            "owner",
+                            "repo"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2388,12 +2813,17 @@
             ],
             "input": "SyncMetadata_github_app_pullrequests",
             "name": "pull-requests",
-            "output": ["GithubPullRequest"],
+            "output": [
+                "GithubPullRequest"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GithubPullRequest", "SyncMetadata_github_app_pullrequests"],
+            "usedModels": [
+                "GithubPullRequest",
+                "SyncMetadata_github_app_pullrequests"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2423,7 +2853,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "assignees": {
@@ -2438,7 +2870,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2454,7 +2888,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2502,18 +2938,37 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "createdAt": {
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "body", "user", "createdAt"],
+                                "required": [
+                                    "id",
+                                    "body",
+                                    "user",
+                                    "createdAt"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "url", "state", "title", "user", "assignees", "reviewers", "draft", "labels", "reviewDecision", "latestComment"],
+                        "required": [
+                            "id",
+                            "url",
+                            "state",
+                            "title",
+                            "user",
+                            "assignees",
+                            "reviewers",
+                            "draft",
+                            "labels",
+                            "reviewDecision",
+                            "latestComment"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_github_app_pullrequests": {
@@ -2532,12 +2987,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["owner", "repo"],
+                        "required": [
+                            "owner",
+                            "repo"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

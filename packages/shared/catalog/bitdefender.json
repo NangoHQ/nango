@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_bitdefender_getcompanydetails",
             "name": "get-company-details",
-            "output": ["ActionOutput_bitdefender_getcompanydetails"],
+            "output": [
+                "ActionOutput_bitdefender_getcompanydetails"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_bitdefender_getcompanydetails", "ActionOutput_bitdefender_getcompanydetails"],
+            "usedModels": [
+                "ActionInput_bitdefender_getcompanydetails",
+                "ActionOutput_bitdefender_getcompanydetails"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -47,11 +52,21 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["endpoint", "exchange", "network", "sos"],
+                                "required": [
+                                    "endpoint",
+                                    "exchange",
+                                    "network",
+                                    "sos"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "type", "subscribedServices"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type",
+                            "subscribedServices"
+                        ],
                         "additionalProperties": false
                     }
                 }

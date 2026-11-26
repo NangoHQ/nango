@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_baserow_batchcreaterows",
             "name": "batch-create-rows",
-            "output": ["ActionOutput_baserow_batchcreaterows"],
-            "scopes": ["table:write"],
-            "usedModels": ["ActionInput_baserow_batchcreaterows", "ActionOutput_baserow_batchcreaterows"],
+            "output": [
+                "ActionOutput_baserow_batchcreaterows"
+            ],
+            "scopes": [
+                "table:write"
+            ],
+            "usedModels": [
+                "ActionInput_baserow_batchcreaterows",
+                "ActionOutput_baserow_batchcreaterows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -46,7 +53,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["tableId", "items"],
+                        "required": [
+                            "tableId",
+                            "items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_batchcreaterows": {
@@ -64,12 +74,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -82,9 +96,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_batchdeleterows",
             "name": "batch-delete-rows",
-            "output": ["ActionOutput_baserow_batchdeleterows"],
+            "output": [
+                "ActionOutput_baserow_batchdeleterows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_batchdeleterows", "ActionOutput_baserow_batchdeleterows"],
+            "usedModels": [
+                "ActionInput_baserow_batchdeleterows",
+                "ActionOutput_baserow_batchdeleterows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -109,7 +128,10 @@
                                 "description": "Array of 1 to 200 row IDs to delete. Example: [15, 16]"
                             }
                         },
-                        "required": ["tableId", "items"],
+                        "required": [
+                            "tableId",
+                            "items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_batchdeleterows": {
@@ -124,7 +146,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["success", "deletedCount"],
+                        "required": [
+                            "success",
+                            "deletedCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -137,9 +162,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_batchupdaterows",
             "name": "batch-update-rows",
-            "output": ["ActionOutput_baserow_batchupdaterows"],
+            "output": [
+                "ActionOutput_baserow_batchupdaterows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_batchupdaterows", "ActionOutput_baserow_batchupdaterows"],
+            "usedModels": [
+                "ActionInput_baserow_batchupdaterows",
+                "ActionOutput_baserow_batchupdaterows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -166,7 +196,9 @@
                                             "description": "Row ID to update. Example: 17"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {},
                                     "description": "Row update payload. Must include id plus only the fields being changed."
                                 },
@@ -177,7 +209,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["tableId", "items"],
+                        "required": [
+                            "tableId",
+                            "items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_batchupdaterows": {
@@ -195,13 +230,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Updated rows."
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -214,9 +253,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_checktoken",
             "name": "check-token",
-            "output": ["ActionOutput_baserow_checktoken"],
+            "output": [
+                "ActionOutput_baserow_checktoken"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_checktoken", "ActionOutput_baserow_checktoken"],
+            "usedModels": [
+                "ActionInput_baserow_checktoken",
+                "ActionOutput_baserow_checktoken"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -232,7 +276,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["token"],
+                        "required": [
+                            "token"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -245,9 +291,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_createrow",
             "name": "create-row",
-            "output": ["ActionOutput_baserow_createrow"],
+            "output": [
+                "ActionOutput_baserow_createrow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_createrow", "ActionOutput_baserow_createrow"],
+            "usedModels": [
+                "ActionInput_baserow_createrow",
+                "ActionOutput_baserow_createrow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -279,7 +330,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["tableId", "fields"],
+                        "required": [
+                            "tableId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_createrow": {
@@ -292,7 +346,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -305,9 +361,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_deleterow",
             "name": "delete-row",
-            "output": ["ActionOutput_baserow_deleterow"],
+            "output": [
+                "ActionOutput_baserow_deleterow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_deleterow", "ActionOutput_baserow_deleterow"],
+            "usedModels": [
+                "ActionInput_baserow_deleterow",
+                "ActionOutput_baserow_deleterow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -327,7 +388,10 @@
                                 "description": "Row ID. Example: 7"
                             }
                         },
-                        "required": ["tableId", "rowId"],
+                        "required": [
+                            "tableId",
+                            "rowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_deleterow": {
@@ -338,7 +402,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -351,9 +417,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_getrow",
             "name": "get-row",
-            "output": ["ActionOutput_baserow_getrow"],
+            "output": [
+                "ActionOutput_baserow_getrow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_getrow", "ActionOutput_baserow_getrow"],
+            "usedModels": [
+                "ActionInput_baserow_getrow",
+                "ActionOutput_baserow_getrow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -377,7 +448,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["tableId", "rowId"],
+                        "required": [
+                            "tableId",
+                            "rowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_getrow": {
@@ -390,7 +464,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -403,9 +479,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_listfields",
             "name": "list-fields",
-            "output": ["ActionOutput_baserow_listfields"],
+            "output": [
+                "ActionOutput_baserow_listfields"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_listfields", "ActionOutput_baserow_listfields"],
+            "usedModels": [
+                "ActionInput_baserow_listfields",
+                "ActionOutput_baserow_listfields"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -419,7 +500,9 @@
                                 "description": "The ID of the table to list fields for. Example: 1080602"
                             }
                         },
-                        "required": ["tableId"],
+                        "required": [
+                            "tableId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_listfields": {
@@ -452,7 +535,10 @@
                                             "type": "boolean"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "select_options": {
                                             "type": "array",
@@ -469,39 +555,72 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
                                         "link_row_table_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "link_row_related_field_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "date_format": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_include_time": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "number_decimal_places": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "number_negative": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "text_alignment": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "table_id", "name", "order", "type", "primary"],
+                                    "required": [
+                                        "id",
+                                        "table_id",
+                                        "name",
+                                        "order",
+                                        "type",
+                                        "primary"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "The list of fields in the table."
                             }
                         },
-                        "required": ["fields"],
+                        "required": [
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -514,9 +633,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_listrownames",
             "name": "list-row-names",
-            "output": ["ActionOutput_baserow_listrownames"],
+            "output": [
+                "ActionOutput_baserow_listrownames"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_listrownames", "ActionOutput_baserow_listrownames"],
+            "usedModels": [
+                "ActionInput_baserow_listrownames",
+                "ActionOutput_baserow_listrownames"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -541,7 +665,9 @@
                                 "description": "Map of table IDs to arrays of row IDs to look up. Example: {\"1080602\": [1, 2]}"
                             }
                         },
-                        "required": ["tables"],
+                        "required": [
+                            "tables"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_listrownames": {
@@ -564,7 +690,9 @@
                                 "description": "Map of table IDs to maps of row IDs to primary field values. Example: {\"1080602\": {\"1\": \"Design UI\"}}"
                             }
                         },
-                        "required": ["names"],
+                        "required": [
+                            "names"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -577,9 +705,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_listrows",
             "name": "list-rows",
-            "output": ["ActionOutput_baserow_listrows"],
+            "output": [
+                "ActionOutput_baserow_listrows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_listrows", "ActionOutput_baserow_listrows"],
+            "usedModels": [
+                "ActionInput_baserow_listrows",
+                "ActionOutput_baserow_listrows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -615,13 +748,19 @@
                                     "type": "string"
                                 },
                                 "additionalProperties": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 }
                             },
                             "filterType": {
                                 "description": "Filter logic when multiple filter params are provided",
                                 "type": "string",
-                                "enum": ["AND", "OR"]
+                                "enum": [
+                                    "AND",
+                                    "OR"
+                                ]
                             },
                             "filters": {
                                 "description": "JSON-serialized filter tree. If present, all filter__ params are ignored",
@@ -646,7 +785,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["tableId"],
+                        "required": [
+                            "tableId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_listrows": {
@@ -656,10 +797,16 @@
                                 "type": "number"
                             },
                             "next": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "results": {
                                 "type": "array",
@@ -673,12 +820,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "order"],
+                                    "required": [
+                                        "id",
+                                        "order"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["count", "results"],
+                        "required": [
+                            "count",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -691,9 +844,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_listtables",
             "name": "list-tables",
-            "output": ["ActionOutput_baserow_listtables"],
+            "output": [
+                "ActionOutput_baserow_listtables"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_listtables", "ActionOutput_baserow_listtables"],
+            "usedModels": [
+                "ActionInput_baserow_listtables",
+                "ActionOutput_baserow_listtables"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -723,12 +881,19 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "order", "database_id"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "order",
+                                        "database_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["tables"],
+                        "required": [
+                            "tables"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -741,9 +906,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_moverow",
             "name": "move-row",
-            "output": ["ActionOutput_baserow_moverow"],
+            "output": [
+                "ActionOutput_baserow_moverow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_moverow", "ActionOutput_baserow_moverow"],
+            "usedModels": [
+                "ActionInput_baserow_moverow",
+                "ActionOutput_baserow_moverow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -769,7 +939,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["tableId", "rowId"],
+                        "required": [
+                            "tableId",
+                            "rowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_moverow": {
@@ -782,7 +955,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "order"],
+                        "required": [
+                            "id",
+                            "order"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -795,9 +971,16 @@
             "endpoint": null,
             "input": "ActionInput_baserow_updaterow",
             "name": "update-row",
-            "output": ["ActionOutput_baserow_updaterow"],
-            "scopes": ["database:row:update"],
-            "usedModels": ["ActionInput_baserow_updaterow", "ActionOutput_baserow_updaterow"],
+            "output": [
+                "ActionOutput_baserow_updaterow"
+            ],
+            "scopes": [
+                "database:row:update"
+            ],
+            "usedModels": [
+                "ActionInput_baserow_updaterow",
+                "ActionOutput_baserow_updaterow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -829,7 +1012,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["tableId", "rowId", "fields"],
+                        "required": [
+                            "tableId",
+                            "rowId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_updaterow": {
@@ -842,7 +1029,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -855,9 +1044,14 @@
             "endpoint": null,
             "input": "ActionInput_baserow_verifypasswordfield",
             "name": "verify-password-field",
-            "output": ["ActionOutput_baserow_verifypasswordfield"],
+            "output": [
+                "ActionOutput_baserow_verifypasswordfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_baserow_verifypasswordfield", "ActionOutput_baserow_verifypasswordfield"],
+            "usedModels": [
+                "ActionInput_baserow_verifypasswordfield",
+                "ActionOutput_baserow_verifypasswordfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -881,7 +1075,11 @@
                                 "description": "The plaintext password to verify. Example: \"NangoTest123!\""
                             }
                         },
-                        "required": ["field_id", "row_id", "password"],
+                        "required": [
+                            "field_id",
+                            "row_id",
+                            "password"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_baserow_verifypasswordfield": {
@@ -891,7 +1089,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["is_correct"],
+                        "required": [
+                            "is_correct"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -907,12 +1107,17 @@
             "endpoints": [],
             "input": "SyncMetadata_baserow_fields",
             "name": "fields",
-            "output": ["Field"],
+            "output": [
+                "Field"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Field", "SyncMetadata_baserow_fields"],
+            "usedModels": [
+                "Field",
+                "SyncMetadata_baserow_fields"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -924,7 +1129,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "SyncMetadata_baserow_fields": {
@@ -936,7 +1143,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["tableId"],
+                        "required": [
+                            "tableId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -950,12 +1159,17 @@
             "endpoints": [],
             "input": "SyncMetadata_baserow_rows",
             "name": "rows",
-            "output": ["Row"],
+            "output": [
+                "Row"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Row", "SyncMetadata_baserow_rows"],
+            "usedModels": [
+                "Row",
+                "SyncMetadata_baserow_rows"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -979,7 +1193,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "tableId", "data"],
+                        "required": [
+                            "id",
+                            "tableId",
+                            "data"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_baserow_rows": {
@@ -991,12 +1209,16 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["tableId"],
+                        "required": [
+                            "tableId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1005,12 +1227,16 @@
             "endpoints": [],
             "input": null,
             "name": "tables",
-            "output": ["Table"],
+            "output": [
+                "Table"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Table"],
+            "usedModels": [
+                "Table"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1037,7 +1263,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

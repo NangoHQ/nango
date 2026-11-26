@@ -15,12 +15,19 @@
             ],
             "input": "SyncMetadata_brightcrowd_bookanalytics",
             "name": "book-analytics",
-            "output": ["BookAnalytics"],
+            "output": [
+                "BookAnalytics"
+            ],
             "runs": "every day",
-            "scopes": ["bcb.partner/book.read"],
+            "scopes": [
+                "bcb.partner/book.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BookAnalytics", "SyncMetadata_brightcrowd_bookanalytics"],
+            "usedModels": [
+                "BookAnalytics",
+                "SyncMetadata_brightcrowd_bookanalytics"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -135,7 +142,12 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                                "required": [
+                                                    "visitors",
+                                                    "totalPageViews",
+                                                    "sessions",
+                                                    "socialClicks"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "previousValues": {
@@ -154,11 +166,20 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                                "required": [
+                                                    "visitors",
+                                                    "totalPageViews",
+                                                    "sessions",
+                                                    "socialClicks"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["dateRange", "values", "previousValues"],
+                                        "required": [
+                                            "dateRange",
+                                            "values",
+                                            "previousValues"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "book": {
@@ -177,7 +198,11 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                                "required": [
+                                                    "pagesCreated",
+                                                    "pagesUpdated",
+                                                    "taggedUsers"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "previousValues": {
@@ -193,15 +218,27 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                                "required": [
+                                                    "pagesCreated",
+                                                    "pagesUpdated",
+                                                    "taggedUsers"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["values", "previousValues"],
+                                        "required": [
+                                            "values",
+                                            "previousValues"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["notifications", "invitations", "web", "book"],
+                                "required": [
+                                    "notifications",
+                                    "invitations",
+                                    "web",
+                                    "book"
+                                ],
                                 "additionalProperties": false
                             },
                             "web": {
@@ -226,7 +263,12 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                        "required": [
+                                            "visitors",
+                                            "totalPageViews",
+                                            "sessions",
+                                            "socialClicks"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "previousValues": {
@@ -245,11 +287,20 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["visitors", "totalPageViews", "sessions", "socialClicks"],
+                                        "required": [
+                                            "visitors",
+                                            "totalPageViews",
+                                            "sessions",
+                                            "socialClicks"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["dateRange", "values", "previousValues"],
+                                "required": [
+                                    "dateRange",
+                                    "values",
+                                    "previousValues"
+                                ],
                                 "additionalProperties": false
                             },
                             "book": {
@@ -268,7 +319,11 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                        "required": [
+                                            "pagesCreated",
+                                            "pagesUpdated",
+                                            "taggedUsers"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "previousValues": {
@@ -284,15 +339,27 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["pagesCreated", "pagesUpdated", "taggedUsers"],
+                                        "required": [
+                                            "pagesCreated",
+                                            "pagesUpdated",
+                                            "taggedUsers"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["values", "previousValues"],
+                                "required": [
+                                    "values",
+                                    "previousValues"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "email", "web", "book"],
+                        "required": [
+                            "id",
+                            "email",
+                            "web",
+                            "book"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_brightcrowd_bookanalytics": {
@@ -316,7 +383,9 @@
                                 ]
                             }
                         },
-                        "required": ["bookIds"],
+                        "required": [
+                            "bookIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -336,12 +405,19 @@
             ],
             "input": "SyncMetadata_brightcrowd_books",
             "name": "books",
-            "output": ["Book"],
+            "output": [
+                "Book"
+            ],
             "runs": "every day",
-            "scopes": ["bcb.partner/book.read"],
+            "scopes": [
+                "bcb.partner/book.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Book", "SyncMetadata_brightcrowd_books"],
+            "usedModels": [
+                "Book",
+                "SyncMetadata_brightcrowd_books"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -359,16 +435,28 @@
                                 "type": "string"
                             },
                             "pictureId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "config": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "coverPictureId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bannerPictureId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "affiliation": {
                                 "anyOf": [
@@ -392,7 +480,10 @@
                                                 ]
                                             },
                                             "organization": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "major": {
                                                 "anyOf": [
@@ -434,7 +525,10 @@
                                                 ]
                                             },
                                             "graduationYear": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "specialty": {
                                                 "anyOf": [
@@ -466,10 +560,16 @@
                                                 "type": "string"
                                             },
                                             "startYear": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "endYear": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "office": {
                                                 "anyOf": [
@@ -498,7 +598,9 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -515,28 +617,52 @@
                                             "type": "string"
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "warning": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "route": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "questionHeader": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "questionSubheader": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "headline": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "active": {
                                             "type": "boolean"
@@ -562,10 +688,16 @@
                                                         "type": "string"
                                                     },
                                                     "headline": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "placeholder": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "active": {
                                                         "type": "boolean"
@@ -574,10 +706,16 @@
                                                         "type": "boolean"
                                                     },
                                                     "maxcount": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "maxlength": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "allowMentions": {
                                                         "type": "boolean"
@@ -586,12 +724,30 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["id", "label", "type", "active", "required", "allowMentions", "customizable"],
+                                                "required": [
+                                                    "id",
+                                                    "label",
+                                                    "type",
+                                                    "active",
+                                                    "required",
+                                                    "allowMentions",
+                                                    "customizable"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "type", "name", "route", "questionHeader", "active", "required", "adminOnly", "fields"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name",
+                                        "route",
+                                        "questionHeader",
+                                        "active",
+                                        "required",
+                                        "adminOnly",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -602,13 +758,22 @@
                                 }
                             },
                             "publishedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "closedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lockedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created": {
                                 "type": "string"
@@ -639,12 +804,18 @@
                                                             "type": "boolean"
                                                         }
                                                     },
-                                                    "required": ["uri", "title", "snippet"],
+                                                    "required": [
+                                                        "uri",
+                                                        "title",
+                                                        "snippet"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             }
                                         },
-                                        "required": ["sections"],
+                                        "required": [
+                                            "sections"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -658,13 +829,22 @@
                                         "type": "object",
                                         "properties": {
                                             "text": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "docId": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "video": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "pictures": {
                                                 "anyOf": [
@@ -680,7 +860,9 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["text"],
+                                        "required": [
+                                            "text"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -728,12 +910,19 @@
             ],
             "input": "SyncMetadata_brightcrowd_booksbyid",
             "name": "books-by-id",
-            "output": ["BookById"],
+            "output": [
+                "BookById"
+            ],
             "runs": "every day",
-            "scopes": ["bcb.partner/book.read"],
+            "scopes": [
+                "bcb.partner/book.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BookById", "SyncMetadata_brightcrowd_booksbyid"],
+            "usedModels": [
+                "BookById",
+                "SyncMetadata_brightcrowd_booksbyid"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -751,16 +940,28 @@
                                 "type": "string"
                             },
                             "pictureId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "config": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "coverPictureId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bannerPictureId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "affiliation": {
                                 "anyOf": [
@@ -784,7 +985,10 @@
                                                 ]
                                             },
                                             "organization": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "major": {
                                                 "anyOf": [
@@ -826,7 +1030,10 @@
                                                 ]
                                             },
                                             "graduationYear": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "specialty": {
                                                 "anyOf": [
@@ -858,10 +1065,16 @@
                                                 "type": "string"
                                             },
                                             "startYear": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "endYear": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "office": {
                                                 "anyOf": [
@@ -890,7 +1103,9 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -907,28 +1122,52 @@
                                             "type": "string"
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "warning": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "route": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "questionHeader": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "questionSubheader": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "headline": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "active": {
                                             "type": "boolean"
@@ -954,10 +1193,16 @@
                                                         "type": "string"
                                                     },
                                                     "headline": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "placeholder": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "active": {
                                                         "type": "boolean"
@@ -966,10 +1211,16 @@
                                                         "type": "boolean"
                                                     },
                                                     "maxcount": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "maxlength": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "allowMentions": {
                                                         "type": "boolean"
@@ -978,12 +1229,30 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["id", "label", "type", "active", "required", "allowMentions", "customizable"],
+                                                "required": [
+                                                    "id",
+                                                    "label",
+                                                    "type",
+                                                    "active",
+                                                    "required",
+                                                    "allowMentions",
+                                                    "customizable"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "type", "name", "route", "questionHeader", "active", "required", "adminOnly", "fields"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name",
+                                        "route",
+                                        "questionHeader",
+                                        "active",
+                                        "required",
+                                        "adminOnly",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -994,13 +1263,22 @@
                                 }
                             },
                             "publishedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "closedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lockedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created": {
                                 "type": "string"
@@ -1031,12 +1309,18 @@
                                                             "type": "boolean"
                                                         }
                                                     },
-                                                    "required": ["uri", "title", "snippet"],
+                                                    "required": [
+                                                        "uri",
+                                                        "title",
+                                                        "snippet"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             }
                                         },
-                                        "required": ["sections"],
+                                        "required": [
+                                            "sections"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1050,13 +1334,22 @@
                                         "type": "object",
                                         "properties": {
                                             "text": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "docId": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "video": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "pictures": {
                                                 "anyOf": [
@@ -1072,7 +1365,9 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["text"],
+                                        "required": [
+                                            "text"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1119,7 +1414,9 @@
                                 ]
                             }
                         },
-                        "required": ["bookIds"],
+                        "required": [
+                            "bookIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1139,12 +1436,19 @@
             ],
             "input": "SyncMetadata_brightcrowd_pages",
             "name": "pages",
-            "output": ["Page"],
+            "output": [
+                "Page"
+            ],
             "runs": "every day",
-            "scopes": ["bcb.partner/page.read"],
+            "scopes": [
+                "bcb.partner/page.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Page", "SyncMetadata_brightcrowd_pages"],
+            "usedModels": [
+                "Page",
+                "SyncMetadata_brightcrowd_pages"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1187,28 +1491,46 @@
                                         "type": "string"
                                     },
                                     "previousName": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "suffix": {
                                         "type": "string"
                                     },
                                     "partnerFirstName": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "partnerLastName": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "pronouns": {
                                         "type": "string"
                                     },
                                     "pictureId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "audioId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["firstName", "lastName"],
+                                "required": [
+                                    "firstName",
+                                    "lastName"
+                                ],
                                 "additionalProperties": false
                             },
                             "pictures": {
@@ -1238,10 +1560,16 @@
                                                     "type": "string"
                                                 },
                                                 "caption": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["type", "id"],
+                                            "required": [
+                                                "type",
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1261,10 +1589,15 @@
                                                     "type": "string"
                                                 },
                                                 "caption": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["url"],
+                                            "required": [
+                                                "url"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1287,13 +1620,22 @@
                                 ]
                             },
                             "homeTown": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "currentCity": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "campusResidence": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "affiliations": {
                                 "anyOf": [
@@ -1319,7 +1661,10 @@
                                                     ]
                                                 },
                                                 "organization": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "major": {
                                                     "anyOf": [
@@ -1361,7 +1706,10 @@
                                                     ]
                                                 },
                                                 "graduationYear": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "specialty": {
                                                     "anyOf": [
@@ -1393,10 +1741,16 @@
                                                     "type": "string"
                                                 },
                                                 "startYear": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "endYear": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "office": {
                                                     "anyOf": [
@@ -1425,7 +1779,9 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1454,16 +1810,29 @@
                                 "type": "string"
                             },
                             "modifiedByUserAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completedByUserAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "externalId": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "alias", "name", "status", "content", "created"],
+                        "required": [
+                            "id",
+                            "alias",
+                            "name",
+                            "status",
+                            "content",
+                            "created"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_brightcrowd_pages": {
@@ -1487,7 +1856,9 @@
                                 ]
                             }
                         },
-                        "required": ["bookIds"],
+                        "required": [
+                            "bookIds"
+                        ],
                         "additionalProperties": false
                     }
                 }

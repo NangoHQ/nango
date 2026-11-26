@@ -10,9 +10,14 @@
             },
             "input": "ActionInput_exa_answer",
             "name": "answer",
-            "output": ["ActionOutput_exa_answer"],
+            "output": [
+                "ActionOutput_exa_answer"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exa_answer", "ActionOutput_exa_answer"],
+            "usedModels": [
+                "ActionInput_exa_answer",
+                "ActionOutput_exa_answer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -28,7 +33,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exa_answer": {
@@ -56,13 +63,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Citations backing the answer."
                             }
                         },
-                        "required": ["answer", "citations"],
+                        "required": [
+                            "answer",
+                            "citations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -78,9 +90,14 @@
             },
             "input": "ActionInput_exa_findsimilar",
             "name": "find-similar",
-            "output": ["ActionOutput_exa_findsimilar"],
+            "output": [
+                "ActionOutput_exa_findsimilar"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exa_findsimilar", "ActionOutput_exa_findsimilar"],
+            "usedModels": [
+                "ActionInput_exa_findsimilar",
+                "ActionOutput_exa_findsimilar"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -158,7 +175,11 @@
                                                     },
                                                     "verbosity": {
                                                         "type": "string",
-                                                        "enum": ["compact", "standard", "full"]
+                                                        "enum": [
+                                                            "compact",
+                                                            "standard",
+                                                            "full"
+                                                        ]
                                                     },
                                                     "includeSections": {
                                                         "type": "array",
@@ -232,7 +253,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exa_findsimilar": {
@@ -261,10 +284,16 @@
                                             "type": "number"
                                         },
                                         "publishedDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "author": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "image": {
                                             "type": "string"
@@ -308,7 +337,10 @@
                                                         "type": "string"
                                                     },
                                                     "author": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "image": {
                                                         "type": "string"
@@ -317,7 +349,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["title", "url"],
+                                                "required": [
+                                                    "title",
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -338,7 +373,11 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id", "title", "url"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -369,7 +408,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -385,9 +426,14 @@
             },
             "input": "ActionInput_exa_getcontents",
             "name": "get-contents",
-            "output": ["ActionOutput_exa_getcontents"],
+            "output": [
+                "ActionOutput_exa_getcontents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exa_getcontents", "ActionOutput_exa_getcontents"],
+            "usedModels": [
+                "ActionInput_exa_getcontents",
+                "ActionOutput_exa_getcontents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -440,10 +486,17 @@
                             },
                             "livecrawl": {
                                 "type": "string",
-                                "enum": ["never", "fallback", "always", "auto"]
+                                "enum": [
+                                    "never",
+                                    "fallback",
+                                    "always",
+                                    "auto"
+                                ]
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exa_getcontents": {
@@ -458,28 +511,52 @@
                                     "type": "object",
                                     "properties": {
                                         "title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "publishedDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "author": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "image": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "favicon": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "highlights": {
                                             "anyOf": [
@@ -508,7 +585,10 @@
                                             ]
                                         },
                                         "summary": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "subpages": {
                                             "anyOf": [
@@ -554,11 +634,17 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["success", "error"]
+                                            "enum": [
+                                                "success",
+                                                "error"
+                                            ]
                                         },
                                         "source": {
                                             "type": "string",
-                                            "enum": ["cached", "crawled"]
+                                            "enum": [
+                                                "cached",
+                                                "crawled"
+                                            ]
                                         },
                                         "error": {
                                             "anyOf": [
@@ -569,10 +655,16 @@
                                                             "type": "string"
                                                         },
                                                         "httpStatusCode": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["tag", "httpStatusCode"],
+                                                    "required": [
+                                                        "tag",
+                                                        "httpStatusCode"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -581,7 +673,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "status"],
+                                    "required": [
+                                        "id",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -604,7 +699,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["results", "statuses"],
+                        "required": [
+                            "results",
+                            "statuses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -617,9 +715,14 @@
             "endpoint": null,
             "input": "ActionInput_exa_search",
             "name": "search",
-            "output": ["ActionOutput_exa_search"],
+            "output": [
+                "ActionOutput_exa_search"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exa_search", "ActionOutput_exa_search"],
+            "usedModels": [
+                "ActionInput_exa_search",
+                "ActionOutput_exa_search"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -634,7 +737,16 @@
                             "type": {
                                 "description": "Search type: 'auto' (default), 'neural' for semantic, 'keyword' for exact-match, 'fast', 'instant', 'deep-lite', 'deep', or 'deep-reasoning'.",
                                 "type": "string",
-                                "enum": ["auto", "neural", "keyword", "fast", "instant", "deep-lite", "deep", "deep-reasoning"]
+                                "enum": [
+                                    "auto",
+                                    "neural",
+                                    "keyword",
+                                    "fast",
+                                    "instant",
+                                    "deep-lite",
+                                    "deep",
+                                    "deep-reasoning"
+                                ]
                             },
                             "numResults": {
                                 "description": "Number of results to return (default 10).",
@@ -727,7 +839,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exa_search": {
@@ -760,7 +874,10 @@
                                         },
                                         "author": {
                                             "description": "Author of the content, if available.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "score": {
                                             "description": "Relevance score.",
@@ -790,7 +907,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -816,7 +935,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -837,12 +958,17 @@
             ],
             "input": "SyncMetadata_exa_configuredsearchresults",
             "name": "configured-search-results",
-            "output": ["SearchResult"],
+            "output": [
+                "SearchResult"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SearchResult", "SyncMetadata_exa_configuredsearchresults"],
+            "usedModels": [
+                "SearchResult",
+                "SyncMetadata_exa_configuredsearchresults"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -887,7 +1013,13 @@
                                 }
                             }
                         },
-                        "required": ["id", "query", "title", "url", "publishedDate"],
+                        "required": [
+                            "id",
+                            "query",
+                            "title",
+                            "url",
+                            "publishedDate"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_exa_configuredsearchresults": {
@@ -921,17 +1053,23 @@
                                             }
                                         }
                                     },
-                                    "required": ["query"],
+                                    "required": [
+                                        "query"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["queries"],
+                        "required": [
+                            "queries"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

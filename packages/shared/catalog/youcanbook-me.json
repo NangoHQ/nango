@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_createbooking",
             "name": "create-booking",
-            "output": ["ActionOutput_youcanbook_me_createbooking"],
+            "output": [
+                "ActionOutput_youcanbook_me_createbooking"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_createbooking", "ActionOutput_youcanbook_me_createbooking"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_createbooking",
+                "ActionOutput_youcanbook_me_createbooking"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -120,7 +125,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["code", "string"],
+                                    "required": [
+                                        "code",
+                                        "string"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -145,7 +153,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["profileId", "startsAt"],
+                        "required": [
+                            "profileId",
+                            "startsAt"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youcanbook_me_createbooking": {
@@ -233,22 +244,40 @@
                                 "type": "object",
                                 "properties": {
                                     "id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "pic": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "calendarId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -259,25 +288,46 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "pic": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "slotLength": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "numberOfSlots": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "price": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -289,10 +339,16 @@
                                     "type": "object",
                                     "properties": {
                                         "code": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "string": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -329,7 +385,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "startsAt", "endsAt"],
+                        "required": [
+                            "id",
+                            "startsAt",
+                            "endsAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -342,9 +402,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_createprofile",
             "name": "create-profile",
-            "output": ["ActionOutput_youcanbook_me_createprofile"],
+            "output": [
+                "ActionOutput_youcanbook_me_createprofile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_createprofile", "ActionOutput_youcanbook_me_createprofile"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_createprofile",
+                "ActionOutput_youcanbook_me_createprofile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -376,7 +441,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["title", "subdomain"],
+                        "required": [
+                            "title",
+                            "subdomain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youcanbook_me_createprofile": {
@@ -448,7 +516,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -677,7 +747,9 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -729,7 +801,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -886,7 +960,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -894,7 +970,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -907,9 +985,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_deletebooking",
             "name": "delete-booking",
-            "output": ["ActionOutput_youcanbook_me_deletebooking"],
+            "output": [
+                "ActionOutput_youcanbook_me_deletebooking"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_deletebooking", "ActionOutput_youcanbook_me_deletebooking"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_deletebooking",
+                "ActionOutput_youcanbook_me_deletebooking"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -922,7 +1005,9 @@
                                 "description": "The unique identifier of the booking to delete. Example: \"abc123\""
                             }
                         },
-                        "required": ["bookingId"],
+                        "required": [
+                            "bookingId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youcanbook_me_deletebooking": {
@@ -935,7 +1020,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -948,9 +1036,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_getbooking",
             "name": "get-booking",
-            "output": ["ActionOutput_youcanbook_me_getbooking"],
+            "output": [
+                "ActionOutput_youcanbook_me_getbooking"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_getbooking", "ActionOutput_youcanbook_me_getbooking"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_getbooking",
+                "ActionOutput_youcanbook_me_getbooking"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -963,7 +1056,9 @@
                                 "description": "The ID of the booking to retrieve. Example: \"123\""
                             }
                         },
-                        "required": ["bookingId"],
+                        "required": [
+                            "bookingId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youcanbook_me_getbooking": {
@@ -1051,22 +1146,40 @@
                                 "type": "object",
                                 "properties": {
                                     "id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "pic": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "calendarId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -1077,25 +1190,46 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "pic": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "slotLength": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "numberOfSlots": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "price": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -1110,10 +1244,15 @@
                                             "type": "string"
                                         },
                                         "string": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1148,7 +1287,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1161,9 +1302,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_getprofile",
             "name": "get-profile",
-            "output": ["ActionOutput_youcanbook_me_getprofile"],
+            "output": [
+                "ActionOutput_youcanbook_me_getprofile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_getprofile", "ActionOutput_youcanbook_me_getprofile"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_getprofile",
+                "ActionOutput_youcanbook_me_getprofile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1176,7 +1322,9 @@
                                 "description": "The ID of the booking-page profile. Example: \"f4f38519-6e5c-45f2-9897-555960aae524\""
                             }
                         },
-                        "required": ["profileId"],
+                        "required": [
+                            "profileId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youcanbook_me_getprofile": {
@@ -1242,7 +1390,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1276,7 +1426,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
@@ -1315,7 +1468,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
@@ -1440,12 +1596,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1458,9 +1618,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_listprofiles",
             "name": "list-profiles",
-            "output": ["ActionOutput_youcanbook_me_listprofiles"],
+            "output": [
+                "ActionOutput_youcanbook_me_listprofiles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_listprofiles", "ActionOutput_youcanbook_me_listprofiles"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_listprofiles",
+                "ActionOutput_youcanbook_me_listprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1502,7 +1667,16 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["id", "accountId", "status", "title", "subdomain", "createdAt", "updatedAt", "locale"],
+                            "required": [
+                                "id",
+                                "accountId",
+                                "status",
+                                "title",
+                                "subdomain",
+                                "createdAt",
+                                "updatedAt",
+                                "locale"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -1516,9 +1690,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_updatebooking",
             "name": "update-booking",
-            "output": ["ActionOutput_youcanbook_me_updatebooking"],
+            "output": [
+                "ActionOutput_youcanbook_me_updatebooking"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_updatebooking", "ActionOutput_youcanbook_me_updatebooking"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_updatebooking",
+                "ActionOutput_youcanbook_me_updatebooking"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1567,10 +1746,15 @@
                                             "type": "string"
                                         },
                                         "string": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1595,7 +1779,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["bookingId"],
+                        "required": [
+                            "bookingId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youcanbook_me_updatebooking": {
@@ -1683,22 +1869,40 @@
                                 "type": "object",
                                 "properties": {
                                     "id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "pic": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "calendarId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -1709,25 +1913,46 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "pic": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "slotLength": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "numberOfSlots": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "price": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -1742,10 +1967,15 @@
                                             "type": "string"
                                         },
                                         "string": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1780,7 +2010,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1793,9 +2025,14 @@
             "endpoint": null,
             "input": "ActionInput_youcanbook_me_updateprofile",
             "name": "update-profile",
-            "output": ["ActionOutput_youcanbook_me_updateprofile"],
+            "output": [
+                "ActionOutput_youcanbook_me_updateprofile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_youcanbook_me_updateprofile", "ActionOutput_youcanbook_me_updateprofile"],
+            "usedModels": [
+                "ActionInput_youcanbook_me_updateprofile",
+                "ActionOutput_youcanbook_me_updateprofile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1858,7 +2095,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2208,7 +2447,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["profileId"],
+                        "required": [
+                            "profileId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youcanbook_me_updateprofile": {
@@ -2280,7 +2521,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2723,7 +2966,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2739,12 +2984,16 @@
             "endpoints": [],
             "input": null,
             "name": "profiles",
-            "output": ["Profile"],
+            "output": [
+                "Profile"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Profile"],
+            "usedModels": [
+                "Profile"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2780,7 +3029,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

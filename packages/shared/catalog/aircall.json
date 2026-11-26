@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_addteammember",
             "name": "add-team-member",
-            "output": ["ActionOutput_aircall_addteammember"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_addteammember", "ActionOutput_aircall_addteammember"],
+            "output": [
+                "ActionOutput_aircall_addteammember"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_addteammember",
+                "ActionOutput_aircall_addteammember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "User ID. Example: 1981305"
                             }
                         },
-                        "required": ["team_id", "user_id"],
+                        "required": [
+                            "team_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_addteammember": {
@@ -67,12 +77,25 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "direct_link", "name", "email", "created_at", "time_zone"],
+                                    "required": [
+                                        "id",
+                                        "direct_link",
+                                        "name",
+                                        "email",
+                                        "created_at",
+                                        "time_zone"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "direct_link", "created_at", "users"],
+                        "required": [
+                            "id",
+                            "name",
+                            "direct_link",
+                            "created_at",
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -88,9 +111,16 @@
             },
             "input": "ActionInput_aircall_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_aircall_createcontact"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_createcontact", "ActionOutput_aircall_createcontact"],
+            "output": [
+                "ActionOutput_aircall_createcontact"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_createcontact",
+                "ActionOutput_aircall_createcontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -121,7 +151,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["label", "value"],
+                                    "required": [
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -137,7 +170,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["label", "value"],
+                                    "required": [
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -189,7 +225,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "label", "value"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -208,12 +248,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "label", "value"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "direct_link", "is_shared", "created_at", "updated_at", "emails", "phone_numbers"],
+                        "required": [
+                            "id",
+                            "direct_link",
+                            "is_shared",
+                            "created_at",
+                            "updated_at",
+                            "emails",
+                            "phone_numbers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -226,9 +278,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_createtag",
             "name": "create-tag",
-            "output": ["ActionOutput_aircall_createtag"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_createtag", "ActionOutput_aircall_createtag"],
+            "output": [
+                "ActionOutput_aircall_createtag"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_createtag",
+                "ActionOutput_aircall_createtag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -248,7 +307,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_createtag": {
@@ -267,7 +328,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -283,9 +347,16 @@
             },
             "input": "ActionInput_aircall_createteam",
             "name": "create-team",
-            "output": ["ActionOutput_aircall_createteam"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_createteam", "ActionOutput_aircall_createteam"],
+            "output": [
+                "ActionOutput_aircall_createteam"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_createteam",
+                "ActionOutput_aircall_createteam"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -297,7 +368,9 @@
                                 "description": "Name of the team to create. Example: \"Support USA\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_createteam": {
@@ -323,11 +396,19 @@
                                         "items": {}
                                     }
                                 },
-                                "required": ["id", "name", "direct_link", "created_at", "users"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "direct_link",
+                                    "created_at",
+                                    "users"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["team"],
+                        "required": [
+                            "team"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -343,9 +424,16 @@
             },
             "input": "ActionInput_aircall_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_aircall_createuser"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_createuser", "ActionOutput_aircall_createuser"],
+            "output": [
+                "ActionOutput_aircall_createuser"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_createuser",
+                "ActionOutput_aircall_createuser"
+            ],
             "version": "3.0.0",
             "json_schema": {
                 "definitions": {
@@ -385,7 +473,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email", "first_name", "last_name"],
+                        "required": [
+                            "email",
+                            "first_name",
+                            "last_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_createuser": {
@@ -431,7 +523,15 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "direct_link", "name", "email", "available", "availability_status", "created_at"],
+                        "required": [
+                            "id",
+                            "direct_link",
+                            "name",
+                            "email",
+                            "available",
+                            "availability_status",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -444,9 +544,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_aircall_createwebhook"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_createwebhook", "ActionOutput_aircall_createwebhook"],
+            "output": [
+                "ActionOutput_aircall_createwebhook"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_createwebhook",
+                "ActionOutput_aircall_createwebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -530,7 +637,10 @@
                                 "description": "List of events to subscribe to. Example: [\"call.created\", \"contact.updated\"]"
                             }
                         },
-                        "required": ["url", "events"],
+                        "required": [
+                            "url",
+                            "events"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_createwebhook": {
@@ -571,11 +681,21 @@
                                         "description": "Direct API URL for the webhook."
                                     }
                                 },
-                                "required": ["webhook_id", "url", "active", "events", "token", "created_at", "direct_link"],
+                                "required": [
+                                    "webhook_id",
+                                    "url",
+                                    "active",
+                                    "events",
+                                    "token",
+                                    "created_at",
+                                    "direct_link"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["webhook"],
+                        "required": [
+                            "webhook"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -588,9 +708,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_aircall_deletecontact"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_deletecontact", "ActionOutput_aircall_deletecontact"],
+            "output": [
+                "ActionOutput_aircall_deletecontact"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_deletecontact",
+                "ActionOutput_aircall_deletecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -602,7 +729,9 @@
                                 "description": "Contact ID to delete. Example: 482881023"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_deletecontact": {
@@ -615,7 +744,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -631,9 +763,16 @@
             },
             "input": "ActionInput_aircall_deletetag",
             "name": "delete-tag",
-            "output": ["ActionOutput_aircall_deletetag"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_deletetag", "ActionOutput_aircall_deletetag"],
+            "output": [
+                "ActionOutput_aircall_deletetag"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_deletetag",
+                "ActionOutput_aircall_deletetag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -645,7 +784,9 @@
                                 "description": "Unique identifier of the tag to delete. Example: 2733978"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_deletetag": {
@@ -656,7 +797,9 @@
                                 "description": "Unique identifier of the deleted tag."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -672,9 +815,16 @@
             },
             "input": "ActionInput_aircall_deleteteam",
             "name": "delete-team",
-            "output": ["ActionOutput_aircall_deleteteam"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_deleteteam", "ActionOutput_aircall_deleteteam"],
+            "output": [
+                "ActionOutput_aircall_deleteteam"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_deleteteam",
+                "ActionOutput_aircall_deleteteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -686,7 +836,9 @@
                                 "description": "Team ID. Example: 244844"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_deleteteam": {
@@ -699,7 +851,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -715,9 +870,16 @@
             },
             "input": "ActionInput_aircall_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_aircall_deleteuser"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_deleteuser", "ActionOutput_aircall_deleteuser"],
+            "output": [
+                "ActionOutput_aircall_deleteuser"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_deleteuser",
+                "ActionOutput_aircall_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -726,23 +888,34 @@
                         "properties": {
                             "id": {
                                 "description": "User ID. Example: \"123\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_deleteuser": {
                         "type": "object",
                         "properties": {
                             "id": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "success": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -758,9 +931,16 @@
             },
             "input": "ActionInput_aircall_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_aircall_deletewebhook"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_deletewebhook", "ActionOutput_aircall_deletewebhook"],
+            "output": [
+                "ActionOutput_aircall_deletewebhook"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_deletewebhook",
+                "ActionOutput_aircall_deletewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -772,7 +952,9 @@
                                 "description": "The UUID webhook_id of the webhook to delete. Example: \"13f9cf11-cc5b-4e6d-830c-a858f45cf792\""
                             }
                         },
-                        "required": ["webhookId"],
+                        "required": [
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_deletewebhook": {
@@ -782,7 +964,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -795,9 +979,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_getcompany",
             "name": "get-company",
-            "output": ["ActionOutput_aircall_getcompany"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_getcompany", "ActionOutput_aircall_getcompany"],
+            "output": [
+                "ActionOutput_aircall_getcompany"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_getcompany",
+                "ActionOutput_aircall_getcompany"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -822,11 +1013,17 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["name", "users_count", "numbers_count"],
+                                "required": [
+                                    "name",
+                                    "users_count",
+                                    "numbers_count"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["company"],
+                        "required": [
+                            "company"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -842,9 +1039,16 @@
             },
             "input": "ActionInput_aircall_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_aircall_getcontact"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_getcontact", "ActionOutput_aircall_getcontact"],
+            "output": [
+                "ActionOutput_aircall_getcontact"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_getcontact",
+                "ActionOutput_aircall_getcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -856,7 +1060,9 @@
                                 "description": "Contact ID. Example: \"482393544\""
                             }
                         },
-                        "required": ["contact_id"],
+                        "required": [
+                            "contact_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_getcontact": {
@@ -904,7 +1110,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "label", "value"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -923,12 +1133,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "label", "value"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "direct_link", "is_shared", "created_at", "updated_at", "emails", "phone_numbers"],
+                        "required": [
+                            "id",
+                            "direct_link",
+                            "is_shared",
+                            "created_at",
+                            "updated_at",
+                            "emails",
+                            "phone_numbers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -944,9 +1166,16 @@
             },
             "input": "ActionInput_aircall_gettag",
             "name": "get-tag",
-            "output": ["ActionOutput_aircall_gettag"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_gettag", "ActionOutput_aircall_gettag"],
+            "output": [
+                "ActionOutput_aircall_gettag"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_gettag",
+                "ActionOutput_aircall_gettag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -958,7 +1187,9 @@
                                 "description": "Tag ID. Example: 2733978"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_gettag": {
@@ -974,7 +1205,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -987,9 +1221,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_getteam",
             "name": "get-team",
-            "output": ["ActionOutput_aircall_getteam"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_getteam", "ActionOutput_aircall_getteam"],
+            "output": [
+                "ActionOutput_aircall_getteam"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_getteam",
+                "ActionOutput_aircall_getteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1001,7 +1242,9 @@
                                 "description": "Team ID. Example: 244844"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_getteam": {
@@ -1043,12 +1286,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1064,9 +1311,16 @@
             },
             "input": "ActionInput_aircall_getuseravailability",
             "name": "get-user-availability",
-            "output": ["ActionOutput_aircall_getuseravailability"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_getuseravailability", "ActionOutput_aircall_getuseravailability"],
+            "output": [
+                "ActionOutput_aircall_getuseravailability"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_getuseravailability",
+                "ActionOutput_aircall_getuseravailability"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1078,7 +1332,9 @@
                                 "description": "User ID. Example: 1981305"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_getuseravailability": {
@@ -1089,7 +1345,9 @@
                                 "description": "Availability status. One of: available, unavailable, offline, custom"
                             }
                         },
-                        "required": ["availability"],
+                        "required": [
+                            "availability"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1105,9 +1363,16 @@
             },
             "input": "ActionInput_aircall_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_aircall_getuser"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_getuser", "ActionOutput_aircall_getuser"],
+            "output": [
+                "ActionOutput_aircall_getuser"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_getuser",
+                "ActionOutput_aircall_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1116,10 +1381,15 @@
                         "properties": {
                             "id": {
                                 "description": "User ID or email address. Example: 1981305",
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_getuser": {
@@ -1192,9 +1462,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_getwebhook",
             "name": "get-webhook",
-            "output": ["ActionOutput_aircall_getwebhook"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_getwebhook", "ActionOutput_aircall_getwebhook"],
+            "output": [
+                "ActionOutput_aircall_getwebhook"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_getwebhook",
+                "ActionOutput_aircall_getwebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1206,7 +1483,9 @@
                                 "description": "The webhook UUID string. Example: \"13f9cf11-cc5b-4e6d-830c-a858f45cf792\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_getwebhook": {
@@ -1237,7 +1516,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "webhook_id", "url", "active", "events"],
+                        "required": [
+                            "id",
+                            "webhook_id",
+                            "url",
+                            "active",
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1253,9 +1538,16 @@
             },
             "input": "ActionInput_aircall_listcalls",
             "name": "list-calls",
-            "output": ["ActionOutput_aircall_listcalls"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listcalls", "ActionOutput_aircall_listcalls"],
+            "output": [
+                "ActionOutput_aircall_listcalls"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listcalls",
+                "ActionOutput_aircall_listcalls"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1273,7 +1565,10 @@
                             "direction": {
                                 "description": "Direction of the Call.",
                                 "type": "string",
-                                "enum": ["inbound", "outbound"]
+                                "enum": [
+                                    "inbound",
+                                    "outbound"
+                                ]
                             },
                             "qualified": {
                                 "description": "Whether to return only qualified calls.",
@@ -1316,7 +1611,10 @@
                                             "type": "string"
                                         },
                                         "missed_call_reason": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "started_at": {
                                             "type": "number"
@@ -1331,13 +1629,22 @@
                                             "type": "number"
                                         },
                                         "voicemail": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "recording": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "asset": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "raw_digits": {
                                             "type": "string"
@@ -1476,7 +1783,11 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "direction", "status"],
+                                    "required": [
+                                        "id",
+                                        "direction",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1499,17 +1810,33 @@
                                         "type": "number"
                                     },
                                     "next_page_link": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "previous_page_link": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["count", "total", "current_page", "per_page", "next_page_link", "previous_page_link"],
+                                "required": [
+                                    "count",
+                                    "total",
+                                    "current_page",
+                                    "per_page",
+                                    "next_page_link",
+                                    "previous_page_link"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["items", "meta"],
+                        "required": [
+                            "items",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1522,9 +1849,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_aircall_listcontacts"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listcontacts", "ActionOutput_aircall_listcontacts"],
+            "output": [
+                "ActionOutput_aircall_listcontacts"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listcontacts",
+                "ActionOutput_aircall_listcontacts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1594,7 +1928,11 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "label", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "label",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1613,12 +1951,22 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "label", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "label",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "direct_link", "is_shared", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "direct_link",
+                                        "is_shared",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1627,7 +1975,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1643,9 +1993,16 @@
             },
             "input": "ActionInput_aircall_listnumbers",
             "name": "list-numbers",
-            "output": ["ActionOutput_aircall_listnumbers"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listnumbers", "ActionOutput_aircall_listnumbers"],
+            "output": [
+                "ActionOutput_aircall_listnumbers"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listnumbers",
+                "ActionOutput_aircall_listnumbers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1774,7 +2131,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1790,9 +2149,16 @@
             },
             "input": "ActionInput_aircall_listtags",
             "name": "list-tags",
-            "output": ["ActionOutput_aircall_listtags"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listtags", "ActionOutput_aircall_listtags"],
+            "output": [
+                "ActionOutput_aircall_listtags"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listtags",
+                "ActionOutput_aircall_listtags"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1835,10 +2201,17 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "color"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "color"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1858,17 +2231,31 @@
                                         "type": "number"
                                     },
                                     "next_page_link": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "previous_page_link": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["count", "total", "current_page", "per_page"],
+                                "required": [
+                                    "count",
+                                    "total",
+                                    "current_page",
+                                    "per_page"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["tags", "meta"],
+                        "required": [
+                            "tags",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1884,9 +2271,16 @@
             },
             "input": "ActionInput_aircall_listteams",
             "name": "list-teams",
-            "output": ["ActionOutput_aircall_listteams"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listteams", "ActionOutput_aircall_listteams"],
+            "output": [
+                "ActionOutput_aircall_listteams"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listteams",
+                "ActionOutput_aircall_listteams"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1954,12 +2348,25 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "direct_link", "name", "email", "created_at", "time_zone"],
+                                                "required": [
+                                                    "id",
+                                                    "direct_link",
+                                                    "name",
+                                                    "email",
+                                                    "created_at",
+                                                    "time_zone"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "direct_link", "created_at", "users"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "direct_link",
+                                        "created_at",
+                                        "users"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1967,7 +2374,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teams"],
+                        "required": [
+                            "teams"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1983,9 +2392,16 @@
             },
             "input": "ActionInput_aircall_listuseravailabilities",
             "name": "list-user-availabilities",
-            "output": ["ActionOutput_aircall_listuseravailabilities"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listuseravailabilities", "ActionOutput_aircall_listuseravailabilities"],
+            "output": [
+                "ActionOutput_aircall_listuseravailabilities"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listuseravailabilities",
+                "ActionOutput_aircall_listuseravailabilities"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2016,7 +2432,10 @@
                                             "description": "Availability status. Values: available, unavailable, offline, custom"
                                         }
                                     },
-                                    "required": ["id", "availability"],
+                                    "required": [
+                                        "id",
+                                        "availability"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2025,7 +2444,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2041,9 +2462,16 @@
             },
             "input": "ActionInput_aircall_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_aircall_listusers"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listusers", "ActionOutput_aircall_listusers"],
+            "output": [
+                "ActionOutput_aircall_listusers"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listusers",
+                "ActionOutput_aircall_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2108,7 +2536,10 @@
                                             "type": "string"
                                         },
                                         "default_number_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -2131,7 +2562,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2147,9 +2580,16 @@
             },
             "input": "ActionInput_aircall_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_aircall_listwebhooks"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_listwebhooks", "ActionOutput_aircall_listwebhooks"],
+            "output": [
+                "ActionOutput_aircall_listwebhooks"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_listwebhooks",
+                "ActionOutput_aircall_listwebhooks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2199,7 +2639,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "webhook_id"],
+                                    "required": [
+                                        "id",
+                                        "webhook_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2207,7 +2650,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2223,9 +2668,16 @@
             },
             "input": "ActionInput_aircall_removeteammember",
             "name": "remove-team-member",
-            "output": ["ActionOutput_aircall_removeteammember"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_removeteammember", "ActionOutput_aircall_removeteammember"],
+            "output": [
+                "ActionOutput_aircall_removeteammember"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_removeteammember",
+                "ActionOutput_aircall_removeteammember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2241,7 +2693,10 @@
                                 "description": "User ID. Example: 1981305"
                             }
                         },
-                        "required": ["team_id", "user_id"],
+                        "required": [
+                            "team_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_removeteammember": {
@@ -2264,7 +2719,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2280,9 +2738,16 @@
             },
             "input": "ActionInput_aircall_searchcalls",
             "name": "search-calls",
-            "output": ["ActionOutput_aircall_searchcalls"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_searchcalls", "ActionOutput_aircall_searchcalls"],
+            "output": [
+                "ActionOutput_aircall_searchcalls"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_searchcalls",
+                "ActionOutput_aircall_searchcalls"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2387,7 +2852,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "contact": {},
@@ -2440,7 +2907,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "comments": {
@@ -2460,7 +2929,9 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2471,7 +2942,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["calls"],
+                        "required": [
+                            "calls"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2487,9 +2960,16 @@
             },
             "input": "ActionInput_aircall_searchcontacts",
             "name": "search-contacts",
-            "output": ["ActionOutput_aircall_searchcontacts"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_searchcontacts", "ActionOutput_aircall_searchcontacts"],
+            "output": [
+                "ActionOutput_aircall_searchcontacts"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_searchcontacts",
+                "ActionOutput_aircall_searchcontacts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2511,7 +2991,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_searchcontacts": {
@@ -2531,16 +3013,28 @@
                                             "type": "string"
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "company_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "information": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_shared": {
                                             "type": "boolean"
@@ -2565,7 +3059,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["label", "value"],
+                                                "required": [
+                                                    "label",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2581,12 +3078,17 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["label", "value"],
+                                                "required": [
+                                                    "label",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2606,13 +3108,26 @@
                                         "type": "number"
                                     },
                                     "next_page_link": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "previous_page_link": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["count", "total", "current_page", "per_page", "next_page_link", "previous_page_link"],
+                                "required": [
+                                    "count",
+                                    "total",
+                                    "current_page",
+                                    "per_page",
+                                    "next_page_link",
+                                    "previous_page_link"
+                                ],
                                 "additionalProperties": false
                             },
                             "next_page": {
@@ -2620,7 +3135,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["contacts", "meta"],
+                        "required": [
+                            "contacts",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2636,9 +3154,16 @@
             },
             "input": "ActionInput_aircall_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_aircall_updatecontact"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_updatecontact", "ActionOutput_aircall_updatecontact"],
+            "output": [
+                "ActionOutput_aircall_updatecontact"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_updatecontact",
+                "ActionOutput_aircall_updatecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2680,7 +3205,10 @@
                                             "description": "The raw phone number. Example: \"+19001112222\""
                                         }
                                     },
-                                    "required": ["label", "value"],
+                                    "required": [
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2699,12 +3227,17 @@
                                             "description": "The email address. Example: \"gary.jennings@acme.com\""
                                         }
                                     },
-                                    "required": ["label", "value"],
+                                    "required": [
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_updatecontact": {
@@ -2720,16 +3253,28 @@
                                         "type": "string"
                                     },
                                     "first_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "last_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "company_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "information": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "is_shared": {
                                         "type": "boolean"
@@ -2749,13 +3294,18 @@
                                                     "type": "number"
                                                 },
                                                 "label": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "value": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["value"],
+                                            "required": [
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2768,22 +3318,31 @@
                                                     "type": "number"
                                                 },
                                                 "label": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "value": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["value"],
+                                            "required": [
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["contact"],
+                        "required": [
+                            "contact"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2796,9 +3355,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_updatetag",
             "name": "update-tag",
-            "output": ["ActionOutput_aircall_updatetag"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_updatetag", "ActionOutput_aircall_updatetag"],
+            "output": [
+                "ActionOutput_aircall_updatetag"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_updatetag",
+                "ActionOutput_aircall_updatetag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2819,10 +3385,15 @@
                             },
                             "description": {
                                 "description": "Description of the tag. Set to null to clear. Example: \"High priority clients\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_updatetag": {
@@ -2841,7 +3412,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "color"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2854,9 +3429,16 @@
             "endpoint": null,
             "input": "ActionInput_aircall_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_aircall_updateuser"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_updateuser", "ActionOutput_aircall_updateuser"],
+            "output": [
+                "ActionOutput_aircall_updateuser"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_updateuser",
+                "ActionOutput_aircall_updateuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2902,7 +3484,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_updateuser": {
@@ -2975,9 +3559,16 @@
             },
             "input": "ActionInput_aircall_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_aircall_updatewebhook"],
-            "scopes": ["public_api"],
-            "usedModels": ["ActionInput_aircall_updatewebhook", "ActionOutput_aircall_updatewebhook"],
+            "output": [
+                "ActionOutput_aircall_updatewebhook"
+            ],
+            "scopes": [
+                "public_api"
+            ],
+            "usedModels": [
+                "ActionInput_aircall_updatewebhook",
+                "ActionOutput_aircall_updatewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3009,7 +3600,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id", "url"],
+                        "required": [
+                            "webhook_id",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aircall_updatewebhook": {
@@ -3043,7 +3637,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id", "direct_link", "created_at", "url", "active", "token", "events"],
+                        "required": [
+                            "webhook_id",
+                            "direct_link",
+                            "created_at",
+                            "url",
+                            "active",
+                            "token",
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3064,12 +3666,19 @@
             ],
             "input": "SyncMetadata_aircall_calls",
             "name": "calls",
-            "output": ["Call"],
+            "output": [
+                "Call"
+            ],
             "runs": "every hour",
-            "scopes": ["public_api"],
+            "scopes": [
+                "public_api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Call", "SyncMetadata_aircall_calls"],
+            "usedModels": [
+                "Call",
+                "SyncMetadata_aircall_calls"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3132,7 +3741,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "direction", "status", "duration", "raw_digits", "started_at"],
+                        "required": [
+                            "id",
+                            "direction",
+                            "status",
+                            "duration",
+                            "raw_digits",
+                            "started_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_aircall_calls": {
@@ -3140,7 +3756,10 @@
                         "properties": {
                             "direction": {
                                 "type": "string",
-                                "enum": ["inbound", "outbound"]
+                                "enum": [
+                                    "inbound",
+                                    "outbound"
+                                ]
                             },
                             "qualified": {
                                 "type": "boolean"
@@ -3150,7 +3769,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3164,12 +3785,18 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
-            "scopes": ["public_api"],
+            "scopes": [
+                "public_api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3222,7 +3849,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "label", "value"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3241,17 +3872,27 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "label", "value"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3265,12 +3906,18 @@
             ],
             "input": null,
             "name": "numbers",
-            "output": ["Number"],
+            "output": [
+                "Number"
+            ],
             "runs": "every hour",
-            "scopes": ["public_api"],
+            "scopes": [
+                "public_api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Number"],
+            "usedModels": [
+                "Number"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3328,7 +3975,10 @@
                             },
                             "priority": {
                                 "description": "Priority level of the number used during routing of the calls",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "messages": {
                                 "description": "URL to Number's music & messages files",
@@ -3365,12 +4015,23 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "direct_link", "name", "digits", "created_at", "country", "time_zone", "live_recording_activated"],
+                        "required": [
+                            "id",
+                            "direct_link",
+                            "name",
+                            "digits",
+                            "created_at",
+                            "country",
+                            "time_zone",
+                            "live_recording_activated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3379,12 +4040,18 @@
             "endpoints": [],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
-            "scopes": ["public_api"],
+            "scopes": [
+                "public_api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3405,12 +4072,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3424,12 +4096,18 @@
             ],
             "input": null,
             "name": "teams",
-            "output": ["Team"],
+            "output": [
+                "Team"
+            ],
             "runs": "every hour",
-            "scopes": ["public_api"],
+            "scopes": [
+                "public_api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Team"],
+            "usedModels": [
+                "Team"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3481,17 +4159,23 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3505,12 +4189,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["public_api"],
+            "scopes": [
+                "public_api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3558,12 +4248,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3572,12 +4266,18 @@
             "endpoints": [],
             "input": null,
             "name": "webhooks",
-            "output": ["Webhook"],
+            "output": [
+                "Webhook"
+            ],
             "runs": "every hour",
-            "scopes": ["public_api"],
+            "scopes": [
+                "public_api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webhook"],
+            "usedModels": [
+                "Webhook"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3617,12 +4317,20 @@
                                 "description": "ISO 8601 timestamp when the webhook was created"
                             }
                         },
-                        "required": ["id", "webhook_id", "url", "active", "created_at"],
+                        "required": [
+                            "id",
+                            "webhook_id",
+                            "url",
+                            "active",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

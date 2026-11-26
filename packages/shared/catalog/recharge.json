@@ -7,9 +7,18 @@
             "endpoint": null,
             "input": "ActionInput_recharge_upsertcustomers",
             "name": "upsert-customers",
-            "output": ["ActionOutput_recharge_upsertcustomers"],
-            "scopes": ["read_customers", " write_customers", " write_payment_methods"],
-            "usedModels": ["ActionInput_recharge_upsertcustomers", "ActionOutput_recharge_upsertcustomers"],
+            "output": [
+                "ActionOutput_recharge_upsertcustomers"
+            ],
+            "scopes": [
+                "read_customers",
+                " write_customers",
+                " write_payment_methods"
+            ],
+            "usedModels": [
+                "ActionInput_recharge_upsertcustomers",
+                "ActionOutput_recharge_upsertcustomers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -26,7 +35,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["ecommerce"],
+                                "required": [
+                                    "ecommerce"
+                                ],
                                 "additionalProperties": false
                             },
                             "first_name": {
@@ -42,7 +53,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email", "first_name", "last_name"],
+                        "required": [
+                            "email",
+                            "first_name",
+                            "last_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_recharge_upsertcustomers": {
@@ -64,7 +79,10 @@
                                 "type": "object",
                                 "properties": {
                                     "accepts_marketing": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "analytics_data": {
                                         "type": "object",
@@ -100,32 +118,58 @@
                                                 }
                                             }
                                         },
-                                        "required": ["utm_params"],
+                                        "required": [
+                                            "utm_params"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "billing_address1": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_address2": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_city": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_company": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_country": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_phone": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_province": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_zip": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "created_at": {
                                         "type": "string"
@@ -134,7 +178,10 @@
                                         "type": "string"
                                     },
                                     "first_charge_processed_at": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "first_name": {
                                         "type": "string"
@@ -161,16 +208,28 @@
                                         "type": "number"
                                     },
                                     "phone": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "processor_type": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "reason_payment_method_not_valid": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "shopify_customer_id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "status": {
                                         "type": "string"
@@ -191,7 +250,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["ecommerce"],
+                                        "required": [
+                                            "ecommerce"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "has_payment_method_in_dunning": {
@@ -240,7 +301,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["action", "response"],
+                        "required": [
+                            "action",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -262,12 +326,20 @@
             ],
             "input": "SyncMetadata_recharge_customers",
             "name": "customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every 1 hour",
-            "scopes": ["read_customers", " read_subscriptions"],
+            "scopes": [
+                "read_customers",
+                " read_subscriptions"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer", "SyncMetadata_recharge_customers"],
+            "usedModels": [
+                "Customer",
+                "SyncMetadata_recharge_customers"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -279,16 +351,28 @@
                                 "type": "string"
                             },
                             "phone_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "subscriptions": {
                                 "type": "array",
@@ -308,18 +392,38 @@
                                             "type": "string"
                                         },
                                         "end_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "next_charge_scheduled_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "type", "name", "start_date", "end_date", "next_charge_scheduled_at"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name",
+                                        "start_date",
+                                        "end_date",
+                                        "next_charge_scheduled_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "phone_number", "first_name", "last_name", "email", "subscriptions"],
+                        "required": [
+                            "id",
+                            "phone_number",
+                            "first_name",
+                            "last_name",
+                            "email",
+                            "subscriptions"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recharge_customers": {
@@ -329,7 +433,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

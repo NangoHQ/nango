@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_copyitem",
             "name": "copy-item",
-            "output": ["ActionOutput_one_drive_copyitem"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_copyitem", "ActionOutput_one_drive_copyitem"],
+            "output": [
+                "ActionOutput_one_drive_copyitem"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_copyitem",
+                "ActionOutput_one_drive_copyitem"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -29,7 +37,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["itemId", "targetParentId"],
+                        "required": [
+                            "itemId",
+                            "targetParentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_copyitem": {
@@ -54,11 +65,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["code", "message"],
+                                "required": [
+                                    "code",
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -71,9 +87,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_one_drive_createfolder"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_createfolder", "ActionOutput_one_drive_createfolder"],
+            "output": [
+                "ActionOutput_one_drive_createfolder"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_createfolder",
+                "ActionOutput_one_drive_createfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -91,10 +115,17 @@
                             "conflictBehavior": {
                                 "description": "The conflict resolution behavior.",
                                 "type": "string",
-                                "enum": ["fail", "replace", "rename"]
+                                "enum": [
+                                    "fail",
+                                    "replace",
+                                    "rename"
+                                ]
                             }
                         },
-                        "required": ["parentItemId", "name"],
+                        "required": [
+                            "parentItemId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_createfolder": {
@@ -128,7 +159,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -141,9 +175,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_createsharinglink",
             "name": "create-sharing-link",
-            "output": ["ActionOutput_one_drive_createsharinglink"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_createsharinglink", "ActionOutput_one_drive_createsharinglink"],
+            "output": [
+                "ActionOutput_one_drive_createsharinglink"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_createsharinglink",
+                "ActionOutput_one_drive_createsharinglink"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -156,13 +198,20 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["view", "edit", "embed"],
+                                "enum": [
+                                    "view",
+                                    "edit",
+                                    "embed"
+                                ],
                                 "description": "The type of sharing link to create. view: read-only, edit: read-write, embed: embeddable link."
                             },
                             "scope": {
                                 "description": "The scope of the sharing link. anonymous: anyone with the link, organization: only organization members.",
                                 "type": "string",
-                                "enum": ["anonymous", "organization"]
+                                "enum": [
+                                    "anonymous",
+                                    "organization"
+                                ]
                             },
                             "password": {
                                 "description": "Optional password for the sharing link.",
@@ -173,7 +222,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["itemId", "type"],
+                        "required": [
+                            "itemId",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_createsharinglink": {
@@ -213,9 +265,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_createuploadsession",
             "name": "create-upload-session",
-            "output": ["ActionOutput_one_drive_createuploadsession"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_createuploadsession", "ActionOutput_one_drive_createuploadsession"],
+            "output": [
+                "ActionOutput_one_drive_createuploadsession"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_createuploadsession",
+                "ActionOutput_one_drive_createuploadsession"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -231,7 +291,10 @@
                                 "description": "The name of the file to upload. Example: \"document.pdf\""
                             }
                         },
-                        "required": ["parentItemId", "fileName"],
+                        "required": [
+                            "parentItemId",
+                            "fileName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_createuploadsession": {
@@ -250,7 +313,10 @@
                                 }
                             }
                         },
-                        "required": ["uploadUrl", "expirationDateTime"],
+                        "required": [
+                            "uploadUrl",
+                            "expirationDateTime"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -263,9 +329,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_deleteitem",
             "name": "delete-item",
-            "output": ["ActionOutput_one_drive_deleteitem"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_deleteitem", "ActionOutput_one_drive_deleteitem"],
+            "output": [
+                "ActionOutput_one_drive_deleteitem"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_deleteitem",
+                "ActionOutput_one_drive_deleteitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -277,7 +351,9 @@
                                 "description": "The ID of the item (file or folder) to delete. Example: \"0123456789ABC\""
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_deleteitem": {
@@ -296,7 +372,11 @@
                                 "description": "Status message"
                             }
                         },
-                        "required": ["success", "itemId", "message"],
+                        "required": [
+                            "success",
+                            "itemId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -309,9 +389,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_deletepermission",
             "name": "delete-permission",
-            "output": ["ActionOutput_one_drive_deletepermission"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_deletepermission", "ActionOutput_one_drive_deletepermission"],
+            "output": [
+                "ActionOutput_one_drive_deletepermission"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_deletepermission",
+                "ActionOutput_one_drive_deletepermission"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -327,7 +415,10 @@
                                 "description": "The ID of the permission to delete. Example: \"1\""
                             }
                         },
-                        "required": ["itemId", "permissionId"],
+                        "required": [
+                            "itemId",
+                            "permissionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_deletepermission": {
@@ -338,7 +429,9 @@
                                 "description": "Whether the permission was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -351,9 +444,19 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_getdrive",
             "name": "get-drive",
-            "output": ["ActionOutput_one_drive_getdrive"],
-            "scopes": ["openid", "profile", "Files.Read", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_getdrive", "ActionOutput_one_drive_getdrive"],
+            "output": [
+                "ActionOutput_one_drive_getdrive"
+            ],
+            "scopes": [
+                "openid",
+                "profile",
+                "Files.Read",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_getdrive",
+                "ActionOutput_one_drive_getdrive"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -414,7 +517,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -427,9 +532,18 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_getitem",
             "name": "get-item",
-            "output": ["ActionOutput_one_drive_getitem"],
-            "scopes": ["Files.Read", "Files.Read.All", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_getitem", "ActionOutput_one_drive_getitem"],
+            "output": [
+                "ActionOutput_one_drive_getitem"
+            ],
+            "scopes": [
+                "Files.Read",
+                "Files.Read.All",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_getitem",
+                "ActionOutput_one_drive_getitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -493,7 +607,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -506,9 +622,18 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_getpermission",
             "name": "get-permission",
-            "output": ["ActionOutput_one_drive_getpermission"],
-            "scopes": ["Files.Read", "Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_getpermission", "ActionOutput_one_drive_getpermission"],
+            "output": [
+                "ActionOutput_one_drive_getpermission"
+            ],
+            "scopes": [
+                "Files.Read",
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_getpermission",
+                "ActionOutput_one_drive_getpermission"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -524,7 +649,10 @@
                                 "description": "The ID of the permission. Example: \"1\""
                             }
                         },
-                        "required": ["itemId", "permissionId"],
+                        "required": [
+                            "itemId",
+                            "permissionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_getpermission": {
@@ -672,7 +800,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -685,9 +815,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_inviterecipients",
             "name": "invite-recipients",
-            "output": ["ActionOutput_one_drive_inviterecipients"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_inviterecipients", "ActionOutput_one_drive_inviterecipients"],
+            "output": [
+                "ActionOutput_one_drive_inviterecipients"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_inviterecipients",
+                "ActionOutput_one_drive_inviterecipients"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -729,7 +867,10 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["read", "write"]
+                                    "enum": [
+                                        "read",
+                                        "write"
+                                    ]
                                 },
                                 "description": "The roles to grant to the recipients. Valid values: \"read\", \"write\""
                             },
@@ -761,7 +902,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["itemId", "recipients", "roles"],
+                        "required": [
+                            "itemId",
+                            "recipients",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_inviterecipients": {
@@ -817,7 +962,9 @@
                                 }
                             }
                         },
-                        "required": ["permissions"],
+                        "required": [
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -830,9 +977,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_listchildren",
             "name": "list-children",
-            "output": ["ActionOutput_one_drive_listchildren"],
-            "scopes": ["Files.Read", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_listchildren", "ActionOutput_one_drive_listchildren"],
+            "output": [
+                "ActionOutput_one_drive_listchildren"
+            ],
+            "scopes": [
+                "Files.Read",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_listchildren",
+                "ActionOutput_one_drive_listchildren"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -903,7 +1058,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -911,7 +1069,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -924,9 +1084,18 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_listdrives",
             "name": "list-drives",
-            "output": ["ActionOutput_one_drive_listdrives"],
-            "scopes": ["Files.Read", "Files.Read.All", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_listdrives", "ActionOutput_one_drive_listdrives"],
+            "output": [
+                "ActionOutput_one_drive_listdrives"
+            ],
+            "scopes": [
+                "Files.Read",
+                "Files.Read.All",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_listdrives",
+                "ActionOutput_one_drive_listdrives"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -964,13 +1133,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of drives available to the authenticated user."
                             }
                         },
-                        "required": ["drives"],
+                        "required": [
+                            "drives"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -983,9 +1156,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_listpermissions",
             "name": "list-permissions",
-            "output": ["ActionOutput_one_drive_listpermissions"],
-            "scopes": ["Files.Read", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_listpermissions", "ActionOutput_one_drive_listpermissions"],
+            "output": [
+                "ActionOutput_one_drive_listpermissions"
+            ],
+            "scopes": [
+                "Files.Read",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_listpermissions",
+                "ActionOutput_one_drive_listpermissions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -997,7 +1178,9 @@
                                 "description": "The ID of the drive item. Example: \"5D33DD65C6932946!70859\""
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_listpermissions": {
@@ -1141,12 +1324,17 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "roles"],
+                                    "required": [
+                                        "id",
+                                        "roles"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["permissions"],
+                        "required": [
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1159,9 +1347,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_listrecentitems",
             "name": "list-recent-items",
-            "output": ["ActionOutput_one_drive_listrecentitems"],
-            "scopes": ["Files.Read", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_listrecentitems", "ActionOutput_one_drive_listrecentitems"],
+            "output": [
+                "ActionOutput_one_drive_listrecentitems"
+            ],
+            "scopes": [
+                "Files.Read",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_listrecentitems",
+                "ActionOutput_one_drive_listrecentitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1203,12 +1399,16 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1221,9 +1421,18 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_listshareditems",
             "name": "list-shared-items",
-            "output": ["ActionOutput_one_drive_listshareditems"],
-            "scopes": ["Files.Read", "Files.Read.All", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_listshareditems", "ActionOutput_one_drive_listshareditems"],
+            "output": [
+                "ActionOutput_one_drive_listshareditems"
+            ],
+            "scopes": [
+                "Files.Read",
+                "Files.Read.All",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_listshareditems",
+                "ActionOutput_one_drive_listshareditems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1291,7 +1500,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "remoteId"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "remoteId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1300,7 +1513,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1313,9 +1528,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_listversions",
             "name": "list-versions",
-            "output": ["ActionOutput_one_drive_listversions"],
-            "scopes": ["Files.Read", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_listversions", "ActionOutput_one_drive_listversions"],
+            "output": [
+                "ActionOutput_one_drive_listversions"
+            ],
+            "scopes": [
+                "Files.Read",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_listversions",
+                "ActionOutput_one_drive_listversions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1327,7 +1550,9 @@
                                 "description": "The ID of the file to list versions for. Example: \"0123456789ABC!123\""
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_listversions": {
@@ -1366,12 +1591,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["versions"],
+                        "required": [
+                            "versions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1384,9 +1613,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_moveitem",
             "name": "move-item",
-            "output": ["ActionOutput_one_drive_moveitem"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_moveitem", "ActionOutput_one_drive_moveitem"],
+            "output": [
+                "ActionOutput_one_drive_moveitem"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_moveitem",
+                "ActionOutput_one_drive_moveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1406,7 +1643,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_moveitem": {
@@ -1425,7 +1664,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1438,9 +1680,18 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_searchitems",
             "name": "search-items",
-            "output": ["ActionOutput_one_drive_searchitems"],
-            "scopes": ["Files.Read", "Files.Read.All", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_searchitems", "ActionOutput_one_drive_searchitems"],
+            "output": [
+                "ActionOutput_one_drive_searchitems"
+            ],
+            "scopes": [
+                "Files.Read",
+                "Files.Read.All",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_searchitems",
+                "ActionOutput_one_drive_searchitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1452,7 +1703,9 @@
                                 "description": "Search query string. Example: \"budget\""
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_searchitems": {
@@ -1515,7 +1768,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1523,7 +1779,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1536,9 +1794,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_updateitem",
             "name": "update-item",
-            "output": ["ActionOutput_one_drive_updateitem"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_updateitem", "ActionOutput_one_drive_updateitem"],
+            "output": [
+                "ActionOutput_one_drive_updateitem"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_updateitem",
+                "ActionOutput_one_drive_updateitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1555,7 +1821,10 @@
                             },
                             "description": {
                                 "description": "The description of the item. Set to null to clear. Example: Project documentation file",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "fileSystemInfo": {
                                 "description": "File system metadata to update",
@@ -1592,7 +1861,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_updateitem": {
@@ -1665,7 +1936,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1678,9 +1952,17 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_uploadsmallfile",
             "name": "upload-small-file",
-            "output": ["ActionOutput_one_drive_uploadsmallfile"],
-            "scopes": ["Files.ReadWrite", "offline_access"],
-            "usedModels": ["ActionInput_one_drive_uploadsmallfile", "ActionOutput_one_drive_uploadsmallfile"],
+            "output": [
+                "ActionOutput_one_drive_uploadsmallfile"
+            ],
+            "scopes": [
+                "Files.ReadWrite",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_uploadsmallfile",
+                "ActionOutput_one_drive_uploadsmallfile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1704,7 +1986,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["parent_item_id", "file_name", "content"],
+                        "required": [
+                            "parent_item_id",
+                            "file_name",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_uploadsmallfile": {
@@ -1739,7 +2025,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1760,12 +2048,20 @@
             ],
             "input": null,
             "name": "drive-items",
-            "output": ["DriveItem"],
+            "output": [
+                "DriveItem"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read", "Files.Read.All", "offline_access"],
+            "scopes": [
+                "Files.Read",
+                "Files.Read.All",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DriveItem"],
+            "usedModels": [
+                "DriveItem"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1819,12 +2115,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1838,12 +2138,20 @@
             ],
             "input": "SyncMetadata_one_drive_folderchildren",
             "name": "folder-children",
-            "output": ["FolderChild"],
+            "output": [
+                "FolderChild"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read", "offline_access"],
+            "scopes": [
+                "Files.Read",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FolderChild", "SyncMetadata_one_drive_folderchildren"],
+            "usedModels": [
+                "FolderChild",
+                "SyncMetadata_one_drive_folderchildren"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1888,7 +2196,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "folderId", "name", "createdDateTime", "lastModifiedDateTime", "isFolder"],
+                        "required": [
+                            "id",
+                            "folderId",
+                            "name",
+                            "createdDateTime",
+                            "lastModifiedDateTime",
+                            "isFolder"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_one_drive_folderchildren": {
@@ -1901,12 +2216,16 @@
                                 }
                             }
                         },
-                        "required": ["folderIds"],
+                        "required": [
+                            "folderIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1920,12 +2239,20 @@
             ],
             "input": "SyncMetadata_one_drive_recentitems",
             "name": "recent-items",
-            "output": ["RecentItem"],
+            "output": [
+                "RecentItem"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read", "offline_access"],
+            "scopes": [
+                "Files.Read",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecentItem", "SyncMetadata_one_drive_recentitems"],
+            "usedModels": [
+                "RecentItem",
+                "SyncMetadata_one_drive_recentitems"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1952,7 +2279,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_one_drive_recentitems": {
@@ -1960,7 +2290,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1974,12 +2306,21 @@
             ],
             "input": "SyncMetadata_one_drive_shareditems",
             "name": "shared-items",
-            "output": ["SharedItem"],
+            "output": [
+                "SharedItem"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read", "Files.Read.All", "offline_access"],
+            "scopes": [
+                "Files.Read",
+                "Files.Read.All",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SharedItem", "SyncMetadata_one_drive_shareditems"],
+            "usedModels": [
+                "SharedItem",
+                "SyncMetadata_one_drive_shareditems"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2066,11 +2407,15 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_one_drive_shareditems": {
@@ -2078,7 +2423,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2092,12 +2439,19 @@
             ],
             "input": null,
             "name": "user-files-selection",
-            "output": ["SelectedUserFile"],
+            "output": [
+                "SelectedUserFile"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read", "offline_access"],
+            "scopes": [
+                "Files.Read",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SelectedUserFile"],
+            "usedModels": [
+                "SelectedUserFile"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2158,12 +2512,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "driveId", "driveItemId"],
+                        "required": [
+                            "id",
+                            "driveId",
+                            "driveItemId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2177,12 +2537,20 @@
             ],
             "input": null,
             "name": "user-files",
-            "output": ["UserFile"],
+            "output": [
+                "UserFile"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read", "Files.Read.All", "offline_access"],
+            "scopes": [
+                "Files.Read",
+                "Files.Read.All",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserFile"],
+            "usedModels": [
+                "UserFile"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2254,12 +2622,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

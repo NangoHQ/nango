@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_batchobjects",
             "name": "batch-objects",
-            "output": ["ActionOutput_algolia_batchobjects"],
-            "scopes": ["addObject"],
-            "usedModels": ["ActionInput_algolia_batchobjects", "ActionOutput_algolia_batchobjects"],
+            "output": [
+                "ActionOutput_algolia_batchobjects"
+            ],
+            "scopes": [
+                "addObject"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_batchobjects",
+                "ActionOutput_algolia_batchobjects"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -45,13 +52,19 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["action", "body"],
+                                    "required": [
+                                        "action",
+                                        "body"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Batch operations to perform on the index."
                             }
                         },
-                        "required": ["indexName", "requests"],
+                        "required": [
+                            "indexName",
+                            "requests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_batchobjects": {
@@ -67,7 +80,10 @@
                                 }
                             }
                         },
-                        "required": ["taskID", "objectIDs"],
+                        "required": [
+                            "taskID",
+                            "objectIDs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -80,9 +96,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_copyindex",
             "name": "copy-index",
-            "output": ["ActionOutput_algolia_copyindex"],
-            "scopes": ["addObject"],
-            "usedModels": ["ActionInput_algolia_copyindex", "ActionOutput_algolia_copyindex"],
+            "output": [
+                "ActionOutput_algolia_copyindex"
+            ],
+            "scopes": [
+                "addObject"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_copyindex",
+                "ActionOutput_algolia_copyindex"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -102,11 +125,18 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["settings", "synonyms", "rules"]
+                                    "enum": [
+                                        "settings",
+                                        "synonyms",
+                                        "rules"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["sourceIndexName", "destinationIndexName"],
+                        "required": [
+                            "sourceIndexName",
+                            "destinationIndexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_copyindex": {
@@ -121,7 +151,10 @@
                                 "description": "ISO 8601 timestamp of when the operation was performed"
                             }
                         },
-                        "required": ["taskID", "updatedAt"],
+                        "required": [
+                            "taskID",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -134,9 +167,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_createapikey",
             "name": "create-api-key",
-            "output": ["ActionOutput_algolia_createapikey"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_algolia_createapikey", "ActionOutput_algolia_createapikey"],
+            "output": [
+                "ActionOutput_algolia_createapikey"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_createapikey",
+                "ActionOutput_algolia_createapikey"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -185,7 +225,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["acl"],
+                        "required": [
+                            "acl"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_createapikey": {
@@ -200,7 +242,10 @@
                                 "description": "Date and time when the API key was created, in RFC 3339 format. Example: 2023-07-04T12:49:15Z"
                             }
                         },
-                        "required": ["key", "createdAt"],
+                        "required": [
+                            "key",
+                            "createdAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -213,9 +258,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_createobject",
             "name": "create-object",
-            "output": ["ActionOutput_algolia_createobject"],
-            "scopes": ["addObject"],
-            "usedModels": ["ActionInput_algolia_createobject", "ActionOutput_algolia_createobject"],
+            "output": [
+                "ActionOutput_algolia_createobject"
+            ],
+            "scopes": [
+                "addObject"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_createobject",
+                "ActionOutput_algolia_createobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -237,7 +289,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexName", "object"],
+                        "required": [
+                            "indexName",
+                            "object"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_createobject": {
@@ -256,7 +311,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["objectID", "taskID"],
+                        "required": [
+                            "objectID",
+                            "taskID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -269,9 +327,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_createrule",
             "name": "create-rule",
-            "output": ["ActionOutput_algolia_createrule"],
-            "scopes": ["editSettings"],
-            "usedModels": ["ActionInput_algolia_createrule", "ActionOutput_algolia_createrule"],
+            "output": [
+                "ActionOutput_algolia_createrule"
+            ],
+            "scopes": [
+                "editSettings"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_createrule",
+                "ActionOutput_algolia_createrule"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -313,7 +378,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["pattern", "anchoring"],
+                                    "required": [
+                                        "pattern",
+                                        "anchoring"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Conditions that trigger the rule."
@@ -398,7 +466,10 @@
                                             "description": "Timestamp when the rule should stop to be active, measured in seconds since the Unix epoch."
                                         }
                                     },
-                                    "required": ["from", "until"],
+                                    "required": [
+                                        "from",
+                                        "until"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -414,7 +485,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexName", "objectID", "conditions", "consequence"],
+                        "required": [
+                            "indexName",
+                            "objectID",
+                            "conditions",
+                            "consequence"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_createrule": {
@@ -427,7 +503,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskID", "updatedAt"],
+                        "required": [
+                            "taskID",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -440,9 +519,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_createsynonym",
             "name": "create-synonym",
-            "output": ["ActionOutput_algolia_createsynonym"],
-            "scopes": ["editSettings"],
-            "usedModels": ["ActionInput_algolia_createsynonym", "ActionOutput_algolia_createsynonym"],
+            "output": [
+                "ActionOutput_algolia_createsynonym"
+            ],
+            "scopes": [
+                "editSettings"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_createsynonym",
+                "ActionOutput_algolia_createsynonym"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -471,7 +557,12 @@
                                         "description": "Equivalent terms. Example: [\"tv\", \"television\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "synonyms"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "synonyms"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -501,7 +592,13 @@
                                         "description": "One-way synonym targets. Example: [\"apple phone\", \"smartphone\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "input", "synonyms"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "input",
+                                    "synonyms"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -531,7 +628,13 @@
                                         "description": "Corrections. Example: [\"stomach\", \"belly\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "word",
+                                    "corrections"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -561,7 +664,13 @@
                                         "description": "Corrections. Example: [\"stomach\", \"belly\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "word",
+                                    "corrections"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -591,7 +700,13 @@
                                         "description": "Replacement words. Example: [\"Apple\", \"Samsung\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "placeholder", "replacements"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "placeholder",
+                                    "replacements"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -609,7 +724,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskID"],
+                        "required": [
+                            "taskID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -622,9 +739,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_deleteapikey",
             "name": "delete-api-key",
-            "output": ["ActionOutput_algolia_deleteapikey"],
-            "scopes": ["deleteApiKey"],
-            "usedModels": ["ActionInput_algolia_deleteapikey", "ActionOutput_algolia_deleteapikey"],
+            "output": [
+                "ActionOutput_algolia_deleteapikey"
+            ],
+            "scopes": [
+                "deleteApiKey"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_deleteapikey",
+                "ActionOutput_algolia_deleteapikey"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -636,7 +760,9 @@
                                 "description": "API key to delete. Example: \"0f610218198809c8a7ed8c2fd8867183\""
                             }
                         },
-                        "required": ["key"],
+                        "required": [
+                            "key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_deleteapikey": {
@@ -647,7 +773,9 @@
                                 "description": "Date and time when the key was deleted, in RFC 3339 format."
                             }
                         },
-                        "required": ["deletedAt"],
+                        "required": [
+                            "deletedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -660,9 +788,14 @@
             "endpoint": null,
             "input": "ActionInput_algolia_deleteindex",
             "name": "delete-index",
-            "output": ["ActionOutput_algolia_deleteindex"],
+            "output": [
+                "ActionOutput_algolia_deleteindex"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_algolia_deleteindex", "ActionOutput_algolia_deleteindex"],
+            "usedModels": [
+                "ActionInput_algolia_deleteindex",
+                "ActionOutput_algolia_deleteindex"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -674,7 +807,9 @@
                                 "description": "Name of the Algolia index to delete. Example: \"my-index\""
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_deleteindex": {
@@ -687,7 +822,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskID", "deletedAt"],
+                        "required": [
+                            "taskID",
+                            "deletedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -700,9 +838,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_deleteobject",
             "name": "delete-object",
-            "output": ["ActionOutput_algolia_deleteobject"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_deleteobject", "ActionOutput_algolia_deleteobject"],
+            "output": [
+                "ActionOutput_algolia_deleteobject"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_deleteobject",
+                "ActionOutput_algolia_deleteobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -718,7 +863,10 @@
                                 "description": "ID of the object to delete. Example: \"nango-test-obj-delete-1\""
                             }
                         },
-                        "required": ["indexName", "objectID"],
+                        "required": [
+                            "indexName",
+                            "objectID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_deleteobject": {
@@ -733,7 +881,10 @@
                                 "description": "ISO 8601 timestamp when the object was deleted."
                             }
                         },
-                        "required": ["taskID", "deletedAt"],
+                        "required": [
+                            "taskID",
+                            "deletedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -746,9 +897,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_deleterule",
             "name": "delete-rule",
-            "output": ["ActionOutput_algolia_deleterule"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_deleterule", "ActionOutput_algolia_deleterule"],
+            "output": [
+                "ActionOutput_algolia_deleterule"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_deleterule",
+                "ActionOutput_algolia_deleterule"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -764,7 +922,10 @@
                                 "description": "Object ID of the query rule to delete. Example: \"nango-test-rule-update-1\""
                             }
                         },
-                        "required": ["index_name", "object_id"],
+                        "required": [
+                            "index_name",
+                            "object_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_deleterule": {
@@ -783,7 +944,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "object_id"],
+                        "required": [
+                            "success",
+                            "object_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -796,9 +960,14 @@
             "endpoint": null,
             "input": "ActionInput_algolia_deletesynonym",
             "name": "delete-synonym",
-            "output": ["ActionOutput_algolia_deletesynonym"],
+            "output": [
+                "ActionOutput_algolia_deletesynonym"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_algolia_deletesynonym", "ActionOutput_algolia_deletesynonym"],
+            "usedModels": [
+                "ActionInput_algolia_deletesynonym",
+                "ActionOutput_algolia_deletesynonym"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -814,7 +983,10 @@
                                 "description": "Synonym object ID. Example: \"nango-test-syn-delete-1\""
                             }
                         },
-                        "required": ["indexName", "objectID"],
+                        "required": [
+                            "indexName",
+                            "objectID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_deletesynonym": {
@@ -827,7 +999,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskID"],
+                        "required": [
+                            "taskID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -840,9 +1014,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_getapikey",
             "name": "get-api-key",
-            "output": ["ActionOutput_algolia_getapikey"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_getapikey", "ActionOutput_algolia_getapikey"],
+            "output": [
+                "ActionOutput_algolia_getapikey"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_getapikey",
+                "ActionOutput_algolia_getapikey"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -854,7 +1035,9 @@
                                 "description": "Algolia API key to retrieve. Example: \"59d374984024673eb90738474aa4e9c2\""
                             }
                         },
-                        "required": ["key"],
+                        "required": [
+                            "key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_getapikey": {
@@ -900,7 +1083,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["value"],
+                        "required": [
+                            "value"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -913,9 +1098,14 @@
             "endpoint": null,
             "input": "ActionInput_algolia_getindex",
             "name": "get-index",
-            "output": ["ActionOutput_algolia_getindex"],
+            "output": [
+                "ActionOutput_algolia_getindex"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_algolia_getindex", "ActionOutput_algolia_getindex"],
+            "usedModels": [
+                "ActionInput_algolia_getindex",
+                "ActionOutput_algolia_getindex"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -927,7 +1117,9 @@
                                 "description": "Name of the Algolia index to retrieve. Example: \"algolia_movie_sample_dataset\""
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_getindex": {
@@ -961,7 +1153,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -974,9 +1168,14 @@
             "endpoint": null,
             "input": "ActionInput_algolia_getlogs",
             "name": "get-logs",
-            "output": ["ActionOutput_algolia_getlogs"],
+            "output": [
+                "ActionOutput_algolia_getlogs"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_algolia_getlogs", "ActionOutput_algolia_getlogs"],
+            "usedModels": [
+                "ActionInput_algolia_getlogs",
+                "ActionOutput_algolia_getlogs"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -990,7 +1189,12 @@
                             "type": {
                                 "description": "Log type filter. Example: \"all\"",
                                 "type": "string",
-                                "enum": ["all", "query", "build", "error"]
+                                "enum": [
+                                    "all",
+                                    "query",
+                                    "build",
+                                    "error"
+                                ]
                             },
                             "offset": {
                                 "description": "Offset for pagination. Example: 0",
@@ -1043,10 +1247,16 @@
                                             "type": "string"
                                         },
                                         "nb_api_calls": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "processing_time_ms": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "index": {
                                             "type": "string"
@@ -1055,7 +1265,10 @@
                                             "type": "string"
                                         },
                                         "query_nb_hits": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "inner_queries": {
                                             "type": "array",
@@ -1070,7 +1283,9 @@
                                 }
                             }
                         },
-                        "required": ["logs"],
+                        "required": [
+                            "logs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1083,9 +1298,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_getobject",
             "name": "get-object",
-            "output": ["ActionOutput_algolia_getobject"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_getobject", "ActionOutput_algolia_getobject"],
+            "output": [
+                "ActionOutput_algolia_getobject"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_getobject",
+                "ActionOutput_algolia_getobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1101,7 +1323,10 @@
                                 "description": "Unique record identifier. Example: \"nango-test-obj-get\""
                             }
                         },
-                        "required": ["index_name", "object_id"],
+                        "required": [
+                            "index_name",
+                            "object_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_getobject": {
@@ -1112,7 +1337,9 @@
                                 "description": "Unique record identifier."
                             }
                         },
-                        "required": ["objectID"],
+                        "required": [
+                            "objectID"
+                        ],
                         "additionalProperties": {},
                         "description": "The requested Algolia record."
                     }
@@ -1126,9 +1353,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_getrule",
             "name": "get-rule",
-            "output": ["ActionOutput_algolia_getrule"],
-            "scopes": ["settings"],
-            "usedModels": ["ActionInput_algolia_getrule", "ActionOutput_algolia_getrule"],
+            "output": [
+                "ActionOutput_algolia_getrule"
+            ],
+            "scopes": [
+                "settings"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_getrule",
+                "ActionOutput_algolia_getrule"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1144,7 +1378,10 @@
                                 "description": "Unique identifier of the rule. Example: \"nango-test-rule-get\""
                             }
                         },
-                        "required": ["indexName", "objectID"],
+                        "required": [
+                            "indexName",
+                            "objectID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_getrule": {
@@ -1205,7 +1442,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["objectID"],
+                                            "required": [
+                                                "objectID"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1216,7 +1455,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["indexName"],
+                                        "required": [
+                                            "indexName"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     "userData": {
@@ -1279,7 +1520,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["objectID", "consequence"],
+                        "required": [
+                            "objectID",
+                            "consequence"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1292,9 +1536,14 @@
             "endpoint": null,
             "input": "ActionInput_algolia_getsettings",
             "name": "get-settings",
-            "output": ["ActionOutput_algolia_getsettings"],
+            "output": [
+                "ActionOutput_algolia_getsettings"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_algolia_getsettings", "ActionOutput_algolia_getsettings"],
+            "usedModels": [
+                "ActionInput_algolia_getsettings",
+                "ActionOutput_algolia_getsettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1306,7 +1555,9 @@
                                 "description": "Algolia index name. Example: \"algolia_movie_sample_dataset\""
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_getsettings": {
@@ -1324,9 +1575,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_getsynonym",
             "name": "get-synonym",
-            "output": ["ActionOutput_algolia_getsynonym"],
-            "scopes": ["settings"],
-            "usedModels": ["ActionInput_algolia_getsynonym", "ActionOutput_algolia_getsynonym"],
+            "output": [
+                "ActionOutput_algolia_getsynonym"
+            ],
+            "scopes": [
+                "settings"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_getsynonym",
+                "ActionOutput_algolia_getsynonym"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1342,7 +1600,10 @@
                                 "description": "Unique identifier of the synonym object. Example: \"nango-test-syn-get\""
                             }
                         },
-                        "required": ["indexName", "objectID"],
+                        "required": [
+                            "indexName",
+                            "objectID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_getsynonym": {
@@ -1392,7 +1653,10 @@
                                 }
                             }
                         },
-                        "required": ["objectID", "type"],
+                        "required": [
+                            "objectID",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1405,9 +1669,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_listapikeys",
             "name": "list-api-keys",
-            "output": ["ActionOutput_algolia_listapikeys"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_algolia_listapikeys", "ActionOutput_algolia_listapikeys"],
+            "output": [
+                "ActionOutput_algolia_listapikeys"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_listapikeys",
+                "ActionOutput_algolia_listapikeys"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1464,12 +1735,18 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["value", "createdAt", "acl"],
+                                    "required": [
+                                        "value",
+                                        "createdAt",
+                                        "acl"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["keys"],
+                        "required": [
+                            "keys"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1482,9 +1759,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_listindices",
             "name": "list-indices",
-            "output": ["ActionOutput_algolia_listindices"],
-            "scopes": ["listIndexes"],
-            "usedModels": ["ActionInput_algolia_listindices", "ActionOutput_algolia_listindices"],
+            "output": [
+                "ActionOutput_algolia_listindices"
+            ],
+            "scopes": [
+                "listIndexes"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_listindices",
+                "ActionOutput_algolia_listindices"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1570,7 +1854,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1583,9 +1869,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_listobjects",
             "name": "list-objects",
-            "output": ["ActionOutput_algolia_listobjects"],
-            "scopes": ["browse"],
-            "usedModels": ["ActionInput_algolia_listobjects", "ActionOutput_algolia_listobjects"],
+            "output": [
+                "ActionOutput_algolia_listobjects"
+            ],
+            "scopes": [
+                "browse"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_listobjects",
+                "ActionOutput_algolia_listobjects"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1613,7 +1906,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_listobjects": {
@@ -1654,7 +1949,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["hits"],
+                        "required": [
+                            "hits"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1667,9 +1964,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_listrules",
             "name": "list-rules",
-            "output": ["ActionOutput_algolia_listrules"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_listrules", "ActionOutput_algolia_listrules"],
+            "output": [
+                "ActionOutput_algolia_listrules"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_listrules",
+                "ActionOutput_algolia_listrules"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1695,7 +1999,9 @@
                                 "maximum": 1000
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_listrules": {
@@ -1716,7 +2022,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["objectID"],
+                                    "required": [
+                                        "objectID"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1737,7 +2045,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["hits"],
+                        "required": [
+                            "hits"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1750,9 +2060,14 @@
             "endpoint": null,
             "input": "ActionInput_algolia_listsynonyms",
             "name": "list-synonyms",
-            "output": ["ActionOutput_algolia_listsynonyms"],
+            "output": [
+                "ActionOutput_algolia_listsynonyms"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_algolia_listsynonyms", "ActionOutput_algolia_listsynonyms"],
+            "usedModels": [
+                "ActionInput_algolia_listsynonyms",
+                "ActionOutput_algolia_listsynonyms"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1778,7 +2093,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_listsynonyms": {
@@ -1823,7 +2140,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["objectID", "type"],
+                                    "required": [
+                                        "objectID",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1834,7 +2154,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["synonyms", "nbHits"],
+                        "required": [
+                            "synonyms",
+                            "nbHits"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1847,9 +2170,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_moveindex",
             "name": "move-index",
-            "output": ["ActionOutput_algolia_moveindex"],
-            "scopes": ["addObject"],
-            "usedModels": ["ActionInput_algolia_moveindex", "ActionOutput_algolia_moveindex"],
+            "output": [
+                "ActionOutput_algolia_moveindex"
+            ],
+            "scopes": [
+                "addObject"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_moveindex",
+                "ActionOutput_algolia_moveindex"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1865,7 +2195,10 @@
                                 "description": "Name of the destination index. The source index is renamed to this name, overwriting any existing index with the same name. Example: \"my-destination-index\""
                             }
                         },
-                        "required": ["indexName", "destinationIndexName"],
+                        "required": [
+                            "indexName",
+                            "destinationIndexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_moveindex": {
@@ -1880,7 +2213,10 @@
                                 "description": "ISO 8601 timestamp of when the move operation was submitted."
                             }
                         },
-                        "required": ["taskID", "updatedAt"],
+                        "required": [
+                            "taskID",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1893,9 +2229,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_partialupdateobject",
             "name": "partial-update-object",
-            "output": ["ActionOutput_algolia_partialupdateobject"],
-            "scopes": ["addObject"],
-            "usedModels": ["ActionInput_algolia_partialupdateobject", "ActionOutput_algolia_partialupdateobject"],
+            "output": [
+                "ActionOutput_algolia_partialupdateobject"
+            ],
+            "scopes": [
+                "addObject"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_partialupdateobject",
+                "ActionOutput_algolia_partialupdateobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1919,7 +2262,11 @@
                                 "description": "Attributes to update on the object. Only first-level attributes are supported."
                             }
                         },
-                        "required": ["indexName", "objectID", "attributes"],
+                        "required": [
+                            "indexName",
+                            "objectID",
+                            "attributes"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_partialupdateobject": {
@@ -1935,7 +2282,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["objectID"],
+                        "required": [
+                            "objectID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1948,9 +2297,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_searchindex",
             "name": "search-index",
-            "output": ["ActionOutput_algolia_searchindex"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_searchindex", "ActionOutput_algolia_searchindex"],
+            "output": [
+                "ActionOutput_algolia_searchindex"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_searchindex",
+                "ActionOutput_algolia_searchindex"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2020,7 +2376,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_searchindex": {
@@ -2093,12 +2451,19 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["avg", "max", "min", "sum"],
+                                    "required": [
+                                        "avg",
+                                        "max",
+                                        "min",
+                                        "sum"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["hits"],
+                        "required": [
+                            "hits"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2111,9 +2476,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_searchmultipleindices",
             "name": "search-multiple-indices",
-            "output": ["ActionOutput_algolia_searchmultipleindices"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_searchmultipleindices", "ActionOutput_algolia_searchmultipleindices"],
+            "output": [
+                "ActionOutput_algolia_searchmultipleindices"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_searchmultipleindices",
+                "ActionOutput_algolia_searchmultipleindices"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2136,7 +2508,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["indexName"],
+                                    "required": [
+                                        "indexName"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of search requests, one per index or query. Maximum 50 requests."
@@ -2146,7 +2520,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["requests"],
+                        "required": [
+                            "requests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_searchmultipleindices": {
@@ -2166,7 +2542,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["objectID"],
+                                                "required": [
+                                                    "objectID"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -2195,13 +2573,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["hits"],
+                                    "required": [
+                                        "hits"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Search results in the same order as the requests."
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2214,9 +2596,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_setsettings",
             "name": "set-settings",
-            "output": ["ActionOutput_algolia_setsettings"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_setsettings", "ActionOutput_algolia_setsettings"],
+            "output": [
+                "ActionOutput_algolia_setsettings"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_setsettings",
+                "ActionOutput_algolia_setsettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2236,7 +2625,10 @@
                                 "description": "Index settings to apply. See https://www.algolia.com/doc/api-reference/settings-api-parameters/"
                             }
                         },
-                        "required": ["indexName", "settings"],
+                        "required": [
+                            "indexName",
+                            "settings"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_setsettings": {
@@ -2261,9 +2653,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_updateapikey",
             "name": "update-api-key",
-            "output": ["ActionOutput_algolia_updateapikey"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_algolia_updateapikey", "ActionOutput_algolia_updateapikey"],
+            "output": [
+                "ActionOutput_algolia_updateapikey"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_updateapikey",
+                "ActionOutput_algolia_updateapikey"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2316,7 +2715,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["key", "acl"],
+                        "required": [
+                            "key",
+                            "acl"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_updateapikey": {
@@ -2329,7 +2731,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["key", "updatedAt"],
+                        "required": [
+                            "key",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2342,9 +2747,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_updateobject",
             "name": "update-object",
-            "output": ["ActionOutput_algolia_updateobject"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_algolia_updateobject", "ActionOutput_algolia_updateobject"],
+            "output": [
+                "ActionOutput_algolia_updateobject"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_updateobject",
+                "ActionOutput_algolia_updateobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2368,7 +2780,11 @@
                                 "description": "Full object payload to replace the existing record."
                             }
                         },
-                        "required": ["index_name", "object_id", "object"],
+                        "required": [
+                            "index_name",
+                            "object_id",
+                            "object"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_updateobject": {
@@ -2384,10 +2800,15 @@
                                 "type": "string"
                             },
                             "task_id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             }
                         },
-                        "required": ["object_id"],
+                        "required": [
+                            "object_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2400,9 +2821,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_updaterule",
             "name": "update-rule",
-            "output": ["ActionOutput_algolia_updaterule"],
-            "scopes": ["editSettings"],
-            "usedModels": ["ActionInput_algolia_updaterule", "ActionOutput_algolia_updaterule"],
+            "output": [
+                "ActionOutput_algolia_updaterule"
+            ],
+            "scopes": [
+                "editSettings"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_updaterule",
+                "ActionOutput_algolia_updaterule"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2481,7 +2909,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["indexName"],
+                                        "required": [
+                                            "indexName"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "userData": {
@@ -2529,7 +2959,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["index_name", "object_id", "consequence"],
+                        "required": [
+                            "index_name",
+                            "object_id",
+                            "consequence"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_algolia_updaterule": {
@@ -2544,7 +2978,10 @@
                                 "description": "Date and time when the rule was updated, in RFC 3339 format."
                             }
                         },
-                        "required": ["task_id", "updated_at"],
+                        "required": [
+                            "task_id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2557,9 +2994,16 @@
             "endpoint": null,
             "input": "ActionInput_algolia_updatesynonym",
             "name": "update-synonym",
-            "output": ["ActionOutput_algolia_updatesynonym"],
-            "scopes": ["editSettings"],
-            "usedModels": ["ActionInput_algolia_updatesynonym", "ActionOutput_algolia_updatesynonym"],
+            "output": [
+                "ActionOutput_algolia_updatesynonym"
+            ],
+            "scopes": [
+                "editSettings"
+            ],
+            "usedModels": [
+                "ActionInput_algolia_updatesynonym",
+                "ActionOutput_algolia_updatesynonym"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2592,7 +3036,12 @@
                                         "description": "Words or phrases considered equivalent. Example: [\"tv\", \"television\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "synonyms"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "synonyms"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -2626,7 +3075,13 @@
                                         "description": "One-way synonym targets. Example: [\"apple phone\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "input", "synonyms"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "input",
+                                    "synonyms"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -2660,7 +3115,13 @@
                                         "description": "Words to be matched in records. Example: [\"stomach\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "word",
+                                    "corrections"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -2694,7 +3155,13 @@
                                         "description": "Words to be matched in records. Example: [\"stomach\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "word", "corrections"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "word",
+                                    "corrections"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -2728,7 +3195,13 @@
                                         "description": "Query words matching the placeholder. Example: [\"Apple\"]"
                                     }
                                 },
-                                "required": ["indexName", "objectID", "type", "placeholder", "replacements"],
+                                "required": [
+                                    "indexName",
+                                    "objectID",
+                                    "type",
+                                    "placeholder",
+                                    "replacements"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -2746,7 +3219,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskID", "updatedAt", "id"],
+                        "required": [
+                            "taskID",
+                            "updatedAt",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2767,12 +3244,16 @@
             ],
             "input": null,
             "name": "api-keys",
-            "output": ["ApiKey"],
+            "output": [
+                "ApiKey"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ApiKey"],
+            "usedModels": [
+                "ApiKey"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2823,7 +3304,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "value", "createdAt", "acl"],
+                        "required": [
+                            "id",
+                            "value",
+                            "createdAt",
+                            "acl"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2842,12 +3328,16 @@
             ],
             "input": null,
             "name": "indices",
-            "output": ["Index"],
+            "output": [
+                "Index"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Index"],
+            "usedModels": [
+                "Index"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2886,12 +3376,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2905,12 +3400,17 @@
             ],
             "input": "SyncMetadata_algolia_objects",
             "name": "objects",
-            "output": ["Object"],
+            "output": [
+                "Object"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Object", "SyncMetadata_algolia_objects"],
+            "usedModels": [
+                "Object",
+                "SyncMetadata_algolia_objects"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2922,7 +3422,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "SyncMetadata_algolia_objects": {
@@ -2932,12 +3434,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2951,12 +3457,17 @@
             ],
             "input": "SyncMetadata_algolia_rules",
             "name": "rules",
-            "output": ["Rule"],
+            "output": [
+                "Rule"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Rule", "SyncMetadata_algolia_rules"],
+            "usedModels": [
+                "Rule",
+                "SyncMetadata_algolia_rules"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3004,7 +3515,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "objectID"],
+                        "required": [
+                            "id",
+                            "objectID"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_algolia_rules": {
@@ -3014,12 +3528,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3033,12 +3551,17 @@
             ],
             "input": "SyncMetadata_algolia_synonyms",
             "name": "synonyms",
-            "output": ["Synonym"],
+            "output": [
+                "Synonym"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Synonym", "SyncMetadata_algolia_synonyms"],
+            "usedModels": [
+                "Synonym",
+                "SyncMetadata_algolia_synonyms"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3083,7 +3606,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "objectID", "type"],
+                        "required": [
+                            "id",
+                            "objectID",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_algolia_synonyms": {
@@ -3093,12 +3620,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexName"],
+                        "required": [
+                            "indexName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

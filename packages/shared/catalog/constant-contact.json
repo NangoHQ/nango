@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_createcampaign",
             "name": "create-campaign",
-            "output": ["ActionOutput_constant_contact_createcampaign"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_createcampaign", "ActionOutput_constant_contact_createcampaign"],
+            "output": [
+                "ActionOutput_constant_contact_createcampaign"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_createcampaign",
+                "ActionOutput_constant_contact_createcampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -72,13 +79,23 @@
                                             }
                                         }
                                     },
-                                    "required": ["format_type", "from_name", "from_email", "reply_to_email", "subject", "preheader"],
+                                    "required": [
+                                        "format_type",
+                                        "from_name",
+                                        "from_email",
+                                        "reply_to_email",
+                                        "subject",
+                                        "preheader"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Email activities to create with the campaign, carrying the sender details and initial email content."
                             }
                         },
-                        "required": ["name", "email_campaign_activities"],
+                        "required": [
+                            "name",
+                            "email_campaign_activities"
+                        ],
                         "additionalProperties": false,
                         "description": "Campaign name plus the email activities that hold the initial email content."
                     },
@@ -131,13 +148,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["campaign_activity_id", "role"],
+                                    "required": [
+                                        "campaign_activity_id",
+                                        "role"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Generated campaign activities (primary_email and permalink)."
                             }
                         },
-                        "required": ["campaign_id", "name", "type", "current_status", "created_at", "updated_at", "campaign_activities"],
+                        "required": [
+                            "campaign_id",
+                            "name",
+                            "type",
+                            "current_status",
+                            "created_at",
+                            "updated_at",
+                            "campaign_activities"
+                        ],
                         "additionalProperties": false,
                         "description": "The created email campaign, including the generated campaign activities."
                     }
@@ -151,9 +179,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_createcontactlist",
             "name": "create-contact-list",
-            "output": ["ActionOutput_constant_contact_createcontactlist"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_createcontactlist", "ActionOutput_constant_contact_createcontactlist"],
+            "output": [
+                "ActionOutput_constant_contact_createcontactlist"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_createcontactlist",
+                "ActionOutput_constant_contact_createcontactlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -173,7 +208,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new contact list in the connected Constant Contact account."
                     },
@@ -205,7 +242,13 @@
                                 "description": "ISO 8601 timestamp of when the contact list was last updated. Example: \"2026-09-29T14:33:39Z\""
                             }
                         },
-                        "required": ["list_id", "name", "favorite", "created_at", "updated_at"],
+                        "required": [
+                            "list_id",
+                            "name",
+                            "favorite",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created contact list."
                     }
@@ -219,9 +262,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_constant_contact_createcontact"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_createcontact", "ActionOutput_constant_contact_createcontact"],
+            "output": [
+                "ActionOutput_constant_contact_createcontact"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_createcontact",
+                "ActionOutput_constant_contact_createcontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -236,7 +286,9 @@
                                         "description": "The email address of the contact. Example: \"jane.doe@example.com\""
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The contact email address object."
                             },
@@ -285,10 +337,17 @@
                                         "kind": {
                                             "description": "The kind of phone number. Example: \"work\"",
                                             "type": "string",
-                                            "enum": ["home", "work", "mobile", "other"]
+                                            "enum": [
+                                                "home",
+                                                "work",
+                                                "mobile",
+                                                "other"
+                                            ]
                                         }
                                     },
-                                    "required": ["phone_number"],
+                                    "required": [
+                                        "phone_number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -301,7 +360,11 @@
                                         "kind": {
                                             "description": "The kind of street address. Example: \"home\"",
                                             "type": "string",
-                                            "enum": ["home", "work", "other"]
+                                            "enum": [
+                                                "home",
+                                                "work",
+                                                "other"
+                                            ]
                                         },
                                         "street": {
                                             "description": "The street of the address. Example: \"1 Main St\"",
@@ -350,7 +413,10 @@
                                             "description": "The value of the custom field. Example: \"Gold\""
                                         }
                                     },
-                                    "required": ["custom_field_id", "value"],
+                                    "required": [
+                                        "custom_field_id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -364,11 +430,17 @@
                             },
                             "create_source": {
                                 "type": "string",
-                                "enum": ["Account", "Contact"],
+                                "enum": [
+                                    "Account",
+                                    "Contact"
+                                ],
                                 "description": "Identifies who added the contact. Use \"Account\" when the business adds the contact (results in implicit email permission) or \"Contact\" when the contact opted in themselves (results in explicit email permission). Example: \"Contact\""
                             }
                         },
-                        "required": ["email_address", "create_source"],
+                        "required": [
+                            "email_address",
+                            "create_source"
+                        ],
                         "additionalProperties": false,
                         "description": "The contact to create in the Constant Contact account."
                     },
@@ -411,7 +483,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The email address details of the contact."
                             },
@@ -554,7 +628,10 @@
                                             "description": "The value of the custom field. Example: \"Gold\""
                                         }
                                     },
-                                    "required": ["custom_field_id", "value"],
+                                    "required": [
+                                        "custom_field_id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -567,7 +644,10 @@
                                 }
                             }
                         },
-                        "required": ["contact_id", "email_address"],
+                        "required": [
+                            "contact_id",
+                            "email_address"
+                        ],
                         "additionalProperties": false,
                         "description": "The created Constant Contact contact."
                     }
@@ -581,9 +661,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_createcustomfield",
             "name": "create-custom-field",
-            "output": ["ActionOutput_constant_contact_createcustomfield"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_createcustomfield", "ActionOutput_constant_contact_createcustomfield"],
+            "output": [
+                "ActionOutput_constant_contact_createcustomfield"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_createcustomfield",
+                "ActionOutput_constant_contact_createcustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -598,7 +685,17 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["string", "date", "datetime", "number", "boolean", "currency", "text_area", "single_select", "multi_select"],
+                                "enum": [
+                                    "string",
+                                    "date",
+                                    "datetime",
+                                    "number",
+                                    "boolean",
+                                    "currency",
+                                    "text_area",
+                                    "single_select",
+                                    "multi_select"
+                                ],
                                 "description": "Data type of the custom field: \"string\" (free text), \"date\"/\"datetime\" (date values), \"number\" (numeric), \"boolean\" (true/false), \"currency\" (monetary values), \"text_area\" (long free text), or \"single_select\"/\"multi_select\" (choose one or more from `choices`)."
                             },
                             "metadata": {
@@ -627,7 +724,9 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["choice_label"],
+                                    "required": [
+                                        "choice_label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -645,7 +744,10 @@
                                 ]
                             }
                         },
-                        "required": ["label", "type"],
+                        "required": [
+                            "label",
+                            "type"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a contact custom field definition."
                     },
@@ -688,7 +790,10 @@
                                         },
                                         "choice_id": {
                                             "description": "Unique identifier of the choice. Example: 25242",
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "choice_label": {
                                             "type": "string",
@@ -707,7 +812,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["choice_label"],
+                                    "required": [
+                                        "choice_label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -724,7 +831,15 @@
                                 "description": "ISO 8601 timestamp when the custom field was last updated. Example: \"2026-09-29T18:35:43Z\""
                             }
                         },
-                        "required": ["custom_field_id", "label", "name", "type", "version", "created_at", "updated_at"],
+                        "required": [
+                            "custom_field_id",
+                            "label",
+                            "name",
+                            "type",
+                            "version",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "The created contact custom field definition."
                     }
@@ -738,9 +853,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_createtag",
             "name": "create-tag",
-            "output": ["ActionOutput_constant_contact_createtag"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_createtag", "ActionOutput_constant_contact_createtag"],
+            "output": [
+                "ActionOutput_constant_contact_createtag"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_createtag",
+                "ActionOutput_constant_contact_createtag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -754,7 +876,9 @@
                                 "description": "Name of the tag to create, 1-255 characters. Example: \"event-registrants\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a contact tag"
                     },
@@ -778,7 +902,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tag_id", "name"],
+                        "required": [
+                            "tag_id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "The created contact tag"
                     }
@@ -792,9 +919,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_deletecampaign",
             "name": "delete-campaign",
-            "output": ["ActionOutput_constant_contact_deletecampaign"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_deletecampaign", "ActionOutput_constant_contact_deletecampaign"],
+            "output": [
+                "ActionOutput_constant_contact_deletecampaign"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_deletecampaign",
+                "ActionOutput_constant_contact_deletecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -806,7 +940,9 @@
                                 "description": "The unique ID of the email campaign to delete. Example: \"11024d9e-4c3f-4f6a-9d1b-2f3e8a1b0c2d\"."
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the email campaign to delete."
                     },
@@ -818,7 +954,9 @@
                                 "description": "Whether the campaign was successfully deleted."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the delete campaign request."
                     }
@@ -832,9 +970,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_deletecontactlist",
             "name": "delete-contact-list",
-            "output": ["ActionOutput_constant_contact_deletecontactlist"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_deletecontactlist", "ActionOutput_constant_contact_deletecontactlist"],
+            "output": [
+                "ActionOutput_constant_contact_deletecontactlist"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_deletecontactlist",
+                "ActionOutput_constant_contact_deletecontactlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -846,7 +991,9 @@
                                 "description": "ID of the contact list to delete. Example: \"c8862818-bc34-11f1-959b-02420a320002\""
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a contact list."
                     },
@@ -862,7 +1009,10 @@
                                 "description": "State of the deletion activity job when the delete request was accepted. Example: \"initialized\""
                             }
                         },
-                        "required": ["activity_id", "state"],
+                        "required": [
+                            "activity_id",
+                            "state"
+                        ],
                         "additionalProperties": false,
                         "description": "Handle of the asynchronous activity job that processes the contact list deletion."
                     }
@@ -876,9 +1026,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_constant_contact_deletecontact"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_deletecontact", "ActionOutput_constant_contact_deletecontact"],
+            "output": [
+                "ActionOutput_constant_contact_deletecontact"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_deletecontact",
+                "ActionOutput_constant_contact_deletecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -890,7 +1047,9 @@
                                 "description": "The unique ID of the contact to delete. Example: \"7f3e2a1b-4c5d-6e7f-8a9b-0c1d2e3f4a5b\""
                             }
                         },
-                        "required": ["contact_id"],
+                        "required": [
+                            "contact_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for deleting a contact."
                     },
@@ -902,7 +1061,9 @@
                                 "description": "True when the contact was deleted successfully."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the delete contact request."
                     }
@@ -916,9 +1077,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_deletecustomfield",
             "name": "delete-custom-field",
-            "output": ["ActionOutput_constant_contact_deletecustomfield"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_deletecustomfield", "ActionOutput_constant_contact_deletecustomfield"],
+            "output": [
+                "ActionOutput_constant_contact_deletecustomfield"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_deletecustomfield",
+                "ActionOutput_constant_contact_deletecustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -930,7 +1098,9 @@
                                 "description": "ID of the contact custom field definition to delete. Example: \"a1b2c3d4-0000-1111-2222-333344445555\""
                             }
                         },
-                        "required": ["custom_field_id"],
+                        "required": [
+                            "custom_field_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a contact custom field definition."
                     },
@@ -948,9 +1118,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_deletetag",
             "name": "delete-tag",
-            "output": ["ActionOutput_constant_contact_deletetag"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_deletetag", "ActionOutput_constant_contact_deletetag"],
+            "output": [
+                "ActionOutput_constant_contact_deletetag"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_deletetag",
+                "ActionOutput_constant_contact_deletetag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -962,7 +1139,9 @@
                                 "description": "The ID of the contact tag to delete. Example: \"d0cea6c8-5d2f-4b1e-9a47-2f1c6a1b2c3d\""
                             }
                         },
-                        "required": ["tag_id"],
+                        "required": [
+                            "tag_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a contact tag"
                     },
@@ -978,7 +1157,10 @@
                                 "description": "State of the deletion activity job when the delete request was accepted. Example: \"initialized\""
                             }
                         },
-                        "required": ["activity_id", "state"],
+                        "required": [
+                            "activity_id",
+                            "state"
+                        ],
                         "additionalProperties": false,
                         "description": "Handle of the asynchronous activity job that processes the contact tag deletion."
                     }
@@ -992,9 +1174,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getaccountsummary",
             "name": "get-account-summary",
-            "output": ["ActionOutput_constant_contact_getaccountsummary"],
-            "scopes": ["account_read"],
-            "usedModels": ["ActionInput_constant_contact_getaccountsummary", "ActionOutput_constant_contact_getaccountsummary"],
+            "output": [
+                "ActionOutput_constant_contact_getaccountsummary"
+            ],
+            "scopes": [
+                "account_read"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getaccountsummary",
+                "ActionOutput_constant_contact_getaccountsummary"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1018,7 +1207,10 @@
                             },
                             "contact_phone": {
                                 "description": "The phone number of the account contact, or null when not set. Example: \"+1-555-555-0100\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "country_code": {
                                 "type": "string",
@@ -1030,31 +1222,52 @@
                             },
                             "encoded_partner_id": {
                                 "description": "The encoded identifier of the partner associated with the account, or null for accounts without a partner",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
                                 "description": "The first name of the account contact, or null when not set",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
                                 "description": "The last name of the account contact, or null when not set",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_name": {
                                 "description": "The organization name configured on the account, or null when not set",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_phone": {
                                 "description": "The phone number of the organization, or null when not set. Example: \"+1-555-555-0199\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state_code": {
                                 "description": "The two-letter US/CA state or province code configured on the account, when applicable.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "website": {
                                 "description": "The organization website URL, or null when not set. Example: \"https://example.com\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "time_zone_id": {
                                 "type": "string",
@@ -1100,7 +1313,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["contact_email", "country_code", "encoded_account_id", "time_zone_id"],
+                        "required": [
+                            "contact_email",
+                            "country_code",
+                            "encoded_account_id",
+                            "time_zone_id"
+                        ],
                         "additionalProperties": false,
                         "description": "The account's organization and contact profile summary"
                     }
@@ -1114,9 +1332,14 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getaccountuserprivileges",
             "name": "get-account-user-privileges",
-            "output": ["ActionOutput_constant_contact_getaccountuserprivileges"],
+            "output": [
+                "ActionOutput_constant_contact_getaccountuserprivileges"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_constant_contact_getaccountuserprivileges", "ActionOutput_constant_contact_getaccountuserprivileges"],
+            "usedModels": [
+                "ActionInput_constant_contact_getaccountuserprivileges",
+                "ActionOutput_constant_contact_getaccountuserprivileges"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1143,13 +1366,18 @@
                                             "description": "Privilege name in \"<resource>:<access>\" form. Example: \"contacts:write\""
                                         }
                                     },
-                                    "required": ["privilege_id", "privilege_name"],
+                                    "required": [
+                                        "privilege_id",
+                                        "privilege_name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Privileges granted to the authenticated account user."
                             }
                         },
-                        "required": ["privileges"],
+                        "required": [
+                            "privileges"
+                        ],
                         "additionalProperties": false,
                         "description": "Privileges of the authenticated account user."
                     }
@@ -1163,9 +1391,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getactivity",
             "name": "get-activity",
-            "output": ["ActionOutput_constant_contact_getactivity"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_getactivity", "ActionOutput_constant_contact_getactivity"],
+            "output": [
+                "ActionOutput_constant_contact_getactivity"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getactivity",
+                "ActionOutput_constant_contact_getactivity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1177,7 +1412,9 @@
                                 "description": "ID of the asynchronous activity job to look up. Returned as `activity_id` by bulk-operation endpoints such as delete-tag or delete-contact-list. Example: \"9390ec42-bc34-11f1-94f6-02420a320002\""
                             }
                         },
-                        "required": ["activity_id"],
+                        "required": [
+                            "activity_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for getting the status of an asynchronous activity job"
                     },
@@ -1230,7 +1467,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["activity_id", "state"],
+                        "required": [
+                            "activity_id",
+                            "state"
+                        ],
                         "additionalProperties": false,
                         "description": "Status details of an asynchronous Constant Contact activity job"
                     }
@@ -1244,9 +1484,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getcampaignactivity",
             "name": "get-campaign-activity",
-            "output": ["ActionOutput_constant_contact_getcampaignactivity"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_getcampaignactivity", "ActionOutput_constant_contact_getcampaignactivity"],
+            "output": [
+                "ActionOutput_constant_contact_getcampaignactivity"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getcampaignactivity",
+                "ActionOutput_constant_contact_getcampaignactivity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1258,7 +1505,9 @@
                                 "description": "The unique ID of the campaign activity to retrieve. Found in the campaign object's campaign_activities array. Example: \"a1b2c3d4-e5f6-4a5b-8c9d-0e1f2a3b4c5d\""
                             }
                         },
-                        "required": ["campaign_activity_id"],
+                        "required": [
+                            "campaign_activity_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single campaign activity."
                     },
@@ -1287,7 +1536,10 @@
                             },
                             "preheader": {
                                 "description": "The email preheader (preview text). Null when no preheader is set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "from_email": {
                                 "type": "string",
@@ -1345,9 +1597,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getcampaignsummaryreport",
             "name": "get-campaign-summary-report",
-            "output": ["ActionOutput_constant_contact_getcampaignsummaryreport"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_getcampaignsummaryreport", "ActionOutput_constant_contact_getcampaignsummaryreport"],
+            "output": [
+                "ActionOutput_constant_contact_getcampaignsummaryreport"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getcampaignsummaryreport",
+                "ActionOutput_constant_contact_getcampaignsummaryreport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1420,7 +1679,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["campaign_id"],
+                                    "required": [
+                                        "campaign_id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Performance summary for a single email campaign."
                                 },
@@ -1453,7 +1714,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["bulk_email_campaign_summaries"],
+                        "required": [
+                            "bulk_email_campaign_summaries"
+                        ],
                         "additionalProperties": false,
                         "description": "Account-wide aggregate email campaign summary report."
                     }
@@ -1467,9 +1730,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getcampaign",
             "name": "get-campaign",
-            "output": ["ActionOutput_constant_contact_getcampaign"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_getcampaign", "ActionOutput_constant_contact_getcampaign"],
+            "output": [
+                "ActionOutput_constant_contact_getcampaign"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getcampaign",
+                "ActionOutput_constant_contact_getcampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1481,7 +1751,9 @@
                                 "description": "The unique ID of the email campaign to retrieve. Example: \"c3d4e5f6-a7b8-49c0-91d2-e3f4a5b6c7d8\"."
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single email campaign."
                     },
@@ -1530,13 +1802,25 @@
                                             "description": "The role of the campaign activity within the campaign, e.g. \"primary_email\" or \"permalink\"."
                                         }
                                     },
-                                    "required": ["campaign_activity_id", "role"],
+                                    "required": [
+                                        "campaign_activity_id",
+                                        "role"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The campaign activities belonging to this campaign, such as the primary_email and permalink activities."
                             }
                         },
-                        "required": ["campaign_id", "name", "current_status", "type", "type_code", "created_at", "updated_at", "campaign_activities"],
+                        "required": [
+                            "campaign_id",
+                            "name",
+                            "current_status",
+                            "type",
+                            "type_code",
+                            "created_at",
+                            "updated_at",
+                            "campaign_activities"
+                        ],
                         "additionalProperties": false,
                         "description": "A single email campaign, including references to its campaign activities."
                     }
@@ -1550,9 +1834,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getcontactlist",
             "name": "get-contact-list",
-            "output": ["ActionOutput_constant_contact_getcontactlist"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_getcontactlist", "ActionOutput_constant_contact_getcontactlist"],
+            "output": [
+                "ActionOutput_constant_contact_getcontactlist"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getcontactlist",
+                "ActionOutput_constant_contact_getcontactlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1566,10 +1857,15 @@
                             "include_membership_count": {
                                 "description": "Set to \"all\" to include the total number of contacts on the list, or \"active\" to count only active (mailable) contacts. Omit to exclude the membership count.",
                                 "type": "string",
-                                "enum": ["all", "active"]
+                                "enum": [
+                                    "all",
+                                    "active"
+                                ]
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Constant Contact contact list"
                     },
@@ -1603,7 +1899,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["list_id", "name"],
+                        "required": [
+                            "list_id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Constant Contact contact list"
                     }
@@ -1617,9 +1916,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_constant_contact_getcontact"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_getcontact", "ActionOutput_constant_contact_getcontact"],
+            "output": [
+                "ActionOutput_constant_contact_getcontact"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getcontact",
+                "ActionOutput_constant_contact_getcontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1631,7 +1937,9 @@
                                 "description": "Unique ID of the contact to retrieve. Example: \"1898ae62-4752-11e9-9c8a-fa163e6b01c1\""
                             }
                         },
-                        "required": ["contact_id"],
+                        "required": [
+                            "contact_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Constant Contact contact."
                     },
@@ -1687,7 +1995,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false
                             },
                             "first_name": {
@@ -1752,7 +2062,10 @@
                                             "description": "The value of the custom field for this contact."
                                         }
                                     },
-                                    "required": ["custom_field_id", "value"],
+                                    "required": [
+                                        "custom_field_id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Custom field values set on the contact."
@@ -1783,7 +2096,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["phone_number_id", "phone_number"],
+                                    "required": [
+                                        "phone_number_id",
+                                        "phone_number"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Phone numbers of the contact."
@@ -1830,7 +2146,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["street_address_id"],
+                                    "required": [
+                                        "street_address_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Street addresses of the contact."
@@ -1872,7 +2190,15 @@
                                 "description": "Notes attached to the contact."
                             }
                         },
-                        "required": ["contact_id", "custom_fields", "phone_numbers", "street_addresses", "list_memberships", "taggings", "notes"],
+                        "required": [
+                            "contact_id",
+                            "custom_fields",
+                            "phone_numbers",
+                            "street_addresses",
+                            "list_memberships",
+                            "taggings",
+                            "notes"
+                        ],
                         "additionalProperties": false,
                         "description": "A Constant Contact contact including its custom fields, list memberships, taggings, phone numbers, street addresses and notes."
                     }
@@ -1886,9 +2212,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_getcustomfield",
             "name": "get-custom-field",
-            "output": ["ActionOutput_constant_contact_getcustomfield"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_getcustomfield", "ActionOutput_constant_contact_getcustomfield"],
+            "output": [
+                "ActionOutput_constant_contact_getcustomfield"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_getcustomfield",
+                "ActionOutput_constant_contact_getcustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1900,7 +2233,9 @@
                                 "description": "The unique ID of the contact custom field to retrieve. Example: \"597d1a10-a0a2-11ec-b909-0242ac120002\""
                             }
                         },
-                        "required": ["custom_field_id"],
+                        "required": [
+                            "custom_field_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single contact custom field definition"
                     },
@@ -1947,7 +2282,10 @@
                                         },
                                         "choice_id": {
                                             "description": "Unique identifier of the choice. Example: 25242",
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "choice_label": {
                                             "type": "string",
@@ -1966,7 +2304,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["choice_label"],
+                                    "required": [
+                                        "choice_label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1979,7 +2319,15 @@
                                 "description": "ISO 8601 timestamp of when the custom field was last updated. Example: \"2021-01-21T18:05:31Z\""
                             }
                         },
-                        "required": ["custom_field_id", "label", "name", "type", "version", "created_at", "updated_at"],
+                        "required": [
+                            "custom_field_id",
+                            "label",
+                            "name",
+                            "type",
+                            "version",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A contact custom field definition"
                     }
@@ -1993,9 +2341,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_gettag",
             "name": "get-tag",
-            "output": ["ActionOutput_constant_contact_gettag"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_gettag", "ActionOutput_constant_contact_gettag"],
+            "output": [
+                "ActionOutput_constant_contact_gettag"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_gettag",
+                "ActionOutput_constant_contact_gettag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2007,7 +2362,9 @@
                                 "description": "Unique identifier of the contact tag to retrieve. Example: \"92229c0c-bc34-11f1-bccd-02420a320002\""
                             }
                         },
-                        "required": ["tag_id"],
+                        "required": [
+                            "tag_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single contact tag."
                     },
@@ -2031,7 +2388,12 @@
                                 "description": "ISO 8601 timestamp of when the tag was last updated. Example: \"2026-09-29T18:35:40Z\""
                             }
                         },
-                        "required": ["tag_id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "tag_id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A single contact tag."
                     }
@@ -2045,9 +2407,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listaccountverifiedemailaddresses",
             "name": "list-account-verified-email-addresses",
-            "output": ["ActionOutput_constant_contact_listaccountverifiedemailaddresses"],
-            "scopes": ["account_read"],
-            "usedModels": ["ActionInput_constant_contact_listaccountverifiedemailaddresses", "ActionOutput_constant_contact_listaccountverifiedemailaddresses"],
+            "output": [
+                "ActionOutput_constant_contact_listaccountverifiedemailaddresses"
+            ],
+            "scopes": [
+                "account_read"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listaccountverifiedemailaddresses",
+                "ActionOutput_constant_contact_listaccountverifiedemailaddresses"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2096,14 +2465,19 @@
                                             }
                                         }
                                     },
-                                    "required": ["email_id", "email_address"],
+                                    "required": [
+                                        "email_id",
+                                        "email_address"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single email address registered on the account."
                                 },
                                 "description": "Confirmed sender/reply-to email addresses registered on the account, with their roles."
                             }
                         },
-                        "required": ["emails"],
+                        "required": [
+                            "emails"
+                        ],
                         "additionalProperties": false,
                         "description": "The Constant Contact account's confirmed sender/reply-to email addresses and their roles."
                     }
@@ -2117,9 +2491,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listactivities",
             "name": "list-activities",
-            "output": ["ActionOutput_constant_contact_listactivities"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_listactivities", "ActionOutput_constant_contact_listactivities"],
+            "output": [
+                "ActionOutput_constant_contact_listactivities"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listactivities",
+                "ActionOutput_constant_contact_listactivities"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2195,7 +2576,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["activity_id", "state"],
+                                    "required": [
+                                        "activity_id",
+                                        "state"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single asynchronous bulk-operation activity job."
                                 },
@@ -2206,7 +2590,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["activities"],
+                        "required": [
+                            "activities"
+                        ],
                         "additionalProperties": false,
                         "description": "One page of recent activity jobs plus the cursor needed to fetch the next page."
                     }
@@ -2220,9 +2606,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listcampaignschedules",
             "name": "list-campaign-schedules",
-            "output": ["ActionOutput_constant_contact_listcampaignschedules"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_listcampaignschedules", "ActionOutput_constant_contact_listcampaignschedules"],
+            "output": [
+                "ActionOutput_constant_contact_listcampaignschedules"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listcampaignschedules",
+                "ActionOutput_constant_contact_listcampaignschedules"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2234,7 +2627,9 @@
                                 "description": "The ID of the campaign activity (usually the one with role \"primary_email\") whose schedules to list. Example: \"123e4567-e89b-12d3-a456-426614174000\""
                             }
                         },
-                        "required": ["campaign_activity_id"],
+                        "required": [
+                            "campaign_activity_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the pending schedules of a campaign activity."
                     },
@@ -2251,13 +2646,17 @@
                                             "description": "The date and time, in ISO-8601 format, when Constant Contact will send the email campaign activity to contacts. Example: \"2026-10-15T16:00:00.000Z\""
                                         }
                                     },
-                                    "required": ["scheduled_date"],
+                                    "required": [
+                                        "scheduled_date"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The pending schedules for the campaign activity. Empty when the activity is not currently scheduled."
                             }
                         },
-                        "required": ["schedules"],
+                        "required": [
+                            "schedules"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of listing the pending schedules for a campaign activity."
                     }
@@ -2271,9 +2670,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listcampaigns",
             "name": "list-campaigns",
-            "output": ["ActionOutput_constant_contact_listcampaigns"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_listcampaigns", "ActionOutput_constant_contact_listcampaigns"],
+            "output": [
+                "ActionOutput_constant_contact_listcampaigns"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listcampaigns",
+                "ActionOutput_constant_contact_listcampaigns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2339,7 +2745,15 @@
                                             "description": "ISO-8601 timestamp when the campaign was last updated. Example: \"2026-09-29T14:34:37.000Z\""
                                         }
                                     },
-                                    "required": ["campaign_id", "created_at", "current_status", "name", "type", "type_code", "updated_at"],
+                                    "required": [
+                                        "campaign_id",
+                                        "created_at",
+                                        "current_status",
+                                        "name",
+                                        "type",
+                                        "type_code",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The page of email campaigns matching the request."
@@ -2349,7 +2763,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaigns"],
+                        "required": [
+                            "campaigns"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of email campaigns."
                     }
@@ -2363,9 +2779,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listcontactlists",
             "name": "list-contact-lists",
-            "output": ["ActionOutput_constant_contact_listcontactlists"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_listcontactlists", "ActionOutput_constant_contact_listcontactlists"],
+            "output": [
+                "ActionOutput_constant_contact_listcontactlists"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listcontactlists",
+                "ActionOutput_constant_contact_listcontactlists"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2386,12 +2809,19 @@
                             "include_membership_count": {
                                 "description": "Set to \"all\" to include the total number of contacts on each list, or \"active\" to count only active (mailable) contacts. Omit to exclude membership counts.",
                                 "type": "string",
-                                "enum": ["all", "active"]
+                                "enum": [
+                                    "all",
+                                    "active"
+                                ]
                             },
                             "status": {
                                 "description": "Filter the returned lists by status: only \"active\" lists, only \"deleted\" lists, or \"all\" lists.",
                                 "type": "string",
-                                "enum": ["active", "deleted", "all"]
+                                "enum": [
+                                    "active",
+                                    "deleted",
+                                    "all"
+                                ]
                             }
                         },
                         "additionalProperties": false,
@@ -2436,7 +2866,13 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["list_id", "name", "favorite", "created_at", "updated_at"],
+                                    "required": [
+                                        "list_id",
+                                        "name",
+                                        "favorite",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The page of contact lists."
@@ -2446,7 +2882,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["lists"],
+                        "required": [
+                            "lists"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of contact lists plus the cursor for the next page."
                     }
@@ -2460,9 +2898,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_constant_contact_listcontacts"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_listcontacts", "ActionOutput_constant_contact_listcontacts"],
+            "output": [
+                "ActionOutput_constant_contact_listcontacts"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listcontacts",
+                "ActionOutput_constant_contact_listcontacts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2480,7 +2925,13 @@
                             "status": {
                                 "description": "Filter contacts by status. \"all\" additionally returns soft-deleted contacts.",
                                 "type": "string",
-                                "enum": ["all", "active", "unsubscribed", "implicit", "explicit"]
+                                "enum": [
+                                    "all",
+                                    "active",
+                                    "unsubscribed",
+                                    "implicit",
+                                    "explicit"
+                                ]
                             },
                             "segment_id": {
                                 "description": "Return only contacts that belong to the segment with this ID.",
@@ -2506,7 +2957,14 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["custom_fields", "list_memberships", "taggings", "phone_numbers", "street_addresses", "notes"]
+                                    "enum": [
+                                        "custom_fields",
+                                        "list_memberships",
+                                        "taggings",
+                                        "phone_numbers",
+                                        "street_addresses",
+                                        "notes"
+                                    ]
                                 }
                             },
                             "limit": {
@@ -2580,7 +3038,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["address"],
+                                            "required": [
+                                                "address"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "first_name": {
@@ -2646,7 +3106,10 @@
                                                         "description": "Value stored for the custom field on this contact."
                                                     }
                                                 },
-                                                "required": ["custom_field_id", "value"],
+                                                "required": [
+                                                    "custom_field_id",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2677,7 +3140,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["phone_number_id"],
+                                                "required": [
+                                                    "phone_number_id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2724,7 +3189,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["street_address_id"],
+                                                "required": [
+                                                    "street_address_id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2761,12 +3228,17 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["note_id", "content"],
+                                                "required": [
+                                                    "note_id",
+                                                    "content"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["contact_id"],
+                                    "required": [
+                                        "contact_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Contacts matching the filters, for the current page."
@@ -2776,7 +3248,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false,
                         "description": "One page of contacts plus the cursor for the next page."
                     }
@@ -2790,9 +3264,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listcustomfields",
             "name": "list-custom-fields",
-            "output": ["ActionOutput_constant_contact_listcustomfields"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_listcustomfields", "ActionOutput_constant_contact_listcustomfields"],
+            "output": [
+                "ActionOutput_constant_contact_listcustomfields"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listcustomfields",
+                "ActionOutput_constant_contact_listcustomfields"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2852,7 +3333,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["custom_field_id", "label", "name", "type"],
+                                    "required": [
+                                        "custom_field_id",
+                                        "label",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Custom field definitions contained in this page."
@@ -2862,7 +3348,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["custom_fields"],
+                        "required": [
+                            "custom_fields"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of Constant Contact custom field definitions."
                     }
@@ -2876,9 +3364,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_listtags",
             "name": "list-tags",
-            "output": ["ActionOutput_constant_contact_listtags"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_listtags", "ActionOutput_constant_contact_listtags"],
+            "output": [
+                "ActionOutput_constant_contact_listtags"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_listtags",
+                "ActionOutput_constant_contact_listtags"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2924,7 +3419,12 @@
                                             "description": "ISO 8601 timestamp of when the tag was last updated. Example: \"2026-01-20T08:45:00Z\"."
                                         }
                                     },
-                                    "required": ["tag_id", "name", "created_at", "updated_at"],
+                                    "required": [
+                                        "tag_id",
+                                        "name",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The contact tags contained in this page."
@@ -2934,7 +3434,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tags"],
+                        "required": [
+                            "tags"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of contact tags."
                     }
@@ -2948,9 +3450,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_schedulecampaign",
             "name": "schedule-campaign",
-            "output": ["ActionOutput_constant_contact_schedulecampaign"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_schedulecampaign", "ActionOutput_constant_contact_schedulecampaign"],
+            "output": [
+                "ActionOutput_constant_contact_schedulecampaign"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_schedulecampaign",
+                "ActionOutput_constant_contact_schedulecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2966,7 +3475,10 @@
                                 "description": "ISO 8601 date-time when Constant Contact should send the campaign. Must be in the future. Example: \"2026-10-15T14:00:00.000Z\""
                             }
                         },
-                        "required": ["campaign_activity_id", "scheduled_date"],
+                        "required": [
+                            "campaign_activity_id",
+                            "scheduled_date"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for scheduling a campaign activity."
                     },
@@ -2978,7 +3490,9 @@
                                 "description": "Confirmed send date-time for the campaign activity, as returned by Constant Contact."
                             }
                         },
-                        "required": ["scheduled_date"],
+                        "required": [
+                            "scheduled_date"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the campaign activity was scheduled."
                     }
@@ -2992,9 +3506,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_submitcontactsignupform",
             "name": "submit-contact-sign-up-form",
-            "output": ["ActionOutput_constant_contact_submitcontactsignupform"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_submitcontactsignupform", "ActionOutput_constant_contact_submitcontactsignupform"],
+            "output": [
+                "ActionOutput_constant_contact_submitcontactsignupform"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_submitcontactsignupform",
+                "ActionOutput_constant_contact_submitcontactsignupform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3016,7 +3537,10 @@
                             "source": {
                                 "description": "Who is adding the contact. \"Contact\" records explicit opt-in permission (use this for form sign-ups); \"Account\" records implicit permission. Exactly one of source or list_memberships must be provided.",
                                 "type": "string",
-                                "enum": ["Account", "Contact"]
+                                "enum": [
+                                    "Account",
+                                    "Contact"
+                                ]
                             },
                             "list_memberships": {
                                 "description": "IDs of the contact lists to subscribe the contact to. Exactly one of source or list_memberships must be provided. Example: [\"c3639a04-bc12-11f1-aa3a-02420a320002\"]",
@@ -3026,7 +3550,9 @@
                                 }
                             }
                         },
-                        "required": ["email_address"],
+                        "required": [
+                            "email_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Sign-up form submission. Provide the contact email, optional names, and exactly one of source or list_memberships."
                     },
@@ -3039,11 +3565,17 @@
                             },
                             "action": {
                                 "type": "string",
-                                "enum": ["created", "updated"],
+                                "enum": [
+                                    "created",
+                                    "updated"
+                                ],
                                 "description": "Whether a new contact was created or an existing contact with the same email address was updated."
                             }
                         },
-                        "required": ["contact_id", "action"],
+                        "required": [
+                            "contact_id",
+                            "action"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the sign-up form submission."
                     }
@@ -3057,9 +3589,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_unschedulecampaign",
             "name": "unschedule-campaign",
-            "output": ["ActionOutput_constant_contact_unschedulecampaign"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_unschedulecampaign", "ActionOutput_constant_contact_unschedulecampaign"],
+            "output": [
+                "ActionOutput_constant_contact_unschedulecampaign"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_unschedulecampaign",
+                "ActionOutput_constant_contact_unschedulecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3071,7 +3610,9 @@
                                 "description": "The ID of the campaign activity whose pending schedule should be cancelled. Use a campaign_activity_id from the campaign's campaign_activities array (role \"primary_email\"), not the campaign ID. Example: \"a1b2c3d4-1234-5678-9abc-def012345678\""
                             }
                         },
-                        "required": ["campaign_activity_id"],
+                        "required": [
+                            "campaign_activity_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for unscheduling a campaign activity."
                     },
@@ -3083,7 +3624,9 @@
                                 "description": "True when the pending schedule was cancelled (the provider responded 204 No Content)."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the pending schedule was cancelled."
                     }
@@ -3097,9 +3640,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_updateaccountsummary",
             "name": "update-account-summary",
-            "output": ["ActionOutput_constant_contact_updateaccountsummary"],
-            "scopes": ["account_update"],
-            "usedModels": ["ActionInput_constant_contact_updateaccountsummary", "ActionOutput_constant_contact_updateaccountsummary"],
+            "output": [
+                "ActionOutput_constant_contact_updateaccountsummary"
+            ],
+            "scopes": [
+                "account_update"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_updateaccountsummary",
+                "ActionOutput_constant_contact_updateaccountsummary"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3151,7 +3701,10 @@
                             },
                             "contact_phone": {
                                 "description": "Phone number of the account contact, or null when not set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "country_code": {
                                 "description": "Two-letter country code of the account. Example: \"US\"",
@@ -3159,7 +3712,10 @@
                             },
                             "state_code": {
                                 "description": "Two-letter US/CA state or province code, or null when not applicable.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "encoded_account_id": {
                                 "description": "Encoded Constant Contact account ID.",
@@ -3167,23 +3723,38 @@
                             },
                             "first_name": {
                                 "description": "First name of the account contact, or null when not set. Example: \"Nango\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
                                 "description": "Last name of the account contact, or null when not set. Example: \"Developer\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_name": {
                                 "description": "Name of the organization on the account, or null when not set. Example: \"Nango\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_phone": {
                                 "description": "Phone number of the organization, or null when not set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "website": {
                                 "description": "Website URL of the organization, or null when not set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "time_zone_id": {
                                 "description": "Time zone of the account, as an IANA time zone ID. Example: \"Africa/Nairobi\"",
@@ -3203,9 +3774,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_updatecampaignactivity",
             "name": "update-campaign-activity",
-            "output": ["ActionOutput_constant_contact_updatecampaignactivity"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_updatecampaignactivity", "ActionOutput_constant_contact_updatecampaignactivity"],
+            "output": [
+                "ActionOutput_constant_contact_updatecampaignactivity"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_updatecampaignactivity",
+                "ActionOutput_constant_contact_updatecampaignactivity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3222,7 +3800,10 @@
                             },
                             "preheader": {
                                 "description": "Email preheader (preview text shown by inbox clients). Omit to keep the current value; send null to clear it.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "from_email": {
                                 "description": "Email address the campaign is sent from. Omit to keep the current value. Example: \"newsletter@example.com\"",
@@ -3257,7 +3838,9 @@
                                 }
                             }
                         },
-                        "required": ["campaign_activity_id"],
+                        "required": [
+                            "campaign_activity_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields to update on the campaign activity. Omitted fields keep their current values."
                     },
@@ -3323,7 +3906,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign_activity_id", "campaign_id", "contact_list_ids", "segment_ids"],
+                        "required": [
+                            "campaign_activity_id",
+                            "campaign_id",
+                            "contact_list_ids",
+                            "segment_ids"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated campaign activity."
                     }
@@ -3337,9 +3925,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_updatecampaign",
             "name": "update-campaign",
-            "output": ["ActionOutput_constant_contact_updatecampaign"],
-            "scopes": ["campaign_data"],
-            "usedModels": ["ActionInput_constant_contact_updatecampaign", "ActionOutput_constant_contact_updatecampaign"],
+            "output": [
+                "ActionOutput_constant_contact_updatecampaign"
+            ],
+            "scopes": [
+                "campaign_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_updatecampaign",
+                "ActionOutput_constant_contact_updatecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3356,7 +3951,10 @@
                                 "description": "The new campaign-level name for the email campaign. Example: \"September Product Newsletter\""
                             }
                         },
-                        "required": ["campaign_id", "name"],
+                        "required": [
+                            "campaign_id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Campaign update input"
                     },
@@ -3406,13 +4004,19 @@
                                             "description": "The role of the activity within the campaign, such as \"primary_email\" or \"permalink\""
                                         }
                                     },
-                                    "required": ["campaign_activity_id", "role"],
+                                    "required": [
+                                        "campaign_activity_id",
+                                        "role"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A campaign activity attached to the campaign"
                                 }
                             }
                         },
-                        "required": ["campaign_id", "name"],
+                        "required": [
+                            "campaign_id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated email campaign"
                     }
@@ -3426,9 +4030,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_updatecontactlist",
             "name": "update-contact-list",
-            "output": ["ActionOutput_constant_contact_updatecontactlist"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_updatecontactlist", "ActionOutput_constant_contact_updatecontactlist"],
+            "output": [
+                "ActionOutput_constant_contact_updatecontactlist"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_updatecontactlist",
+                "ActionOutput_constant_contact_updatecontactlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3445,14 +4056,19 @@
                             },
                             "description": {
                                 "description": "New description for the contact list. Omit to keep the current description; set to null to clear it.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "favorite": {
                                 "description": "Whether the contact list is marked as a favorite. Omit to keep the current value.",
                                 "type": "boolean"
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields for updating a contact list. At least one of name, description, or favorite must be provided."
                     },
@@ -3484,7 +4100,13 @@
                                 "description": "ISO 8601 timestamp of when the contact list was last updated."
                             }
                         },
-                        "required": ["list_id", "name", "favorite", "created_at", "updated_at"],
+                        "required": [
+                            "list_id",
+                            "name",
+                            "favorite",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated contact list."
                     }
@@ -3498,9 +4120,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_constant_contact_updatecontact"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_updatecontact", "ActionOutput_constant_contact_updatecontact"],
+            "output": [
+                "ActionOutput_constant_contact_updatecontact"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_updatecontact",
+                "ActionOutput_constant_contact_updatecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3513,7 +4142,10 @@
                             },
                             "update_source": {
                                 "type": "string",
-                                "enum": ["Account", "Contact"],
+                                "enum": [
+                                    "Account",
+                                    "Contact"
+                                ],
                                 "description": "Who is performing the update: \"Contact\" when the contact themselves requested the change, \"Account\" when the account owner did. Required by the API."
                             },
                             "email_address": {
@@ -3526,10 +4158,15 @@
                                     "permission_to_send": {
                                         "description": "Email permission to set for the address. Omit to keep the contact's current permission; the API rejects downgrading an explicit permission to implicit.",
                                         "type": "string",
-                                        "enum": ["implicit", "explicit"]
+                                        "enum": [
+                                            "implicit",
+                                            "explicit"
+                                        ]
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Email address of the contact. The API requires an email address on every contact update."
                             },
@@ -3578,10 +4215,17 @@
                                         "kind": {
                                             "description": "Type of the phone number.",
                                             "type": "string",
-                                            "enum": ["home", "work", "mobile", "other"]
+                                            "enum": [
+                                                "home",
+                                                "work",
+                                                "mobile",
+                                                "other"
+                                            ]
                                         }
                                     },
-                                    "required": ["phone_number"],
+                                    "required": [
+                                        "phone_number"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Phone number to set on the contact."
                                 }
@@ -3594,7 +4238,11 @@
                                     "properties": {
                                         "kind": {
                                             "type": "string",
-                                            "enum": ["home", "work", "other"],
+                                            "enum": [
+                                                "home",
+                                                "work",
+                                                "other"
+                                            ],
                                             "description": "Type of the street address."
                                         },
                                         "street": {
@@ -3618,7 +4266,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["kind"],
+                                    "required": [
+                                        "kind"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Street address to set on the contact."
                                 }
@@ -3638,7 +4288,10 @@
                                             "description": "Value to store in the custom field. Example: \"gold-tier\""
                                         }
                                     },
-                                    "required": ["custom_field_id", "value"],
+                                    "required": [
+                                        "custom_field_id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Custom field value to set on the contact."
                                 }
@@ -3660,7 +4313,11 @@
                                 }
                             }
                         },
-                        "required": ["contact_id", "update_source", "email_address"],
+                        "required": [
+                            "contact_id",
+                            "update_source",
+                            "email_address"
+                        ],
                         "additionalProperties": false,
                         "description": "New state for the contact. This endpoint performs a full replace: omitted scalar fields are cleared, while omitted array fields (phone_numbers, street_addresses, custom_fields, list_memberships, taggings) are left unchanged."
                     },
@@ -3692,18 +4349,29 @@
                                     },
                                     "opt_in_source": {
                                         "description": "Source that opted in the email address (\"Account\" or \"Contact\"); null when the address was never opted in.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "opt_in_date": {
                                         "description": "ISO 8601 timestamp of when the email address opted in; null when the address was never opted in.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "confirm_status": {
                                         "description": "Confirmation status of the email address, e.g. \"off\".",
                                         "type": "string"
                                     }
                                 },
-                                "required": ["address", "permission_to_send", "created_at", "updated_at"],
+                                "required": [
+                                    "address",
+                                    "permission_to_send",
+                                    "created_at",
+                                    "updated_at"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Email address details of the contact."
                             },
@@ -3766,7 +4434,10 @@
                                             "description": "Value stored in the custom field."
                                         }
                                     },
-                                    "required": ["custom_field_id", "value"],
+                                    "required": [
+                                        "custom_field_id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Custom field value stored on the contact."
                                 }
@@ -3798,7 +4469,13 @@
                                             "description": "ISO 8601 timestamp of when the phone number was last updated."
                                         }
                                     },
-                                    "required": ["phone_number_id", "phone_number", "kind", "created_at", "updated_at"],
+                                    "required": [
+                                        "phone_number_id",
+                                        "phone_number",
+                                        "kind",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Phone number stored on the contact."
                                 }
@@ -3846,7 +4523,12 @@
                                             "description": "ISO 8601 timestamp of when the street address was last updated."
                                         }
                                     },
-                                    "required": ["street_address_id", "kind", "created_at", "updated_at"],
+                                    "required": [
+                                        "street_address_id",
+                                        "kind",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Street address stored on the contact."
                                 }
@@ -3868,7 +4550,14 @@
                                 }
                             }
                         },
-                        "required": ["contact_id", "email_address", "create_source", "update_source", "created_at", "updated_at"],
+                        "required": [
+                            "contact_id",
+                            "email_address",
+                            "create_source",
+                            "update_source",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated contact. Constant Contact echoes back the fields included in the update request alongside the core contact fields, so fields not sent in the request may be absent even when set on the contact."
                     }
@@ -3882,9 +4571,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_updatecustomfield",
             "name": "update-custom-field",
-            "output": ["ActionOutput_constant_contact_updatecustomfield"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_updatecustomfield", "ActionOutput_constant_contact_updatecustomfield"],
+            "output": [
+                "ActionOutput_constant_contact_updatecustomfield"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_updatecustomfield",
+                "ActionOutput_constant_contact_updatecustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3902,7 +4598,10 @@
                                 "description": "The new display label for the custom field, 1-50 characters. Renaming the label also regenerates the machine-readable name slug. Example: \"Favorite Color\""
                             }
                         },
-                        "required": ["custom_field_id", "label"],
+                        "required": [
+                            "custom_field_id",
+                            "label"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for renaming a contact custom field definition"
                     },
@@ -3934,7 +4633,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["custom_field_id", "label", "name", "type"],
+                        "required": [
+                            "custom_field_id",
+                            "label",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false,
                         "description": "The renamed contact custom field definition"
                     }
@@ -3948,9 +4652,16 @@
             "endpoint": null,
             "input": "ActionInput_constant_contact_updatetag",
             "name": "update-tag",
-            "output": ["ActionOutput_constant_contact_updatetag"],
-            "scopes": ["contact_data"],
-            "usedModels": ["ActionInput_constant_contact_updatetag", "ActionOutput_constant_contact_updatetag"],
+            "output": [
+                "ActionOutput_constant_contact_updatetag"
+            ],
+            "scopes": [
+                "contact_data"
+            ],
+            "usedModels": [
+                "ActionInput_constant_contact_updatetag",
+                "ActionOutput_constant_contact_updatetag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3968,7 +4679,10 @@
                                 "description": "The new name for the contact tag, 1-255 characters. Example: \"vip-customers\""
                             }
                         },
-                        "required": ["tag_id", "name"],
+                        "required": [
+                            "tag_id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for renaming a Constant Contact contact tag"
                     },
@@ -3996,7 +4710,12 @@
                                 "description": "ISO 8601 timestamp of when the tag was last updated. Example: \"2026-09-29T18:36:10Z\""
                             }
                         },
-                        "required": ["tag_id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "tag_id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "The renamed Constant Contact contact tag"
                     }
@@ -4013,12 +4732,18 @@
             "endpoints": [],
             "input": null,
             "name": "campaigns",
-            "output": ["Campaign"],
+            "output": [
+                "Campaign"
+            ],
             "runs": "every hour",
-            "scopes": ["campaign_data"],
+            "scopes": [
+                "campaign_data"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Campaign"],
+            "usedModels": [
+                "Campaign"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4090,13 +4815,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Constant Contact email campaign enriched with metadata (subject, preheader, from/reply-to, contact lists, status) from its primary_email campaign activity."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4105,12 +4834,16 @@
             "endpoints": [],
             "input": null,
             "name": "contact-lists",
-            "output": ["ContactList"],
+            "output": [
+                "ContactList"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ContactList"],
+            "usedModels": [
+                "ContactList"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4147,13 +4880,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "A Constant Contact contact list used to segment account contacts for campaign audiences."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4162,12 +4900,18 @@
             "endpoints": [],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
-            "scopes": ["contact_data"],
+            "scopes": [
+                "contact_data"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4212,7 +4956,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false
                             },
                             "first_name": {
@@ -4274,7 +5020,10 @@
                                             "description": "Value of the custom field for this contact"
                                         }
                                     },
-                                    "required": ["custom_field_id", "value"],
+                                    "required": [
+                                        "custom_field_id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A custom field value assigned to the contact"
                                 }
@@ -4322,7 +5071,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["phone_number_id", "phone_number"],
+                                    "required": [
+                                        "phone_number_id",
+                                        "phone_number"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A phone number associated with the contact"
                                 }
@@ -4370,7 +5122,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["street_address_id"],
+                                    "required": [
+                                        "street_address_id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A street address associated with the contact"
                                 }
@@ -4394,19 +5148,27 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["note_id"],
+                                    "required": [
+                                        "note_id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A note about the contact"
                                 }
                             }
                         },
-                        "required": ["id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A Constant Contact contact with its email permission details and subresources (custom fields, list memberships, tags, phone numbers, street addresses, notes)"
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4415,12 +5177,18 @@
             "endpoints": [],
             "input": null,
             "name": "custom-fields",
-            "output": ["CustomField"],
+            "output": [
+                "CustomField"
+            ],
             "runs": "every hour",
-            "scopes": ["contact_data"],
+            "scopes": [
+                "contact_data"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CustomField"],
+            "usedModels": [
+                "CustomField"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4461,7 +5229,15 @@
                                 "description": "ISO 8601 timestamp of when the custom field was last updated."
                             }
                         },
-                        "required": ["id", "custom_field_id", "label", "name", "type", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "custom_field_id",
+                            "label",
+                            "name",
+                            "type",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A Constant Contact custom field definition that extends contacts with additional properties."
                     }
@@ -4476,12 +5252,18 @@
             "endpoints": [],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
-            "scopes": ["contact_data"],
+            "scopes": [
+                "contact_data"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4506,7 +5288,12 @@
                                 "description": "ISO 8601 timestamp of when the tag was last updated. Example: '2026-09-29T18:40:50Z'"
                             }
                         },
-                        "required": ["id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A Constant Contact contact tag used to label and segment contacts."
                     }

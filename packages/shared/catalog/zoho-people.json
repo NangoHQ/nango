@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_checkin",
             "name": "check-in",
-            "output": ["ActionOutput_zoho_people_checkin"],
-            "scopes": ["ZOHOPEOPLE.attendance.ALL"],
-            "usedModels": ["ActionInput_zoho_people_checkin", "ActionOutput_zoho_people_checkin"],
+            "output": [
+                "ActionOutput_zoho_people_checkin"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.attendance.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_checkin",
+                "ActionOutput_zoho_people_checkin"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,11 @@
                                 "description": "Check-in time in HH:MM format. Example: \"09:00\""
                             }
                         },
-                        "required": ["empId", "attendanceDate", "checkIn"],
+                        "required": [
+                            "empId",
+                            "attendanceDate",
+                            "checkIn"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_checkin": {
@@ -45,7 +56,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -58,9 +71,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_checkout",
             "name": "check-out",
-            "output": ["ActionOutput_zoho_people_checkout"],
-            "scopes": ["ZOHOPEOPLE.attendance.ALL"],
-            "usedModels": ["ActionInput_zoho_people_checkout", "ActionOutput_zoho_people_checkout"],
+            "output": [
+                "ActionOutput_zoho_people_checkout"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.attendance.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_checkout",
+                "ActionOutput_zoho_people_checkout"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -80,7 +100,11 @@
                                 "description": "Attendance date in dd-MMM-yyyy format. Example: \"15-Jun-2026\""
                             }
                         },
-                        "required": ["empId", "checkOut", "attendanceDate"],
+                        "required": [
+                            "empId",
+                            "checkOut",
+                            "attendanceDate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_checkout": {
@@ -93,7 +117,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -106,9 +132,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_createemployee",
             "name": "create-employee",
-            "output": ["ActionOutput_zoho_people_createemployee"],
-            "scopes": ["ZOHOPEOPLE.forms.CREATE"],
-            "usedModels": ["ActionInput_zoho_people_createemployee", "ActionOutput_zoho_people_createemployee"],
+            "output": [
+                "ActionOutput_zoho_people_createemployee"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_createemployee",
+                "ActionOutput_zoho_people_createemployee"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -150,7 +183,9 @@
                                 "description": "The newly created employee record ID"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -163,9 +198,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_createformrecord",
             "name": "create-form-record",
-            "output": ["ActionOutput_zoho_people_createformrecord"],
-            "scopes": ["ZOHOPEOPLE.forms.CREATE"],
-            "usedModels": ["ActionInput_zoho_people_createformrecord", "ActionOutput_zoho_people_createformrecord"],
+            "output": [
+                "ActionOutput_zoho_people_createformrecord"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_createformrecord",
+                "ActionOutput_zoho_people_createformrecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -187,7 +229,10 @@
                                 "description": "Field name to value mapping. Date fields must use dd-MMM-yyyy format."
                             }
                         },
-                        "required": ["formLinkName", "fields"],
+                        "required": [
+                            "formLinkName",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_createformrecord": {
@@ -215,9 +260,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_createholiday",
             "name": "create-holiday",
-            "output": ["ActionOutput_zoho_people_createholiday"],
-            "scopes": ["ZOHOPEOPLE.leave.CREATE"],
-            "usedModels": ["ActionInput_zoho_people_createholiday", "ActionOutput_zoho_people_createholiday"],
+            "output": [
+                "ActionOutput_zoho_people_createholiday"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.leave.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_createholiday",
+                "ActionOutput_zoho_people_createholiday"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -238,11 +290,19 @@
                             },
                             "holidayType": {
                                 "type": "string",
-                                "enum": ["Mandatory", "Optional"],
+                                "enum": [
+                                    "Mandatory",
+                                    "Optional"
+                                ],
                                 "description": "Holiday type. Example: \"Mandatory\""
                             }
                         },
-                        "required": ["name", "from", "to", "holidayType"],
+                        "required": [
+                            "name",
+                            "from",
+                            "to",
+                            "holidayType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_createholiday": {
@@ -252,7 +312,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -265,9 +327,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_createleaverequest",
             "name": "create-leave-request",
-            "output": ["ActionOutput_zoho_people_createleaverequest"],
-            "scopes": ["ZOHOPEOPLE.forms.CREATE"],
-            "usedModels": ["ActionInput_zoho_people_createleaverequest", "ActionOutput_zoho_people_createleaverequest"],
+            "output": [
+                "ActionOutput_zoho_people_createleaverequest"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_createleaverequest",
+                "ActionOutput_zoho_people_createleaverequest"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -295,7 +364,13 @@
                                 "description": "Number of days as a string. Example: \"2\""
                             }
                         },
-                        "required": ["employeeRecordId", "leaveTypeId", "fromDate", "toDate", "daysTaken"],
+                        "required": [
+                            "employeeRecordId",
+                            "leaveTypeId",
+                            "fromDate",
+                            "toDate",
+                            "daysTaken"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_createleaverequest": {
@@ -309,7 +384,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -322,9 +399,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_getattendancereport",
             "name": "get-attendance-report",
-            "output": ["ActionOutput_zoho_people_getattendancereport"],
-            "scopes": ["ZOHOPEOPLE.attendance.READ"],
-            "usedModels": ["ActionInput_zoho_people_getattendancereport", "ActionOutput_zoho_people_getattendancereport"],
+            "output": [
+                "ActionOutput_zoho_people_getattendancereport"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.attendance.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_getattendancereport",
+                "ActionOutput_zoho_people_getattendancereport"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -344,7 +428,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["sdate", "edate"],
+                        "required": [
+                            "sdate",
+                            "edate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_getattendancereport": {
@@ -383,7 +470,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -396,9 +485,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_getemployeeattendance",
             "name": "get-employee-attendance",
-            "output": ["ActionOutput_zoho_people_getemployeeattendance"],
-            "scopes": ["ZOHOPEOPLE.attendance.READ"],
-            "usedModels": ["ActionInput_zoho_people_getemployeeattendance", "ActionOutput_zoho_people_getemployeeattendance"],
+            "output": [
+                "ActionOutput_zoho_people_getemployeeattendance"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.attendance.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_getemployeeattendance",
+                "ActionOutput_zoho_people_getemployeeattendance"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -412,14 +508,23 @@
                             "dateRange": {
                                 "description": "Predefined date range: 'today', 'yesterday', 'thisWeek', 'lastWeek', 'thisMonth', 'lastMonth'",
                                 "type": "string",
-                                "enum": ["today", "yesterday", "thisWeek", "lastWeek", "thisMonth", "lastMonth"]
+                                "enum": [
+                                    "today",
+                                    "yesterday",
+                                    "thisWeek",
+                                    "lastWeek",
+                                    "thisMonth",
+                                    "lastMonth"
+                                ]
                             },
                             "date": {
                                 "description": "Specific day in dd-MMM-yyyy format. Example: '15-Jun-2026'",
                                 "type": "string"
                             }
                         },
-                        "required": ["empId"],
+                        "required": [
+                            "empId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_getemployeeattendance": {
@@ -504,9 +609,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_getemployee",
             "name": "get-employee",
-            "output": ["ActionOutput_zoho_people_getemployee"],
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
-            "usedModels": ["ActionInput_zoho_people_getemployee", "ActionOutput_zoho_people_getemployee"],
+            "output": [
+                "ActionOutput_zoho_people_getemployee"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_getemployee",
+                "ActionOutput_zoho_people_getemployee"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -518,7 +630,9 @@
                                 "description": "Zoho internal record ID. Example: \"972601000000306098\""
                             }
                         },
-                        "required": ["recordId"],
+                        "required": [
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_getemployee": {
@@ -535,7 +649,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["recordId", "sections"],
+                        "required": [
+                            "recordId",
+                            "sections"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -548,9 +665,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_getformrecord",
             "name": "get-form-record",
-            "output": ["ActionOutput_zoho_people_getformrecord"],
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
-            "usedModels": ["ActionInput_zoho_people_getformrecord", "ActionOutput_zoho_people_getformrecord"],
+            "output": [
+                "ActionOutput_zoho_people_getformrecord"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_getformrecord",
+                "ActionOutput_zoho_people_getformrecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -566,7 +690,10 @@
                                 "description": "The Zoho internal record ID. Example: \"972601000000306098\""
                             }
                         },
-                        "required": ["formLinkName", "recordId"],
+                        "required": [
+                            "formLinkName",
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_getformrecord": {
@@ -589,7 +716,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["recordId", "status"],
+                        "required": [
+                            "recordId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -602,9 +732,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_getholidays",
             "name": "get-holidays",
-            "output": ["ActionOutput_zoho_people_getholidays"],
-            "scopes": ["ZOHOPEOPLE.leave.READ"],
-            "usedModels": ["ActionInput_zoho_people_getholidays", "ActionOutput_zoho_people_getholidays"],
+            "output": [
+                "ActionOutput_zoho_people_getholidays"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.leave.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_getholidays",
+                "ActionOutput_zoho_people_getholidays"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -620,7 +757,10 @@
                                 "description": "End date in dd-MMM-yyyy format. Example: \"31-Jan-2026\""
                             }
                         },
-                        "required": ["from", "to"],
+                        "required": [
+                            "from",
+                            "to"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_getholidays": {
@@ -654,7 +794,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["holidays", "status"],
+                        "required": [
+                            "holidays",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -667,9 +810,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_getleavetypes",
             "name": "get-leave-types",
-            "output": ["ActionOutput_zoho_people_getleavetypes"],
-            "scopes": ["ZOHOPEOPLE.leave.READ"],
-            "usedModels": ["ActionInput_zoho_people_getleavetypes", "ActionOutput_zoho_people_getleavetypes"],
+            "output": [
+                "ActionOutput_zoho_people_getleavetypes"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.leave.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_getleavetypes",
+                "ActionOutput_zoho_people_getleavetypes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -708,12 +858,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["leavetypes"],
+                        "required": [
+                            "leavetypes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -726,9 +881,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_listdepartments",
             "name": "list-departments",
-            "output": ["ActionOutput_zoho_people_listdepartments"],
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
-            "usedModels": ["ActionInput_zoho_people_listdepartments", "ActionOutput_zoho_people_listdepartments"],
+            "output": [
+                "ActionOutput_zoho_people_listdepartments"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_listdepartments",
+                "ActionOutput_zoho_people_listdepartments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -775,7 +937,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -784,7 +948,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -797,9 +963,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_listdesignations",
             "name": "list-designations",
-            "output": ["ActionOutput_zoho_people_listdesignations"],
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
-            "usedModels": ["ActionInput_zoho_people_listdesignations", "ActionOutput_zoho_people_listdesignations"],
+            "output": [
+                "ActionOutput_zoho_people_listdesignations"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_listdesignations",
+                "ActionOutput_zoho_people_listdesignations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -834,7 +1007,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -842,7 +1017,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -855,9 +1032,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_listemployees",
             "name": "list-employees",
-            "output": ["ActionOutput_zoho_people_listemployees"],
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
-            "usedModels": ["ActionInput_zoho_people_listemployees", "ActionOutput_zoho_people_listemployees"],
+            "output": [
+                "ActionOutput_zoho_people_listemployees"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_listemployees",
+                "ActionOutput_zoho_people_listemployees"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -921,7 +1105,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["recordId", "employee"],
+                                    "required": [
+                                        "recordId",
+                                        "employee"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -929,7 +1116,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -942,9 +1131,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_listformrecords",
             "name": "list-form-records",
-            "output": ["ActionOutput_zoho_people_listformrecords"],
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
-            "usedModels": ["ActionInput_zoho_people_listformrecords", "ActionOutput_zoho_people_listformrecords"],
+            "output": [
+                "ActionOutput_zoho_people_listformrecords"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_listformrecords",
+                "ActionOutput_zoho_people_listformrecords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -964,7 +1160,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["formLinkName"],
+                        "required": [
+                            "formLinkName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_listformrecords": {
@@ -988,7 +1186,10 @@
                                             "description": "Record fields as key-value pairs"
                                         }
                                     },
-                                    "required": ["recordId", "fields"],
+                                    "required": [
+                                        "recordId",
+                                        "fields"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -997,7 +1198,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1010,9 +1213,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_listforms",
             "name": "list-forms",
-            "output": ["ActionOutput_zoho_people_listforms"],
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
-            "usedModels": ["ActionInput_zoho_people_listforms", "ActionOutput_zoho_people_listforms"],
+            "output": [
+                "ActionOutput_zoho_people_listforms"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_listforms",
+                "ActionOutput_zoho_people_listforms"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1027,7 +1237,10 @@
                             "type": "object",
                             "properties": {
                                 "componentId": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 },
                                 "formLinkName": {
                                     "type": "string"
@@ -1048,7 +1261,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["Add", "Edit", "View"],
+                                    "required": [
+                                        "Add",
+                                        "Edit",
+                                        "View"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "viewDetails": {
@@ -1057,7 +1274,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "view_Id": {
-                                                    "type": ["string", "number"]
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
                                                 },
                                                 "view_Name": {
                                                     "type": "string"
@@ -1071,7 +1291,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "view_Id": {
-                                                        "type": ["string", "number"]
+                                                        "type": [
+                                                            "string",
+                                                            "number"
+                                                        ]
                                                     },
                                                     "view_Name": {
                                                         "type": "string"
@@ -1089,7 +1312,11 @@
                                     "type": "boolean"
                                 }
                             },
-                            "required": ["componentId", "formLinkName", "displayName"],
+                            "required": [
+                                "componentId",
+                                "formLinkName",
+                                "displayName"
+                            ],
                             "additionalProperties": {}
                         }
                     }
@@ -1103,9 +1330,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_listleaverecords",
             "name": "list-leave-records",
-            "output": ["ActionOutput_zoho_people_listleaverecords"],
-            "scopes": ["ZOHOPEOPLE.leave.READ"],
-            "usedModels": ["ActionInput_zoho_people_listleaverecords", "ActionOutput_zoho_people_listleaverecords"],
+            "output": [
+                "ActionOutput_zoho_people_listleaverecords"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.leave.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_listleaverecords",
+                "ActionOutput_zoho_people_listleaverecords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1129,7 +1363,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["from", "to"],
+                        "required": [
+                            "from",
+                            "to"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_listleaverecords": {
@@ -1144,7 +1381,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1152,7 +1391,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1165,9 +1406,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_updateemployee",
             "name": "update-employee",
-            "output": ["ActionOutput_zoho_people_updateemployee"],
-            "scopes": ["ZOHOPEOPLE.forms.UPDATE"],
-            "usedModels": ["ActionInput_zoho_people_updateemployee", "ActionOutput_zoho_people_updateemployee"],
+            "output": [
+                "ActionOutput_zoho_people_updateemployee"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_updateemployee",
+                "ActionOutput_zoho_people_updateemployee"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1189,7 +1437,10 @@
                                 "description": "Fields to update. Use internal API field names (case-sensitive). Date fields must use dd-MMM-yyyy format."
                             }
                         },
-                        "required": ["recordId", "fields"],
+                        "required": [
+                            "recordId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_updateemployee": {
@@ -1202,7 +1453,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["recordId", "message"],
+                        "required": [
+                            "recordId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1215,9 +1469,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_people_updateformrecord",
             "name": "update-form-record",
-            "output": ["ActionOutput_zoho_people_updateformrecord"],
-            "scopes": ["ZOHOPEOPLE.forms.UPDATE"],
-            "usedModels": ["ActionInput_zoho_people_updateformrecord", "ActionOutput_zoho_people_updateformrecord"],
+            "output": [
+                "ActionOutput_zoho_people_updateformrecord"
+            ],
+            "scopes": [
+                "ZOHOPEOPLE.forms.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_people_updateformrecord",
+                "ActionOutput_zoho_people_updateformrecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1241,7 +1502,11 @@
                                 "description": "Changed fields to update. Keys are case-sensitive internal field names."
                             }
                         },
-                        "required": ["formLinkName", "recordId", "fields"],
+                        "required": [
+                            "formLinkName",
+                            "recordId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_people_updateformrecord": {
@@ -1257,7 +1522,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["recordId", "success"],
+                        "required": [
+                            "recordId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1278,12 +1546,18 @@
             ],
             "input": null,
             "name": "attendance",
-            "output": ["Attendance"],
+            "output": [
+                "Attendance"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.attendance.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.attendance.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Attendance"],
+            "usedModels": [
+                "Attendance"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1352,12 +1626,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "date"],
+                        "required": [
+                            "id",
+                            "date"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1371,12 +1650,18 @@
             ],
             "input": null,
             "name": "departments",
-            "output": ["Department"],
+            "output": [
+                "Department"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Department"],
+            "usedModels": [
+                "Department"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1409,7 +1694,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1428,12 +1716,18 @@
             ],
             "input": null,
             "name": "designations",
-            "output": ["Designation"],
+            "output": [
+                "Designation"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Designation"],
+            "usedModels": [
+                "Designation"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1457,7 +1751,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1476,12 +1772,18 @@
             ],
             "input": null,
             "name": "employees",
-            "output": ["Employee"],
+            "output": [
+                "Employee"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Employee"],
+            "usedModels": [
+                "Employee"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1523,12 +1825,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1542,12 +1848,19 @@
             ],
             "input": "SyncMetadata_zoho_people_formrecords",
             "name": "form-records",
-            "output": ["FormRecord"],
+            "output": [
+                "FormRecord"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FormRecord", "SyncMetadata_zoho_people_formrecords"],
+            "usedModels": [
+                "FormRecord",
+                "SyncMetadata_zoho_people_formrecords"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1569,7 +1882,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "form_link_name"],
+                        "required": [
+                            "id",
+                            "form_link_name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_zoho_people_formrecords": {
@@ -1586,7 +1902,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1600,12 +1918,18 @@
             ],
             "input": null,
             "name": "forms",
-            "output": ["Form"],
+            "output": [
+                "Form"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.forms.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.forms.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Form"],
+            "usedModels": [
+                "Form"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1631,7 +1955,11 @@
                             },
                             "viewDetails": {}
                         },
-                        "required": ["id", "componentId", "formLinkName"],
+                        "required": [
+                            "id",
+                            "componentId",
+                            "formLinkName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1650,12 +1978,18 @@
             ],
             "input": null,
             "name": "holidays",
-            "output": ["Holiday"],
+            "output": [
+                "Holiday"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.leave.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Holiday"],
+            "usedModels": [
+                "Holiday"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1679,7 +2013,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1698,12 +2034,18 @@
             ],
             "input": null,
             "name": "leave-records",
-            "output": ["LeaveRecord"],
+            "output": [
+                "LeaveRecord"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.leave.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeaveRecord"],
+            "usedModels": [
+                "LeaveRecord"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1748,12 +2090,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1767,12 +2113,18 @@
             ],
             "input": null,
             "name": "leave-types",
-            "output": ["LeaveType"],
+            "output": [
+                "LeaveType"
+            ],
             "runs": "every hour",
-            "scopes": ["ZOHOPEOPLE.leave.READ"],
+            "scopes": [
+                "ZOHOPEOPLE.leave.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeaveType"],
+            "usedModels": [
+                "LeaveType"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1802,7 +2154,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

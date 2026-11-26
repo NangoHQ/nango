@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_checkr_partner_backgroundcheckparameters",
             "name": "background-check-parameters",
-            "output": ["ActionOutput_checkr_partner_backgroundcheckparameters"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_checkr_partner_backgroundcheckparameters", "ActionOutput_checkr_partner_backgroundcheckparameters"],
+            "output": [
+                "ActionOutput_checkr_partner_backgroundcheckparameters"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_checkr_partner_backgroundcheckparameters",
+                "ActionOutput_checkr_partner_backgroundcheckparameters"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -20,7 +27,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["service_key"],
+                        "required": [
+                            "service_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_checkr_partner_backgroundcheckparameters": {
@@ -47,12 +56,20 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["key", "type", "title", "description", "required"],
+                                    "required": [
+                                        "key",
+                                        "type",
+                                        "title",
+                                        "description",
+                                        "required"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["parameters"],
+                        "required": [
+                            "parameters"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -65,9 +82,16 @@
             "endpoint": null,
             "input": "ActionInput_checkr_partner_backgroundcheckservices",
             "name": "background-check-services",
-            "output": ["ActionOutput_checkr_partner_backgroundcheckservices"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_checkr_partner_backgroundcheckservices", "ActionOutput_checkr_partner_backgroundcheckservices"],
+            "output": [
+                "ActionOutput_checkr_partner_backgroundcheckservices"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_checkr_partner_backgroundcheckservices",
+                "ActionOutput_checkr_partner_backgroundcheckservices"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -89,7 +113,10 @@
                                             "type": "number"
                                         },
                                         "drug_screening_price": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "enabled_examples": {
                                             "type": "array",
@@ -110,7 +137,10 @@
                                             "type": "string"
                                         },
                                         "deleted_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -124,10 +154,16 @@
                                                         "type": "string"
                                                     },
                                                     "subtype": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["type", "subtype"],
+                                                "required": [
+                                                    "type",
+                                                    "subtype"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -160,7 +196,9 @@
                                 }
                             }
                         },
-                        "required": ["services"],
+                        "required": [
+                            "services"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -173,9 +211,16 @@
             "endpoint": null,
             "input": "ActionInput_checkr_partner_createcandidate",
             "name": "create-candidate",
-            "output": ["ActionOutput_checkr_partner_createcandidate"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_checkr_partner_createcandidate", "ActionOutput_checkr_partner_createcandidate"],
+            "output": [
+                "ActionOutput_checkr_partner_createcandidate"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_checkr_partner_createcandidate",
+                "ActionOutput_checkr_partner_createcandidate"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -239,7 +284,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["country"],
+                                    "required": [
+                                        "country"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -275,7 +322,10 @@
                                 "type": "string"
                             },
                             "middle_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
                                 "type": "string"
@@ -373,9 +423,16 @@
             "endpoint": null,
             "input": "ActionInput_checkr_partner_triggerbackgroundcheck",
             "name": "trigger-background-check",
-            "output": ["ActionOutput_checkr_partner_triggerbackgroundcheck"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_checkr_partner_triggerbackgroundcheck", "ActionOutput_checkr_partner_triggerbackgroundcheck"],
+            "output": [
+                "ActionOutput_checkr_partner_triggerbackgroundcheck"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_checkr_partner_triggerbackgroundcheck",
+                "ActionOutput_checkr_partner_triggerbackgroundcheck"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -407,7 +464,12 @@
                                 }
                             }
                         },
-                        "required": ["country", "service_key", "candidate_id", "tags"],
+                        "required": [
+                            "country",
+                            "service_key",
+                            "candidate_id",
+                            "tags"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_checkr_partner_triggerbackgroundcheck": {
@@ -427,7 +489,10 @@
                                 "type": "string"
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "candidate_id": {
                                 "type": "string"
@@ -436,10 +501,23 @@
                                 "type": "string"
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["created_at", "updated_at", "applicationId", "url", "status", "completed_at", "candidate_id", "service_key", "deleted_at"],
+                        "required": [
+                            "created_at",
+                            "updated_at",
+                            "applicationId",
+                            "url",
+                            "status",
+                            "completed_at",
+                            "candidate_id",
+                            "service_key",
+                            "deleted_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -460,12 +538,19 @@
             ],
             "input": "SyncMetadata_checkr_partner_backgroundchecks",
             "name": "background-checks",
-            "output": ["BackgroundCheck"],
+            "output": [
+                "BackgroundCheck"
+            ],
             "runs": "every hour",
-            "scopes": ["read_write"],
+            "scopes": [
+                "read_write"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BackgroundCheck", "SyncMetadata_checkr_partner_backgroundchecks"],
+            "usedModels": [
+                "BackgroundCheck",
+                "SyncMetadata_checkr_partner_backgroundchecks"
+            ],
             "version": "2.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -495,7 +580,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status", "service_key", "url", "candidate_id", "created_at"],
+                        "required": [
+                            "id",
+                            "status",
+                            "service_key",
+                            "url",
+                            "candidate_id",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_checkr_partner_backgroundchecks": {

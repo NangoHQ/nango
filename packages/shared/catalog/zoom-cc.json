@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_canceldatarequest",
             "name": "cancel-data-request",
-            "output": ["ActionOutput_zoom_cc_canceldatarequest"],
-            "scopes": ["data_request:delete:request:admin"],
-            "usedModels": ["ActionInput_zoom_cc_canceldatarequest", "ActionOutput_zoom_cc_canceldatarequest"],
+            "output": [
+                "ActionOutput_zoom_cc_canceldatarequest"
+            ],
+            "scopes": [
+                "data_request:delete:request:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_canceldatarequest",
+                "ActionOutput_zoom_cc_canceldatarequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -21,7 +28,9 @@
                                 "description": "The data compliance request ID to cancel. Example: \"2085327946910044162\""
                             }
                         },
-                        "required": ["requestId"],
+                        "required": [
+                            "requestId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_cc_canceldatarequest": {
@@ -43,7 +52,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["requestId", "success"],
+                        "required": [
+                            "requestId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -56,9 +68,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_createdatarequest",
             "name": "create-data-request",
-            "output": ["ActionOutput_zoom_cc_createdatarequest"],
-            "scopes": ["data_request:write:request:admin"],
-            "usedModels": ["ActionInput_zoom_cc_createdatarequest", "ActionOutput_zoom_cc_createdatarequest"],
+            "output": [
+                "ActionOutput_zoom_cc_createdatarequest"
+            ],
+            "scopes": [
+                "data_request:write:request:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_createdatarequest",
+                "ActionOutput_zoom_cc_createdatarequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -94,7 +113,12 @@
                                         "description": "End date in ISO 8601 format. Must be strictly after start_date. Example: 2024-12-31T23:59:59Z"
                                     }
                                 },
-                                "required": ["emails", "request_type", "start_date", "end_date"],
+                                "required": [
+                                    "emails",
+                                    "request_type",
+                                    "start_date",
+                                    "end_date"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -115,7 +139,10 @@
                                         "const": "DELETE"
                                     }
                                 },
-                                "required": ["emails", "request_type"],
+                                "required": [
+                                    "emails",
+                                    "request_type"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -135,12 +162,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email", "request_id"],
+                                    "required": [
+                                        "email",
+                                        "request_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -153,9 +185,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_deleteinformationbarrierpolicy",
             "name": "delete-information-barrier-policy",
-            "output": ["ActionOutput_zoom_cc_deleteinformationbarrierpolicy"],
-            "scopes": ["information_barrier:delete:policy:admin", "information_barrier:delete:policy:master"],
-            "usedModels": ["ActionInput_zoom_cc_deleteinformationbarrierpolicy", "ActionOutput_zoom_cc_deleteinformationbarrierpolicy"],
+            "output": [
+                "ActionOutput_zoom_cc_deleteinformationbarrierpolicy"
+            ],
+            "scopes": [
+                "information_barrier:delete:policy:admin",
+                "information_barrier:delete:policy:master"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_deleteinformationbarrierpolicy",
+                "ActionOutput_zoom_cc_deleteinformationbarrierpolicy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -167,7 +207,9 @@
                                 "description": "The ID of the information barrier policy to delete."
                             }
                         },
-                        "required": ["policyId"],
+                        "required": [
+                            "policyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_cc_deleteinformationbarrierpolicy": {
@@ -182,7 +224,10 @@
                                 "description": "Whether the deletion was successful."
                             }
                         },
-                        "required": ["policyId", "success"],
+                        "required": [
+                            "policyId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -195,9 +240,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_getaccountdetails",
             "name": "get-account-details",
-            "output": ["ActionOutput_zoom_cc_getaccountdetails"],
-            "scopes": ["account:read:admin"],
-            "usedModels": ["ActionInput_zoom_cc_getaccountdetails", "ActionOutput_zoom_cc_getaccountdetails"],
+            "output": [
+                "ActionOutput_zoom_cc_getaccountdetails"
+            ],
+            "scopes": [
+                "account:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_getaccountdetails",
+                "ActionOutput_zoom_cc_getaccountdetails"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -243,7 +295,15 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "account_name", "owner_id", "owner_email", "account_type", "seats", "created_at"],
+                        "required": [
+                            "id",
+                            "account_name",
+                            "owner_id",
+                            "owner_email",
+                            "account_type",
+                            "seats",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -256,9 +316,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_getaicroikpis",
             "name": "get-aic-roi-kpis",
-            "output": ["ActionOutput_zoom_cc_getaicroikpis"],
-            "scopes": ["dashboard:read:aic_roi_kpi:admin"],
-            "usedModels": ["ActionInput_zoom_cc_getaicroikpis", "ActionOutput_zoom_cc_getaicroikpis"],
+            "output": [
+                "ActionOutput_zoom_cc_getaicroikpis"
+            ],
+            "scopes": [
+                "dashboard:read:aic_roi_kpi:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_getaicroikpis",
+                "ActionOutput_zoom_cc_getaicroikpis"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -274,7 +341,10 @@
                                 "description": "End month of the date range (YYYY-MM). The month must fall within the last six months. Example: \"2024-03\""
                             }
                         },
-                        "required": ["from", "to"],
+                        "required": [
+                            "from",
+                            "to"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_cc_getaicroikpis": {
@@ -321,9 +391,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_getdatarequestfiles",
             "name": "get-data-request-files",
-            "output": ["ActionOutput_zoom_cc_getdatarequestfiles"],
-            "scopes": ["data_request:read:download:admin"],
-            "usedModels": ["ActionInput_zoom_cc_getdatarequestfiles", "ActionOutput_zoom_cc_getdatarequestfiles"],
+            "output": [
+                "ActionOutput_zoom_cc_getdatarequestfiles"
+            ],
+            "scopes": [
+                "data_request:read:download:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_getdatarequestfiles",
+                "ActionOutput_zoom_cc_getdatarequestfiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -335,7 +412,9 @@
                                 "description": "Data request ID. Example: \"2085327946910044162\""
                             }
                         },
-                        "required": ["request_id"],
+                        "required": [
+                            "request_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_cc_getdatarequestfiles": {
@@ -362,12 +441,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["file_name"],
+                                    "required": [
+                                        "file_name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["files"],
+                        "required": [
+                            "files"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -380,9 +463,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_getwebinarparticipantqos",
             "name": "get-webinar-participant-qos",
-            "output": ["ActionOutput_zoom_cc_getwebinarparticipantqos"],
-            "scopes": ["dashboard:read:webinar_participant_qos:admin"],
-            "usedModels": ["ActionInput_zoom_cc_getwebinarparticipantqos", "ActionOutput_zoom_cc_getwebinarparticipantqos"],
+            "output": [
+                "ActionOutput_zoom_cc_getwebinarparticipantqos"
+            ],
+            "scopes": [
+                "dashboard:read:webinar_participant_qos:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_getwebinarparticipantqos",
+                "ActionOutput_zoom_cc_getwebinarparticipantqos"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -400,10 +490,16 @@
                             "type": {
                                 "description": "The webinar type. Default: live.",
                                 "type": "string",
-                                "enum": ["past", "live"]
+                                "enum": [
+                                    "past",
+                                    "live"
+                                ]
                             }
                         },
-                        "required": ["webinarId", "participantId"],
+                        "required": [
+                            "webinarId",
+                            "participantId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_cc_getwebinarparticipantqos": {
@@ -638,9 +734,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_listdatarequests",
             "name": "list-data-requests",
-            "output": ["ActionOutput_zoom_cc_listdatarequests"],
-            "scopes": ["data_request:read:history:admin"],
-            "usedModels": ["ActionInput_zoom_cc_listdatarequests", "ActionOutput_zoom_cc_listdatarequests"],
+            "output": [
+                "ActionOutput_zoom_cc_listdatarequests"
+            ],
+            "scopes": [
+                "data_request:read:history:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_listdatarequests",
+                "ActionOutput_zoom_cc_listdatarequests"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -737,7 +840,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["total_records", "records"],
+                        "required": [
+                            "total_records",
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -750,9 +856,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_listsubaccounts",
             "name": "list-sub-accounts",
-            "output": ["ActionOutput_zoom_cc_listsubaccounts"],
-            "scopes": ["account:read:sub_account:admin", "account:read:sub_account:master"],
-            "usedModels": ["ActionInput_zoom_cc_listsubaccounts", "ActionOutput_zoom_cc_listsubaccounts"],
+            "output": [
+                "ActionOutput_zoom_cc_listsubaccounts"
+            ],
+            "scopes": [
+                "account:read:sub_account:admin",
+                "account:read:sub_account:master"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_listsubaccounts",
+                "ActionOutput_zoom_cc_listsubaccounts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -833,9 +947,16 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_listtrusteddomains",
             "name": "list-trusted-domains",
-            "output": ["ActionOutput_zoom_cc_listtrusteddomains"],
-            "scopes": ["account:read:trusted_domains:master"],
-            "usedModels": ["ActionInput_zoom_cc_listtrusteddomains", "ActionOutput_zoom_cc_listtrusteddomains"],
+            "output": [
+                "ActionOutput_zoom_cc_listtrusteddomains"
+            ],
+            "scopes": [
+                "account:read:trusted_domains:master"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_listtrusteddomains",
+                "ActionOutput_zoom_cc_listtrusteddomains"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -855,7 +976,9 @@
                                 "description": "A list of the account's trusted domains."
                             }
                         },
-                        "required": ["trusted_domains"],
+                        "required": [
+                            "trusted_domains"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -868,9 +991,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_updatelocksettings",
             "name": "update-lock-settings",
-            "output": ["ActionOutput_zoom_cc_updatelocksettings"],
-            "scopes": ["account:update:lock_settings:admin", "account:update:lock_settings:master"],
-            "usedModels": ["ActionInput_zoom_cc_updatelocksettings", "ActionOutput_zoom_cc_updatelocksettings"],
+            "output": [
+                "ActionOutput_zoom_cc_updatelocksettings"
+            ],
+            "scopes": [
+                "account:update:lock_settings:admin",
+                "account:update:lock_settings:master"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_updatelocksettings",
+                "ActionOutput_zoom_cc_updatelocksettings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -978,7 +1109,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["code", "message"],
+                                "required": [
+                                    "code",
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -993,9 +1127,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_updateregistrationsettings",
             "name": "update-registration-settings",
-            "output": ["ActionOutput_zoom_cc_updateregistrationsettings"],
-            "scopes": ["account:update:registration_settings:admin", "account:update:registration_settings:master"],
-            "usedModels": ["ActionInput_zoom_cc_updateregistrationsettings", "ActionOutput_zoom_cc_updateregistrationsettings"],
+            "output": [
+                "ActionOutput_zoom_cc_updateregistrationsettings"
+            ],
+            "scopes": [
+                "account:update:registration_settings:admin",
+                "account:update:registration_settings:master"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_updateregistrationsettings",
+                "ActionOutput_zoom_cc_updateregistrationsettings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1063,7 +1205,12 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["short", "single_dropdown", "single_radio", "multiple"]
+                                            "enum": [
+                                                "short",
+                                                "single_dropdown",
+                                                "single_radio",
+                                                "multiple"
+                                            ]
                                         },
                                         "required": {
                                             "type": "boolean"
@@ -1115,7 +1262,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1128,9 +1277,17 @@
             "endpoint": null,
             "input": "ActionInput_zoom_cc_uploadvirtualbackgroundfile",
             "name": "upload-virtual-background-file",
-            "output": ["ActionOutput_zoom_cc_uploadvirtualbackgroundfile"],
-            "scopes": ["account:write:virtual_background_files:master", "account:write:virtual_background_files:admin"],
-            "usedModels": ["ActionInput_zoom_cc_uploadvirtualbackgroundfile", "ActionOutput_zoom_cc_uploadvirtualbackgroundfile"],
+            "output": [
+                "ActionOutput_zoom_cc_uploadvirtualbackgroundfile"
+            ],
+            "scopes": [
+                "account:write:virtual_background_files:master",
+                "account:write:virtual_background_files:admin"
+            ],
+            "usedModels": [
+                "ActionInput_zoom_cc_uploadvirtualbackgroundfile",
+                "ActionOutput_zoom_cc_uploadvirtualbackgroundfile"
+            ],
             "version": "2.0.0",
             "json_schema": {
                 "definitions": {
@@ -1142,7 +1299,9 @@
                                 "description": "Informational message about using the proxy script"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoom_cc_uploadvirtualbackgroundfile": {
@@ -1155,7 +1314,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message", "proxyScript"],
+                        "required": [
+                            "message",
+                            "proxyScript"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1171,12 +1333,18 @@
             "endpoints": [],
             "input": null,
             "name": "data_requests",
-            "output": ["DataRequest"],
+            "output": [
+                "DataRequest"
+            ],
             "runs": "every hour",
-            "scopes": ["data_request:read:history:admin"],
+            "scopes": [
+                "data_request:read:history:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DataRequest"],
+            "usedModels": [
+                "DataRequest"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1211,12 +1379,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1225,12 +1397,19 @@
             "endpoints": [],
             "input": null,
             "name": "sub_accounts",
-            "output": ["SubAccount"],
+            "output": [
+                "SubAccount"
+            ],
             "runs": "every hour",
-            "scopes": ["account:read:sub_account:admin", "account:read:sub_account:master"],
+            "scopes": [
+                "account:read:sub_account:admin",
+                "account:read:sub_account:master"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SubAccount"],
+            "usedModels": [
+                "SubAccount"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1257,12 +1436,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

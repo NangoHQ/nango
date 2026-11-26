@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_createpagephoto",
             "name": "create-page-photo",
-            "output": ["ActionOutput_facebook_createpagephoto"],
-            "scopes": ["pages_show_list", "pages_manage_posts"],
-            "usedModels": ["ActionInput_facebook_createpagephoto", "ActionOutput_facebook_createpagephoto"],
+            "output": [
+                "ActionOutput_facebook_createpagephoto"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpagephoto",
+                "ActionOutput_facebook_createpagephoto"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -33,7 +41,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["pageId", "url"],
+                        "required": [
+                            "pageId",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_createpagephoto": {
@@ -48,7 +59,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -61,9 +74,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_createpagepost",
             "name": "create-page-post",
-            "output": ["ActionOutput_facebook_createpagepost"],
-            "scopes": ["pages_manage_posts", "pages_show_list"],
-            "usedModels": ["ActionInput_facebook_createpagepost", "ActionOutput_facebook_createpagepost"],
+            "output": [
+                "ActionOutput_facebook_createpagepost"
+            ],
+            "scopes": [
+                "pages_manage_posts",
+                "pages_show_list"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpagepost",
+                "ActionOutput_facebook_createpagepost"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -91,7 +112,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_createpagepost": {
@@ -102,7 +125,9 @@
                                 "description": "The ID of the created post."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -115,9 +140,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_createpagevideo",
             "name": "create-page-video",
-            "output": ["ActionOutput_facebook_createpagevideo"],
-            "scopes": ["pages_show_list", "pages_manage_posts"],
-            "usedModels": ["ActionInput_facebook_createpagevideo", "ActionOutput_facebook_createpagevideo"],
+            "output": [
+                "ActionOutput_facebook_createpagevideo"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpagevideo",
+                "ActionOutput_facebook_createpagevideo"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -145,7 +178,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["page_id", "file_url"],
+                        "required": [
+                            "page_id",
+                            "file_url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_createpagevideo": {
@@ -160,7 +196,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -173,9 +211,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_createpostcomment",
             "name": "create-post-comment",
-            "output": ["ActionOutput_facebook_createpostcomment"],
-            "scopes": ["pages_manage_engagement", "pages_show_list"],
-            "usedModels": ["ActionInput_facebook_createpostcomment", "ActionOutput_facebook_createpostcomment"],
+            "output": [
+                "ActionOutput_facebook_createpostcomment"
+            ],
+            "scopes": [
+                "pages_manage_engagement",
+                "pages_show_list"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createpostcomment",
+                "ActionOutput_facebook_createpostcomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -195,7 +241,11 @@
                                 "description": "The comment text message. Example: \"Great post!\""
                             }
                         },
-                        "required": ["pageId", "postId", "message"],
+                        "required": [
+                            "pageId",
+                            "postId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_createpostcomment": {
@@ -205,7 +255,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -218,9 +270,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_createscheduledpagepost",
             "name": "create-scheduled-page-post",
-            "output": ["ActionOutput_facebook_createscheduledpagepost"],
-            "scopes": ["pages_show_list", "pages_manage_posts"],
-            "usedModels": ["ActionInput_facebook_createscheduledpagepost", "ActionOutput_facebook_createscheduledpagepost"],
+            "output": [
+                "ActionOutput_facebook_createscheduledpagepost"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_createscheduledpagepost",
+                "ActionOutput_facebook_createscheduledpagepost"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -248,7 +308,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["page_id", "scheduled_publish_time"],
+                        "required": [
+                            "page_id",
+                            "scheduled_publish_time"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_createscheduledpagepost": {
@@ -263,7 +326,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -276,9 +341,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_facebook_deletecomment"],
-            "scopes": ["pages_show_list", "pages_manage_engagement"],
-            "usedModels": ["ActionInput_facebook_deletecomment", "ActionOutput_facebook_deletecomment"],
+            "output": [
+                "ActionOutput_facebook_deletecomment"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_deletecomment",
+                "ActionOutput_facebook_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -294,7 +367,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_deletecomment": {
@@ -304,7 +379,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -317,9 +394,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_deletepost",
             "name": "delete-post",
-            "output": ["ActionOutput_facebook_deletepost"],
-            "scopes": ["pages_show_list", "pages_manage_posts"],
-            "usedModels": ["ActionInput_facebook_deletepost", "ActionOutput_facebook_deletepost"],
+            "output": [
+                "ActionOutput_facebook_deletepost"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_deletepost",
+                "ActionOutput_facebook_deletepost"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -331,7 +416,9 @@
                                 "description": "The ID of the Facebook post to delete. Example: \"1148671018324630_122098284213327930\""
                             }
                         },
-                        "required": ["postId"],
+                        "required": [
+                            "postId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_deletepost": {
@@ -341,7 +428,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -354,9 +443,18 @@
             "endpoint": null,
             "input": "ActionInput_facebook_getcomment",
             "name": "get-comment",
-            "output": ["ActionOutput_facebook_getcomment"],
-            "scopes": ["public_profile", "pages_show_list", "pages_read_engagement"],
-            "usedModels": ["ActionInput_facebook_getcomment", "ActionOutput_facebook_getcomment"],
+            "output": [
+                "ActionOutput_facebook_getcomment"
+            ],
+            "scopes": [
+                "public_profile",
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getcomment",
+                "ActionOutput_facebook_getcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -376,7 +474,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_getcomment": {
@@ -401,14 +501,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "likeCount": {
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -421,9 +526,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_getpageappsubscriptions",
             "name": "get-page-app-subscriptions",
-            "output": ["ActionOutput_facebook_getpageappsubscriptions"],
-            "scopes": ["pages_show_list", "pages_manage_metadata"],
-            "usedModels": ["ActionInput_facebook_getpageappsubscriptions", "ActionOutput_facebook_getpageappsubscriptions"],
+            "output": [
+                "ActionOutput_facebook_getpageappsubscriptions"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_metadata"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getpageappsubscriptions",
+                "ActionOutput_facebook_getpageappsubscriptions"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -439,7 +552,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_getpageappsubscriptions": {
@@ -470,7 +585,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of apps subscribed to the page"
@@ -499,7 +616,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -512,9 +631,16 @@
             "endpoint": null,
             "input": "ActionInput_facebook_getpage",
             "name": "get-page",
-            "output": ["ActionOutput_facebook_getpage"],
-            "scopes": ["pages_read_engagement"],
-            "usedModels": ["ActionInput_facebook_getpage", "ActionOutput_facebook_getpage"],
+            "output": [
+                "ActionOutput_facebook_getpage"
+            ],
+            "scopes": [
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getpage",
+                "ActionOutput_facebook_getpage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -530,7 +656,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_getpage": {
@@ -555,7 +683,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -568,9 +698,18 @@
             "endpoint": null,
             "input": "ActionInput_facebook_getpost",
             "name": "get-post",
-            "output": ["ActionOutput_facebook_getpost"],
-            "scopes": ["public_profile", "pages_show_list", "pages_read_engagement"],
-            "usedModels": ["ActionInput_facebook_getpost", "ActionOutput_facebook_getpost"],
+            "output": [
+                "ActionOutput_facebook_getpost"
+            ],
+            "scopes": [
+                "public_profile",
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getpost",
+                "ActionOutput_facebook_getpost"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -586,7 +725,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["post_id"],
+                        "required": [
+                            "post_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_getpost": {
@@ -611,11 +752,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -628,9 +774,16 @@
             "endpoint": null,
             "input": "ActionInput_facebook_getuserprofile",
             "name": "get-user-profile",
-            "output": ["ActionOutput_facebook_getuserprofile"],
-            "scopes": ["public_profile"],
-            "usedModels": ["ActionInput_facebook_getuserprofile", "ActionOutput_facebook_getuserprofile"],
+            "output": [
+                "ActionOutput_facebook_getuserprofile"
+            ],
+            "scopes": [
+                "public_profile"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_getuserprofile",
+                "ActionOutput_facebook_getuserprofile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -654,7 +807,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -667,9 +822,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_listpageposts",
             "name": "list-page-posts",
-            "output": ["ActionOutput_facebook_listpageposts"],
-            "scopes": ["pages_show_list", "pages_read_engagement"],
-            "usedModels": ["ActionInput_facebook_listpageposts", "ActionOutput_facebook_listpageposts"],
+            "output": [
+                "ActionOutput_facebook_listpageposts"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpageposts",
+                "ActionOutput_facebook_listpageposts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -703,7 +866,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_listpageposts": {
@@ -727,7 +892,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -735,7 +902,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["posts"],
+                        "required": [
+                            "posts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -748,9 +917,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_listpagescheduledposts",
             "name": "list-page-scheduled-posts",
-            "output": ["ActionOutput_facebook_listpagescheduledposts"],
-            "scopes": ["pages_show_list", "pages_manage_posts"],
-            "usedModels": ["ActionInput_facebook_listpagescheduledposts", "ActionOutput_facebook_listpagescheduledposts"],
+            "output": [
+                "ActionOutput_facebook_listpagescheduledposts"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_posts"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpagescheduledposts",
+                "ActionOutput_facebook_listpagescheduledposts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -770,7 +947,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_listpagescheduledposts": {
@@ -791,7 +970,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -799,7 +980,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["posts"],
+                        "required": [
+                            "posts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -812,9 +995,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_listpagevideos",
             "name": "list-page-videos",
-            "output": ["ActionOutput_facebook_listpagevideos"],
-            "scopes": ["pages_show_list", "pages_read_engagement"],
-            "usedModels": ["ActionInput_facebook_listpagevideos", "ActionOutput_facebook_listpagevideos"],
+            "output": [
+                "ActionOutput_facebook_listpagevideos"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpagevideos",
+                "ActionOutput_facebook_listpagevideos"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -838,7 +1029,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["page_id"],
+                        "required": [
+                            "page_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_listpagevideos": {
@@ -871,7 +1064,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -879,7 +1074,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["videos"],
+                        "required": [
+                            "videos"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -892,9 +1089,18 @@
             "endpoint": null,
             "input": "ActionInput_facebook_listpostcomments",
             "name": "list-post-comments",
-            "output": ["ActionOutput_facebook_listpostcomments"],
-            "scopes": ["pages_show_list", "pages_read_engagement", "pages_read_user_content"],
-            "usedModels": ["ActionInput_facebook_listpostcomments", "ActionOutput_facebook_listpostcomments"],
+            "output": [
+                "ActionOutput_facebook_listpostcomments"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement",
+                "pages_read_user_content"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listpostcomments",
+                "ActionOutput_facebook_listpostcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -908,12 +1114,18 @@
                             "filter": {
                                 "description": "Filter for comments. \"toplevel\" (default) returns top-level comments only. \"stream\" returns all comments including replies.",
                                 "type": "string",
-                                "enum": ["toplevel", "stream"]
+                                "enum": [
+                                    "toplevel",
+                                    "stream"
+                                ]
                             },
                             "order": {
                                 "description": "Order of comments. \"chronological\" = oldest first, \"reverse_chronological\" = newest first.",
                                 "type": "string",
-                                "enum": ["chronological", "reverse_chronological"]
+                                "enum": [
+                                    "chronological",
+                                    "reverse_chronological"
+                                ]
                             },
                             "summary": {
                                 "description": "Include summary metadata (total_count, order, can_comment).",
@@ -924,7 +1136,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["postId"],
+                        "required": [
+                            "postId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_listpostcomments": {
@@ -954,11 +1168,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "createdTime"],
+                                    "required": [
+                                        "id",
+                                        "createdTime"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -970,7 +1189,11 @@
                                 "properties": {
                                     "order": {
                                         "type": "string",
-                                        "enum": ["chronological", "reverse_chronological", "ranked"]
+                                        "enum": [
+                                            "chronological",
+                                            "reverse_chronological",
+                                            "ranked"
+                                        ]
                                     },
                                     "totalCount": {
                                         "type": "number"
@@ -982,7 +1205,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -995,9 +1220,16 @@
             "endpoint": null,
             "input": "ActionInput_facebook_listuserpages",
             "name": "list-user-pages",
-            "output": ["ActionOutput_facebook_listuserpages"],
-            "scopes": ["pages_show_list"],
-            "usedModels": ["ActionInput_facebook_listuserpages", "ActionOutput_facebook_listuserpages"],
+            "output": [
+                "ActionOutput_facebook_listuserpages"
+            ],
+            "scopes": [
+                "pages_show_list"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_listuserpages",
+                "ActionOutput_facebook_listuserpages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1039,7 +1271,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1056,13 +1291,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of Facebook Pages accessible to the user"
                             }
                         },
-                        "required": ["pages"],
+                        "required": [
+                            "pages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1075,9 +1315,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_subscribeapptopage",
             "name": "subscribe-app-to-page",
-            "output": ["ActionOutput_facebook_subscribeapptopage"],
-            "scopes": ["pages_show_list", "pages_manage_metadata"],
-            "usedModels": ["ActionInput_facebook_subscribeapptopage", "ActionOutput_facebook_subscribeapptopage"],
+            "output": [
+                "ActionOutput_facebook_subscribeapptopage"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_metadata"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_subscribeapptopage",
+                "ActionOutput_facebook_subscribeapptopage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1096,7 +1344,10 @@
                                 "description": "Array of webhook event types to subscribe to. Example: [\"feed\", \"messages\", \"mention\", \"name\", \"picture\"]"
                             }
                         },
-                        "required": ["page_id", "subscribed_fields"],
+                        "required": [
+                            "page_id",
+                            "subscribed_fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_subscribeapptopage": {
@@ -1106,7 +1357,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1119,9 +1372,17 @@
             "endpoint": null,
             "input": "ActionInput_facebook_unsubscribeappfrompage",
             "name": "unsubscribe-app-from-page",
-            "output": ["ActionOutput_facebook_unsubscribeappfrompage"],
-            "scopes": ["pages_show_list", "pages_manage_metadata"],
-            "usedModels": ["ActionInput_facebook_unsubscribeappfrompage", "ActionOutput_facebook_unsubscribeappfrompage"],
+            "output": [
+                "ActionOutput_facebook_unsubscribeappfrompage"
+            ],
+            "scopes": [
+                "pages_show_list",
+                "pages_manage_metadata"
+            ],
+            "usedModels": [
+                "ActionInput_facebook_unsubscribeappfrompage",
+                "ActionOutput_facebook_unsubscribeappfrompage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1133,7 +1394,9 @@
                                 "description": "Facebook Page ID. Example: \"123456789012345\""
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_facebook_unsubscribeappfrompage": {
@@ -1143,7 +1406,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1164,12 +1429,20 @@
             ],
             "input": "SyncMetadata_facebook_pageposts",
             "name": "page-posts",
-            "output": ["PagePost"],
+            "output": [
+                "PagePost"
+            ],
             "runs": "every hour",
-            "scopes": ["pages_show_list", "pages_read_engagement"],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PagePost", "SyncMetadata_facebook_pageposts"],
+            "usedModels": [
+                "PagePost",
+                "SyncMetadata_facebook_pageposts"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1205,7 +1478,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "pageId", "createdTime", "updatedTime"],
+                        "required": [
+                            "id",
+                            "pageId",
+                            "createdTime",
+                            "updatedTime"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_facebook_pageposts": {
@@ -1222,7 +1500,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1236,12 +1516,21 @@
             ],
             "input": "SyncMetadata_facebook_pagescheduledposts",
             "name": "page-scheduled-posts",
-            "output": ["PageScheduledPost"],
+            "output": [
+                "PageScheduledPost"
+            ],
             "runs": "every hour",
-            "scopes": ["pages_show_list", "pages_read_engagement", "pages_manage_posts"],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement",
+                "pages_manage_posts"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PageScheduledPost", "SyncMetadata_facebook_pagescheduledposts"],
+            "usedModels": [
+                "PageScheduledPost",
+                "SyncMetadata_facebook_pagescheduledposts"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1271,7 +1560,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "page_id", "published"],
+                        "required": [
+                            "id",
+                            "page_id",
+                            "published"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_facebook_pagescheduledposts": {
@@ -1288,7 +1581,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1302,12 +1597,19 @@
             ],
             "input": null,
             "name": "page-videos",
-            "output": ["PageVideo"],
+            "output": [
+                "PageVideo"
+            ],
             "runs": "every hour",
-            "scopes": ["pages_show_list", "pages_read_engagement"],
+            "scopes": [
+                "pages_show_list",
+                "pages_read_engagement"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PageVideo"],
+            "usedModels": [
+                "PageVideo"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1349,12 +1651,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "page_id", "created_time"],
+                        "required": [
+                            "id",
+                            "page_id",
+                            "created_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1368,12 +1676,18 @@
             ],
             "input": null,
             "name": "pages",
-            "output": ["Page"],
+            "output": [
+                "Page"
+            ],
             "runs": "every hour",
-            "scopes": ["pages_show_list"],
+            "scopes": [
+                "pages_show_list"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Page"],
+            "usedModels": [
+                "Page"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1394,12 +1708,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "access_token"],
+                        "required": [
+                            "id",
+                            "name",
+                            "access_token"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

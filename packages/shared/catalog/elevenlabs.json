@@ -10,9 +10,14 @@
             },
             "input": "ActionInput_elevenlabs_addpronunciationdictionaryrules",
             "name": "add-pronunciation-dictionary-rules",
-            "output": ["ActionOutput_elevenlabs_addpronunciationdictionaryrules"],
+            "output": [
+                "ActionOutput_elevenlabs_addpronunciationdictionaryrules"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_addpronunciationdictionaryrules", "ActionOutput_elevenlabs_addpronunciationdictionaryrules"],
+            "usedModels": [
+                "ActionInput_elevenlabs_addpronunciationdictionaryrules",
+                "ActionOutput_elevenlabs_addpronunciationdictionaryrules"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -52,7 +57,11 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["type", "string_to_replace", "alias"],
+                                            "required": [
+                                                "type",
+                                                "string_to_replace",
+                                                "alias"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -84,7 +93,12 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["type", "string_to_replace", "phoneme", "alphabet"],
+                                            "required": [
+                                                "type",
+                                                "string_to_replace",
+                                                "phoneme",
+                                                "alphabet"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -92,7 +106,10 @@
                                 "description": "List of pronunciation rules to add."
                             }
                         },
-                        "required": ["pronunciation_dictionary_id", "rules"],
+                        "required": [
+                            "pronunciation_dictionary_id",
+                            "rules"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_addpronunciationdictionaryrules": {
@@ -111,7 +128,11 @@
                                 "description": "The number of rules in the version of the pronunciation dictionary."
                             }
                         },
-                        "required": ["id", "version_id", "version_rules_num"],
+                        "required": [
+                            "id",
+                            "version_id",
+                            "version_rules_num"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -124,9 +145,16 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_createagent",
             "name": "create-agent",
-            "output": ["ActionOutput_elevenlabs_createagent"],
-            "scopes": ["convai"],
-            "usedModels": ["ActionInput_elevenlabs_createagent", "ActionOutput_elevenlabs_createagent"],
+            "output": [
+                "ActionOutput_elevenlabs_createagent"
+            ],
+            "scopes": [
+                "convai"
+            ],
+            "usedModels": [
+                "ActionInput_elevenlabs_createagent",
+                "ActionOutput_elevenlabs_createagent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -158,7 +186,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["conversation_config"],
+                        "required": [
+                            "conversation_config"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_createagent": {
@@ -168,7 +198,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["agent_id"],
+                        "required": [
+                            "agent_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -181,9 +213,14 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_deleteagent",
             "name": "delete-agent",
-            "output": ["ActionOutput_elevenlabs_deleteagent"],
+            "output": [
+                "ActionOutput_elevenlabs_deleteagent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_deleteagent", "ActionOutput_elevenlabs_deleteagent"],
+            "usedModels": [
+                "ActionInput_elevenlabs_deleteagent",
+                "ActionOutput_elevenlabs_deleteagent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -195,7 +232,9 @@
                                 "description": "The ID of the agent to delete. Example: \"agent_123\""
                             }
                         },
-                        "required": ["agent_id"],
+                        "required": [
+                            "agent_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_deleteagent": {
@@ -213,9 +252,16 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_deleteconversation",
             "name": "delete-conversation",
-            "output": ["ActionOutput_elevenlabs_deleteconversation"],
-            "scopes": ["convai"],
-            "usedModels": ["ActionInput_elevenlabs_deleteconversation", "ActionOutput_elevenlabs_deleteconversation"],
+            "output": [
+                "ActionOutput_elevenlabs_deleteconversation"
+            ],
+            "scopes": [
+                "convai"
+            ],
+            "usedModels": [
+                "ActionInput_elevenlabs_deleteconversation",
+                "ActionOutput_elevenlabs_deleteconversation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -227,7 +273,9 @@
                                 "description": "The ID of the conversation to delete. Example: \"abc123\""
                             }
                         },
-                        "required": ["conversation_id"],
+                        "required": [
+                            "conversation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_deleteconversation": {
@@ -237,7 +285,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -253,9 +303,14 @@
             },
             "input": "ActionInput_elevenlabs_deletedubbingproject",
             "name": "delete-dubbing-project",
-            "output": ["ActionOutput_elevenlabs_deletedubbingproject"],
+            "output": [
+                "ActionOutput_elevenlabs_deletedubbingproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_deletedubbingproject", "ActionOutput_elevenlabs_deletedubbingproject"],
+            "usedModels": [
+                "ActionInput_elevenlabs_deletedubbingproject",
+                "ActionOutput_elevenlabs_deletedubbingproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -267,7 +322,9 @@
                                 "description": "ID of the dubbing project to delete. Example: \"qHq83s7gp3QoJRaiLh9H\""
                             }
                         },
-                        "required": ["dubbing_id"],
+                        "required": [
+                            "dubbing_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_deletedubbingproject": {
@@ -278,7 +335,9 @@
                                 "description": "The status of the deletion."
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -294,9 +353,14 @@
             },
             "input": "ActionInput_elevenlabs_deletehistoryitem",
             "name": "delete-history-item",
-            "output": ["ActionOutput_elevenlabs_deletehistoryitem"],
+            "output": [
+                "ActionOutput_elevenlabs_deletehistoryitem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_deletehistoryitem", "ActionOutput_elevenlabs_deletehistoryitem"],
+            "usedModels": [
+                "ActionInput_elevenlabs_deletehistoryitem",
+                "ActionOutput_elevenlabs_deletehistoryitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -308,7 +372,9 @@
                                 "description": "ID of the history item to delete. Example: \"JveLb9l9aA9OP7eF6zYH\""
                             }
                         },
-                        "required": ["history_item_id"],
+                        "required": [
+                            "history_item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_deletehistoryitem": {
@@ -318,7 +384,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -331,9 +399,14 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_deleteknowledgebasedocument",
             "name": "delete-knowledge-base-document",
-            "output": ["ActionOutput_elevenlabs_deleteknowledgebasedocument"],
+            "output": [
+                "ActionOutput_elevenlabs_deleteknowledgebasedocument"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_deleteknowledgebasedocument", "ActionOutput_elevenlabs_deleteknowledgebasedocument"],
+            "usedModels": [
+                "ActionInput_elevenlabs_deleteknowledgebasedocument",
+                "ActionOutput_elevenlabs_deleteknowledgebasedocument"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -349,7 +422,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentation_id"],
+                        "required": [
+                            "documentation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_deleteknowledgebasedocument": {
@@ -367,9 +442,16 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_editvoicesettings",
             "name": "edit-voice-settings",
-            "output": ["ActionOutput_elevenlabs_editvoicesettings"],
-            "scopes": ["voices:write"],
-            "usedModels": ["ActionInput_elevenlabs_editvoicesettings", "ActionOutput_elevenlabs_editvoicesettings"],
+            "output": [
+                "ActionOutput_elevenlabs_editvoicesettings"
+            ],
+            "scopes": [
+                "voices:write"
+            ],
+            "usedModels": [
+                "ActionInput_elevenlabs_editvoicesettings",
+                "ActionOutput_elevenlabs_editvoicesettings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -409,7 +491,9 @@
                                 "maximum": 1.2
                             }
                         },
-                        "required": ["voice_id"],
+                        "required": [
+                            "voice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_editvoicesettings": {
@@ -420,7 +504,9 @@
                                 "description": "The status of the voice settings edit request. If the request was successful, the status will be \"ok\"."
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -436,9 +522,14 @@
             },
             "input": "ActionInput_elevenlabs_getagent",
             "name": "get-agent",
-            "output": ["ActionOutput_elevenlabs_getagent"],
+            "output": [
+                "ActionOutput_elevenlabs_getagent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getagent", "ActionOutput_elevenlabs_getagent"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getagent",
+                "ActionOutput_elevenlabs_getagent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -458,7 +549,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["agent_id"],
+                        "required": [
+                            "agent_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_getagent": {
@@ -509,7 +602,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["agent_id"],
+                        "required": [
+                            "agent_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -525,9 +620,14 @@
             },
             "input": "ActionInput_elevenlabs_getconversation",
             "name": "get-conversation",
-            "output": ["ActionOutput_elevenlabs_getconversation"],
+            "output": [
+                "ActionOutput_elevenlabs_getconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getconversation", "ActionOutput_elevenlabs_getconversation"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getconversation",
+                "ActionOutput_elevenlabs_getconversation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -539,7 +639,9 @@
                                 "description": "The ID of the conversation to retrieve. Example: \"abc123\""
                             }
                         },
-                        "required": ["conversation_id"],
+                        "required": [
+                            "conversation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_getconversation": {
@@ -552,7 +654,10 @@
                                 "type": "string"
                             },
                             "agent_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "conversation_product": {
                                 "type": "string"
@@ -561,16 +666,28 @@
                                 "type": "string"
                             },
                             "user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "branch_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "version_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "environment": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "has_audio": {
                                 "type": "boolean"
@@ -618,7 +735,10 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["request_id", "tool_name"],
+                                                "required": [
+                                                    "request_id",
+                                                    "tool_name"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -643,7 +763,10 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["request_id", "tool_name"],
+                                                "required": [
+                                                    "request_id",
+                                                    "tool_name"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -662,7 +785,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["role"],
+                                    "required": [
+                                        "role"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -673,13 +798,19 @@
                                         "type": "number"
                                     },
                                     "accepted_time_unix_secs": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "call_duration_secs": {
                                         "type": "number"
                                     },
                                     "cost": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "deletion_settings": {
                                         "anyOf": [
@@ -725,10 +856,16 @@
                                         ]
                                     },
                                     "agent_phone_number": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "timezone": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "voice_rewards": {
                                         "anyOf": [
@@ -739,7 +876,10 @@
                                         ]
                                     }
                                 },
-                                "required": ["start_time_unix_secs", "call_duration_secs"],
+                                "required": [
+                                    "start_time_unix_secs",
+                                    "call_duration_secs"
+                                ],
                                 "additionalProperties": {}
                             },
                             "analysis": {
@@ -800,7 +940,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["agent_id"],
+                                    "required": [
+                                        "agent_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -827,7 +969,12 @@
                                 ]
                             }
                         },
-                        "required": ["conversation_id", "agent_id", "status", "metadata"],
+                        "required": [
+                            "conversation_id",
+                            "agent_id",
+                            "status",
+                            "metadata"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -843,9 +990,14 @@
             },
             "input": "ActionInput_elevenlabs_getdefaultvoicesettings",
             "name": "get-default-voice-settings",
-            "output": ["ActionOutput_elevenlabs_getdefaultvoicesettings"],
+            "output": [
+                "ActionOutput_elevenlabs_getdefaultvoicesettings"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getdefaultvoicesettings", "ActionOutput_elevenlabs_getdefaultvoicesettings"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getdefaultvoicesettings",
+                "ActionOutput_elevenlabs_getdefaultvoicesettings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -888,9 +1040,14 @@
             },
             "input": "ActionInput_elevenlabs_getdubbingproject",
             "name": "get-dubbing-project",
-            "output": ["ActionOutput_elevenlabs_getdubbingproject"],
+            "output": [
+                "ActionOutput_elevenlabs_getdubbingproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getdubbingproject", "ActionOutput_elevenlabs_getdubbingproject"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getdubbingproject",
+                "ActionOutput_elevenlabs_getdubbingproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -902,7 +1059,9 @@
                                 "description": "ID of the dubbing project. Example: \"21m00Tcm4TlvDq8ikWAM\""
                             }
                         },
-                        "required": ["dubbing_id"],
+                        "required": [
+                            "dubbing_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_getdubbingproject": {
@@ -942,14 +1101,23 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["content_type", "duration"],
+                                "required": [
+                                    "content_type",
+                                    "duration"
+                                ],
                                 "additionalProperties": false
                             },
                             "error": {
                                 "type": "string"
                             }
                         },
-                        "required": ["dubbing_id", "name", "status", "target_languages", "created_at"],
+                        "required": [
+                            "dubbing_id",
+                            "name",
+                            "status",
+                            "target_languages",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -965,9 +1133,14 @@
             },
             "input": "ActionInput_elevenlabs_gethistoryitem",
             "name": "get-history-item",
-            "output": ["ActionOutput_elevenlabs_gethistoryitem"],
+            "output": [
+                "ActionOutput_elevenlabs_gethistoryitem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_gethistoryitem", "ActionOutput_elevenlabs_gethistoryitem"],
+            "usedModels": [
+                "ActionInput_elevenlabs_gethistoryitem",
+                "ActionOutput_elevenlabs_gethistoryitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -979,7 +1152,9 @@
                                 "description": "ID of the history item to retrieve. Example: \"JveLb9l9aA9OP7eF6zYH\""
                             }
                         },
-                        "required": ["history_item_id"],
+                        "required": [
+                            "history_item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_gethistoryitem": {
@@ -1087,7 +1262,11 @@
                                                 }
                                             }
                                         },
-                                        "required": ["characters", "character_start_times_seconds", "character_end_times_seconds"],
+                                        "required": [
+                                            "characters",
+                                            "character_start_times_seconds",
+                                            "character_end_times_seconds"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "normalized_alignment": {
@@ -1112,11 +1291,18 @@
                                                 }
                                             }
                                         },
-                                        "required": ["characters", "character_start_times_seconds", "character_end_times_seconds"],
+                                        "required": [
+                                            "characters",
+                                            "character_start_times_seconds",
+                                            "character_end_times_seconds"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["alignment", "normalized_alignment"],
+                                "required": [
+                                    "alignment",
+                                    "normalized_alignment"
+                                ],
                                 "additionalProperties": false
                             },
                             "dialogue": {
@@ -1134,7 +1320,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["text", "voice_id", "voice_name"],
+                                    "required": [
+                                        "text",
+                                        "voice_id",
+                                        "voice_name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1142,7 +1332,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["history_item_id", "date_unix", "character_count_change_from", "character_count_change_to", "content_type"],
+                        "required": [
+                            "history_item_id",
+                            "date_unix",
+                            "character_count_change_from",
+                            "character_count_change_to",
+                            "content_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1155,9 +1351,14 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_getknowledgebasedocument",
             "name": "get-knowledge-base-document",
-            "output": ["ActionOutput_elevenlabs_getknowledgebasedocument"],
+            "output": [
+                "ActionOutput_elevenlabs_getknowledgebasedocument"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getknowledgebasedocument", "ActionOutput_elevenlabs_getknowledgebasedocument"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getknowledgebasedocument",
+                "ActionOutput_elevenlabs_getknowledgebasedocument"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1173,7 +1374,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentation_id"],
+                        "required": [
+                            "documentation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_getknowledgebasedocument": {
@@ -1213,22 +1416,37 @@
                                         "type": "boolean"
                                     },
                                     "creator_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "creator_email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "role": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "access_source": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             },
                             "folder_parent_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "folder_path": {
                                 "type": "array",
@@ -1242,7 +1460,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1307,7 +1527,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1315,7 +1537,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1328,9 +1552,14 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_getpronunciationdictionary",
             "name": "get-pronunciation-dictionary",
-            "output": ["ActionOutput_elevenlabs_getpronunciationdictionary"],
+            "output": [
+                "ActionOutput_elevenlabs_getpronunciationdictionary"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getpronunciationdictionary", "ActionOutput_elevenlabs_getpronunciationdictionary"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getpronunciationdictionary",
+                "ActionOutput_elevenlabs_getpronunciationdictionary"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1342,7 +1571,9 @@
                                 "description": "The ID of the pronunciation dictionary. Example: \"pdct_123456789\""
                             }
                         },
-                        "required": ["pronunciation_dictionary_id"],
+                        "required": [
+                            "pronunciation_dictionary_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_getpronunciationdictionary": {
@@ -1402,12 +1633,23 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["string_to_replace", "type"],
+                                    "required": [
+                                        "string_to_replace",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "latest_version_id", "latest_version_rules_num", "name", "created_by", "creation_time_unix", "rules"],
+                        "required": [
+                            "id",
+                            "latest_version_id",
+                            "latest_version_rules_num",
+                            "name",
+                            "created_by",
+                            "creation_time_unix",
+                            "rules"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1423,9 +1665,14 @@
             },
             "input": "ActionInput_elevenlabs_getusersubscription",
             "name": "get-user-subscription",
-            "output": ["ActionOutput_elevenlabs_getusersubscription"],
+            "output": [
+                "ActionOutput_elevenlabs_getusersubscription"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getusersubscription", "ActionOutput_elevenlabs_getusersubscription"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getusersubscription",
+                "ActionOutput_elevenlabs_getusersubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1492,7 +1739,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
@@ -1542,7 +1792,10 @@
                                         ]
                                     },
                                     "payment_intent_status": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "payment_intent_statusses": {
                                         "anyOf": [
@@ -1558,13 +1811,22 @@
                                         ]
                                     },
                                     "subtotal_cents": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "tax_cents": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["amount_due_cents", "next_payment_attempt_unix"],
+                                "required": [
+                                    "amount_due_cents",
+                                    "next_payment_attempt_unix"
+                                ],
                                 "additionalProperties": false
                             },
                             "open_invoices": {
@@ -1598,7 +1860,10 @@
                                             ]
                                         },
                                         "payment_intent_status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "payment_intent_statusses": {
                                             "anyOf": [
@@ -1614,13 +1879,22 @@
                                             ]
                                         },
                                         "subtotal_cents": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "tax_cents": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["amount_due_cents", "next_payment_attempt_unix"],
+                                    "required": [
+                                        "amount_due_cents",
+                                        "next_payment_attempt_unix"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1669,9 +1943,14 @@
             },
             "input": "ActionInput_elevenlabs_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_elevenlabs_getuser"],
+            "output": [
+                "ActionOutput_elevenlabs_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getuser", "ActionOutput_elevenlabs_getuser"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getuser",
+                "ActionOutput_elevenlabs_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1699,7 +1978,10 @@
                                         "type": "number"
                                     },
                                     "max_character_limit_extension": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "can_extend_character_limit": {
                                         "type": "boolean"
@@ -1743,7 +2025,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["amount", "currency"],
+                                                "required": [
+                                                    "amount",
+                                                    "currency"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -1755,19 +2040,34 @@
                                         "type": "string"
                                     },
                                     "next_character_count_reset_unix": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "max_voice_add_edits": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "currency": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "billing_period": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "character_refresh_period": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -1776,7 +2076,10 @@
                                 "type": "boolean"
                             },
                             "xi_api_key": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "can_use_delayed_payment_methods": {
                                 "type": "boolean"
@@ -1788,22 +2091,40 @@
                                 "type": "boolean"
                             },
                             "show_compliance_terms": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_api_key_hashed": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "xi_api_key_preview": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "referral_link_code": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "partnerstack_partner_default_link": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -1812,7 +2133,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1828,9 +2151,14 @@
             },
             "input": "ActionInput_elevenlabs_getvoicesettings",
             "name": "get-voice-settings",
-            "output": ["ActionOutput_elevenlabs_getvoicesettings"],
+            "output": [
+                "ActionOutput_elevenlabs_getvoicesettings"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_getvoicesettings", "ActionOutput_elevenlabs_getvoicesettings"],
+            "usedModels": [
+                "ActionInput_elevenlabs_getvoicesettings",
+                "ActionOutput_elevenlabs_getvoicesettings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1843,7 +2171,9 @@
                                 "description": "Voice ID. Example: \"CwhRBWXzGAHq8TQ4Fs17\""
                             }
                         },
-                        "required": ["voice_id"],
+                        "required": [
+                            "voice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_getvoicesettings": {
@@ -1877,9 +2207,16 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_getvoice",
             "name": "get-voice",
-            "output": ["ActionOutput_elevenlabs_getvoice"],
-            "scopes": ["voices:read"],
-            "usedModels": ["ActionInput_elevenlabs_getvoice", "ActionOutput_elevenlabs_getvoice"],
+            "output": [
+                "ActionOutput_elevenlabs_getvoice"
+            ],
+            "scopes": [
+                "voices:read"
+            ],
+            "usedModels": [
+                "ActionInput_elevenlabs_getvoice",
+                "ActionOutput_elevenlabs_getvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1891,7 +2228,9 @@
                                 "description": "Voice ID. Example: \"CwhRBWXzGAHq8TQ4Fs17\""
                             }
                         },
-                        "required": ["voice_id"],
+                        "required": [
+                            "voice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_getvoice": {
@@ -2009,7 +2348,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["voice_id"],
+                        "required": [
+                            "voice_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2022,9 +2363,14 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_listagents",
             "name": "list-agents",
-            "output": ["ActionOutput_elevenlabs_listagents"],
+            "output": [
+                "ActionOutput_elevenlabs_listagents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_listagents", "ActionOutput_elevenlabs_listagents"],
+            "usedModels": [
+                "ActionInput_elevenlabs_listagents",
+                "ActionOutput_elevenlabs_listagents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2056,12 +2402,19 @@
                             "sort_direction": {
                                 "description": "Sort direction.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "sort_by": {
                                 "description": "Field to sort by.",
                                 "type": "string",
-                                "enum": ["name", "created_at", "call_count_7d"]
+                                "enum": [
+                                    "name",
+                                    "created_at",
+                                    "call_count_7d"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2105,7 +2458,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["is_creator", "creator_name", "creator_email", "role"],
+                                            "required": [
+                                                "is_creator",
+                                                "creator_name",
+                                                "creator_email",
+                                                "role"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "last_call_time_unix_secs": {
@@ -2115,7 +2473,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["agent_id", "name", "tags", "created_at_unix_secs", "access_info"],
+                                    "required": [
+                                        "agent_id",
+                                        "name",
+                                        "tags",
+                                        "created_at_unix_secs",
+                                        "access_info"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2123,7 +2487,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2139,9 +2505,14 @@
             },
             "input": "ActionInput_elevenlabs_listconversations",
             "name": "list-conversations",
-            "output": ["ActionOutput_elevenlabs_listconversations"],
+            "output": [
+                "ActionOutput_elevenlabs_listconversations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_listconversations", "ActionOutput_elevenlabs_listconversations"],
+            "usedModels": [
+                "ActionInput_elevenlabs_listconversations",
+                "ActionOutput_elevenlabs_listconversations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2256,7 +2627,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["items", "has_more"],
+                        "required": [
+                            "items",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2272,9 +2646,14 @@
             },
             "input": "ActionInput_elevenlabs_listdubbingprojects",
             "name": "list-dubbing-projects",
-            "output": ["ActionOutput_elevenlabs_listdubbingprojects"],
+            "output": [
+                "ActionOutput_elevenlabs_listdubbingprojects"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_listdubbingprojects", "ActionOutput_elevenlabs_listdubbingprojects"],
+            "usedModels": [
+                "ActionInput_elevenlabs_listdubbingprojects",
+                "ActionOutput_elevenlabs_listdubbingprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2294,12 +2673,20 @@
                             "dubbing_status": {
                                 "description": "What state the dub is currently in.",
                                 "type": "string",
-                                "enum": ["dubbing", "dubbed", "failed"]
+                                "enum": [
+                                    "dubbing",
+                                    "dubbed",
+                                    "failed"
+                                ]
                             },
                             "filter_by_creator": {
                                 "description": "Filters who created the resources being listed. Defaults to all.",
                                 "type": "string",
-                                "enum": ["personal", "others", "all"]
+                                "enum": [
+                                    "personal",
+                                    "others",
+                                    "all"
+                                ]
                             },
                             "order_by": {
                                 "description": "The field to use for ordering results from this query.",
@@ -2309,7 +2696,10 @@
                             "order_direction": {
                                 "description": "The order direction to use for results from this query. Defaults to DESCENDING.",
                                 "type": "string",
-                                "enum": ["DESCENDING", "ASCENDING"]
+                                "enum": [
+                                    "DESCENDING",
+                                    "ASCENDING"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2332,7 +2722,10 @@
                                             "type": "string"
                                         },
                                         "source_language": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "target_languages": {
                                             "type": "array",
@@ -2366,7 +2759,10 @@
                                             ]
                                         },
                                         "error": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -2376,10 +2772,15 @@
                                 "type": "boolean"
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["dubs"],
+                        "required": [
+                            "dubs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2395,9 +2796,14 @@
             },
             "input": "ActionInput_elevenlabs_listhistory",
             "name": "list-history",
-            "output": ["ActionOutput_elevenlabs_listhistory"],
+            "output": [
+                "ActionOutput_elevenlabs_listhistory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_listhistory", "ActionOutput_elevenlabs_listhistory"],
+            "usedModels": [
+                "ActionInput_elevenlabs_listhistory",
+                "ActionOutput_elevenlabs_listhistory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2455,22 +2861,40 @@
                                             "type": "string"
                                         },
                                         "request_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "voice_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "model_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "voice_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "voice_category": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_unix": {
                                             "type": "number"
@@ -2554,10 +2978,16 @@
                                             ]
                                         },
                                         "share_link_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "source": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "alignments": {
                                             "anyOf": [
@@ -2579,10 +3009,19 @@
                                             ]
                                         },
                                         "output_format": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["history_item_id", "date_unix", "character_count_change_from", "character_count_change_to", "content_type"],
+                                    "required": [
+                                        "history_item_id",
+                                        "date_unix",
+                                        "character_count_change_from",
+                                        "character_count_change_to",
+                                        "content_type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2593,7 +3032,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["items", "has_more"],
+                        "required": [
+                            "items",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2609,9 +3051,14 @@
             },
             "input": "ActionInput_elevenlabs_listknowledgebase",
             "name": "list-knowledge-base",
-            "output": ["ActionOutput_elevenlabs_listknowledgebase"],
+            "output": [
+                "ActionOutput_elevenlabs_listknowledgebase"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_listknowledgebase", "ActionOutput_elevenlabs_listknowledgebase"],
+            "usedModels": [
+                "ActionInput_elevenlabs_listknowledgebase",
+                "ActionOutput_elevenlabs_listknowledgebase"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2645,7 +3092,12 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["file", "url", "text", "folder"]
+                                            "enum": [
+                                                "file",
+                                                "url",
+                                                "text",
+                                                "folder"
+                                            ]
                                         },
                                         "metadata": {
                                             "type": "object",
@@ -2660,7 +3112,11 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["created_at_unix_secs", "last_updated_at_unix_secs", "size_bytes"],
+                                            "required": [
+                                                "created_at_unix_secs",
+                                                "last_updated_at_unix_secs",
+                                                "size_bytes"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "supported_usages": {
@@ -2685,17 +3141,31 @@
                                                     "type": "string"
                                                 },
                                                 "anonymous_access_level_override": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "access_source": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["is_creator", "creator_name", "creator_email", "role"],
+                                            "required": [
+                                                "is_creator",
+                                                "creator_name",
+                                                "creator_email",
+                                                "role"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "folder_parent_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "folder_path": {
                                             "type": "array",
@@ -2706,7 +3176,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2737,7 +3209,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2751,7 +3225,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2762,7 +3240,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["items", "has_more"],
+                        "required": [
+                            "items",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2778,9 +3259,14 @@
             },
             "input": "ActionInput_elevenlabs_listmodels",
             "name": "list-models",
-            "output": ["ActionOutput_elevenlabs_listmodels"],
+            "output": [
+                "ActionOutput_elevenlabs_listmodels"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_listmodels", "ActionOutput_elevenlabs_listmodels"],
+            "usedModels": [
+                "ActionInput_elevenlabs_listmodels",
+                "ActionOutput_elevenlabs_listmodels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2851,7 +3337,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["language_id", "name"],
+                                                "required": [
+                                                    "language_id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2871,12 +3360,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["model_id", "name"],
+                                    "required": [
+                                        "model_id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2889,9 +3383,14 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_listpronunciationdictionaries",
             "name": "list-pronunciation-dictionaries",
-            "output": ["ActionOutput_elevenlabs_listpronunciationdictionaries"],
+            "output": [
+                "ActionOutput_elevenlabs_listpronunciationdictionaries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_listpronunciationdictionaries", "ActionOutput_elevenlabs_listpronunciationdictionaries"],
+            "usedModels": [
+                "ActionInput_elevenlabs_listpronunciationdictionaries",
+                "ActionOutput_elevenlabs_listpronunciationdictionaries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2935,7 +3434,10 @@
                                             "type": "number"
                                         },
                                         "archived_time_unix": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
                                             "type": "string"
@@ -2957,7 +3459,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pronunciation_dictionaries"],
+                        "required": [
+                            "pronunciation_dictionaries"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2973,9 +3477,16 @@
             },
             "input": "ActionInput_elevenlabs_listvoices",
             "name": "list-voices",
-            "output": ["ActionOutput_elevenlabs_listvoices"],
-            "scopes": ["voice_read"],
-            "usedModels": ["ActionInput_elevenlabs_listvoices", "ActionOutput_elevenlabs_listvoices"],
+            "output": [
+                "ActionOutput_elevenlabs_listvoices"
+            ],
+            "scopes": [
+                "voice_read"
+            ],
+            "usedModels": [
+                "ActionInput_elevenlabs_listvoices",
+                "ActionOutput_elevenlabs_listvoices"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3074,17 +3585,25 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["language", "model_id"],
+                                                "required": [
+                                                    "language",
+                                                    "model_id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["voice_id", "name"],
+                                    "required": [
+                                        "voice_id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["voices"],
+                        "required": [
+                            "voices"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3097,9 +3616,14 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_removepronunciationdictionaryrules",
             "name": "remove-pronunciation-dictionary-rules",
-            "output": ["ActionOutput_elevenlabs_removepronunciationdictionaryrules"],
+            "output": [
+                "ActionOutput_elevenlabs_removepronunciationdictionaryrules"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_elevenlabs_removepronunciationdictionaryrules", "ActionOutput_elevenlabs_removepronunciationdictionaryrules"],
+            "usedModels": [
+                "ActionInput_elevenlabs_removepronunciationdictionaryrules",
+                "ActionOutput_elevenlabs_removepronunciationdictionaryrules"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3118,7 +3642,10 @@
                                 "description": "List of strings to remove from the pronunciation dictionary. Example: [\"tomato\", \"Tomato\"]"
                             }
                         },
-                        "required": ["pronunciation_dictionary_id", "rule_strings"],
+                        "required": [
+                            "pronunciation_dictionary_id",
+                            "rule_strings"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_removepronunciationdictionaryrules": {
@@ -3134,7 +3661,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "version_id", "version_rules_num"],
+                        "required": [
+                            "id",
+                            "version_id",
+                            "version_rules_num"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3147,9 +3678,16 @@
             "endpoint": null,
             "input": "ActionInput_elevenlabs_updateagent",
             "name": "update-agent",
-            "output": ["ActionOutput_elevenlabs_updateagent"],
-            "scopes": ["agent"],
-            "usedModels": ["ActionInput_elevenlabs_updateagent", "ActionOutput_elevenlabs_updateagent"],
+            "output": [
+                "ActionOutput_elevenlabs_updateagent"
+            ],
+            "scopes": [
+                "agent"
+            ],
+            "usedModels": [
+                "ActionInput_elevenlabs_updateagent",
+                "ActionOutput_elevenlabs_updateagent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3162,7 +3700,10 @@
                             },
                             "name": {
                                 "description": "A name to make the agent easier to find",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "tags": {
                                 "description": "Tags to help classify and filter the agent",
@@ -3225,10 +3766,15 @@
                             },
                             "version_description": {
                                 "description": "Description for this version when publishing changes",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["agent_id"],
+                        "required": [
+                            "agent_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_elevenlabs_updateagent": {
@@ -3314,16 +3860,27 @@
                                 }
                             },
                             "version_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "branch_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "main_branch_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["agent_id"],
+                        "required": [
+                            "agent_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3339,12 +3896,16 @@
             "endpoints": [],
             "input": null,
             "name": "agents",
-            "output": ["Agent"],
+            "output": [
+                "Agent"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Agent"],
+            "usedModels": [
+                "Agent"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3383,13 +3944,24 @@
                                         "type": "string"
                                     },
                                     "anonymous_access_level_override": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "access_source": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["is_creator", "creator_name", "creator_email", "role"],
+                                "required": [
+                                    "is_creator",
+                                    "creator_name",
+                                    "creator_email",
+                                    "role"
+                                ],
                                 "additionalProperties": false
                             },
                             "last_call_time_unix_secs": {
@@ -3399,12 +3971,19 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "created_at_unix_secs", "access_info"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at_unix_secs",
+                            "access_info"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3413,12 +3992,16 @@
             "endpoints": [],
             "input": null,
             "name": "history",
-            "output": ["History"],
+            "output": [
+                "History"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["History"],
+            "usedModels": [
+                "History"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3435,22 +4018,40 @@
                                 "description": "The ID of the history item."
                             },
                             "request_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "voice_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "model_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "voice_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "voice_category": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_unix": {
                                 "type": "number",
@@ -3493,10 +4094,16 @@
                                 ]
                             },
                             "share_link_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "source": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "alignments": {
                                 "anyOf": [
@@ -3526,15 +4133,27 @@
                                 ]
                             },
                             "output_format": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "history_item_id", "date_unix", "character_count_change_from", "character_count_change_to", "content_type"],
+                        "required": [
+                            "id",
+                            "history_item_id",
+                            "date_unix",
+                            "character_count_change_from",
+                            "character_count_change_to",
+                            "content_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3548,12 +4167,16 @@
             ],
             "input": null,
             "name": "models",
-            "output": ["Model"],
+            "output": [
+                "Model"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Model"],
+            "usedModels": [
+                "Model"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3615,7 +4238,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["language_id", "name"],
+                                    "required": [
+                                        "language_id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3629,14 +4255,18 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["character_cost_multiplier"],
+                                "required": [
+                                    "character_cost_multiplier"
+                                ],
                                 "additionalProperties": false
                             },
                             "concurrency_group": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3655,12 +4285,16 @@
             ],
             "input": null,
             "name": "pronunciation-dictionaries",
-            "output": ["PronunciationDictionary"],
+            "output": [
+                "PronunciationDictionary"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PronunciationDictionary"],
+            "usedModels": [
+                "PronunciationDictionary"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3681,7 +4315,10 @@
                                 "type": "string"
                             },
                             "permission_on_resource": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_by": {
                                 "type": "string"
@@ -3690,18 +4327,32 @@
                                 "type": "number"
                             },
                             "archived_time_unix": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "latest_version_id", "name", "created_by", "creation_time_unix"],
+                        "required": [
+                            "id",
+                            "latest_version_id",
+                            "name",
+                            "created_by",
+                            "creation_time_unix"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3710,12 +4361,16 @@
             "endpoints": [],
             "input": null,
             "name": "voices",
-            "output": ["Voice"],
+            "output": [
+                "Voice"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Voice"],
+            "usedModels": [
+                "Voice"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3760,12 +4415,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

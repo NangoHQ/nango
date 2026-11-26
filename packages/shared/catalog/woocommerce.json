@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_batchupdateorders",
             "name": "batch-update-orders",
-            "output": ["ActionOutput_woocommerce_batchupdateorders"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_batchupdateorders", "ActionOutput_woocommerce_batchupdateorders"],
+            "output": [
+                "ActionOutput_woocommerce_batchupdateorders"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_batchupdateorders",
+                "ActionOutput_woocommerce_batchupdateorders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -39,7 +47,9 @@
                                             "description": "Order ID. Required for update operations."
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -64,7 +74,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -77,7 +89,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -90,7 +104,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
@@ -107,9 +123,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_batchupdateproducts",
             "name": "batch-update-products",
-            "output": ["ActionOutput_woocommerce_batchupdateproducts"],
+            "output": [
+                "ActionOutput_woocommerce_batchupdateproducts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_batchupdateproducts", "ActionOutput_woocommerce_batchupdateproducts"],
+            "usedModels": [
+                "ActionInput_woocommerce_batchupdateproducts",
+                "ActionOutput_woocommerce_batchupdateproducts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -133,7 +154,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -206,19 +229,34 @@
                                             "type": "string"
                                         },
                                         "sale_price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "price_html": {
                                             "type": "string"
@@ -270,7 +308,10 @@
                                             "type": "boolean"
                                         },
                                         "stock_quantity": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "stock_status": {
                                             "type": "string"
@@ -459,7 +500,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -520,19 +563,34 @@
                                             "type": "string"
                                         },
                                         "sale_price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "price_html": {
                                             "type": "string"
@@ -584,7 +642,10 @@
                                             "type": "boolean"
                                         },
                                         "stock_quantity": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "stock_status": {
                                             "type": "string"
@@ -773,7 +834,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -834,19 +897,34 @@
                                             "type": "string"
                                         },
                                         "sale_price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "price_html": {
                                             "type": "string"
@@ -898,7 +976,10 @@
                                             "type": "boolean"
                                         },
                                         "stock_quantity": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "stock_status": {
                                             "type": "string"
@@ -1087,7 +1168,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
@@ -1104,9 +1187,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createordernote",
             "name": "create-order-note",
-            "output": ["ActionOutput_woocommerce_createordernote"],
+            "output": [
+                "ActionOutput_woocommerce_createordernote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_createordernote", "ActionOutput_woocommerce_createordernote"],
+            "usedModels": [
+                "ActionInput_woocommerce_createordernote",
+                "ActionOutput_woocommerce_createordernote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1130,7 +1218,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["order_id", "note"],
+                        "required": [
+                            "order_id",
+                            "note"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createordernote": {
@@ -1158,7 +1249,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "note"],
+                        "required": [
+                            "id",
+                            "note"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1171,9 +1265,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createorder",
             "name": "create-order",
-            "output": ["ActionOutput_woocommerce_createorder"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_createorder", "ActionOutput_woocommerce_createorder"],
+            "output": [
+                "ActionOutput_woocommerce_createorder"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_createorder",
+                "ActionOutput_woocommerce_createorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1182,7 +1284,17 @@
                         "properties": {
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "processing", "on-hold", "completed", "cancelled", "refunded", "failed", "trash", "checkout-draft"]
+                                "enum": [
+                                    "pending",
+                                    "processing",
+                                    "on-hold",
+                                    "completed",
+                                    "cancelled",
+                                    "refunded",
+                                    "failed",
+                                    "trash",
+                                    "checkout-draft"
+                                ]
                             },
                             "currency": {
                                 "type": "string"
@@ -1399,7 +1511,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1412,9 +1527,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createproductcategory",
             "name": "create-product-category",
-            "output": ["ActionOutput_woocommerce_createproductcategory"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_woocommerce_createproductcategory", "ActionOutput_woocommerce_createproductcategory"],
+            "output": [
+                "ActionOutput_woocommerce_createproductcategory"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_createproductcategory",
+                "ActionOutput_woocommerce_createproductcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1455,7 +1577,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createproductcategory": {
@@ -1516,7 +1640,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1529,9 +1656,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createproductreview",
             "name": "create-product-review",
-            "output": ["ActionOutput_woocommerce_createproductreview"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_createproductreview", "ActionOutput_woocommerce_createproductreview"],
+            "output": [
+                "ActionOutput_woocommerce_createproductreview"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_createproductreview",
+                "ActionOutput_woocommerce_createproductreview"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1569,7 +1704,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["product_id", "reviewer", "reviewer_email"],
+                        "required": [
+                            "product_id",
+                            "reviewer",
+                            "reviewer_email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createproductreview": {
@@ -1603,7 +1742,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "product_id", "reviewer", "reviewer_email", "verified", "date_created", "date_created_gmt"],
+                        "required": [
+                            "id",
+                            "product_id",
+                            "reviewer",
+                            "reviewer_email",
+                            "verified",
+                            "date_created",
+                            "date_created_gmt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1616,9 +1763,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createproducttag",
             "name": "create-product-tag",
-            "output": ["ActionOutput_woocommerce_createproducttag"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_createproducttag", "ActionOutput_woocommerce_createproducttag"],
+            "output": [
+                "ActionOutput_woocommerce_createproducttag"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_createproducttag",
+                "ActionOutput_woocommerce_createproducttag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1638,7 +1793,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createproducttag": {
@@ -1660,7 +1817,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1673,9 +1833,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createproductvariation",
             "name": "create-product-variation",
-            "output": ["ActionOutput_woocommerce_createproductvariation"],
-            "scopes": ["write_products"],
-            "usedModels": ["ActionInput_woocommerce_createproductvariation", "ActionOutput_woocommerce_createproductvariation"],
+            "output": [
+                "ActionOutput_woocommerce_createproductvariation"
+            ],
+            "scopes": [
+                "write_products"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_createproductvariation",
+                "ActionOutput_woocommerce_createproductvariation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1706,7 +1873,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["draft", "pending", "private", "publish"]
+                                "enum": [
+                                    "draft",
+                                    "pending",
+                                    "private",
+                                    "publish"
+                                ]
                             },
                             "virtual": {
                                 "type": "boolean"
@@ -1722,7 +1894,11 @@
                             },
                             "tax_status": {
                                 "type": "string",
-                                "enum": ["taxable", "shipping", "none"]
+                                "enum": [
+                                    "taxable",
+                                    "shipping",
+                                    "none"
+                                ]
                             },
                             "tax_class": {
                                 "type": "string"
@@ -1743,11 +1919,19 @@
                             },
                             "stock_status": {
                                 "type": "string",
-                                "enum": ["instock", "outofstock", "onbackorder"]
+                                "enum": [
+                                    "instock",
+                                    "outofstock",
+                                    "onbackorder"
+                                ]
                             },
                             "backorders": {
                                 "type": "string",
-                                "enum": ["no", "notify", "yes"]
+                                "enum": [
+                                    "no",
+                                    "notify",
+                                    "yes"
+                                ]
                             },
                             "weight": {
                                 "type": "string"
@@ -1826,7 +2010,9 @@
                                 }
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createproductvariation": {
@@ -2029,7 +2215,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2042,9 +2230,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createproduct",
             "name": "create-product",
-            "output": ["ActionOutput_woocommerce_createproduct"],
+            "output": [
+                "ActionOutput_woocommerce_createproduct"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_createproduct", "ActionOutput_woocommerce_createproduct"],
+            "usedModels": [
+                "ActionInput_woocommerce_createproduct",
+                "ActionOutput_woocommerce_createproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2058,12 +2251,22 @@
                             "type": {
                                 "description": "Product type. Default: simple",
                                 "type": "string",
-                                "enum": ["simple", "grouped", "external", "variable"]
+                                "enum": [
+                                    "simple",
+                                    "grouped",
+                                    "external",
+                                    "variable"
+                                ]
                             },
                             "status": {
                                 "description": "Product status. Default: publish",
                                 "type": "string",
-                                "enum": ["draft", "pending", "private", "publish"]
+                                "enum": [
+                                    "draft",
+                                    "pending",
+                                    "private",
+                                    "publish"
+                                ]
                             },
                             "featured": {
                                 "description": "Featured product. Default: false",
@@ -2072,7 +2275,12 @@
                             "catalog_visibility": {
                                 "description": "Catalog visibility. Default: visible",
                                 "type": "string",
-                                "enum": ["visible", "catalog", "search", "hidden"]
+                                "enum": [
+                                    "visible",
+                                    "catalog",
+                                    "search",
+                                    "hidden"
+                                ]
                             },
                             "description": {
                                 "description": "Product description.",
@@ -2105,7 +2313,9 @@
                                             "description": "Category ID. Example: 9"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2120,7 +2330,9 @@
                                             "description": "Tag ID. Example: 19"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2195,7 +2407,11 @@
                             "stock_status": {
                                 "description": "Stock status. Default: instock",
                                 "type": "string",
-                                "enum": ["instock", "outofstock", "onbackorder"]
+                                "enum": [
+                                    "instock",
+                                    "outofstock",
+                                    "onbackorder"
+                                ]
                             },
                             "manage_stock": {
                                 "description": "Stock management at product level. Default: false",
@@ -2236,7 +2452,11 @@
                             "tax_status": {
                                 "description": "Tax status. Default: taxable",
                                 "type": "string",
-                                "enum": ["taxable", "shipping", "none"]
+                                "enum": [
+                                    "taxable",
+                                    "shipping",
+                                    "none"
+                                ]
                             },
                             "tax_class": {
                                 "description": "Tax class.",
@@ -2304,7 +2524,9 @@
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createproduct": {
@@ -2375,7 +2597,10 @@
                                 "type": "boolean"
                             },
                             "stock_quantity": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "stock_status": {
                                 "type": "string"
@@ -2440,7 +2665,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2459,7 +2686,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2481,7 +2710,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2567,7 +2798,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2580,9 +2813,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createrefund",
             "name": "create-refund",
-            "output": ["ActionOutput_woocommerce_createrefund"],
+            "output": [
+                "ActionOutput_woocommerce_createrefund"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_createrefund", "ActionOutput_woocommerce_createrefund"],
+            "usedModels": [
+                "ActionInput_woocommerce_createrefund",
+                "ActionOutput_woocommerce_createrefund"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2644,17 +2882,23 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createrefund": {
@@ -2776,7 +3020,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2806,13 +3052,18 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 }
                             }
                         },
-                        "required": ["id", "amount"],
+                        "required": [
+                            "id",
+                            "amount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2825,9 +3076,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_woocommerce_createwebhook"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_woocommerce_createwebhook", "ActionOutput_woocommerce_createwebhook"],
+            "output": [
+                "ActionOutput_woocommerce_createwebhook"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_createwebhook",
+                "ActionOutput_woocommerce_createwebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2849,14 +3107,21 @@
                             "status": {
                                 "description": "Webhook status. Default is \"active\".",
                                 "type": "string",
-                                "enum": ["active", "paused", "disabled"]
+                                "enum": [
+                                    "active",
+                                    "paused",
+                                    "disabled"
+                                ]
                             },
                             "secret": {
                                 "description": "Secret key used to generate a hash of the delivered webhook.",
                                 "type": "string"
                             }
                         },
-                        "required": ["topic", "delivery_url"],
+                        "required": [
+                            "topic",
+                            "delivery_url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_createwebhook": {
@@ -2905,7 +3170,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2918,9 +3185,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deletecoupon",
             "name": "delete-coupon",
-            "output": ["ActionOutput_woocommerce_deletecoupon"],
+            "output": [
+                "ActionOutput_woocommerce_deletecoupon"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_deletecoupon", "ActionOutput_woocommerce_deletecoupon"],
+            "usedModels": [
+                "ActionInput_woocommerce_deletecoupon",
+                "ActionOutput_woocommerce_deletecoupon"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2936,7 +3208,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deletecoupon": {
@@ -2952,7 +3226,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2965,9 +3242,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deletecustomer",
             "name": "delete-customer",
-            "output": ["ActionOutput_woocommerce_deletecustomer"],
-            "scopes": ["read_customers", "write_customers"],
-            "usedModels": ["ActionInput_woocommerce_deletecustomer", "ActionOutput_woocommerce_deletecustomer"],
+            "output": [
+                "ActionOutput_woocommerce_deletecustomer"
+            ],
+            "scopes": [
+                "read_customers",
+                "write_customers"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deletecustomer",
+                "ActionOutput_woocommerce_deletecustomer"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2981,7 +3266,9 @@
                                 "description": "Customer ID to delete. Example: 3"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deletecustomer": {
@@ -3003,7 +3290,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3016,9 +3306,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deleteordernote",
             "name": "delete-order-note",
-            "output": ["ActionOutput_woocommerce_deleteordernote"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_deleteordernote", "ActionOutput_woocommerce_deleteordernote"],
+            "output": [
+                "ActionOutput_woocommerce_deleteordernote"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deleteordernote",
+                "ActionOutput_woocommerce_deleteordernote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3034,7 +3332,10 @@
                                 "description": "Order note ID. Example: 4"
                             }
                         },
-                        "required": ["order_id", "id"],
+                        "required": [
+                            "order_id",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deleteordernote": {
@@ -3050,7 +3351,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "order_id", "deleted"],
+                        "required": [
+                            "id",
+                            "order_id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3063,9 +3368,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deleteorder",
             "name": "delete-order",
-            "output": ["ActionOutput_woocommerce_deleteorder"],
+            "output": [
+                "ActionOutput_woocommerce_deleteorder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_deleteorder", "ActionOutput_woocommerce_deleteorder"],
+            "usedModels": [
+                "ActionInput_woocommerce_deleteorder",
+                "ActionOutput_woocommerce_deleteorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3081,7 +3391,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deleteorder": {
@@ -3106,7 +3418,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3119,9 +3434,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deleteproductcategory",
             "name": "delete-product-category",
-            "output": ["ActionOutput_woocommerce_deleteproductcategory"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_woocommerce_deleteproductcategory", "ActionOutput_woocommerce_deleteproductcategory"],
+            "output": [
+                "ActionOutput_woocommerce_deleteproductcategory"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deleteproductcategory",
+                "ActionOutput_woocommerce_deleteproductcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3133,7 +3455,9 @@
                                 "description": "Unique identifier for the product category to delete. Example: 17"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deleteproductcategory": {
@@ -3205,7 +3529,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["href"],
+                                            "required": [
+                                                "href"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3218,7 +3544,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["href"],
+                                            "required": [
+                                                "href"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -3226,7 +3554,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3239,9 +3569,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deleteproductreview",
             "name": "delete-product-review",
-            "output": ["ActionOutput_woocommerce_deleteproductreview"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_deleteproductreview", "ActionOutput_woocommerce_deleteproductreview"],
+            "output": [
+                "ActionOutput_woocommerce_deleteproductreview"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deleteproductreview",
+                "ActionOutput_woocommerce_deleteproductreview"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3257,7 +3595,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deleteproductreview": {
@@ -3291,7 +3631,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3304,9 +3646,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deleteproductvariation",
             "name": "delete-product-variation",
-            "output": ["ActionOutput_woocommerce_deleteproductvariation"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_deleteproductvariation", "ActionOutput_woocommerce_deleteproductvariation"],
+            "output": [
+                "ActionOutput_woocommerce_deleteproductvariation"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deleteproductvariation",
+                "ActionOutput_woocommerce_deleteproductvariation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3322,7 +3672,10 @@
                                 "description": "The variation ID to delete. Example: 14"
                             }
                         },
-                        "required": ["product_id", "variation_id"],
+                        "required": [
+                            "product_id",
+                            "variation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deleteproductvariation": {
@@ -3342,7 +3695,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3355,9 +3711,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deleteproduct",
             "name": "delete-product",
-            "output": ["ActionOutput_woocommerce_deleteproduct"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_deleteproduct", "ActionOutput_woocommerce_deleteproduct"],
+            "output": [
+                "ActionOutput_woocommerce_deleteproduct"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deleteproduct",
+                "ActionOutput_woocommerce_deleteproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3373,7 +3737,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deleteproduct": {
@@ -3399,7 +3765,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3412,9 +3781,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deleterefund",
             "name": "delete-refund",
-            "output": ["ActionOutput_woocommerce_deleterefund"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_deleterefund", "ActionOutput_woocommerce_deleterefund"],
+            "output": [
+                "ActionOutput_woocommerce_deleterefund"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deleterefund",
+                "ActionOutput_woocommerce_deleterefund"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3430,7 +3807,10 @@
                                 "description": "The refund ID. Example: 23"
                             }
                         },
-                        "required": ["order_id", "refund_id"],
+                        "required": [
+                            "order_id",
+                            "refund_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deleterefund": {
@@ -3446,7 +3826,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "order_id", "deleted"],
+                        "required": [
+                            "id",
+                            "order_id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3459,9 +3843,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_woocommerce_deletewebhook"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_deletewebhook", "ActionOutput_woocommerce_deletewebhook"],
+            "output": [
+                "ActionOutput_woocommerce_deletewebhook"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_deletewebhook",
+                "ActionOutput_woocommerce_deletewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3473,7 +3865,9 @@
                                 "description": "Webhook ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_deletewebhook": {
@@ -3492,7 +3886,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3505,9 +3901,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getcoupon",
             "name": "get-coupon",
-            "output": ["ActionOutput_woocommerce_getcoupon"],
+            "output": [
+                "ActionOutput_woocommerce_getcoupon"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_getcoupon", "ActionOutput_woocommerce_getcoupon"],
+            "usedModels": [
+                "ActionInput_woocommerce_getcoupon",
+                "ActionOutput_woocommerce_getcoupon"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3519,7 +3920,9 @@
                                 "description": "Coupon ID. Example: 17"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getcoupon": {
@@ -3618,7 +4021,10 @@
                             "used_by": {
                                 "type": "array",
                                 "items": {
-                                    "type": ["number", "string"]
+                                    "type": [
+                                        "number",
+                                        "string"
+                                    ]
                                 }
                             },
                             "meta_data": {
@@ -3636,7 +4042,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "key", "value"],
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3654,7 +4064,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 }
@@ -3695,9 +4107,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getcouponstotalsreport",
             "name": "get-coupons-totals-report",
-            "output": ["ActionOutput_woocommerce_getcouponstotalsreport"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getcouponstotalsreport", "ActionOutput_woocommerce_getcouponstotalsreport"],
+            "output": [
+                "ActionOutput_woocommerce_getcouponstotalsreport"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getcouponstotalsreport",
+                "ActionOutput_woocommerce_getcouponstotalsreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3727,12 +4146,18 @@
                                             "description": "Amount of coupons for this type."
                                         }
                                     },
-                                    "required": ["slug", "name", "total"],
+                                    "required": [
+                                        "slug",
+                                        "name",
+                                        "total"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["totals"],
+                        "required": [
+                            "totals"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3745,9 +4170,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getcustomer",
             "name": "get-customer",
-            "output": ["ActionOutput_woocommerce_getcustomer"],
+            "output": [
+                "ActionOutput_woocommerce_getcustomer"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_getcustomer", "ActionOutput_woocommerce_getcustomer"],
+            "usedModels": [
+                "ActionInput_woocommerce_getcustomer",
+                "ActionOutput_woocommerce_getcustomer"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3759,7 +4189,9 @@
                                 "description": "Customer ID. Example: 2"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getcustomer": {
@@ -3890,7 +4322,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3903,9 +4338,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getcustomerstotalsreport",
             "name": "get-customers-totals-report",
-            "output": ["ActionOutput_woocommerce_getcustomerstotalsreport"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getcustomerstotalsreport", "ActionOutput_woocommerce_getcustomerstotalsreport"],
+            "output": [
+                "ActionOutput_woocommerce_getcustomerstotalsreport"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getcustomerstotalsreport",
+                "ActionOutput_woocommerce_getcustomerstotalsreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3932,7 +4374,11 @@
                                     "description": "Amount of customers. Example: 2"
                                 }
                             },
-                            "required": ["slug", "name", "total"],
+                            "required": [
+                                "slug",
+                                "name",
+                                "total"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -3946,9 +4392,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getordernote",
             "name": "get-order-note",
-            "output": ["ActionOutput_woocommerce_getordernote"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getordernote", "ActionOutput_woocommerce_getordernote"],
+            "output": [
+                "ActionOutput_woocommerce_getordernote"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getordernote",
+                "ActionOutput_woocommerce_getordernote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3964,7 +4417,10 @@
                                 "description": "Order note ID. Example: 2"
                             }
                         },
-                        "required": ["order_id", "id"],
+                        "required": [
+                            "order_id",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getordernote": {
@@ -3992,7 +4448,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4005,9 +4463,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getorder",
             "name": "get-order",
-            "output": ["ActionOutput_woocommerce_getorder"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getorder", "ActionOutput_woocommerce_getorder"],
+            "output": [
+                "ActionOutput_woocommerce_getorder"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getorder",
+                "ActionOutput_woocommerce_getorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4019,7 +4484,9 @@
                                 "description": "Order ID. Example: 18"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getorder": {
@@ -4241,7 +4708,12 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "product_id", "quantity"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "product_id",
+                                        "quantity"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4266,7 +4738,9 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4279,9 +4753,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getorderstotalsreport",
             "name": "get-orders-totals-report",
-            "output": ["ActionOutput_woocommerce_getorderstotalsreport"],
+            "output": [
+                "ActionOutput_woocommerce_getorderstotalsreport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_getorderstotalsreport", "ActionOutput_woocommerce_getorderstotalsreport"],
+            "usedModels": [
+                "ActionInput_woocommerce_getorderstotalsreport",
+                "ActionOutput_woocommerce_getorderstotalsreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4308,7 +4787,11 @@
                                     "description": "Number of orders with this status"
                                 }
                             },
-                            "required": ["slug", "name", "total"],
+                            "required": [
+                                "slug",
+                                "name",
+                                "total"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -4322,9 +4805,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getproductcategory",
             "name": "get-product-category",
-            "output": ["ActionOutput_woocommerce_getproductcategory"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getproductcategory", "ActionOutput_woocommerce_getproductcategory"],
+            "output": [
+                "ActionOutput_woocommerce_getproductcategory"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getproductcategory",
+                "ActionOutput_woocommerce_getproductcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4336,7 +4826,9 @@
                                 "description": "Product category ID. Example: 15"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getproductcategory": {
@@ -4388,7 +4880,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "menu_order": {
@@ -4398,7 +4892,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4411,9 +4908,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getproductreview",
             "name": "get-product-review",
-            "output": ["ActionOutput_woocommerce_getproductreview"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getproductreview", "ActionOutput_woocommerce_getproductreview"],
+            "output": [
+                "ActionOutput_woocommerce_getproductreview"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getproductreview",
+                "ActionOutput_woocommerce_getproductreview"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4427,7 +4931,9 @@
                                 "description": "Unique identifier for the product review. Example: 3"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getproductreview": {
@@ -4480,7 +4986,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4493,9 +5001,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getproducttag",
             "name": "get-product-tag",
-            "output": ["ActionOutput_woocommerce_getproducttag"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getproducttag", "ActionOutput_woocommerce_getproducttag"],
+            "output": [
+                "ActionOutput_woocommerce_getproducttag"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getproducttag",
+                "ActionOutput_woocommerce_getproducttag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4507,7 +5022,9 @@
                                 "description": "Product tag ID. Example: 19"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getproducttag": {
@@ -4529,7 +5046,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4542,9 +5062,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getproductvariation",
             "name": "get-product-variation",
-            "output": ["ActionOutput_woocommerce_getproductvariation"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getproductvariation", "ActionOutput_woocommerce_getproductvariation"],
+            "output": [
+                "ActionOutput_woocommerce_getproductvariation"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getproductvariation",
+                "ActionOutput_woocommerce_getproductvariation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4564,7 +5091,10 @@
                                 "description": "The ID of the product variation to retrieve. Example: 16"
                             }
                         },
-                        "required": ["product_id", "variation_id"],
+                        "required": [
+                            "product_id",
+                            "variation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getproductvariation": {
@@ -4622,7 +5152,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["draft", "pending", "private", "publish"]
+                                "enum": [
+                                    "draft",
+                                    "pending",
+                                    "private",
+                                    "publish"
+                                ]
                             },
                             "purchasable": {
                                 "type": "boolean"
@@ -4645,7 +5180,11 @@
                             },
                             "tax_status": {
                                 "type": "string",
-                                "enum": ["taxable", "shipping", "none"]
+                                "enum": [
+                                    "taxable",
+                                    "shipping",
+                                    "none"
+                                ]
                             },
                             "tax_class": {
                                 "type": "string"
@@ -4658,11 +5197,19 @@
                             },
                             "stock_status": {
                                 "type": "string",
-                                "enum": ["instock", "outofstock", "onbackorder"]
+                                "enum": [
+                                    "instock",
+                                    "outofstock",
+                                    "onbackorder"
+                                ]
                             },
                             "backorders": {
                                 "type": "string",
-                                "enum": ["no", "notify", "yes"]
+                                "enum": [
+                                    "no",
+                                    "notify",
+                                    "yes"
+                                ]
                             },
                             "backorders_allowed": {
                                 "type": "boolean"
@@ -4762,7 +5309,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4775,9 +5324,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getproduct",
             "name": "get-product",
-            "output": ["ActionOutput_woocommerce_getproduct"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getproduct", "ActionOutput_woocommerce_getproduct"],
+            "output": [
+                "ActionOutput_woocommerce_getproduct"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getproduct",
+                "ActionOutput_woocommerce_getproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4789,7 +5345,9 @@
                                 "description": "The unique identifier for the product. Example: 13"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_getproduct": {
@@ -4847,19 +5405,34 @@
                                 "type": "string"
                             },
                             "sale_price": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_from": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_from_gmt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_to": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_to_gmt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "price_html": {
                                 "type": "string"
@@ -4905,7 +5478,10 @@
                                 "type": "boolean"
                             },
                             "stock_quantity": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "stock_status": {
                                 "type": "string"
@@ -4938,7 +5514,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["length", "width", "height"],
+                                "required": [
+                                    "length",
+                                    "width",
+                                    "height"
+                                ],
                                 "additionalProperties": false
                             },
                             "shipping_required": {
@@ -5001,7 +5581,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "slug"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "slug"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5020,7 +5604,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "slug"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "slug"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5054,7 +5642,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "date_created", "date_created_gmt", "date_modified", "date_modified_gmt", "src", "name", "alt"],
+                                    "required": [
+                                        "id",
+                                        "date_created",
+                                        "date_created_gmt",
+                                        "date_modified",
+                                        "date_modified_gmt",
+                                        "src",
+                                        "name",
+                                        "alt"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5085,7 +5682,14 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "position", "visible", "variation", "options"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "position",
+                                        "visible",
+                                        "variation",
+                                        "options"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5121,7 +5725,11 @@
                                         },
                                         "value": {}
                                     },
-                                    "required": ["id", "key", "value"],
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -5186,9 +5794,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getproductstotalsreport",
             "name": "get-products-totals-report",
-            "output": ["ActionOutput_woocommerce_getproductstotalsreport"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getproductstotalsreport", "ActionOutput_woocommerce_getproductstotalsreport"],
+            "output": [
+                "ActionOutput_woocommerce_getproductstotalsreport"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getproductstotalsreport",
+                "ActionOutput_woocommerce_getproductstotalsreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5212,7 +5827,11 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["slug", "name", "total"],
+                            "required": [
+                                "slug",
+                                "name",
+                                "total"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -5226,9 +5845,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_getsalesreport",
             "name": "get-sales-report",
-            "output": ["ActionOutput_woocommerce_getsalesreport"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_getsalesreport", "ActionOutput_woocommerce_getsalesreport"],
+            "output": [
+                "ActionOutput_woocommerce_getsalesreport"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_getsalesreport",
+                "ActionOutput_woocommerce_getsalesreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5315,7 +5941,15 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["sales", "orders", "items", "tax", "shipping", "discount", "customers"],
+                                        "required": [
+                                            "sales",
+                                            "orders",
+                                            "items",
+                                            "tax",
+                                            "shipping",
+                                            "discount",
+                                            "customers"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -5350,9 +5984,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_gettopsellersreport",
             "name": "get-top-sellers-report",
-            "output": ["ActionOutput_woocommerce_gettopsellersreport"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_gettopsellersreport", "ActionOutput_woocommerce_gettopsellersreport"],
+            "output": [
+                "ActionOutput_woocommerce_gettopsellersreport"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_gettopsellersreport",
+                "ActionOutput_woocommerce_gettopsellersreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5362,7 +6003,12 @@
                             "period": {
                                 "description": "Report period. Example: \"week\"",
                                 "type": "string",
-                                "enum": ["week", "month", "last_month", "year"]
+                                "enum": [
+                                    "week",
+                                    "month",
+                                    "last_month",
+                                    "year"
+                                ]
                             },
                             "date_min": {
                                 "description": "Start date in YYYY-MM-DD format. Example: \"2024-01-01\"",
@@ -5390,7 +6036,11 @@
                                     "type": "number"
                                 }
                             },
-                            "required": ["title", "product_id", "quantity"],
+                            "required": [
+                                "title",
+                                "product_id",
+                                "quantity"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -5404,9 +6054,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listcoupons",
             "name": "list-coupons",
-            "output": ["ActionOutput_woocommerce_listcoupons"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_listcoupons", "ActionOutput_woocommerce_listcoupons"],
+            "output": [
+                "ActionOutput_woocommerce_listcoupons"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_listcoupons",
+                "ActionOutput_woocommerce_listcoupons"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5460,12 +6117,22 @@
                             "order": {
                                 "description": "Order sort attribute ascending or descending.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "orderby": {
                                 "description": "Sort collection by object attribute.",
                                 "type": "string",
-                                "enum": ["id", "include", "name", "date", "modified", "code"]
+                                "enum": [
+                                    "id",
+                                    "include",
+                                    "name",
+                                    "date",
+                                    "modified",
+                                    "code"
+                                ]
                             },
                             "code": {
                                 "description": "Limit result set to resources with a specific code.",
@@ -5497,7 +6164,11 @@
                                         "discount_type": {
                                             "description": "Determines the type of discount that will be applied.",
                                             "type": "string",
-                                            "enum": ["percent", "fixed_cart", "fixed_product"]
+                                            "enum": [
+                                                "percent",
+                                                "fixed_cart",
+                                                "fixed_product"
+                                            ]
                                         },
                                         "description": {
                                             "description": "Coupon description.",
@@ -5521,11 +6192,17 @@
                                         },
                                         "date_expires": {
                                             "description": "The date the coupon expires.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_expires_gmt": {
                                             "description": "The date the coupon expires, as GMT.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "usage_count": {
                                             "description": "Number of times the coupon has been used already.",
@@ -5551,15 +6228,24 @@
                                         },
                                         "usage_limit": {
                                             "description": "How many times the coupon can be used.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "usage_limit_per_user": {
                                             "description": "How many times the coupon can be used per customer.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "limit_usage_to_x_items": {
                                             "description": "Max number of items in the cart the coupon can be applied to.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "free_shipping": {
                                             "description": "Whether the coupon grants free shipping.",
@@ -5606,7 +6292,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "code"],
+                                    "required": [
+                                        "id",
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of coupons."
@@ -5620,7 +6309,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["coupons"],
+                        "required": [
+                            "coupons"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5633,9 +6324,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listcustomers",
             "name": "list-customers",
-            "output": ["ActionOutput_woocommerce_listcustomers"],
+            "output": [
+                "ActionOutput_woocommerce_listcustomers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_listcustomers", "ActionOutput_woocommerce_listcustomers"],
+            "usedModels": [
+                "ActionInput_woocommerce_listcustomers",
+                "ActionOutput_woocommerce_listcustomers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5665,7 +6361,10 @@
                             "order": {
                                 "description": "Sort order.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "email": {
                                 "description": "Filter by email address.",
@@ -5727,7 +6426,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "email", "first_name", "last_name", "role", "username"],
+                                    "required": [
+                                        "id",
+                                        "email",
+                                        "first_name",
+                                        "last_name",
+                                        "role",
+                                        "username"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5735,7 +6441,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customers"],
+                        "required": [
+                            "customers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5748,9 +6456,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listordernotes",
             "name": "list-order-notes",
-            "output": ["ActionOutput_woocommerce_listordernotes"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_listordernotes", "ActionOutput_woocommerce_listordernotes"],
+            "output": [
+                "ActionOutput_woocommerce_listordernotes"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_listordernotes",
+                "ActionOutput_woocommerce_listordernotes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5764,15 +6479,24 @@
                             "type": {
                                 "description": "Limit result to customers or internal notes. Default is any.",
                                 "type": "string",
-                                "enum": ["any", "customer", "internal"]
+                                "enum": [
+                                    "any",
+                                    "customer",
+                                    "internal"
+                                ]
                             },
                             "context": {
                                 "description": "Scope under which the request is made. Default is view.",
                                 "type": "string",
-                                "enum": ["view", "edit"]
+                                "enum": [
+                                    "view",
+                                    "edit"
+                                ]
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_listordernotes": {
@@ -5805,12 +6529,16 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5823,9 +6551,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listorders",
             "name": "list-orders",
-            "output": ["ActionOutput_woocommerce_listorders"],
+            "output": [
+                "ActionOutput_woocommerce_listorders"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_listorders", "ActionOutput_woocommerce_listorders"],
+            "usedModels": [
+                "ActionInput_woocommerce_listorders",
+                "ActionOutput_woocommerce_listorders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5851,7 +6584,17 @@
                             "status": {
                                 "description": "Limit results to orders with a specific status. Default: any",
                                 "type": "string",
-                                "enum": ["any", "pending", "processing", "on-hold", "completed", "cancelled", "refunded", "failed", "trash"]
+                                "enum": [
+                                    "any",
+                                    "pending",
+                                    "processing",
+                                    "on-hold",
+                                    "completed",
+                                    "cancelled",
+                                    "refunded",
+                                    "failed",
+                                    "trash"
+                                ]
                             },
                             "customer": {
                                 "description": "Limit results to orders assigned a specific customer ID",
@@ -5888,12 +6631,22 @@
                             "order": {
                                 "description": "Order sort attribute. Default: desc",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "orderby": {
                                 "description": "Sort collection by object attribute. Default: date",
                                 "type": "string",
-                                "enum": ["date", "modified", "id", "include", "title", "slug"]
+                                "enum": [
+                                    "date",
+                                    "modified",
+                                    "id",
+                                    "include",
+                                    "title",
+                                    "slug"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -6060,16 +6813,28 @@
                                             "type": "string"
                                         },
                                         "date_paid": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_paid_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_completed": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_completed_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "cart_hash": {
                                             "type": "string"
@@ -6110,18 +6875,25 @@
                                                         "type": "string"
                                                     },
                                                     "sku": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "price": {
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6132,7 +6904,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["orders"],
+                        "required": [
+                            "orders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6145,9 +6919,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listproductcategories",
             "name": "list-product-categories",
-            "output": ["ActionOutput_woocommerce_listproductcategories"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_listproductcategories", "ActionOutput_woocommerce_listproductcategories"],
+            "output": [
+                "ActionOutput_woocommerce_listproductcategories"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_listproductcategories",
+                "ActionOutput_woocommerce_listproductcategories"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6165,12 +6946,23 @@
                             "order": {
                                 "description": "Order sort attribute ascending or descending. Default is asc.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "orderby": {
                                 "description": "Sort collection by resource attribute. Default is name.",
                                 "type": "string",
-                                "enum": ["id", "include", "name", "slug", "term_group", "description", "count"]
+                                "enum": [
+                                    "id",
+                                    "include",
+                                    "name",
+                                    "slug",
+                                    "term_group",
+                                    "description",
+                                    "count"
+                                ]
                             },
                             "hide_empty": {
                                 "description": "Whether to hide resources not assigned to any products. Default is false.",
@@ -6273,7 +7065,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "slug", "parent", "description", "display", "menu_order", "count"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "slug",
+                                        "parent",
+                                        "description",
+                                        "display",
+                                        "menu_order",
+                                        "count"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6282,7 +7083,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["categories"],
+                        "required": [
+                            "categories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6295,9 +7098,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listproductreviews",
             "name": "list-product-reviews",
-            "output": ["ActionOutput_woocommerce_listproductreviews"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_listproductreviews", "ActionOutput_woocommerce_listproductreviews"],
+            "output": [
+                "ActionOutput_woocommerce_listproductreviews"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_listproductreviews",
+                "ActionOutput_woocommerce_listproductreviews"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6349,12 +7159,22 @@
                             "order": {
                                 "description": "Order sort attribute ascending or descending. Default is desc.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "orderby": {
                                 "description": "Sort collection by resource attribute. Default is date_gmt.",
                                 "type": "string",
-                                "enum": ["date", "date_gmt", "id", "slug", "include", "product"]
+                                "enum": [
+                                    "date",
+                                    "date_gmt",
+                                    "id",
+                                    "slug",
+                                    "include",
+                                    "product"
+                                ]
                             },
                             "reviewer": {
                                 "description": "Limit result set to reviews assigned to specific user IDs.",
@@ -6387,7 +7207,13 @@
                             "status": {
                                 "description": "Limit result set to reviews assigned a specific status. Default is approved.",
                                 "type": "string",
-                                "enum": ["all", "hold", "approved", "spam", "trash"]
+                                "enum": [
+                                    "all",
+                                    "hold",
+                                    "approved",
+                                    "spam",
+                                    "trash"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -6440,7 +7266,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6448,7 +7276,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6461,9 +7291,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listproductvariations",
             "name": "list-product-variations",
-            "output": ["ActionOutput_woocommerce_listproductvariations"],
+            "output": [
+                "ActionOutput_woocommerce_listproductvariations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_listproductvariations", "ActionOutput_woocommerce_listproductvariations"],
+            "usedModels": [
+                "ActionInput_woocommerce_listproductvariations",
+                "ActionOutput_woocommerce_listproductvariations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6593,7 +7428,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_listproductvariations": {
@@ -6635,19 +7472,34 @@
                                             "type": "string"
                                         },
                                         "sale_price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to_gmt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "on_sale": {
                                             "type": "boolean"
@@ -6691,7 +7543,10 @@
                                             "type": "boolean"
                                         },
                                         "stock_quantity": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "stock_status": {
                                             "type": "string"
@@ -6814,7 +7669,9 @@
                                         },
                                         "_links": {}
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -6822,7 +7679,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6835,9 +7694,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listproducts",
             "name": "list-products",
-            "output": ["ActionOutput_woocommerce_listproducts"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_listproducts", "ActionOutput_woocommerce_listproducts"],
+            "output": [
+                "ActionOutput_woocommerce_listproducts"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_listproducts",
+                "ActionOutput_woocommerce_listproducts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6918,67 +7784,130 @@
                                             "type": "string"
                                         },
                                         "slug": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "permalink": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_created": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_modified": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "featured": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "catalog_visibility": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "short_description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sku": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "regular_price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sale_price": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_from": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_on_sale_to": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "on_sale": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "purchasable": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "total_sales": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "virtual": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "downloadable": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "downloads": {
                                             "anyOf": [
@@ -6998,40 +7927,76 @@
                                             ]
                                         },
                                         "external_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "button_text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "tax_status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "tax_class": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "manage_stock": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "stock_quantity": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "stock_status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "backorders": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "backorders_allowed": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "backordered": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "sold_individually": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "weight": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "dimensions": {
                                             "anyOf": [
@@ -7048,25 +8013,46 @@
                                             ]
                                         },
                                         "shipping_required": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "shipping_taxable": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "shipping_class": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "shipping_class_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "reviews_allowed": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "average_rating": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "rating_count": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "related_ids": {
                                             "anyOf": [
@@ -7108,10 +8094,16 @@
                                             ]
                                         },
                                         "parent_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "purchase_note": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "categories": {
                                             "anyOf": [
@@ -7225,7 +8217,10 @@
                                             ]
                                         },
                                         "menu_order": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "meta_data": {
                                             "anyOf": [
@@ -7245,7 +8240,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -7253,7 +8251,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7266,9 +8266,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listrefunds",
             "name": "list-refunds",
-            "output": ["ActionOutput_woocommerce_listrefunds"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_listrefunds", "ActionOutput_woocommerce_listrefunds"],
+            "output": [
+                "ActionOutput_woocommerce_listrefunds"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_listrefunds",
+                "ActionOutput_woocommerce_listrefunds"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7288,7 +8295,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["orderId"],
+                        "required": [
+                            "orderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_listrefunds": {
@@ -7369,7 +8378,9 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -7377,7 +8388,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -7391,7 +8404,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["refunds"],
+                        "required": [
+                            "refunds"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7404,9 +8419,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listreports",
             "name": "list-reports",
-            "output": ["ActionOutput_woocommerce_listreports"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_woocommerce_listreports", "ActionOutput_woocommerce_listreports"],
+            "output": [
+                "ActionOutput_woocommerce_listreports"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_listreports",
+                "ActionOutput_woocommerce_listreports"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7441,7 +8463,9 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["href"],
+                                                        "required": [
+                                                            "href"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -7454,21 +8478,31 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["href"],
+                                                        "required": [
+                                                            "href"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["self", "collection"],
+                                            "required": [
+                                                "self",
+                                                "collection"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["slug", "description"],
+                                    "required": [
+                                        "slug",
+                                        "description"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7481,9 +8515,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_woocommerce_listwebhooks"],
+            "output": [
+                "ActionOutput_woocommerce_listwebhooks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_listwebhooks", "ActionOutput_woocommerce_listwebhooks"],
+            "usedModels": [
+                "ActionInput_woocommerce_listwebhooks",
+                "ActionOutput_woocommerce_listwebhooks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7576,7 +8615,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "status", "topic", "resource", "event", "hooks", "delivery_url"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "status",
+                                        "topic",
+                                        "resource",
+                                        "event",
+                                        "hooks",
+                                        "delivery_url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -7584,7 +8632,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7597,9 +8647,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_updatecustomer",
             "name": "update-customer",
-            "output": ["ActionOutput_woocommerce_updatecustomer"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_woocommerce_updatecustomer", "ActionOutput_woocommerce_updatecustomer"],
+            "output": [
+                "ActionOutput_woocommerce_updatecustomer"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_updatecustomer",
+                "ActionOutput_woocommerce_updatecustomer"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7714,7 +8771,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_updatecustomer": {
@@ -7845,7 +8904,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7858,9 +8920,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_updateproductcategory",
             "name": "update-product-category",
-            "output": ["ActionOutput_woocommerce_updateproductcategory"],
-            "scopes": ["read_products", "write_products"],
-            "usedModels": ["ActionInput_woocommerce_updateproductcategory", "ActionOutput_woocommerce_updateproductcategory"],
+            "output": [
+                "ActionOutput_woocommerce_updateproductcategory"
+            ],
+            "scopes": [
+                "read_products",
+                "write_products"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_updateproductcategory",
+                "ActionOutput_woocommerce_updateproductcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7907,7 +8977,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_updateproductcategory": {
@@ -7968,7 +9040,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7981,9 +9056,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_updateproductreview",
             "name": "update-product-review",
-            "output": ["ActionOutput_woocommerce_updateproductreview"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_updateproductreview", "ActionOutput_woocommerce_updateproductreview"],
+            "output": [
+                "ActionOutput_woocommerce_updateproductreview"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_updateproductreview",
+                "ActionOutput_woocommerce_updateproductreview"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -8029,10 +9112,19 @@
                             "status": {
                                 "description": "Status of the review.",
                                 "type": "string",
-                                "enum": ["approved", "hold", "spam", "unspam", "trash", "untrash"]
+                                "enum": [
+                                    "approved",
+                                    "hold",
+                                    "spam",
+                                    "unspam",
+                                    "trash",
+                                    "untrash"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_updateproductreview": {
@@ -8083,7 +9175,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "product_id"],
+                        "required": [
+                            "id",
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -8096,9 +9191,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_updateproducttag",
             "name": "update-product-tag",
-            "output": ["ActionOutput_woocommerce_updateproducttag"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_woocommerce_updateproducttag", "ActionOutput_woocommerce_updateproducttag"],
+            "output": [
+                "ActionOutput_woocommerce_updateproducttag"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_updateproducttag",
+                "ActionOutput_woocommerce_updateproducttag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -8122,7 +9224,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_updateproducttag": {
@@ -8144,7 +9248,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -8157,9 +9263,14 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_updateproductvariation",
             "name": "update-product-variation",
-            "output": ["ActionOutput_woocommerce_updateproductvariation"],
+            "output": [
+                "ActionOutput_woocommerce_updateproductvariation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_woocommerce_updateproductvariation", "ActionOutput_woocommerce_updateproductvariation"],
+            "usedModels": [
+                "ActionInput_woocommerce_updateproductvariation",
+                "ActionOutput_woocommerce_updateproductvariation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -8223,7 +9334,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["product_id", "variation_id"],
+                        "required": [
+                            "product_id",
+                            "variation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_updateproductvariation": {
@@ -8260,7 +9374,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -8273,9 +9389,17 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_updateproduct",
             "name": "update-product",
-            "output": ["ActionOutput_woocommerce_updateproduct"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_woocommerce_updateproduct", "ActionOutput_woocommerce_updateproduct"],
+            "output": [
+                "ActionOutput_woocommerce_updateproduct"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_updateproduct",
+                "ActionOutput_woocommerce_updateproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -8297,12 +9421,22 @@
                             "type": {
                                 "description": "Product type",
                                 "type": "string",
-                                "enum": ["simple", "grouped", "external", "variable"]
+                                "enum": [
+                                    "simple",
+                                    "grouped",
+                                    "external",
+                                    "variable"
+                                ]
                             },
                             "status": {
                                 "description": "Product status",
                                 "type": "string",
-                                "enum": ["draft", "pending", "private", "publish"]
+                                "enum": [
+                                    "draft",
+                                    "pending",
+                                    "private",
+                                    "publish"
+                                ]
                             },
                             "featured": {
                                 "description": "Whether the product is featured",
@@ -8311,7 +9445,12 @@
                             "catalog_visibility": {
                                 "description": "Catalog visibility",
                                 "type": "string",
-                                "enum": ["visible", "catalog", "search", "hidden"]
+                                "enum": [
+                                    "visible",
+                                    "catalog",
+                                    "search",
+                                    "hidden"
+                                ]
                             },
                             "description": {
                                 "description": "Product description",
@@ -8331,15 +9470,24 @@
                             },
                             "sale_price": {
                                 "description": "Sale price",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_from": {
                                 "description": "Start date of sale price",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_to": {
                                 "description": "End date of sale price",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "virtual": {
                                 "description": "Whether the product is virtual",
@@ -8351,11 +9499,17 @@
                             },
                             "download_limit": {
                                 "description": "Download limit",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "download_expiry": {
                                 "description": "Download expiry days",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "external_url": {
                                 "description": "External URL for external products",
@@ -8368,7 +9522,11 @@
                             "tax_status": {
                                 "description": "Tax status",
                                 "type": "string",
-                                "enum": ["taxable", "shipping", "none"]
+                                "enum": [
+                                    "taxable",
+                                    "shipping",
+                                    "none"
+                                ]
                             },
                             "tax_class": {
                                 "description": "Tax class",
@@ -8380,17 +9538,28 @@
                             },
                             "stock_quantity": {
                                 "description": "Stock quantity",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "stock_status": {
                                 "description": "Stock status",
                                 "type": "string",
-                                "enum": ["instock", "outofstock", "onbackorder"]
+                                "enum": [
+                                    "instock",
+                                    "outofstock",
+                                    "onbackorder"
+                                ]
                             },
                             "backorders": {
                                 "description": "Backorders setting",
                                 "type": "string",
-                                "enum": ["no", "notify", "yes"]
+                                "enum": [
+                                    "no",
+                                    "notify",
+                                    "yes"
+                                ]
                             },
                             "sold_individually": {
                                 "description": "Whether to sell individually",
@@ -8442,7 +9611,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8456,7 +9627,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8510,7 +9683,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["name", "options"],
+                                    "required": [
+                                        "name",
+                                        "options"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8530,7 +9706,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "option"],
+                                    "required": [
+                                        "name",
+                                        "option"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8554,12 +9733,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["key", "value"],
+                                    "required": [
+                                        "key",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_updateproduct": {
@@ -8579,18 +9763,33 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["simple", "grouped", "external", "variable"]
+                                "enum": [
+                                    "simple",
+                                    "grouped",
+                                    "external",
+                                    "variable"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["draft", "pending", "private", "publish"]
+                                "enum": [
+                                    "draft",
+                                    "pending",
+                                    "private",
+                                    "publish"
+                                ]
                             },
                             "featured": {
                                 "type": "boolean"
                             },
                             "catalog_visibility": {
                                 "type": "string",
-                                "enum": ["visible", "catalog", "search", "hidden"]
+                                "enum": [
+                                    "visible",
+                                    "catalog",
+                                    "search",
+                                    "hidden"
+                                ]
                             },
                             "description": {
                                 "type": "string"
@@ -8608,13 +9807,22 @@
                                 "type": "string"
                             },
                             "sale_price": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_from": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_on_sale_to": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "on_sale": {
                                 "type": "boolean"
@@ -8632,10 +9840,16 @@
                                 "type": "boolean"
                             },
                             "download_limit": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "download_expiry": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "external_url": {
                                 "type": "string"
@@ -8645,7 +9859,11 @@
                             },
                             "tax_status": {
                                 "type": "string",
-                                "enum": ["taxable", "shipping", "none"]
+                                "enum": [
+                                    "taxable",
+                                    "shipping",
+                                    "none"
+                                ]
                             },
                             "tax_class": {
                                 "type": "string"
@@ -8654,15 +9872,26 @@
                                 "type": "boolean"
                             },
                             "stock_quantity": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "stock_status": {
                                 "type": "string",
-                                "enum": ["instock", "outofstock", "onbackorder"]
+                                "enum": [
+                                    "instock",
+                                    "outofstock",
+                                    "onbackorder"
+                                ]
                             },
                             "backorders": {
                                 "type": "string",
-                                "enum": ["no", "notify", "yes"]
+                                "enum": [
+                                    "no",
+                                    "notify",
+                                    "yes"
+                                ]
                             },
                             "backorders_allowed": {
                                 "type": "boolean"
@@ -8689,7 +9918,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["length", "width", "height"],
+                                "required": [
+                                    "length",
+                                    "width",
+                                    "height"
+                                ],
                                 "additionalProperties": false
                             },
                             "shipping_required": {
@@ -8702,7 +9935,10 @@
                                 "type": "string"
                             },
                             "shipping_class_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "reviews_allowed": {
                                 "type": "boolean"
@@ -8734,7 +9970,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "slug"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "slug"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8753,7 +9993,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "slug"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "slug"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8775,7 +10019,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "src", "name", "alt"],
+                                    "required": [
+                                        "id",
+                                        "src",
+                                        "name",
+                                        "alt"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8806,7 +10055,14 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "position", "visible", "variation", "options"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "position",
+                                        "visible",
+                                        "variation",
+                                        "options"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8825,7 +10081,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "option"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "option"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -8906,9 +10166,16 @@
             "endpoint": null,
             "input": "ActionInput_woocommerce_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_woocommerce_updatewebhook"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_woocommerce_updatewebhook", "ActionOutput_woocommerce_updatewebhook"],
+            "output": [
+                "ActionOutput_woocommerce_updatewebhook"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_woocommerce_updatewebhook",
+                "ActionOutput_woocommerce_updatewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -8926,7 +10193,11 @@
                             "status": {
                                 "description": "Webhook status. Options: active, paused, disabled.",
                                 "type": "string",
-                                "enum": ["active", "paused", "disabled"]
+                                "enum": [
+                                    "active",
+                                    "paused",
+                                    "disabled"
+                                ]
                             },
                             "topic": {
                                 "description": "Webhook topic. Example: order.updated",
@@ -8941,7 +10212,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_woocommerce_updatewebhook": {
@@ -8987,7 +10260,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "status", "topic", "resource", "event", "hooks", "delivery_url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "topic",
+                            "resource",
+                            "event",
+                            "hooks",
+                            "delivery_url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -9008,12 +10290,16 @@
             ],
             "input": null,
             "name": "coupons",
-            "output": ["Coupon"],
+            "output": [
+                "Coupon"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Coupon"],
+            "usedModels": [
+                "Coupon"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9125,12 +10411,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "code"],
+                        "required": [
+                            "id",
+                            "code"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -9144,12 +10435,16 @@
             ],
             "input": null,
             "name": "customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer"],
+            "usedModels": [
+                "Customer"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9282,7 +10577,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -9301,12 +10599,16 @@
             ],
             "input": null,
             "name": "orders",
-            "output": ["Order"],
+            "output": [
+                "Order"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Order"],
+            "usedModels": [
+                "Order"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9511,12 +10813,16 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -9530,12 +10836,16 @@
             ],
             "input": null,
             "name": "product-categories",
-            "output": ["ProductCategory"],
+            "output": [
+                "ProductCategory"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProductCategory"],
+            "usedModels": [
+                "ProductCategory"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9598,7 +10908,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -9617,12 +10930,16 @@
             ],
             "input": null,
             "name": "product-reviews",
-            "output": ["ProductReview"],
+            "output": [
+                "ProductReview"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProductReview"],
+            "usedModels": [
+                "ProductReview"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9663,7 +10980,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "product_id"],
+                        "required": [
+                            "id",
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -9682,12 +11002,16 @@
             ],
             "input": null,
             "name": "product-tags",
-            "output": ["ProductTag"],
+            "output": [
+                "ProductTag"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProductTag"],
+            "usedModels": [
+                "ProductTag"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9711,7 +11035,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -9730,12 +11056,16 @@
             ],
             "input": null,
             "name": "product-variations",
-            "output": ["ProductVariation"],
+            "output": [
+                "ProductVariation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProductVariation"],
+            "usedModels": [
+                "ProductVariation"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9783,7 +11113,10 @@
                                 "type": "number"
                             },
                             "manage_stock": {
-                                "type": ["boolean", "string"]
+                                "type": [
+                                    "boolean",
+                                    "string"
+                                ]
                             },
                             "weight": {
                                 "type": "string"
@@ -9856,7 +11189,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "product_id", "date_modified"],
+                        "required": [
+                            "id",
+                            "product_id",
+                            "date_modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -9875,12 +11212,16 @@
             ],
             "input": null,
             "name": "refunds",
-            "output": ["Refund"],
+            "output": [
+                "Refund"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Refund"],
+            "usedModels": [
+                "Refund"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -9915,12 +11256,19 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "order_id", "date_created", "date_created_gmt"],
+                        "required": [
+                            "id",
+                            "order_id",
+                            "date_created",
+                            "date_created_gmt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

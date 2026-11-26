@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_createheartbeatsbulk",
             "name": "create-heartbeats-bulk",
-            "output": ["ActionOutput_wakatime_createheartbeatsbulk"],
-            "scopes": ["write_heartbeats"],
-            "usedModels": ["ActionInput_wakatime_createheartbeatsbulk", "ActionOutput_wakatime_createheartbeatsbulk"],
+            "output": [
+                "ActionOutput_wakatime_createheartbeatsbulk"
+            ],
+            "scopes": [
+                "write_heartbeats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_createheartbeatsbulk",
+                "ActionOutput_wakatime_createheartbeatsbulk"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -30,7 +37,12 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["file", "app", "url", "domain"],
+                                            "enum": [
+                                                "file",
+                                                "app",
+                                                "url",
+                                                "domain"
+                                            ],
                                             "description": "Type of the entity. One of \"file\", \"app\", \"url\", or \"domain\"."
                                         },
                                         "time": {
@@ -124,13 +136,19 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["entity", "type", "time"],
+                                    "required": [
+                                        "entity",
+                                        "type",
+                                        "time"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Heartbeats to send in a single request. WakaTime accepts between 1 and 25 heartbeats per call."
                             }
                         },
-                        "required": ["heartbeats"],
+                        "required": [
+                            "heartbeats"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for sending one or more coding-activity heartbeats to WakaTime in a single bulk request."
                     },
@@ -174,13 +192,17 @@
                                             }
                                         }
                                     },
-                                    "required": ["status_code"],
+                                    "required": [
+                                        "status_code"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "One result per submitted heartbeat, in the same order as the input heartbeats."
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "Per-heartbeat results of the bulk create request, one entry per submitted heartbeat."
                     }
@@ -194,9 +216,17 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_deleteheartbeatsbulk",
             "name": "delete-heartbeats-bulk",
-            "output": ["ActionOutput_wakatime_deleteheartbeatsbulk"],
-            "scopes": ["write_heartbeats", "read_heartbeats"],
-            "usedModels": ["ActionInput_wakatime_deleteheartbeatsbulk", "ActionOutput_wakatime_deleteheartbeatsbulk"],
+            "output": [
+                "ActionOutput_wakatime_deleteheartbeatsbulk"
+            ],
+            "scopes": [
+                "write_heartbeats",
+                "read_heartbeats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_deleteheartbeatsbulk",
+                "ActionOutput_wakatime_deleteheartbeatsbulk"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -217,7 +247,10 @@
                                 "description": "Heartbeat IDs to delete. Obtain them from the create-heartbeats-bulk response or from list-heartbeats."
                             }
                         },
-                        "required": ["date", "ids"],
+                        "required": [
+                            "date",
+                            "ids"
+                        ],
                         "additionalProperties": false,
                         "description": "Heartbeats to permanently delete from a single day."
                     },
@@ -250,7 +283,12 @@
                                 "description": "Requested heartbeat IDs still present for the given day after the deletion; empty when every found heartbeat was removed."
                             }
                         },
-                        "required": ["date", "deleted_ids", "not_found_ids", "remaining_ids"],
+                        "required": [
+                            "date",
+                            "deleted_ids",
+                            "not_found_ids",
+                            "remaining_ids"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the bulk heartbeat deletion, including which requested IDs were removed."
                     }
@@ -264,9 +302,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_deleteproject",
             "name": "delete-project",
-            "output": ["ActionOutput_wakatime_deleteproject"],
-            "scopes": ["write_heartbeats"],
-            "usedModels": ["ActionInput_wakatime_deleteproject", "ActionOutput_wakatime_deleteproject"],
+            "output": [
+                "ActionOutput_wakatime_deleteproject"
+            ],
+            "scopes": [
+                "write_heartbeats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_deleteproject",
+                "ActionOutput_wakatime_deleteproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -278,7 +323,9 @@
                                 "description": "The WakaTime project ID to permanently delete. Get it from the \"id\" field returned by the list-projects action. Example: \"9a1b2c3d-4e5f-6789-abcd-ef0123456789\"."
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a WakaTime project by its ID."
                     },
@@ -296,9 +343,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_getalltimesincetoday",
             "name": "get-all-time-since-today",
-            "output": ["ActionOutput_wakatime_getalltimesincetoday"],
-            "scopes": ["read_stats"],
-            "usedModels": ["ActionInput_wakatime_getalltimesincetoday", "ActionOutput_wakatime_getalltimesincetoday"],
+            "output": [
+                "ActionOutput_wakatime_getalltimesincetoday"
+            ],
+            "scopes": [
+                "read_stats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_getalltimesincetoday",
+                "ActionOutput_wakatime_getalltimesincetoday"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -372,7 +426,15 @@
                                         "description": "Timezone used for the range in Olson Country/Region format. Example: \"Africa/Nairobi\""
                                     }
                                 },
-                                "required": ["start", "start_date", "start_text", "end", "end_date", "end_text", "timezone"],
+                                "required": [
+                                    "start",
+                                    "start_date",
+                                    "start_text",
+                                    "end",
+                                    "end_date",
+                                    "end_text",
+                                    "timezone"
+                                ],
                                 "additionalProperties": false
                             },
                             "timeout": {
@@ -384,7 +446,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["is_up_to_date"],
+                        "required": [
+                            "is_up_to_date"
+                        ],
                         "additionalProperties": false,
                         "description": "The user's total coding time since the account was created, plus calculation status."
                     }
@@ -398,9 +462,19 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_getcodingactivitydigest",
             "name": "get-coding-activity-digest",
-            "output": ["ActionOutput_wakatime_getcodingactivitydigest"],
-            "scopes": ["email", "read_stats", "read_heartbeats", "read_goals"],
-            "usedModels": ["ActionInput_wakatime_getcodingactivitydigest", "ActionOutput_wakatime_getcodingactivitydigest"],
+            "output": [
+                "ActionOutput_wakatime_getcodingactivitydigest"
+            ],
+            "scopes": [
+                "email",
+                "read_stats",
+                "read_heartbeats",
+                "read_goals"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_getcodingactivitydigest",
+                "ActionOutput_wakatime_getcodingactivitydigest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -496,7 +570,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Current WakaTime user profile."
                             },
@@ -505,7 +581,10 @@
                                 "properties": {
                                     "status": {
                                         "type": "string",
-                                        "enum": ["ready", "calculating"],
+                                        "enum": [
+                                            "ready",
+                                            "calculating"
+                                        ],
                                         "description": "'ready' when the range's stats are fully calculated, 'calculating' when WakaTime is still computing them."
                                     },
                                     "percent_calculated": {
@@ -592,7 +671,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -619,7 +700,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -646,7 +729,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -673,7 +758,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -700,7 +787,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -727,7 +816,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -754,12 +845,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["status", "percent_calculated"],
+                                "required": [
+                                    "status",
+                                    "percent_calculated"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Coding activity for the requested range, or a calculating marker when not yet ready."
                             },
@@ -830,7 +926,10 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["entity", "time"],
+                                    "required": [
+                                        "entity",
+                                        "time"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Heartbeats recorded on the requested day; an empty array means no activity that day."
@@ -928,7 +1027,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Goals configured for the user; an empty array means no goals configured."
@@ -938,7 +1039,10 @@
                                 "properties": {
                                     "status": {
                                         "type": "string",
-                                        "enum": ["ready", "calculating"],
+                                        "enum": [
+                                            "ready",
+                                            "calculating"
+                                        ],
                                         "description": "'ready' when the lifetime total is fully calculated, 'calculating' when WakaTime is still computing it."
                                     },
                                     "percent_calculated": {
@@ -976,12 +1080,23 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["status", "percent_calculated"],
+                                "required": [
+                                    "status",
+                                    "percent_calculated"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Lifetime coding total since account creation, or a calculating marker when not yet ready."
                             }
                         },
-                        "required": ["date", "range", "profile", "recent_stats", "todays_heartbeats", "goals", "all_time"],
+                        "required": [
+                            "date",
+                            "range",
+                            "profile",
+                            "recent_stats",
+                            "todays_heartbeats",
+                            "goals",
+                            "all_time"
+                        ],
                         "additionalProperties": false,
                         "description": "Consolidated coding activity digest combining the user profile, recent stats, heartbeats, goals, and lifetime total."
                     }
@@ -995,9 +1110,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_wakatime_getcurrentuser"],
-            "scopes": ["email"],
-            "usedModels": ["ActionInput_wakatime_getcurrentuser", "ActionOutput_wakatime_getcurrentuser"],
+            "output": [
+                "ActionOutput_wakatime_getcurrentuser"
+            ],
+            "scopes": [
+                "email"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_getcurrentuser",
+                "ActionOutput_wakatime_getcurrentuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1024,11 +1146,17 @@
                             },
                             "username": {
                                 "description": "Public WakaTime username, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "full_name": {
                                 "description": "Full name of the user, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "timezone": {
                                 "description": "User timezone in Olson Country/Region format. Example: \"Africa/Nairobi\".",
@@ -1036,23 +1164,38 @@
                             },
                             "bio": {
                                 "description": "User-defined bio, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "photo": {
                                 "description": "URL of the user photo, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "website": {
                                 "description": "Website of the user, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "human_readable_website": {
                                 "description": "Website URL with the protocol removed, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "profile_url": {
                                 "description": "Public WakaTime profile URL, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "city": {
                                 "description": "City-level location of the user, or null when unset.",
@@ -1086,47 +1229,80 @@
                             },
                             "github_username": {
                                 "description": "Linked GitHub username, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "twitter_username": {
                                 "description": "Linked Twitter handle, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "linkedin_username": {
                                 "description": "Linked LinkedIn username, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "wonderfuldev_username": {
                                 "description": "Linked wonderful.dev username, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "public_email": {
                                 "description": "Email address shown on the public profile, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_heartbeat_at": {
                                 "description": "ISO 8601 timestamp of the most recent heartbeat, or null when the user has never sent one.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_plugin": {
                                 "description": "User-agent string of the last plugin used, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_plugin_name": {
                                 "description": "Name of the editor used last, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_project": {
                                 "description": "Name of the last project coded in, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_branch": {
                                 "description": "Name of the last branch coded in, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_language": {
                                 "description": "Name of the last language coded in, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_email_confirmed": {
                                 "description": "Whether the user's email address has been verified.",
@@ -1174,7 +1350,10 @@
                             },
                             "plan": {
                                 "description": "Subscription plan of the user, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "description": "ISO 8601 timestamp when the account was created.",
@@ -1185,7 +1364,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The authenticated WakaTime user's profile."
                     }
@@ -1199,9 +1380,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_getleaderboardstanding",
             "name": "get-leaderboard-standing",
-            "output": ["ActionOutput_wakatime_getleaderboardstanding"],
-            "scopes": ["read_private_leaderboards"],
-            "usedModels": ["ActionInput_wakatime_getleaderboardstanding", "ActionOutput_wakatime_getleaderboardstanding"],
+            "output": [
+                "ActionOutput_wakatime_getleaderboardstanding"
+            ],
+            "scopes": [
+                "read_private_leaderboards"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_getleaderboardstanding",
+                "ActionOutput_wakatime_getleaderboardstanding"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1219,7 +1407,12 @@
                             "board_type": {
                                 "description": "Optional ranking type: \"time\" (hours coded), \"manual\" (hours excluding AI), \"ai\" (AI lines), or \"spend\" (AI spend). Defaults to \"time\".",
                                 "type": "string",
-                                "enum": ["time", "manual", "ai", "spend"]
+                                "enum": [
+                                    "time",
+                                    "manual",
+                                    "ai",
+                                    "spend"
+                                ]
                             },
                             "page": {
                                 "description": "Optional 1-based page number of the leaderboard to fetch.",
@@ -1240,7 +1433,10 @@
                         "properties": {
                             "source": {
                                 "type": "string",
-                                "enum": ["private", "public"],
+                                "enum": [
+                                    "private",
+                                    "public"
+                                ],
                                 "description": "Which leaderboard was used: \"private\" when the account belongs to a private/team leaderboard, otherwise \"public\"."
                             },
                             "leaderboard": {
@@ -1257,7 +1453,10 @@
                                     },
                                     "time_range": {
                                         "description": "Time range the private leaderboard covers.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "members_count": {
                                         "description": "Number of members in the private leaderboard.",
@@ -1274,22 +1473,37 @@
                                     },
                                     "can_edit": {
                                         "description": "Whether the current user can edit this leaderboard.",
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "can_delete": {
                                         "description": "Whether the current user can delete this leaderboard.",
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "created_at": {
                                         "description": "ISO 8601 timestamp when the leaderboard was created.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "modified_at": {
                                         "description": "ISO 8601 timestamp when the leaderboard was last modified.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "other_leaderboards": {
@@ -1305,7 +1519,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1336,26 +1553,46 @@
                                                 },
                                                 "display_name": {
                                                     "description": "Display name shown on the leaderboard.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "username": {
                                                     "description": "Public WakaTime username, if the user has one.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "full_name": {
                                                     "description": "User full name, if the user made it public.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "website": {
                                                     "description": "Website URL from the user profile, if public.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "photo": {
                                                     "description": "URL of the user profile photo, if public.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id", "display_name", "username", "full_name"],
+                                            "required": [
+                                                "id",
+                                                "display_name",
+                                                "username",
+                                                "full_name"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "The ranked user."
                                         },
@@ -1364,26 +1601,42 @@
                                             "properties": {
                                                 "total_seconds": {
                                                     "description": "Total coding activity in seconds for the leaderboard period.",
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "human_readable_total": {
                                                     "description": "Total coding activity as a human-readable string. Example: \"12 hrs 34 mins\".",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "daily_average": {
                                                     "description": "Average coding activity per day in seconds.",
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "human_readable_daily_average": {
                                                     "description": "Average coding activity per day as a human-readable string.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false,
                                             "description": "Coding totals used to rank this user."
                                         }
                                     },
-                                    "required": ["rank", "user", "running_total"],
+                                    "required": [
+                                        "rank",
+                                        "user",
+                                        "running_total"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Ranked leaderboard entries, highest coding activity first."
@@ -1419,22 +1672,37 @@
                             },
                             "language": {
                                 "description": "Language filter applied to the returned leaderboard, if any.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "board_type": {
                                 "description": "Ranking type used by the returned leaderboard: time, manual, ai, or spend.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "range_name": {
                                 "description": "Machine-readable name of the leaderboard time range. Example: \"last_7_days\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "range_text": {
                                 "description": "Human-readable description of the leaderboard time range.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["source", "leaders"],
+                        "required": [
+                            "source",
+                            "leaders"
+                        ],
                         "additionalProperties": false,
                         "description": "The user's leaderboard standing: from a private (team) leaderboard when the account belongs to one, otherwise from the public global leaderboard."
                     }
@@ -1448,9 +1716,14 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_getmeta",
             "name": "get-meta",
-            "output": ["ActionOutput_wakatime_getmeta"],
+            "output": [
+                "ActionOutput_wakatime_getmeta"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wakatime_getmeta", "ActionOutput_wakatime_getmeta"],
+            "usedModels": [
+                "ActionInput_wakatime_getmeta",
+                "ActionOutput_wakatime_getmeta"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1481,7 +1754,10 @@
                                                 "description": "IPv6 addresses used by this server role. Example: \"2604:a880:4:1d0::2a7:b000\""
                                             }
                                         },
-                                        "required": ["v4", "v6"],
+                                        "required": [
+                                            "v4",
+                                            "v6"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "IP addresses used by WakaTime API servers."
                                     },
@@ -1503,7 +1779,10 @@
                                                 "description": "IPv6 addresses used by this server role. Example: \"2604:a880:4:1d0::2a7:b000\""
                                             }
                                         },
-                                        "required": ["v4", "v6"],
+                                        "required": [
+                                            "v4",
+                                            "v6"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "IP addresses used by WakaTime website servers."
                                     },
@@ -1525,12 +1804,19 @@
                                                 "description": "IPv6 addresses used by this server role. Example: \"2604:a880:4:1d0::2a7:b000\""
                                             }
                                         },
-                                        "required": ["v4", "v6"],
+                                        "required": [
+                                            "v4",
+                                            "v6"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "IP addresses used by WakaTime background worker servers."
                                     }
                                 },
-                                "required": ["api", "website", "worker"],
+                                "required": [
+                                    "api",
+                                    "website",
+                                    "worker"
+                                ],
                                 "additionalProperties": false,
                                 "description": "WakaTime server IP ranges grouped by server role."
                             },
@@ -1550,7 +1836,11 @@
                                         "description": "Explanation of the worker server IP category and how it should be whitelisted."
                                     }
                                 },
-                                "required": ["api", "website", "worker"],
+                                "required": [
+                                    "api",
+                                    "website",
+                                    "worker"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Human-readable explanation of each IP category."
                             },
@@ -1559,7 +1849,11 @@
                                 "description": "ISO 8601 timestamp when an IP was last added, removed, or changed; use like an ETag to sync firewall rules only when the IPs change."
                             }
                         },
-                        "required": ["ips", "ip_descriptions", "last_modified_at"],
+                        "required": [
+                            "ips",
+                            "ip_descriptions",
+                            "last_modified_at"
+                        ],
                         "additionalProperties": false,
                         "description": "WakaTime's infrastructure metadata: public server IP ranges grouped by server role, their descriptions, and when the IP list last changed."
                     }
@@ -1573,9 +1867,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_getstats",
             "name": "get-stats",
-            "output": ["ActionOutput_wakatime_getstats"],
-            "scopes": ["read_stats"],
-            "usedModels": ["ActionInput_wakatime_getstats", "ActionOutput_wakatime_getstats"],
+            "output": [
+                "ActionOutput_wakatime_getstats"
+            ],
+            "scopes": [
+                "read_stats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_getstats",
+                "ActionOutput_wakatime_getstats"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1800,7 +2101,10 @@
                             },
                             "username": {
                                 "description": "Public username of the user, or null when not set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "best_day": {
                                 "description": "Day with the most coding time in the range, or null when there is no activity.",
@@ -2196,9 +2500,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_getsummaries",
             "name": "get-summaries",
-            "output": ["ActionOutput_wakatime_getsummaries"],
-            "scopes": ["read_summaries"],
-            "usedModels": ["ActionInput_wakatime_getsummaries", "ActionOutput_wakatime_getsummaries"],
+            "output": [
+                "ActionOutput_wakatime_getsummaries"
+            ],
+            "scopes": [
+                "read_summaries"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_getsummaries",
+                "ActionOutput_wakatime_getsummaries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2361,7 +2672,14 @@
                                                                 "description": "Estimated USD cost for this model during the day."
                                                             }
                                                         },
-                                                        "required": ["name", "lines", "input_tokens", "output_tokens", "cached_input_tokens", "cost"],
+                                                        "required": [
+                                                            "name",
+                                                            "lines",
+                                                            "input_tokens",
+                                                            "output_tokens",
+                                                            "cached_input_tokens",
+                                                            "cost"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -2390,7 +2708,14 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["total_seconds", "hours", "minutes", "digital", "decimal", "text"],
+                                            "required": [
+                                                "total_seconds",
+                                                "hours",
+                                                "minutes",
+                                                "digital",
+                                                "decimal",
+                                                "text"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Aggregated coding totals for the day."
                                         },
@@ -2436,7 +2761,15 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "total_seconds", "percent", "digital", "text", "hours", "minutes"],
+                                                "required": [
+                                                    "name",
+                                                    "total_seconds",
+                                                    "percent",
+                                                    "digital",
+                                                    "text",
+                                                    "hours",
+                                                    "minutes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Coding time grouped by activity category."
@@ -2483,7 +2816,15 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "total_seconds", "percent", "digital", "text", "hours", "minutes"],
+                                                "required": [
+                                                    "name",
+                                                    "total_seconds",
+                                                    "percent",
+                                                    "digital",
+                                                    "text",
+                                                    "hours",
+                                                    "minutes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Coding time grouped by project."
@@ -2530,7 +2871,15 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "total_seconds", "percent", "digital", "text", "hours", "minutes"],
+                                                "required": [
+                                                    "name",
+                                                    "total_seconds",
+                                                    "percent",
+                                                    "digital",
+                                                    "text",
+                                                    "hours",
+                                                    "minutes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Coding time grouped by programming language."
@@ -2577,7 +2926,15 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "total_seconds", "percent", "digital", "text", "hours", "minutes"],
+                                                "required": [
+                                                    "name",
+                                                    "total_seconds",
+                                                    "percent",
+                                                    "digital",
+                                                    "text",
+                                                    "hours",
+                                                    "minutes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Coding time grouped by editor."
@@ -2624,7 +2981,15 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "total_seconds", "percent", "digital", "text", "hours", "minutes"],
+                                                "required": [
+                                                    "name",
+                                                    "total_seconds",
+                                                    "percent",
+                                                    "digital",
+                                                    "text",
+                                                    "hours",
+                                                    "minutes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Coding time grouped by operating system."
@@ -2671,7 +3036,15 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "total_seconds", "percent", "digital", "text", "hours", "minutes"],
+                                                "required": [
+                                                    "name",
+                                                    "total_seconds",
+                                                    "percent",
+                                                    "digital",
+                                                    "text",
+                                                    "hours",
+                                                    "minutes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Coding time grouped by dependency."
@@ -2718,7 +3091,15 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "total_seconds", "percent", "digital", "text", "hours", "minutes"],
+                                                "required": [
+                                                    "name",
+                                                    "total_seconds",
+                                                    "percent",
+                                                    "digital",
+                                                    "text",
+                                                    "hours",
+                                                    "minutes"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Coding time grouped by machine."
@@ -2747,7 +3128,13 @@
                                                     "description": "Timezone used for the day, in Olson Country/Region format."
                                                 }
                                             },
-                                            "required": ["date", "start", "end", "text", "timezone"],
+                                            "required": [
+                                                "date",
+                                                "start",
+                                                "end",
+                                                "text",
+                                                "timezone"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Start, end, and label of the day window."
                                         }
@@ -2788,7 +3175,12 @@
                                         "description": "Range total in decimal hours."
                                     }
                                 },
-                                "required": ["seconds", "text", "digital", "decimal"],
+                                "required": [
+                                    "seconds",
+                                    "text",
+                                    "digital",
+                                    "decimal"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Totals across the entire requested range."
                             },
@@ -2845,7 +3237,13 @@
                                 "description": "End of the requested range as an ISO 8601 UTC datetime."
                             }
                         },
-                        "required": ["summaries", "cumulative_total", "daily_average", "start", "end"],
+                        "required": [
+                            "summaries",
+                            "cumulative_total",
+                            "daily_average",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Per-day coding-activity summaries for the requested range, including cumulative totals and daily averages."
                     }
@@ -2859,9 +3257,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listdurations",
             "name": "list-durations",
-            "output": ["ActionOutput_wakatime_listdurations"],
-            "scopes": ["read_heartbeats"],
-            "usedModels": ["ActionInput_wakatime_listdurations", "ActionOutput_wakatime_listdurations"],
+            "output": [
+                "ActionOutput_wakatime_listdurations"
+            ],
+            "scopes": [
+                "read_heartbeats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_listdurations",
+                "ActionOutput_wakatime_listdurations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2898,10 +3303,21 @@
                             "slice_by": {
                                 "description": "Primary key used to split durations; defaults to \"project\".",
                                 "type": "string",
-                                "enum": ["project", "entity", "language", "dependencies", "os", "editor", "category", "machine"]
+                                "enum": [
+                                    "project",
+                                    "entity",
+                                    "language",
+                                    "dependencies",
+                                    "os",
+                                    "editor",
+                                    "category",
+                                    "machine"
+                                ]
                             }
                         },
-                        "required": ["date"],
+                        "required": [
+                            "date"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters selecting which day and slice of coding durations to return."
                     },
@@ -2915,7 +3331,10 @@
                                     "properties": {
                                         "project": {
                                             "description": "Name of the project the duration was logged against; null when the activity had no project.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "time": {
                                             "type": "number",
@@ -3020,7 +3439,10 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["time", "duration"],
+                                    "required": [
+                                        "time",
+                                        "duration"
+                                    ],
                                     "additionalProperties": {},
                                     "description": "A continuous block of coding activity, formed by joining heartbeats within the keystroke timeout."
                                 },
@@ -3039,7 +3461,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false,
                         "description": "Coding duration blocks for a single day, plus the resolved day range and timezone."
                     }
@@ -3053,9 +3477,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listexternaldurations",
             "name": "list-external-durations",
-            "output": ["ActionOutput_wakatime_listexternaldurations"],
-            "scopes": ["read_heartbeats"],
-            "usedModels": ["ActionInput_wakatime_listexternaldurations", "ActionOutput_wakatime_listexternaldurations"],
+            "output": [
+                "ActionOutput_wakatime_listexternaldurations"
+            ],
+            "scopes": [
+                "read_heartbeats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_listexternaldurations",
+                "ActionOutput_wakatime_listexternaldurations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3080,7 +3511,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["date"],
+                        "required": [
+                            "date"
+                        ],
                         "additionalProperties": false,
                         "description": "Filters for listing externally-reported duration blocks for a single day."
                     },
@@ -3141,7 +3574,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "External duration blocks reported by non-WakaTime sources for the requested day."
@@ -3159,7 +3594,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["durations"],
+                        "required": [
+                            "durations"
+                        ],
                         "additionalProperties": false,
                         "description": "External duration blocks reported by non-WakaTime sources for the requested day, plus the resolved day range."
                     }
@@ -3173,9 +3610,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listgoals",
             "name": "list-goals",
-            "output": ["ActionOutput_wakatime_listgoals"],
-            "scopes": ["read_goals"],
-            "usedModels": ["ActionInput_wakatime_listgoals", "ActionOutput_wakatime_listgoals"],
+            "output": [
+                "ActionOutput_wakatime_listgoals"
+            ],
+            "scopes": [
+                "read_goals"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_listgoals",
+                "ActionOutput_wakatime_listgoals"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3203,7 +3647,10 @@
                                         },
                                         "custom_title": {
                                             "description": "User-defined title that overrides the default title when set; can be null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "description": "Type of the goal.",
@@ -3270,7 +3717,10 @@
                                         },
                                         "improve_by_percent": {
                                             "description": "Percent the goal increases each delta period; can be null.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "languages": {
                                             "description": "Languages this goal applies to.",
@@ -3364,7 +3814,10 @@
                                                 },
                                                 "email": {
                                                     "description": "Email address of the owner; null when the email is not public or not permitted.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "full_name": {
                                                     "description": "Full name of the owner.",
@@ -3397,11 +3850,17 @@
                                                     },
                                                     "email": {
                                                         "description": "Email address, only present when the goal was shared via email; can be null.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "full_name": {
                                                         "description": "Full name of the user the goal is shared with; can be null.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "id": {
                                                         "description": "Unique ID of the user the goal is shared with.",
@@ -3417,11 +3876,17 @@
                                                     },
                                                     "user_id": {
                                                         "description": "User ID, only present when the goal was shared via user ID; can be null.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "username": {
                                                         "description": "Username, only present when the goal was shared via username; can be null.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -3435,7 +3900,10 @@
                                                 "properties": {
                                                     "email": {
                                                         "description": "Email address of the subscriber, when public; can be null.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "email_frequency": {
                                                         "description": "How often the subscriber receives emails about this goal.",
@@ -3443,7 +3911,10 @@
                                                     },
                                                     "full_name": {
                                                         "description": "Name of the subscriber, when public; can be null.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "user_id": {
                                                         "description": "Unique ID of the subscriber.",
@@ -3451,7 +3922,10 @@
                                                     },
                                                     "username": {
                                                         "description": "Username of the subscriber, when defined; can be null.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -3463,11 +3937,17 @@
                                         },
                                         "modified_at": {
                                             "description": "Time the goal was last changed in ISO 8601 format; can be null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "snooze_until": {
                                             "description": "Time goal email notifications resume, in ISO 8601 format; can be null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -3483,7 +3963,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["goals"],
+                        "required": [
+                            "goals"
+                        ],
                         "additionalProperties": false,
                         "description": "The current user's coding goals along with the total goal count and total number of result pages."
                     }
@@ -3497,9 +3979,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listheartbeats",
             "name": "list-heartbeats",
-            "output": ["ActionOutput_wakatime_listheartbeats"],
-            "scopes": ["read_heartbeats"],
-            "usedModels": ["ActionInput_wakatime_listheartbeats", "ActionOutput_wakatime_listheartbeats"],
+            "output": [
+                "ActionOutput_wakatime_listheartbeats"
+            ],
+            "scopes": [
+                "read_heartbeats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_listheartbeats",
+                "ActionOutput_wakatime_listheartbeats"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3512,7 +4001,9 @@
                                 "description": "The day to list heartbeats for, in YYYY-MM-DD format. The day runs from midnight to midnight in the account's own timezone, not UTC."
                             }
                         },
-                        "required": ["date"],
+                        "required": [
+                            "date"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing all heartbeats recorded on a single given day."
                     },
@@ -3530,35 +4021,59 @@
                                         },
                                         "entity": {
                                             "description": "The file path, domain, URL, or app the activity was logged against.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "description": "Type of the entity, such as file, app, url, or domain.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "category": {
                                             "description": "Category of the activity, such as coding, debugging, or writing tests.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "time": {
                                             "description": "UNIX epoch timestamp (seconds, with fractional seconds) when the activity occurred.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "project": {
                                             "description": "Name of the project the activity belongs to.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "project_root_count": {
                                             "description": "Number of folders in the project root path.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "branch": {
                                             "description": "Version-control branch name the activity occurred on.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "language": {
                                             "description": "Programming language of the entity.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "dependencies": {
                                             "description": "Dependencies detected in the entity file.",
@@ -3576,70 +4091,120 @@
                                         },
                                         "machine_name_id": {
                                             "description": "Unique identifier of the machine that generated the heartbeat.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "user_agent_id": {
                                             "description": "Unique identifier of the editor/plugin that generated the heartbeat.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "user_id": {
                                             "description": "Unique identifier of the user the heartbeat belongs to.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lines": {
                                             "description": "Total number of lines in the entity when the entity is a file.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "lineno": {
                                             "description": "Cursor line number at the time of the heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "cursorpos": {
                                             "description": "Cursor column position at the time of the heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "is_write": {
                                             "description": "Whether the heartbeat was triggered by writing to a file.",
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "description": "ISO 8601 UTC datetime when the heartbeat was received.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ai_line_changes": {
                                             "description": "Number of lines added or removed by GenAI since the previous heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "human_line_changes": {
                                             "description": "Number of lines added or removed by typing since the previous heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "ai_session": {
                                             "description": "Identifier of the AI session associated with the heartbeat.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ai_input_tokens": {
                                             "description": "Number of user input tokens used by GenAI tools since the previous heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "ai_cached_input_tokens": {
                                             "description": "Number of cached input tokens used by GenAI tools since the previous heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "ai_output_tokens": {
                                             "description": "Number of output tokens used by GenAI tools since the previous heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "ai_prompt_length": {
                                             "description": "Number of user prompt characters typed to AI since the previous heartbeat.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "ai_subscription_plan": {
                                             "description": "Subscription plan of the GenAI tool used for this heartbeat.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Heartbeats recorded during the requested day, ordered by time."
@@ -3657,7 +4222,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["heartbeats"],
+                        "required": [
+                            "heartbeats"
+                        ],
                         "additionalProperties": false,
                         "description": "Heartbeats recorded during the requested day, along with the day boundaries and timezone used to compute them."
                     }
@@ -3671,9 +4238,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listorgs",
             "name": "list-orgs",
-            "output": ["ActionOutput_wakatime_listorgs"],
-            "scopes": ["read_orgs"],
-            "usedModels": ["ActionInput_wakatime_listorgs", "ActionOutput_wakatime_listorgs"],
+            "output": [
+                "ActionOutput_wakatime_listorgs"
+            ],
+            "scopes": [
+                "read_orgs"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_listorgs",
+                "ActionOutput_wakatime_listorgs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3800,7 +4374,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "The WakaTime for Teams organizations the authenticated user belongs to. Empty when the user belongs to none."
@@ -3810,7 +4386,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["organizations"],
+                        "required": [
+                            "organizations"
+                        ],
                         "additionalProperties": false,
                         "description": "The organizations the authenticated WakaTime user belongs to."
                     }
@@ -3824,9 +4402,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listprivateleaderboards",
             "name": "list-private-leaderboards",
-            "output": ["ActionOutput_wakatime_listprivateleaderboards"],
-            "scopes": ["read_private_leaderboards"],
-            "usedModels": ["ActionInput_wakatime_listprivateleaderboards", "ActionOutput_wakatime_listprivateleaderboards"],
+            "output": [
+                "ActionOutput_wakatime_listprivateleaderboards"
+            ],
+            "scopes": [
+                "read_private_leaderboards"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_listprivateleaderboards",
+                "ActionOutput_wakatime_listprivateleaderboards"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3917,7 +4502,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["leaderboards"],
+                        "required": [
+                            "leaderboards"
+                        ],
                         "additionalProperties": false,
                         "description": "Private leaderboards the current user belongs to."
                     }
@@ -3931,9 +4518,16 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_wakatime_listprojects"],
-            "scopes": ["read_stats.projects"],
-            "usedModels": ["ActionInput_wakatime_listprojects", "ActionOutput_wakatime_listprojects"],
+            "output": [
+                "ActionOutput_wakatime_listprojects"
+            ],
+            "scopes": [
+                "read_stats.projects"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_listprojects",
+                "ActionOutput_wakatime_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3968,15 +4562,24 @@
                                         },
                                         "color": {
                                             "description": "Custom project color as a hex string, or null when the default color is used.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "repository": {
                                             "description": "Associated repository name when one is connected, otherwise null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "badge": {
                                             "description": "Associated project badge when one is enabled, otherwise null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "clients": {
                                             "type": "array",
@@ -3999,19 +4602,31 @@
                                         },
                                         "first_heartbeat_at": {
                                             "description": "Time the project first received code stats in ISO 8601 format; only set for accounts created after 2024-02-05T00:00:00Z UTC.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_heartbeat_at": {
                                             "description": "Time the project last received code stats in ISO 8601 format; null when the project has no heartbeats. Example: \"2026-10-10T00:24:55Z\"",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "human_readable_first_heartbeat_at": {
                                             "description": "Human-readable time the project first received code stats; only set for accounts created after 2024-02-05T00:00:00Z UTC.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "human_readable_last_heartbeat_at": {
                                             "description": "Human-readable time the project last received code stats; null when the project has no heartbeats. Example: \"Oct 10, 2026, 3:24 AM EAT\"",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string",
@@ -4048,14 +4663,27 @@
                             },
                             "prev_page": {
                                 "description": "Previous page number, or null when this is the first page.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "next_page": {
                                 "description": "Next page number, or null when this is the last page.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["data", "total", "total_pages", "page", "prev_page", "next_page"],
+                        "required": [
+                            "data",
+                            "total",
+                            "total_pages",
+                            "page",
+                            "prev_page",
+                            "next_page"
+                        ],
                         "additionalProperties": false,
                         "description": "A single page of the current user's WakaTime projects with pagination metadata."
                     }
@@ -4069,9 +4697,14 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_listpublicleaderboard",
             "name": "list-public-leaderboard",
-            "output": ["ActionOutput_wakatime_listpublicleaderboard"],
+            "output": [
+                "ActionOutput_wakatime_listpublicleaderboard"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_wakatime_listpublicleaderboard", "ActionOutput_wakatime_listpublicleaderboard"],
+            "usedModels": [
+                "ActionInput_wakatime_listpublicleaderboard",
+                "ActionOutput_wakatime_listpublicleaderboard"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4093,7 +4726,12 @@
                             "board_type": {
                                 "description": "Ranking type: \"time\" for hours coded, \"manual\" for hours coded excluding AI, \"ai\" for AI lines, or \"spend\" for AI spend. Defaults to \"time\".",
                                 "type": "string",
-                                "enum": ["time", "manual", "ai", "spend"]
+                                "enum": [
+                                    "time",
+                                    "manual",
+                                    "ai",
+                                    "spend"
+                                ]
                             },
                             "page": {
                                 "description": "Leaderboard page number (1-based). Omitting it returns the page containing the authenticated user, or page 1 if they are not ranked.",
@@ -4162,13 +4800,22 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["name", "total_seconds"],
+                                                        "required": [
+                                                            "name",
+                                                            "total_seconds"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "description": "Per-language coding totals for this leader."
                                                 }
                                             },
-                                            "required": ["total_seconds", "human_readable_total", "daily_average", "human_readable_daily_average", "languages"],
+                                            "required": [
+                                                "total_seconds",
+                                                "human_readable_total",
+                                                "daily_average",
+                                                "human_readable_daily_average",
+                                                "languages"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Aggregated coding totals used to rank this leader."
                                         },
@@ -4239,12 +4886,18 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Public profile of this leader."
                                         }
                                     },
-                                    "required": ["rank", "running_total", "user"],
+                                    "required": [
+                                        "rank",
+                                        "running_total",
+                                        "user"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Ranked leaderboard entries, highest coding activity first."
@@ -4277,7 +4930,12 @@
                                         "description": "Machine-readable name of the range. Example: \"last_7_days\"."
                                     }
                                 },
-                                "required": ["start_date", "end_date", "text", "name"],
+                                "required": [
+                                    "start_date",
+                                    "end_date",
+                                    "text",
+                                    "name"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Time range covered by this leaderboard."
                             },
@@ -4380,16 +5038,28 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Public profile of the authenticated user."
                                     }
                                 },
-                                "required": ["user"],
+                                "required": [
+                                    "user"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["leaders", "page", "total_pages", "range", "is_hireable", "board_type", "modified_at"],
+                        "required": [
+                            "leaders",
+                            "page",
+                            "total_pages",
+                            "range",
+                            "is_hireable",
+                            "board_type",
+                            "modified_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of WakaTime's public global coding leaderboard."
                     }
@@ -4403,9 +5073,17 @@
             "endpoint": null,
             "input": "ActionInput_wakatime_logheartbeatandconfirm",
             "name": "log-heartbeat-and-confirm",
-            "output": ["ActionOutput_wakatime_logheartbeatandconfirm"],
-            "scopes": ["read_heartbeats", "write_heartbeats"],
-            "usedModels": ["ActionInput_wakatime_logheartbeatandconfirm", "ActionOutput_wakatime_logheartbeatandconfirm"],
+            "output": [
+                "ActionOutput_wakatime_logheartbeatandconfirm"
+            ],
+            "scopes": [
+                "read_heartbeats",
+                "write_heartbeats"
+            ],
+            "usedModels": [
+                "ActionInput_wakatime_logheartbeatandconfirm",
+                "ActionOutput_wakatime_logheartbeatandconfirm"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4425,7 +5103,12 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["file", "app", "url", "domain"],
+                                            "enum": [
+                                                "file",
+                                                "app",
+                                                "url",
+                                                "domain"
+                                            ],
                                             "description": "Type of the entity."
                                         },
                                         "time": {
@@ -4479,7 +5162,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["entity", "type", "time"],
+                                    "required": [
+                                        "entity",
+                                        "type",
+                                        "time"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Heartbeats to create in a single bulk request (1 to 25)."
@@ -4501,7 +5188,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["heartbeats"],
+                        "required": [
+                            "heartbeats"
+                        ],
                         "additionalProperties": false,
                         "description": "Heartbeats to log, plus optional polling and cleanup controls."
                     },
@@ -4554,7 +5243,15 @@
                                             "description": "Poll attempt at which the heartbeat was confirmed, or the total attempts made when it was never confirmed."
                                         }
                                     },
-                                    "required": ["entity", "time", "date", "status_code", "created", "confirmed", "attempts_taken"],
+                                    "required": [
+                                        "entity",
+                                        "time",
+                                        "date",
+                                        "status_code",
+                                        "created",
+                                        "confirmed",
+                                        "attempts_taken"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Per-heartbeat creation and confirmation results, in input order."
@@ -4604,17 +5301,29 @@
                                                     "description": "Whether the deleted project was confirmed absent afterwards; false when it was not found, since it may still appear later."
                                                 }
                                             },
-                                            "required": ["name", "deleted", "removal_confirmed"],
+                                            "required": [
+                                                "name",
+                                                "deleted",
+                                                "removal_confirmed"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": "One entry per project name used by the created heartbeats that did not exist beforehand; empty when every project already existed."
                                     }
                                 },
-                                "required": ["heartbeats_deleted", "heartbeats_removal_confirmed", "projects"],
+                                "required": [
+                                    "heartbeats_deleted",
+                                    "heartbeats_removal_confirmed",
+                                    "projects"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["results", "all_confirmed", "attempts_taken"],
+                        "required": [
+                            "results",
+                            "all_confirmed",
+                            "attempts_taken"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation results for each created heartbeat, with optional cleanup outcome."
                     }
@@ -4631,12 +5340,18 @@
             "endpoints": [],
             "input": null,
             "name": "daily-summaries",
-            "output": ["DailySummary"],
+            "output": [
+                "DailySummary"
+            ],
             "runs": "every hour",
-            "scopes": ["read_summaries"],
+            "scopes": [
+                "read_summaries"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DailySummary"],
+            "usedModels": [
+                "DailySummary"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4734,7 +5449,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4777,7 +5494,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4820,18 +5539,25 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "date"],
+                        "required": [
+                            "id",
+                            "date"
+                        ],
                         "additionalProperties": false,
                         "description": "A single day of coding activity for the connected WakaTime user, including grand totals and language, project, and category breakdowns."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4840,12 +5566,18 @@
             "endpoints": [],
             "input": null,
             "name": "goals",
-            "output": ["Goal"],
+            "output": [
+                "Goal"
+            ],
             "runs": "every hour",
-            "scopes": ["read_goals"],
+            "scopes": [
+                "read_goals"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Goal"],
+            "usedModels": [
+                "Goal"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4994,7 +5726,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "shared_with": {
@@ -5134,7 +5868,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A WakaTime coding goal configured by the user."
                     }
@@ -5149,12 +5885,18 @@
             "endpoints": [],
             "input": null,
             "name": "heartbeats",
-            "output": ["Heartbeat"],
+            "output": [
+                "Heartbeat"
+            ],
             "runs": "every hour",
-            "scopes": ["read_heartbeats"],
+            "scopes": [
+                "read_heartbeats"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Heartbeat"],
+            "usedModels": [
+                "Heartbeat"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5270,13 +6012,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A single coding-activity heartbeat recorded by WakaTime."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5285,12 +6031,18 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["read_stats.projects"],
+            "scopes": [
+                "read_stats.projects"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5308,15 +6060,24 @@
                             },
                             "repository": {
                                 "description": "URL of the associated repository, or null when no repository is connected.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "badge": {
                                 "description": "URL of the project badge when enabled, or null otherwise.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Custom project color as a hex string, or null when the default color is used.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "clients": {
                                 "description": "Names of the WakaTime clients (editors/plugins) that logged time against this project.",
@@ -5331,19 +6092,31 @@
                             },
                             "human_readable_last_heartbeat_at": {
                                 "description": "Human-readable time when the project last received code stats; null when the project has no heartbeats.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_heartbeat_at": {
                                 "description": "ISO 8601 time when the project last received code stats; null when the project has no heartbeats.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "human_readable_first_heartbeat_at": {
                                 "description": "Human-readable time when the project first received code stats; null for accounts created before 2024-02-05.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_heartbeat_at": {
                                 "description": "ISO 8601 time when the project first received code stats; null for accounts created before 2024-02-05.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "url": {
                                 "description": "Path of this project relative to wakatime.com.",
@@ -5358,13 +6131,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "A WakaTime project derived from the user's heartbeat history."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

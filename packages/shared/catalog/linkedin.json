@@ -7,9 +7,22 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_post",
             "name": "post",
-            "output": ["ActionOutput_linkedin_post"],
-            "scopes": ["openid", "profile", "r_basicprofile", "w_member_social", "email", "w_organization_social", "r_organization_social"],
-            "usedModels": ["ActionInput_linkedin_post", "ActionOutput_linkedin_post"],
+            "output": [
+                "ActionOutput_linkedin_post"
+            ],
+            "scopes": [
+                "openid",
+                "profile",
+                "r_basicprofile",
+                "w_member_social",
+                "email",
+                "w_organization_social",
+                "r_organization_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_post",
+                "ActionOutput_linkedin_post"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +42,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["text", "videoURN", "videoTitle", "ownerId"],
+                        "required": [
+                            "text",
+                            "videoURN",
+                            "videoTitle",
+                            "ownerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_post": {
@@ -39,7 +57,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["succcess"],
+                        "required": [
+                            "succcess"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -52,9 +72,17 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_linkedin_createcomment"],
-            "scopes": ["w_organization_social_feed", "w_member_social_feed"],
-            "usedModels": ["ActionInput_linkedin_createcomment", "ActionOutput_linkedin_createcomment"],
+            "output": [
+                "ActionOutput_linkedin_createcomment"
+            ],
+            "scopes": [
+                "w_organization_social_feed",
+                "w_member_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_createcomment",
+                "ActionOutput_linkedin_createcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -102,7 +130,9 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["organization"],
+                                                            "required": [
+                                                                "organization"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "person": {
@@ -112,19 +142,26 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["person"],
+                                                            "required": [
+                                                                "person"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["length", "start"],
+                                            "required": [
+                                                "length",
+                                                "start"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["text"],
+                                "required": [
+                                    "text"
+                                ],
                                 "additionalProperties": false
                             },
                             "parentComment": {
@@ -132,7 +169,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["target", "actor", "object", "message"],
+                        "required": [
+                            "target",
+                            "actor",
+                            "object",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_createcomment": {
@@ -197,7 +239,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -210,9 +254,17 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_createlike",
             "name": "create-like",
-            "output": ["ActionOutput_linkedin_createlike"],
-            "scopes": ["w_member_social_feed", "w_organization_social_feed"],
-            "usedModels": ["ActionInput_linkedin_createlike", "ActionOutput_linkedin_createlike"],
+            "output": [
+                "ActionOutput_linkedin_createlike"
+            ],
+            "scopes": [
+                "w_member_social_feed",
+                "w_organization_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_createlike",
+                "ActionOutput_linkedin_createlike"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -232,7 +284,11 @@
                                 "description": "The URN of the entity to which the like belongs. Example: \"urn:li:share:123\""
                             }
                         },
-                        "required": ["target", "actor", "object"],
+                        "required": [
+                            "target",
+                            "actor",
+                            "object"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_createlike": {
@@ -260,7 +316,10 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["actor", "time"],
+                                "required": [
+                                    "actor",
+                                    "time"
+                                ],
                                 "additionalProperties": false
                             },
                             "lastModified": {
@@ -273,11 +332,21 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["actor", "time"],
+                                "required": [
+                                    "actor",
+                                    "time"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "actor", "agent", "object", "created", "lastModified"],
+                        "required": [
+                            "id",
+                            "actor",
+                            "agent",
+                            "object",
+                            "created",
+                            "lastModified"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -290,9 +359,17 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_createpost",
             "name": "create-post",
-            "output": ["ActionOutput_linkedin_createpost"],
-            "scopes": ["w_member_social", "w_organization_social"],
-            "usedModels": ["ActionInput_linkedin_createpost", "ActionOutput_linkedin_createpost"],
+            "output": [
+                "ActionOutput_linkedin_createpost"
+            ],
+            "scopes": [
+                "w_member_social",
+                "w_organization_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_createpost",
+                "ActionOutput_linkedin_createpost"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -309,12 +386,19 @@
                             },
                             "visibility": {
                                 "type": "string",
-                                "enum": ["PUBLIC", "CONNECTIONS"],
+                                "enum": [
+                                    "PUBLIC",
+                                    "CONNECTIONS"
+                                ],
                                 "description": "Post visibility."
                             },
                             "lifecycleState": {
                                 "type": "string",
-                                "enum": ["PUBLISHED", "DRAFT", "PUBLISH_REQUESTED"],
+                                "enum": [
+                                    "PUBLISHED",
+                                    "DRAFT",
+                                    "PUBLISH_REQUESTED"
+                                ],
                                 "description": "Lifecycle state of the post."
                             },
                             "content": {
@@ -336,7 +420,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["source"],
+                                        "required": [
+                                            "source"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "media": {
@@ -349,7 +435,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -362,7 +450,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["parent"],
+                                "required": [
+                                    "parent"
+                                ],
                                 "additionalProperties": false
                             },
                             "isReshareDisabledByAuthor": {
@@ -373,7 +463,10 @@
                                 "properties": {
                                     "feedDistribution": {
                                         "type": "string",
-                                        "enum": ["MAIN_FEED", "NONE"]
+                                        "enum": [
+                                            "MAIN_FEED",
+                                            "NONE"
+                                        ]
                                     },
                                     "targetEntities": {
                                         "type": "array",
@@ -389,7 +482,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["author", "commentary", "visibility", "lifecycleState"],
+                        "required": [
+                            "author",
+                            "commentary",
+                            "visibility",
+                            "lifecycleState"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_createpost": {
@@ -400,7 +498,9 @@
                                 "description": "Created post URN."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -413,9 +513,17 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_linkedin_deletecomment"],
-            "scopes": ["w_organization_social_feed", "w_member_social_feed"],
-            "usedModels": ["ActionInput_linkedin_deletecomment", "ActionOutput_linkedin_deletecomment"],
+            "output": [
+                "ActionOutput_linkedin_deletecomment"
+            ],
+            "scopes": [
+                "w_organization_social_feed",
+                "w_member_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_deletecomment",
+                "ActionOutput_linkedin_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -435,7 +543,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["target", "commentId"],
+                        "required": [
+                            "target",
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_deletecomment": {
@@ -445,7 +556,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -458,9 +571,17 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_deletelike",
             "name": "delete-like",
-            "output": ["ActionOutput_linkedin_deletelike"],
-            "scopes": ["w_member_social_feed", "w_organization_social_feed"],
-            "usedModels": ["ActionInput_linkedin_deletelike", "ActionOutput_linkedin_deletelike"],
+            "output": [
+                "ActionOutput_linkedin_deletelike"
+            ],
+            "scopes": [
+                "w_member_social_feed",
+                "w_organization_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_deletelike",
+                "ActionOutput_linkedin_deletelike"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -476,7 +597,10 @@
                                 "description": "The URN of the actor (person or organization) who created the like. Example: \"urn:li:person:123\""
                             }
                         },
-                        "required": ["target", "actorUrn"],
+                        "required": [
+                            "target",
+                            "actorUrn"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_deletelike": {
@@ -492,7 +616,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "target", "actorUrn"],
+                        "required": [
+                            "success",
+                            "target",
+                            "actorUrn"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -505,9 +633,17 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_deletepost",
             "name": "delete-post",
-            "output": ["ActionOutput_linkedin_deletepost"],
-            "scopes": ["w_organization_social", "w_member_social"],
-            "usedModels": ["ActionInput_linkedin_deletepost", "ActionOutput_linkedin_deletepost"],
+            "output": [
+                "ActionOutput_linkedin_deletepost"
+            ],
+            "scopes": [
+                "w_organization_social",
+                "w_member_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_deletepost",
+                "ActionOutput_linkedin_deletepost"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -519,7 +655,9 @@
                                 "description": "The LinkedIn post URN to delete. Example: \"urn:li:share:123456789\""
                             }
                         },
-                        "required": ["postUrn"],
+                        "required": [
+                            "postUrn"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_deletepost": {
@@ -532,7 +670,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "postUrn"],
+                        "required": [
+                            "success",
+                            "postUrn"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -545,9 +686,18 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_getcurrentmemberprofile",
             "name": "get-current-member-profile",
-            "output": ["ActionOutput_linkedin_getcurrentmemberprofile"],
-            "scopes": ["openid", "profile", "email"],
-            "usedModels": ["ActionInput_linkedin_getcurrentmemberprofile", "ActionOutput_linkedin_getcurrentmemberprofile"],
+            "output": [
+                "ActionOutput_linkedin_getcurrentmemberprofile"
+            ],
+            "scopes": [
+                "openid",
+                "profile",
+                "email"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_getcurrentmemberprofile",
+                "ActionOutput_linkedin_getcurrentmemberprofile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -593,7 +743,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -606,9 +758,19 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_listpostlikes",
             "name": "list-post-likes",
-            "output": ["ActionOutput_linkedin_listpostlikes"],
-            "scopes": ["r_member_social", "w_member_social", "r_organization_social", "r_organization_social_feed"],
-            "usedModels": ["ActionInput_linkedin_listpostlikes", "ActionOutput_linkedin_listpostlikes"],
+            "output": [
+                "ActionOutput_linkedin_listpostlikes"
+            ],
+            "scopes": [
+                "r_member_social",
+                "w_member_social",
+                "r_organization_social",
+                "r_organization_social_feed"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_listpostlikes",
+                "ActionOutput_linkedin_listpostlikes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -628,7 +790,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["target"],
+                        "required": [
+                            "target"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_listpostlikes": {
@@ -699,7 +863,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["elements"],
+                        "required": [
+                            "elements"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -712,9 +878,16 @@
             "endpoint": null,
             "input": "ActionInput_linkedin_updatepost",
             "name": "update-post",
-            "output": ["ActionOutput_linkedin_updatepost"],
-            "scopes": ["w_organization_social"],
-            "usedModels": ["ActionInput_linkedin_updatepost", "ActionOutput_linkedin_updatepost"],
+            "output": [
+                "ActionOutput_linkedin_updatepost"
+            ],
+            "scopes": [
+                "w_organization_social"
+            ],
+            "usedModels": [
+                "ActionInput_linkedin_updatepost",
+                "ActionOutput_linkedin_updatepost"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -732,10 +905,16 @@
                             "lifecycleState": {
                                 "description": "Updated lifecycle state of the post.",
                                 "type": "string",
-                                "enum": ["PUBLISHED", "DRAFT", "ARCHIVED"]
+                                "enum": [
+                                    "PUBLISHED",
+                                    "DRAFT",
+                                    "ARCHIVED"
+                                ]
                             }
                         },
-                        "required": ["encodedPostUrn"],
+                        "required": [
+                            "encodedPostUrn"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linkedin_updatepost": {
@@ -748,7 +927,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -770,12 +951,19 @@
             ],
             "input": "SyncMetadata_linkedin_messages",
             "name": "messages",
-            "output": ["LinkedInMessage"],
+            "output": [
+                "LinkedInMessage"
+            ],
             "runs": "every 1h",
-            "scopes": ["r_dma_portability_3rd_party"],
+            "scopes": [
+                "r_dma_portability_3rd_party"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LinkedInMessage", "SyncMetadata_linkedin_messages"],
+            "usedModels": [
+                "LinkedInMessage",
+                "SyncMetadata_linkedin_messages"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -811,19 +999,31 @@
                                 "type": "string"
                             },
                             "thread": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "author": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "isDeleted": {
                                 "type": "boolean"
                             },
                             "configVersion": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "methodName": {
                                 "type": "string"
@@ -868,7 +1068,14 @@
                                     },
                                     "extensionContent": {}
                                 },
-                                "required": ["actor", "createdAt", "attachments", "author", "messageContexts", "thread"],
+                                "required": [
+                                    "actor",
+                                    "createdAt",
+                                    "attachments",
+                                    "author",
+                                    "messageContexts",
+                                    "thread"
+                                ],
                                 "additionalProperties": false
                             },
                             "content": {
@@ -895,7 +1102,11 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["format", "fallback", "formatVersion"],
+                                        "required": [
+                                            "format",
+                                            "fallback",
+                                            "formatVersion"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -918,7 +1129,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["classification"],
+                                        "required": [
+                                            "classification"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -971,7 +1184,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

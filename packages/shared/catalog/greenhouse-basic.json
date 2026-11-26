@@ -14,12 +14,19 @@
             ],
             "input": "SyncMetadata_greenhouse_basic_applications",
             "name": "applications",
-            "output": ["GreenhouseApplication"],
+            "output": [
+                "GreenhouseApplication"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["candidates.view"],
+            "scopes": [
+                "candidates.view"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GreenhouseApplication", "SyncMetadata_greenhouse_basic_applications"],
+            "usedModels": [
+                "GreenhouseApplication",
+                "SyncMetadata_greenhouse_basic_applications"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -55,7 +62,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false
                             },
                             "source": {
@@ -68,7 +77,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "public_name"],
+                                "required": [
+                                    "id",
+                                    "public_name"
+                                ],
                                 "additionalProperties": false
                             },
                             "credited_to": {
@@ -90,7 +102,13 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "first_name", "last_name", "name", "employee_id"],
+                                "required": [
+                                    "id",
+                                    "first_name",
+                                    "last_name",
+                                    "name",
+                                    "employee_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "rejection_reason": {
@@ -112,11 +130,18 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "name", "type"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "rejection_details": {
@@ -133,7 +158,10 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["custom_fields", "keyed_custom_fields"],
+                                "required": [
+                                    "custom_fields",
+                                    "keyed_custom_fields"
+                                ],
                                 "additionalProperties": false
                             },
                             "jobs": {
@@ -158,7 +186,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "answers": {
@@ -186,7 +217,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["name"],
+                                        "required": [
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "id": {
@@ -202,7 +235,15 @@
                                         }
                                     }
                                 },
-                                "required": ["primary_contact_user_id", "parent_id", "name", "location", "id", "external_id", "child_ids"],
+                                "required": [
+                                    "primary_contact_user_id",
+                                    "parent_id",
+                                    "name",
+                                    "location",
+                                    "id",
+                                    "external_id",
+                                    "child_ids"
+                                ],
                                 "additionalProperties": false
                             },
                             "prospective_department": {
@@ -227,7 +268,13 @@
                                         }
                                     }
                                 },
-                                "required": ["parent_id", "name", "id", "external_id", "child_ids"],
+                                "required": [
+                                    "parent_id",
+                                    "name",
+                                    "id",
+                                    "external_id",
+                                    "child_ids"
+                                ],
                                 "additionalProperties": false
                             },
                             "prospect_detail": {
@@ -243,7 +290,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "prospect_stage": {
@@ -256,7 +306,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "prospect_owner": {
@@ -269,11 +322,18 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["prospect_pool", "prospect_stage", "prospect_owner"],
+                                "required": [
+                                    "prospect_pool",
+                                    "prospect_stage",
+                                    "prospect_owner"
+                                ],
                                 "additionalProperties": false
                             },
                             "custom_fields": {
@@ -324,7 +384,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -338,12 +400,19 @@
             ],
             "input": "SyncMetadata_greenhouse_basic_candidates",
             "name": "candidates",
-            "output": ["GreenhouseCandidate"],
+            "output": [
+                "GreenhouseCandidate"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["candidates.view"],
+            "scopes": [
+                "candidates.view"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GreenhouseCandidate", "SyncMetadata_greenhouse_basic_candidates"],
+            "usedModels": [
+                "GreenhouseCandidate",
+                "SyncMetadata_greenhouse_basic_candidates"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -441,7 +510,13 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "first_name", "last_name", "name", "employee_id"],
+                                "required": [
+                                    "id",
+                                    "first_name",
+                                    "last_name",
+                                    "name",
+                                    "employee_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "coordinator": {
@@ -463,7 +538,13 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "first_name", "last_name", "name", "employee_id"],
+                                "required": [
+                                    "id",
+                                    "first_name",
+                                    "last_name",
+                                    "name",
+                                    "employee_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "can_email": {
@@ -545,7 +626,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -559,12 +642,19 @@
             ],
             "input": "SyncMetadata_greenhouse_basic_jobs",
             "name": "jobs",
-            "output": ["GreenhouseJob"],
+            "output": [
+                "GreenhouseJob"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["jobs.view"],
+            "scopes": [
+                "jobs.view"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GreenhouseJob", "SyncMetadata_greenhouse_basic_jobs"],
+            "usedModels": [
+                "GreenhouseJob",
+                "SyncMetadata_greenhouse_basic_jobs"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -662,7 +752,12 @@
                                         }
                                     }
                                 },
-                                "required": ["hiring_managers", "recruiters", "coordinators", "sourcers"],
+                                "required": [
+                                    "hiring_managers",
+                                    "recruiters",
+                                    "coordinators",
+                                    "sourcers"
+                                ],
                                 "additionalProperties": false
                             },
                             "openings": {
@@ -701,7 +796,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

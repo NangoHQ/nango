@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_createconnection",
             "name": "create-connection",
-            "output": ["ActionOutput_workos_createconnection"],
+            "output": [
+                "ActionOutput_workos_createconnection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_createconnection", "ActionOutput_workos_createconnection"],
+            "usedModels": [
+                "ActionInput_workos_createconnection",
+                "ActionOutput_workos_createconnection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -48,10 +53,16 @@
                                                 "type": "string"
                                             },
                                             "groups": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -105,7 +116,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["key", "cert"],
+                                        "required": [
+                                            "key",
+                                            "cert"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "sp_encryption_key_pairs": {
@@ -120,7 +134,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["key", "cert"],
+                                            "required": [
+                                                "key",
+                                                "cert"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -149,7 +166,11 @@
                                     },
                                     "token_authentication_method": {
                                         "type": "string",
-                                        "enum": ["client_secret_post", "client_secret_basic", "private_key_jwt"]
+                                        "enum": [
+                                            "client_secret_post",
+                                            "client_secret_basic",
+                                            "private_key_jwt"
+                                        ]
                                     },
                                     "jwt_signing_key_pair": {
                                         "type": "object",
@@ -161,7 +182,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["key", "cert"],
+                                        "required": [
+                                            "key",
+                                            "cert"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "id_token_signature_algorithm": {
@@ -186,11 +210,16 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["discovery_endpoint", "client_id"],
+                                "required": [
+                                    "discovery_endpoint",
+                                    "client_id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_createconnection": {
@@ -214,11 +243,21 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["requires_type", "draft", "active", "validating", "inactive", "deleting"]
+                                "enum": [
+                                    "requires_type",
+                                    "draft",
+                                    "active",
+                                    "validating",
+                                    "inactive",
+                                    "deleting"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["linked", "unlinked"]
+                                "enum": [
+                                    "linked",
+                                    "unlinked"
+                                ]
                             },
                             "domains": {
                                 "type": "array",
@@ -236,7 +275,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "domain"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "domain"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -247,7 +290,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "connection_type", "name", "state", "status", "domains", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "connection_type",
+                            "name",
+                            "state",
+                            "status",
+                            "domains",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -260,9 +313,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_createinvitation",
             "name": "create-invitation",
-            "output": ["ActionOutput_workos_createinvitation"],
+            "output": [
+                "ActionOutput_workos_createinvitation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_createinvitation", "ActionOutput_workos_createinvitation"],
+            "usedModels": [
+                "ActionInput_workos_createinvitation",
+                "ActionOutput_workos_createinvitation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -292,7 +350,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_createinvitation": {
@@ -310,28 +370,51 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "expired", "revoked"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "expired",
+                                    "revoked"
+                                ]
                             },
                             "accepted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "revoked_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "expires_at": {
                                 "type": "string"
                             },
                             "organization_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "inviter_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "accepted_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "role_slug": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -375,9 +458,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_createorganizationdomain",
             "name": "create-organization-domain",
-            "output": ["ActionOutput_workos_createorganizationdomain"],
+            "output": [
+                "ActionOutput_workos_createorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_createorganizationdomain", "ActionOutput_workos_createorganizationdomain"],
+            "usedModels": [
+                "ActionInput_workos_createorganizationdomain",
+                "ActionOutput_workos_createorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -391,7 +479,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id", "domain"],
+                        "required": [
+                            "organization_id",
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_createorganizationdomain": {
@@ -412,7 +503,13 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["failed", "legacy_verified", "pending", "unverified", "verified"]
+                                "enum": [
+                                    "failed",
+                                    "legacy_verified",
+                                    "pending",
+                                    "unverified",
+                                    "verified"
+                                ]
                             },
                             "verification_prefix": {
                                 "type": "string"
@@ -422,7 +519,10 @@
                             },
                             "verification_strategy": {
                                 "type": "string",
-                                "enum": ["dns", "manual"]
+                                "enum": [
+                                    "dns",
+                                    "manual"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -431,7 +531,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "organization_id", "domain", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "organization_id",
+                            "domain",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -444,9 +551,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_createorganizationmembership",
             "name": "create-organization-membership",
-            "output": ["ActionOutput_workos_createorganizationmembership"],
+            "output": [
+                "ActionOutput_workos_createorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_createorganizationmembership", "ActionOutput_workos_createorganizationmembership"],
+            "usedModels": [
+                "ActionInput_workos_createorganizationmembership",
+                "ActionOutput_workos_createorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -470,7 +582,10 @@
                                 }
                             }
                         },
-                        "required": ["user_id", "organization_id"],
+                        "required": [
+                            "user_id",
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_createorganizationmembership": {
@@ -491,7 +606,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "inactive", "pending"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "pending"
+                                ]
                             },
                             "directory_managed": {
                                 "type": "boolean"
@@ -513,7 +632,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["slug"],
+                                "required": [
+                                    "slug"
+                                ],
                                 "additionalProperties": {}
                             },
                             "roles": {
@@ -525,7 +646,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["slug"],
+                                    "required": [
+                                        "slug"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -536,7 +659,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "created_at": {
@@ -546,7 +671,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "organization_id", "status", "directory_managed", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "organization_id",
+                            "status",
+                            "directory_managed",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -559,9 +693,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_createorganization",
             "name": "create-organization",
-            "output": ["ActionOutput_workos_createorganization"],
+            "output": [
+                "ActionOutput_workos_createorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_createorganization", "ActionOutput_workos_createorganization"],
+            "usedModels": [
+                "ActionInput_workos_createorganization",
+                "ActionOutput_workos_createorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -583,15 +722,24 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["verified", "pending"]
+                                            "enum": [
+                                                "verified",
+                                                "pending"
+                                            ]
                                         }
                                     },
-                                    "required": ["domain", "state"],
+                                    "required": [
+                                        "domain",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -603,7 +751,9 @@
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_createorganization": {
@@ -659,12 +809,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["object", "id", "domain"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "domain"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
                             "stripe_customer_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -673,7 +830,10 @@
                                 "type": "string"
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -685,7 +845,15 @@
                                 }
                             }
                         },
-                        "required": ["object", "id", "name", "allow_profiles_outside_organization", "domains", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "name",
+                            "allow_profiles_outside_organization",
+                            "domains",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -698,9 +866,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_workos_createuser"],
+            "output": [
+                "ActionOutput_workos_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_createuser", "ActionOutput_workos_createuser"],
+            "usedModels": [
+                "ActionInput_workos_createuser",
+                "ActionOutput_workos_createuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -723,7 +896,13 @@
                             },
                             "password_hash_type": {
                                 "type": "string",
-                                "enum": ["bcrypt", "firebase-scrypt", "ssha", "scrypt", "argon2"]
+                                "enum": [
+                                    "bcrypt",
+                                    "firebase-scrypt",
+                                    "ssha",
+                                    "scrypt",
+                                    "argon2"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -759,7 +938,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_createuser": {
@@ -779,22 +960,40 @@
                                 "type": "boolean"
                             },
                             "profile_picture_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_sign_in_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locale": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -803,7 +1002,10 @@
                                 "type": "string"
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -844,9 +1046,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_deactivateorganizationmembership",
             "name": "deactivate-organization-membership",
-            "output": ["ActionOutput_workos_deactivateorganizationmembership"],
+            "output": [
+                "ActionOutput_workos_deactivateorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_deactivateorganizationmembership", "ActionOutput_workos_deactivateorganizationmembership"],
+            "usedModels": [
+                "ActionInput_workos_deactivateorganizationmembership",
+                "ActionOutput_workos_deactivateorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -857,7 +1064,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["membership_id"],
+                        "required": [
+                            "membership_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_deactivateorganizationmembership": {
@@ -878,7 +1087,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "inactive", "pending"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "pending"
+                                ]
                             },
                             "directory_managed": {
                                 "type": "boolean"
@@ -900,7 +1113,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["slug"],
+                                "required": [
+                                    "slug"
+                                ],
                                 "additionalProperties": {}
                             },
                             "roles": {
@@ -912,7 +1127,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["slug"],
+                                    "required": [
+                                        "slug"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -923,7 +1140,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "created_at": {
@@ -933,7 +1152,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "organization_id", "status", "directory_managed", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "organization_id",
+                            "status",
+                            "directory_managed",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -946,9 +1174,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_deleteconnection",
             "name": "delete-connection",
-            "output": ["ActionOutput_workos_deleteconnection"],
+            "output": [
+                "ActionOutput_workos_deleteconnection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_deleteconnection", "ActionOutput_workos_deleteconnection"],
+            "usedModels": [
+                "ActionInput_workos_deleteconnection",
+                "ActionOutput_workos_deleteconnection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -959,7 +1192,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["connection_id"],
+                        "required": [
+                            "connection_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_deleteconnection": {
@@ -972,7 +1207,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -985,9 +1223,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_deletedirectory",
             "name": "delete-directory",
-            "output": ["ActionOutput_workos_deletedirectory"],
+            "output": [
+                "ActionOutput_workos_deletedirectory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_deletedirectory", "ActionOutput_workos_deletedirectory"],
+            "usedModels": [
+                "ActionInput_workos_deletedirectory",
+                "ActionOutput_workos_deletedirectory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -998,7 +1241,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["directory_id"],
+                        "required": [
+                            "directory_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_deletedirectory": {
@@ -1011,7 +1256,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1024,9 +1272,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_deleteorganizationdomain",
             "name": "delete-organization-domain",
-            "output": ["ActionOutput_workos_deleteorganizationdomain"],
+            "output": [
+                "ActionOutput_workos_deleteorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_deleteorganizationdomain", "ActionOutput_workos_deleteorganizationdomain"],
+            "usedModels": [
+                "ActionInput_workos_deleteorganizationdomain",
+                "ActionOutput_workos_deleteorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1037,7 +1290,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_domain_id"],
+                        "required": [
+                            "organization_domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_deleteorganizationdomain": {
@@ -1050,7 +1305,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1063,9 +1321,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_deleteorganizationmembership",
             "name": "delete-organization-membership",
-            "output": ["ActionOutput_workos_deleteorganizationmembership"],
+            "output": [
+                "ActionOutput_workos_deleteorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_deleteorganizationmembership", "ActionOutput_workos_deleteorganizationmembership"],
+            "usedModels": [
+                "ActionInput_workos_deleteorganizationmembership",
+                "ActionOutput_workos_deleteorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1078,7 +1341,9 @@
                                 "description": "WorkOS organization membership ID. Example: \"om_01H...\""
                             }
                         },
-                        "required": ["membership_id"],
+                        "required": [
+                            "membership_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_deleteorganizationmembership": {
@@ -1091,7 +1356,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1104,9 +1372,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_deleteorganization",
             "name": "delete-organization",
-            "output": ["ActionOutput_workos_deleteorganization"],
+            "output": [
+                "ActionOutput_workos_deleteorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_deleteorganization", "ActionOutput_workos_deleteorganization"],
+            "usedModels": [
+                "ActionInput_workos_deleteorganization",
+                "ActionOutput_workos_deleteorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1119,7 +1392,9 @@
                                 "description": "WorkOS organization ID. Example: \"org_01H...\""
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_deleteorganization": {
@@ -1132,7 +1407,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1145,9 +1423,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_workos_deleteuser"],
+            "output": [
+                "ActionOutput_workos_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_deleteuser", "ActionOutput_workos_deleteuser"],
+            "usedModels": [
+                "ActionInput_workos_deleteuser",
+                "ActionOutput_workos_deleteuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1160,7 +1443,9 @@
                                 "description": "WorkOS user ID. Example: \"user_01H...\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_deleteuser": {
@@ -1173,7 +1458,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1186,9 +1474,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getconnection",
             "name": "get-connection",
-            "output": ["ActionOutput_workos_getconnection"],
+            "output": [
+                "ActionOutput_workos_getconnection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getconnection", "ActionOutput_workos_getconnection"],
+            "usedModels": [
+                "ActionInput_workos_getconnection",
+                "ActionOutput_workos_getconnection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1199,7 +1492,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["connection_id"],
+                        "required": [
+                            "connection_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getconnection": {
@@ -1223,11 +1518,21 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["requires_type", "draft", "active", "validating", "inactive", "deleting"]
+                                "enum": [
+                                    "requires_type",
+                                    "draft",
+                                    "active",
+                                    "validating",
+                                    "inactive",
+                                    "deleting"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["linked", "unlinked"]
+                                "enum": [
+                                    "linked",
+                                    "unlinked"
+                                ]
                             },
                             "domains": {
                                 "type": "array",
@@ -1245,7 +1550,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "domain"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "domain"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1256,7 +1565,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "connection_type", "name", "state", "status", "domains", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "connection_type",
+                            "name",
+                            "state",
+                            "status",
+                            "domains",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1269,9 +1588,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getdirectorygroup",
             "name": "get-directory-group",
-            "output": ["ActionOutput_workos_getdirectorygroup"],
+            "output": [
+                "ActionOutput_workos_getdirectorygroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getdirectorygroup", "ActionOutput_workos_getdirectorygroup"],
+            "usedModels": [
+                "ActionInput_workos_getdirectorygroup",
+                "ActionOutput_workos_getdirectorygroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1282,7 +1606,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["group_id"],
+                        "required": [
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getdirectorygroup": {
@@ -1298,7 +1624,10 @@
                                 "type": "string"
                             },
                             "organization_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -1317,7 +1646,16 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "idp_id", "directory_id", "organization_id", "name", "created_at", "updated_at", "raw_attributes"],
+                        "required": [
+                            "id",
+                            "idp_id",
+                            "directory_id",
+                            "organization_id",
+                            "name",
+                            "created_at",
+                            "updated_at",
+                            "raw_attributes"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1330,9 +1668,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getdirectoryuser",
             "name": "get-directory-user",
-            "output": ["ActionOutput_workos_getdirectoryuser"],
+            "output": [
+                "ActionOutput_workos_getdirectoryuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getdirectoryuser", "ActionOutput_workos_getdirectoryuser"],
+            "usedModels": [
+                "ActionInput_workos_getdirectoryuser",
+                "ActionOutput_workos_getdirectoryuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1345,7 +1688,9 @@
                                 "description": "WorkOS directory user ID. Example: \"directory_user_01H...\""
                             }
                         },
-                        "required": ["directory_user_id"],
+                        "required": [
+                            "directory_user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getdirectoryuser": {
@@ -1362,23 +1707,39 @@
                                 "type": "string"
                             },
                             "organization_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "idp_id": {
                                 "type": "string"
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["active", "inactive", "suspended"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "suspended"
+                                ]
                             },
                             "role": {
                                 "type": "object",
@@ -1426,7 +1787,10 @@
                                             "type": "string"
                                         },
                                         "organization_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -1445,7 +1809,16 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "idp_id", "directory_id", "organization_id", "name", "created_at", "updated_at", "raw_attributes"],
+                                    "required": [
+                                        "id",
+                                        "idp_id",
+                                        "directory_id",
+                                        "organization_id",
+                                        "name",
+                                        "created_at",
+                                        "updated_at",
+                                        "raw_attributes"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1482,9 +1855,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getdirectory",
             "name": "get-directory",
-            "output": ["ActionOutput_workos_getdirectory"],
+            "output": [
+                "ActionOutput_workos_getdirectory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getdirectory", "ActionOutput_workos_getdirectory"],
+            "usedModels": [
+                "ActionInput_workos_getdirectory",
+                "ActionOutput_workos_getdirectory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1495,7 +1873,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["directory_id"],
+                        "required": [
+                            "directory_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getdirectory": {
@@ -1518,7 +1898,10 @@
                                 "type": "string"
                             },
                             "organization_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "type": "string"
@@ -1533,7 +1916,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "domain", "external_key", "name", "state", "type", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "domain",
+                            "external_key",
+                            "name",
+                            "state",
+                            "type",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1546,9 +1939,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getinvitation",
             "name": "get-invitation",
-            "output": ["ActionOutput_workos_getinvitation"],
+            "output": [
+                "ActionOutput_workos_getinvitation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getinvitation", "ActionOutput_workos_getinvitation"],
+            "usedModels": [
+                "ActionInput_workos_getinvitation",
+                "ActionOutput_workos_getinvitation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1559,7 +1957,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["invitation_id"],
+                        "required": [
+                            "invitation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getinvitation": {
@@ -1577,28 +1977,51 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "expired", "revoked"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "expired",
+                                    "revoked"
+                                ]
                             },
                             "accepted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "revoked_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "expires_at": {
                                 "type": "string"
                             },
                             "organization_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "inviter_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "accepted_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "role_slug": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -1642,9 +2065,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getorganizationdomain",
             "name": "get-organization-domain",
-            "output": ["ActionOutput_workos_getorganizationdomain"],
+            "output": [
+                "ActionOutput_workos_getorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getorganizationdomain", "ActionOutput_workos_getorganizationdomain"],
+            "usedModels": [
+                "ActionInput_workos_getorganizationdomain",
+                "ActionOutput_workos_getorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1655,7 +2083,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_domain_id"],
+                        "required": [
+                            "organization_domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getorganizationdomain": {
@@ -1676,7 +2106,13 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["failed", "legacy_verified", "pending", "unverified", "verified"]
+                                "enum": [
+                                    "failed",
+                                    "legacy_verified",
+                                    "pending",
+                                    "unverified",
+                                    "verified"
+                                ]
                             },
                             "verification_prefix": {
                                 "type": "string"
@@ -1686,7 +2122,10 @@
                             },
                             "verification_strategy": {
                                 "type": "string",
-                                "enum": ["dns", "manual"]
+                                "enum": [
+                                    "dns",
+                                    "manual"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -1695,7 +2134,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "organization_id", "domain", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "organization_id",
+                            "domain",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1708,9 +2154,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getorganizationmembership",
             "name": "get-organization-membership",
-            "output": ["ActionOutput_workos_getorganizationmembership"],
+            "output": [
+                "ActionOutput_workos_getorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getorganizationmembership", "ActionOutput_workos_getorganizationmembership"],
+            "usedModels": [
+                "ActionInput_workos_getorganizationmembership",
+                "ActionOutput_workos_getorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1723,7 +2174,9 @@
                                 "description": "WorkOS organization membership ID. Example: \"om_01H...\""
                             }
                         },
-                        "required": ["membership_id"],
+                        "required": [
+                            "membership_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getorganizationmembership": {
@@ -1744,7 +2197,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "inactive", "pending"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "pending"
+                                ]
                             },
                             "directory_managed": {
                                 "type": "boolean"
@@ -1766,7 +2223,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["slug"],
+                                "required": [
+                                    "slug"
+                                ],
                                 "additionalProperties": {}
                             },
                             "roles": {
@@ -1778,7 +2237,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["slug"],
+                                    "required": [
+                                        "slug"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1789,7 +2250,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "created_at": {
@@ -1799,7 +2262,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "organization_id", "status", "directory_managed", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "organization_id",
+                            "status",
+                            "directory_managed",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1812,9 +2284,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_workos_getorganization"],
+            "output": [
+                "ActionOutput_workos_getorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getorganization", "ActionOutput_workos_getorganization"],
+            "usedModels": [
+                "ActionInput_workos_getorganization",
+                "ActionOutput_workos_getorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1827,7 +2304,9 @@
                                 "description": "WorkOS organization ID. Example: \"org_01H...\""
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getorganization": {
@@ -1883,12 +2362,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["object", "id", "domain"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "domain"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
                             "stripe_customer_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -1897,7 +2383,10 @@
                                 "type": "string"
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -1909,7 +2398,15 @@
                                 }
                             }
                         },
-                        "required": ["object", "id", "name", "allow_profiles_outside_organization", "domains", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "name",
+                            "allow_profiles_outside_organization",
+                            "domains",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1922,9 +2419,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_workos_getuser"],
+            "output": [
+                "ActionOutput_workos_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_getuser", "ActionOutput_workos_getuser"],
+            "usedModels": [
+                "ActionInput_workos_getuser",
+                "ActionOutput_workos_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1937,7 +2439,9 @@
                                 "description": "WorkOS user ID. Example: \"user_01H...\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_getuser": {
@@ -1957,22 +2461,40 @@
                                 "type": "boolean"
                             },
                             "profile_picture_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_sign_in_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locale": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -1981,7 +2503,10 @@
                                 "type": "string"
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -2019,9 +2544,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listconnections",
             "name": "list-connections",
-            "output": ["ActionOutput_workos_listconnections"],
+            "output": [
+                "ActionOutput_workos_listconnections"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listconnections", "ActionOutput_workos_listconnections"],
+            "usedModels": [
+                "ActionInput_workos_listconnections",
+                "ActionOutput_workos_listconnections"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2035,7 +2565,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2044,7 +2577,11 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc", "normal"]
+                                "enum": [
+                                    "asc",
+                                    "desc",
+                                    "normal"
+                                ]
                             },
                             "connection_type": {
                                 "type": "string"
@@ -2087,11 +2624,21 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["requires_type", "draft", "active", "validating", "inactive", "deleting"]
+                                            "enum": [
+                                                "requires_type",
+                                                "draft",
+                                                "active",
+                                                "validating",
+                                                "inactive",
+                                                "deleting"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["linked", "unlinked"]
+                                            "enum": [
+                                                "linked",
+                                                "unlinked"
+                                            ]
                                         },
                                         "domains": {
                                             "type": "array",
@@ -2109,7 +2656,11 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "object", "domain"],
+                                                "required": [
+                                                    "id",
+                                                    "object",
+                                                    "domain"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -2120,7 +2671,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["object", "id", "connection_type", "name", "state", "status", "domains", "created_at", "updated_at"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "connection_type",
+                                        "name",
+                                        "state",
+                                        "status",
+                                        "domains",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2128,7 +2689,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2141,9 +2704,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listdirectories",
             "name": "list-directories",
-            "output": ["ActionOutput_workos_listdirectories"],
+            "output": [
+                "ActionOutput_workos_listdirectories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listdirectories", "ActionOutput_workos_listdirectories"],
+            "usedModels": [
+                "ActionInput_workos_listdirectories",
+                "ActionOutput_workos_listdirectories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2157,7 +2725,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2166,7 +2737,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "organization_id": {
                                 "type": "string"
@@ -2205,7 +2779,10 @@
                                             "type": "string"
                                         },
                                         "organization_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "state": {
                                             "type": "string"
@@ -2220,7 +2797,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["object", "id", "domain", "external_key", "name", "state", "type", "created_at", "updated_at"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "domain",
+                                        "external_key",
+                                        "name",
+                                        "state",
+                                        "type",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2228,7 +2815,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2241,9 +2830,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listdirectorygroups",
             "name": "list-directory-groups",
-            "output": ["ActionOutput_workos_listdirectorygroups"],
+            "output": [
+                "ActionOutput_workos_listdirectorygroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listdirectorygroups", "ActionOutput_workos_listdirectorygroups"],
+            "usedModels": [
+                "ActionInput_workos_listdirectorygroups",
+                "ActionOutput_workos_listdirectorygroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2257,7 +2851,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2266,7 +2863,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "directory": {
                                 "description": "Filter groups by directory ID.",
@@ -2297,7 +2897,10 @@
                                             "type": "string"
                                         },
                                         "organization_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -2316,7 +2919,16 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "idp_id", "directory_id", "organization_id", "name", "created_at", "updated_at", "raw_attributes"],
+                                    "required": [
+                                        "id",
+                                        "idp_id",
+                                        "directory_id",
+                                        "organization_id",
+                                        "name",
+                                        "created_at",
+                                        "updated_at",
+                                        "raw_attributes"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2324,7 +2936,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2337,9 +2951,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listdirectoryusers",
             "name": "list-directory-users",
-            "output": ["ActionOutput_workos_listdirectoryusers"],
+            "output": [
+                "ActionOutput_workos_listdirectoryusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listdirectoryusers", "ActionOutput_workos_listdirectoryusers"],
+            "usedModels": [
+                "ActionInput_workos_listdirectoryusers",
+                "ActionOutput_workos_listdirectoryusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2353,7 +2972,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2362,7 +2984,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "directory": {
                                 "description": "Filter users by directory ID.",
@@ -2404,23 +3029,39 @@
                                             "type": "string"
                                         },
                                         "organization_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "idp_id": {
                                             "type": "string"
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["active", "inactive", "suspended"]
+                                            "enum": [
+                                                "active",
+                                                "inactive",
+                                                "suspended"
+                                            ]
                                         },
                                         "role": {
                                             "type": "object",
@@ -2468,7 +3109,10 @@
                                                         "type": "string"
                                                     },
                                                     "organization_id": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "name": {
                                                         "type": "string"
@@ -2528,7 +3172,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2541,9 +3187,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_workos_listevents"],
+            "output": [
+                "ActionOutput_workos_listevents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listevents", "ActionOutput_workos_listevents"],
+            "usedModels": [
+                "ActionInput_workos_listevents",
+                "ActionOutput_workos_listevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2557,7 +3208,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2566,7 +3220,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "events": {
                                 "minItems": 1,
@@ -2585,7 +3242,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_listevents": {
@@ -2620,7 +3279,12 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "event", "created_at", "data"],
+                                    "required": [
+                                        "id",
+                                        "event",
+                                        "created_at",
+                                        "data"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2628,7 +3292,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2641,9 +3307,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listinvitations",
             "name": "list-invitations",
-            "output": ["ActionOutput_workos_listinvitations"],
+            "output": [
+                "ActionOutput_workos_listinvitations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listinvitations", "ActionOutput_workos_listinvitations"],
+            "usedModels": [
+                "ActionInput_workos_listinvitations",
+                "ActionOutput_workos_listinvitations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2657,7 +3328,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2666,7 +3340,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "organization_id": {
                                 "type": "string"
@@ -2699,28 +3376,51 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["pending", "accepted", "expired", "revoked"]
+                                            "enum": [
+                                                "pending",
+                                                "accepted",
+                                                "expired",
+                                                "revoked"
+                                            ]
                                         },
                                         "accepted_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "revoked_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "expires_at": {
                                             "type": "string"
                                         },
                                         "organization_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "inviter_user_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "accepted_user_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "role_slug": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -2759,7 +3459,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2772,9 +3474,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listorganizationmembershipgroups",
             "name": "list-organization-membership-groups",
-            "output": ["ActionOutput_workos_listorganizationmembershipgroups"],
+            "output": [
+                "ActionOutput_workos_listorganizationmembershipgroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listorganizationmembershipgroups", "ActionOutput_workos_listorganizationmembershipgroups"],
+            "usedModels": [
+                "ActionInput_workos_listorganizationmembershipgroups",
+                "ActionOutput_workos_listorganizationmembershipgroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2788,7 +3495,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2797,13 +3507,18 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "membership_id": {
                                 "type": "string"
                             }
                         },
-                        "required": ["membership_id"],
+                        "required": [
+                            "membership_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_listorganizationmembershipgroups": {
@@ -2824,7 +3539,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2832,7 +3550,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2845,9 +3565,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listorganizationmemberships",
             "name": "list-organization-memberships",
-            "output": ["ActionOutput_workos_listorganizationmemberships"],
+            "output": [
+                "ActionOutput_workos_listorganizationmemberships"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listorganizationmemberships", "ActionOutput_workos_listorganizationmemberships"],
+            "usedModels": [
+                "ActionInput_workos_listorganizationmemberships",
+                "ActionOutput_workos_listorganizationmemberships"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2861,7 +3586,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -2870,7 +3598,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "organization_id": {
                                 "type": "string"
@@ -2882,7 +3613,11 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["active", "inactive", "pending"]
+                                    "enum": [
+                                        "active",
+                                        "inactive",
+                                        "pending"
+                                    ]
                                 }
                             }
                         },
@@ -2911,7 +3646,11 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["active", "inactive", "pending"]
+                                            "enum": [
+                                                "active",
+                                                "inactive",
+                                                "pending"
+                                            ]
                                         },
                                         "directory_managed": {
                                             "type": "boolean"
@@ -2933,7 +3672,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["slug"],
+                                            "required": [
+                                                "slug"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "roles": {
@@ -2945,7 +3686,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["slug"],
+                                                "required": [
+                                                    "slug"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -2956,7 +3699,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "created_at": {
@@ -2966,7 +3711,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["object", "id", "user_id", "organization_id", "status", "directory_managed", "created_at", "updated_at"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "user_id",
+                                        "organization_id",
+                                        "status",
+                                        "directory_managed",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2974,7 +3728,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2987,9 +3743,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_workos_listorganizations"],
+            "output": [
+                "ActionOutput_workos_listorganizations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listorganizations", "ActionOutput_workos_listorganizations"],
+            "usedModels": [
+                "ActionInput_workos_listorganizations",
+                "ActionOutput_workos_listorganizations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3003,7 +3764,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of organizations to return.",
@@ -3013,7 +3777,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "domains": {
                                 "description": "Return organizations matching any of these domains.",
@@ -3057,7 +3824,10 @@
                                             }
                                         },
                                         "stripe_customer_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3066,7 +3836,10 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "metadata": {
                                             "type": "object",
@@ -3078,7 +3851,15 @@
                                             }
                                         }
                                     },
-                                    "required": ["object", "id", "name", "allow_profiles_outside_organization", "domains", "created_at", "updated_at"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "name",
+                                        "allow_profiles_outside_organization",
+                                        "domains",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3086,7 +3867,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3099,9 +3882,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_workos_listusers"],
+            "output": [
+                "ActionOutput_workos_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_listusers", "ActionOutput_workos_listusers"],
+            "usedModels": [
+                "ActionInput_workos_listusers",
+                "ActionOutput_workos_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3115,7 +3903,10 @@
                             "cursor_direction": {
                                 "description": "Direction for the cursor. Defaults to after.",
                                 "type": "string",
-                                "enum": ["after", "before"]
+                                "enum": [
+                                    "after",
+                                    "before"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of users to return.",
@@ -3125,7 +3916,10 @@
                             },
                             "order": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "email": {
                                 "description": "Filter users by email address.",
@@ -3162,22 +3956,40 @@
                                             "type": "boolean"
                                         },
                                         "profile_picture_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_sign_in_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "locale": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3186,7 +3998,10 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "metadata": {
                                             "type": "object",
@@ -3219,7 +4034,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3232,9 +4049,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_reactivateorganizationmembership",
             "name": "reactivate-organization-membership",
-            "output": ["ActionOutput_workos_reactivateorganizationmembership"],
+            "output": [
+                "ActionOutput_workos_reactivateorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_reactivateorganizationmembership", "ActionOutput_workos_reactivateorganizationmembership"],
+            "usedModels": [
+                "ActionInput_workos_reactivateorganizationmembership",
+                "ActionOutput_workos_reactivateorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3245,7 +4067,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["membership_id"],
+                        "required": [
+                            "membership_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_reactivateorganizationmembership": {
@@ -3266,7 +4090,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "inactive", "pending"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "pending"
+                                ]
                             },
                             "directory_managed": {
                                 "type": "boolean"
@@ -3288,7 +4116,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["slug"],
+                                "required": [
+                                    "slug"
+                                ],
                                 "additionalProperties": {}
                             },
                             "roles": {
@@ -3300,7 +4130,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["slug"],
+                                    "required": [
+                                        "slug"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3311,7 +4143,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "created_at": {
@@ -3321,7 +4155,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "organization_id", "status", "directory_managed", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "organization_id",
+                            "status",
+                            "directory_managed",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3334,9 +4177,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_resendinvitation",
             "name": "resend-invitation",
-            "output": ["ActionOutput_workos_resendinvitation"],
+            "output": [
+                "ActionOutput_workos_resendinvitation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_resendinvitation", "ActionOutput_workos_resendinvitation"],
+            "usedModels": [
+                "ActionInput_workos_resendinvitation",
+                "ActionOutput_workos_resendinvitation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3350,7 +4198,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["invitation_id"],
+                        "required": [
+                            "invitation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_resendinvitation": {
@@ -3368,28 +4218,51 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "expired", "revoked"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "expired",
+                                    "revoked"
+                                ]
                             },
                             "accepted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "revoked_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "expires_at": {
                                 "type": "string"
                             },
                             "organization_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "inviter_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "accepted_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "role_slug": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -3433,9 +4306,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_revokeinvitation",
             "name": "revoke-invitation",
-            "output": ["ActionOutput_workos_revokeinvitation"],
+            "output": [
+                "ActionOutput_workos_revokeinvitation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_revokeinvitation", "ActionOutput_workos_revokeinvitation"],
+            "usedModels": [
+                "ActionInput_workos_revokeinvitation",
+                "ActionOutput_workos_revokeinvitation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3446,7 +4324,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["invitation_id"],
+                        "required": [
+                            "invitation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_revokeinvitation": {
@@ -3464,28 +4344,51 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "expired", "revoked"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "expired",
+                                    "revoked"
+                                ]
                             },
                             "accepted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "revoked_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "expires_at": {
                                 "type": "string"
                             },
                             "organization_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "inviter_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "accepted_user_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "role_slug": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -3529,9 +4432,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_updateconnection",
             "name": "update-connection",
-            "output": ["ActionOutput_workos_updateconnection"],
+            "output": [
+                "ActionOutput_workos_updateconnection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_updateconnection", "ActionOutput_workos_updateconnection"],
+            "usedModels": [
+                "ActionInput_workos_updateconnection",
+                "ActionOutput_workos_updateconnection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3577,10 +4485,16 @@
                                                 "type": "string"
                                             },
                                             "groups": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3634,7 +4548,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["key", "cert"],
+                                        "required": [
+                                            "key",
+                                            "cert"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "sp_encryption_key_pairs": {
@@ -3649,7 +4566,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["key", "cert"],
+                                            "required": [
+                                                "key",
+                                                "cert"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -3678,7 +4598,11 @@
                                     },
                                     "token_authentication_method": {
                                         "type": "string",
-                                        "enum": ["client_secret_post", "client_secret_basic", "private_key_jwt"]
+                                        "enum": [
+                                            "client_secret_post",
+                                            "client_secret_basic",
+                                            "private_key_jwt"
+                                        ]
                                     },
                                     "jwt_signing_key_pair": {
                                         "type": "object",
@@ -3690,7 +4614,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["key", "cert"],
+                                        "required": [
+                                            "key",
+                                            "cert"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "id_token_signature_algorithm": {
@@ -3715,11 +4642,16 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["discovery_endpoint", "client_id"],
+                                "required": [
+                                    "discovery_endpoint",
+                                    "client_id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["connection_id"],
+                        "required": [
+                            "connection_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_updateconnection": {
@@ -3743,11 +4675,21 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["requires_type", "draft", "active", "validating", "inactive", "deleting"]
+                                "enum": [
+                                    "requires_type",
+                                    "draft",
+                                    "active",
+                                    "validating",
+                                    "inactive",
+                                    "deleting"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["linked", "unlinked"]
+                                "enum": [
+                                    "linked",
+                                    "unlinked"
+                                ]
                             },
                             "domains": {
                                 "type": "array",
@@ -3765,7 +4707,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "domain"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "domain"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3776,7 +4722,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "connection_type", "name", "state", "status", "domains", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "connection_type",
+                            "name",
+                            "state",
+                            "status",
+                            "domains",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3789,9 +4745,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_updateorganizationmembership",
             "name": "update-organization-membership",
-            "output": ["ActionOutput_workos_updateorganizationmembership"],
+            "output": [
+                "ActionOutput_workos_updateorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_updateorganizationmembership", "ActionOutput_workos_updateorganizationmembership"],
+            "usedModels": [
+                "ActionInput_workos_updateorganizationmembership",
+                "ActionOutput_workos_updateorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3812,7 +4773,9 @@
                                 }
                             }
                         },
-                        "required": ["membership_id"],
+                        "required": [
+                            "membership_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_updateorganizationmembership": {
@@ -3833,7 +4796,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "inactive", "pending"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "pending"
+                                ]
                             },
                             "directory_managed": {
                                 "type": "boolean"
@@ -3855,7 +4822,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["slug"],
+                                "required": [
+                                    "slug"
+                                ],
                                 "additionalProperties": {}
                             },
                             "roles": {
@@ -3867,7 +4836,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["slug"],
+                                    "required": [
+                                        "slug"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3878,7 +4849,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "created_at": {
@@ -3888,7 +4861,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "user_id", "organization_id", "status", "directory_managed", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "user_id",
+                            "organization_id",
+                            "status",
+                            "directory_managed",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3901,9 +4883,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_updateorganization",
             "name": "update-organization",
-            "output": ["ActionOutput_workos_updateorganization"],
+            "output": [
+                "ActionOutput_workos_updateorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_updateorganization", "ActionOutput_workos_updateorganization"],
+            "usedModels": [
+                "ActionInput_workos_updateorganization",
+                "ActionOutput_workos_updateorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3928,18 +4915,30 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["verified", "pending"]
+                                            "enum": [
+                                                "verified",
+                                                "pending"
+                                            ]
                                         }
                                     },
-                                    "required": ["domain", "state"],
+                                    "required": [
+                                        "domain",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "stripe_customer_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -3951,7 +4950,9 @@
                                 }
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_updateorganization": {
@@ -3981,7 +4982,10 @@
                                 }
                             },
                             "stripe_customer_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -3990,7 +4994,10 @@
                                 "type": "string"
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -4002,7 +5009,15 @@
                                 }
                             }
                         },
-                        "required": ["object", "id", "name", "allow_profiles_outside_organization", "domains", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "name",
+                            "allow_profiles_outside_organization",
+                            "domains",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -4015,9 +5030,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_workos_updateuser"],
+            "output": [
+                "ActionOutput_workos_updateuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_updateuser", "ActionOutput_workos_updateuser"],
+            "usedModels": [
+                "ActionInput_workos_updateuser",
+                "ActionOutput_workos_updateuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4054,7 +5074,13 @@
                             },
                             "password_hash_type": {
                                 "type": "string",
-                                "enum": ["bcrypt", "firebase-scrypt", "ssha", "scrypt", "argon2"]
+                                "enum": [
+                                    "bcrypt",
+                                    "firebase-scrypt",
+                                    "ssha",
+                                    "scrypt",
+                                    "argon2"
+                                ]
                             },
                             "external_id": {
                                 "type": "string"
@@ -4068,11 +5094,16 @@
                                     "type": "string"
                                 },
                                 "additionalProperties": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_updateuser": {
@@ -4092,22 +5123,40 @@
                                 "type": "boolean"
                             },
                             "profile_picture_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_sign_in_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locale": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -4116,7 +5165,10 @@
                                 "type": "string"
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "type": "object",
@@ -4154,9 +5206,14 @@
             "endpoint": null,
             "input": "ActionInput_workos_verifyorganizationdomain",
             "name": "verify-organization-domain",
-            "output": ["ActionOutput_workos_verifyorganizationdomain"],
+            "output": [
+                "ActionOutput_workos_verifyorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workos_verifyorganizationdomain", "ActionOutput_workos_verifyorganizationdomain"],
+            "usedModels": [
+                "ActionInput_workos_verifyorganizationdomain",
+                "ActionOutput_workos_verifyorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4167,7 +5224,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_domain_id"],
+                        "required": [
+                            "organization_domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workos_verifyorganizationdomain": {
@@ -4188,7 +5247,13 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["failed", "legacy_verified", "pending", "unverified", "verified"]
+                                "enum": [
+                                    "failed",
+                                    "legacy_verified",
+                                    "pending",
+                                    "unverified",
+                                    "verified"
+                                ]
                             },
                             "verification_prefix": {
                                 "type": "string"
@@ -4198,7 +5263,10 @@
                             },
                             "verification_strategy": {
                                 "type": "string",
-                                "enum": ["dns", "manual"]
+                                "enum": [
+                                    "dns",
+                                    "manual"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -4207,7 +5275,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["object", "id", "organization_id", "domain", "created_at", "updated_at"],
+                        "required": [
+                            "object",
+                            "id",
+                            "organization_id",
+                            "domain",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }

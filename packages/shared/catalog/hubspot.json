@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_batchcreatecompanies",
             "name": "batch-create-companies",
-            "output": ["ActionOutput_hubspot_batchcreatecompanies"],
-            "scopes": ["crm.objects.companies.write"],
-            "usedModels": ["ActionInput_hubspot_batchcreatecompanies", "ActionOutput_hubspot_batchcreatecompanies"],
+            "output": [
+                "ActionOutput_hubspot_batchcreatecompanies"
+            ],
+            "scopes": [
+                "crm.objects.companies.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_batchcreatecompanies",
+                "ActionOutput_hubspot_batchcreatecompanies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -43,7 +50,9 @@
                                 "description": "Array of companies to create"
                             }
                         },
-                        "required": ["companies"],
+                        "required": [
+                            "companies"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_batchcreatecompanies": {
@@ -76,12 +85,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["companies"],
+                        "required": [
+                            "companies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -94,9 +107,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_batchupdatecompanies",
             "name": "batch-update-companies",
-            "output": ["ActionOutput_hubspot_batchupdatecompanies"],
-            "scopes": ["crm.objects.companies.write"],
-            "usedModels": ["ActionInput_hubspot_batchupdatecompanies", "ActionOutput_hubspot_batchupdatecompanies"],
+            "output": [
+                "ActionOutput_hubspot_batchupdatecompanies"
+            ],
+            "scopes": [
+                "crm.objects.companies.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_batchupdatecompanies",
+                "ActionOutput_hubspot_batchupdatecompanies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -147,13 +167,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of companies to update (max 100 per request)."
                             }
                         },
-                        "required": ["companies"],
+                        "required": [
+                            "companies"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_batchupdatecompanies": {
@@ -198,7 +222,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -206,7 +232,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results", "status"],
+                        "required": [
+                            "results",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -219,9 +248,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_changeuserrole",
             "name": "change-user-role",
-            "output": ["ActionOutput_hubspot_changeuserrole"],
-            "scopes": ["settings.users.write"],
-            "usedModels": ["ActionInput_hubspot_changeuserrole", "ActionOutput_hubspot_changeuserrole"],
+            "output": [
+                "ActionOutput_hubspot_changeuserrole"
+            ],
+            "scopes": [
+                "settings.users.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_changeuserrole",
+                "ActionOutput_hubspot_changeuserrole"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -235,7 +271,10 @@
                             "idProperty": {
                                 "description": "Property type for the user_id. Use EMAIL if user_id is an email, USER_ID if it is a user ID.",
                                 "type": "string",
-                                "enum": ["EMAIL", "USER_ID"]
+                                "enum": [
+                                    "EMAIL",
+                                    "USER_ID"
+                                ]
                             },
                             "roleId": {
                                 "description": "Role ID to assign to the user. Example: \"1234\"",
@@ -253,7 +292,9 @@
                                 }
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_changeuserrole": {
@@ -290,7 +331,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "email", "roleIds", "secondaryTeamIds", "superAdmin"],
+                        "required": [
+                            "id",
+                            "email",
+                            "roleIds",
+                            "secondaryTeamIds",
+                            "superAdmin"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -303,9 +350,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_clonemarketingemail",
             "name": "clone-marketing-email",
-            "output": ["ActionOutput_hubspot_clonemarketingemail"],
-            "scopes": ["content"],
-            "usedModels": ["ActionInput_hubspot_clonemarketingemail", "ActionOutput_hubspot_clonemarketingemail"],
+            "output": [
+                "ActionOutput_hubspot_clonemarketingemail"
+            ],
+            "scopes": [
+                "content"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_clonemarketingemail",
+                "ActionOutput_hubspot_clonemarketingemail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -325,7 +379,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["emailId"],
+                        "required": [
+                            "emailId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_clonemarketingemail": {
@@ -365,7 +421,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -378,9 +436,18 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createassociation",
             "name": "create-association",
-            "output": ["ActionOutput_hubspot_createassociation"],
-            "scopes": ["crm.objects.contacts.write", "crm.objects.companies.write", "crm.objects.deals.write"],
-            "usedModels": ["ActionInput_hubspot_createassociation", "ActionOutput_hubspot_createassociation"],
+            "output": [
+                "ActionOutput_hubspot_createassociation"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write",
+                "crm.objects.companies.write",
+                "crm.objects.deals.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createassociation",
+                "ActionOutput_hubspot_createassociation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -410,10 +477,19 @@
                             "associationCategory": {
                                 "description": "The category of the association type. Required if association_type is provided.",
                                 "type": "string",
-                                "enum": ["HUBSPOT_DEFINED", "USER_DEFINED", "INTEGRATOR_DEFINED"]
+                                "enum": [
+                                    "HUBSPOT_DEFINED",
+                                    "USER_DEFINED",
+                                    "INTEGRATOR_DEFINED"
+                                ]
                             }
                         },
-                        "required": ["fromObjectType", "fromObjectId", "toObjectType", "toObjectId"],
+                        "required": [
+                            "fromObjectType",
+                            "fromObjectId",
+                            "toObjectType",
+                            "toObjectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createassociation": {
@@ -440,7 +516,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["fromId", "toId"],
+                                    "required": [
+                                        "fromId",
+                                        "toId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -451,7 +530,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status", "results", "startedAt", "completedAt"],
+                        "required": [
+                            "status",
+                            "results",
+                            "startedAt",
+                            "completedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -464,9 +548,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createcompany",
             "name": "create-company",
-            "output": ["ActionOutput_hubspot_createcompany"],
-            "scopes": ["crm.objects.companies.write"],
-            "usedModels": ["ActionInput_hubspot_createcompany", "ActionOutput_hubspot_createcompany"],
+            "output": [
+                "ActionOutput_hubspot_createcompany"
+            ],
+            "scopes": [
+                "crm.objects.companies.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createcompany",
+                "ActionOutput_hubspot_createcompany"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -531,7 +622,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -544,9 +637,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_hubspot_createcontact"],
-            "scopes": ["crm.objects.contacts.write"],
-            "usedModels": ["ActionInput_hubspot_createcontact", "ActionOutput_hubspot_createcontact"],
+            "output": [
+                "ActionOutput_hubspot_createcontact"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createcontact",
+                "ActionOutput_hubspot_createcontact"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -578,7 +678,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createcontact": {
@@ -612,7 +714,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -625,9 +729,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createdeal",
             "name": "create-deal",
-            "output": ["ActionOutput_hubspot_createdeal"],
-            "scopes": ["crm.objects.deals.write"],
-            "usedModels": ["ActionInput_hubspot_createdeal", "ActionOutput_hubspot_createdeal"],
+            "output": [
+                "ActionOutput_hubspot_createdeal"
+            ],
+            "scopes": [
+                "crm.objects.deals.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createdeal",
+                "ActionOutput_hubspot_createdeal"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -692,7 +803,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -705,9 +818,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createmarketingemail",
             "name": "create-marketing-email",
-            "output": ["ActionOutput_hubspot_createmarketingemail"],
-            "scopes": ["content"],
-            "usedModels": ["ActionInput_hubspot_createmarketingemail", "ActionOutput_hubspot_createmarketingemail"],
+            "output": [
+                "ActionOutput_hubspot_createmarketingemail"
+            ],
+            "scopes": [
+                "content"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createmarketingemail",
+                "ActionOutput_hubspot_createmarketingemail"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -743,7 +863,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "subject"],
+                        "required": [
+                            "name",
+                            "subject"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createmarketingemail": {
@@ -774,7 +897,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -787,9 +912,17 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createnote",
             "name": "create-note",
-            "output": ["ActionOutput_hubspot_createnote"],
-            "scopes": ["crm.objects.contacts.write", "crm.objects.contacts.read"],
-            "usedModels": ["ActionInput_hubspot_createnote", "ActionOutput_hubspot_createnote"],
+            "output": [
+                "ActionOutput_hubspot_createnote"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write",
+                "crm.objects.contacts.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createnote",
+                "ActionOutput_hubspot_createnote"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -820,7 +953,12 @@
                                 "properties": {
                                     "objectType": {
                                         "type": "string",
-                                        "enum": ["contact", "company", "deal", "ticket"],
+                                        "enum": [
+                                            "contact",
+                                            "company",
+                                            "deal",
+                                            "ticket"
+                                        ],
                                         "description": "The type of object to associate the note with."
                                     },
                                     "objectId": {
@@ -828,12 +966,18 @@
                                         "description": "The ID of the record to associate the note with."
                                     }
                                 },
-                                "required": ["objectType", "objectId"],
+                                "required": [
+                                    "objectType",
+                                    "objectId"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The association to a contact, company, deal, or ticket."
                             }
                         },
-                        "required": ["timestamp", "association"],
+                        "required": [
+                            "timestamp",
+                            "association"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createnote": {
@@ -858,7 +1002,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -871,7 +1017,9 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createproperty",
             "name": "create-property",
-            "output": ["ActionOutput_hubspot_createproperty"],
+            "output": [
+                "ActionOutput_hubspot_createproperty"
+            ],
             "scopes": [
                 "crm.schemas.contacts.write",
                 "crm.schemas.companies.write",
@@ -880,7 +1028,10 @@
                 "tickets",
                 "e-commerce"
             ],
-            "usedModels": ["ActionInput_hubspot_createproperty", "ActionOutput_hubspot_createproperty"],
+            "usedModels": [
+                "ActionInput_hubspot_createproperty",
+                "ActionOutput_hubspot_createproperty"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -889,7 +1040,14 @@
                         "properties": {
                             "objectType": {
                                 "type": "string",
-                                "enum": ["contacts", "companies", "deals", "products", "tickets", "line_items"],
+                                "enum": [
+                                    "contacts",
+                                    "companies",
+                                    "deals",
+                                    "products",
+                                    "tickets",
+                                    "line_items"
+                                ],
                                 "description": "The CRM object type for which the property will be created. Example: \"contacts\""
                             },
                             "name": {
@@ -902,7 +1060,15 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["string", "number", "bool", "enumeration", "datetime", "date", "phone_number"],
+                                "enum": [
+                                    "string",
+                                    "number",
+                                    "bool",
+                                    "enumeration",
+                                    "datetime",
+                                    "date",
+                                    "phone_number"
+                                ],
                                 "description": "The data type of the property. Example: \"string\""
                             },
                             "fieldType": {
@@ -959,12 +1125,21 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["label", "value"],
+                                    "required": [
+                                        "label",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["objectType", "name", "label", "type", "fieldType"],
+                        "required": [
+                            "objectType",
+                            "name",
+                            "label",
+                            "type",
+                            "fieldType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createproperty": {
@@ -1021,12 +1196,23 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["label", "value", "hidden"],
+                                    "required": [
+                                        "label",
+                                        "value",
+                                        "hidden"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name", "label", "type", "fieldType", "groupName", "archived"],
+                        "required": [
+                            "name",
+                            "label",
+                            "type",
+                            "fieldType",
+                            "groupName",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1039,9 +1225,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_hubspot_createtask"],
-            "scopes": ["crm.objects.contacts.write"],
-            "usedModels": ["ActionInput_hubspot_createtask", "ActionOutput_hubspot_createtask"],
+            "output": [
+                "ActionOutput_hubspot_createtask"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createtask",
+                "ActionOutput_hubspot_createtask"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -1094,7 +1287,10 @@
                                 }
                             }
                         },
-                        "required": ["subject", "dueDate"],
+                        "required": [
+                            "subject",
+                            "dueDate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createtask": {
@@ -1139,7 +1335,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1152,9 +1350,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createticket",
             "name": "create-ticket",
-            "output": ["ActionOutput_hubspot_createticket"],
-            "scopes": ["tickets"],
-            "usedModels": ["ActionInput_hubspot_createticket", "ActionOutput_hubspot_createticket"],
+            "output": [
+                "ActionOutput_hubspot_createticket"
+            ],
+            "scopes": [
+                "tickets"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createticket",
+                "ActionOutput_hubspot_createticket"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1180,10 +1385,16 @@
                             "hs_ticket_priority": {
                                 "description": "Ticket priority level",
                                 "type": "string",
-                                "enum": ["LOW", "MEDIUM", "HIGH"]
+                                "enum": [
+                                    "LOW",
+                                    "MEDIUM",
+                                    "HIGH"
+                                ]
                             }
                         },
-                        "required": ["subject"],
+                        "required": [
+                            "subject"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createticket": {
@@ -1214,7 +1425,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1227,9 +1440,17 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_hubspot_createuser"],
-            "scopes": ["settings.users.write", "settings.users.teams.write"],
-            "usedModels": ["ActionInput_hubspot_createuser", "ActionOutput_hubspot_createuser"],
+            "output": [
+                "ActionOutput_hubspot_createuser"
+            ],
+            "scopes": [
+                "settings.users.write",
+                "settings.users.teams.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_createuser",
+                "ActionOutput_hubspot_createuser"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1263,7 +1484,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_createuser": {
@@ -1291,7 +1514,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1304,9 +1530,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deleteaworkflow",
             "name": "delete-a-workflow",
-            "output": ["ActionOutput_hubspot_deleteaworkflow"],
-            "scopes": ["automation"],
-            "usedModels": ["ActionInput_hubspot_deleteaworkflow", "ActionOutput_hubspot_deleteaworkflow"],
+            "output": [
+                "ActionOutput_hubspot_deleteaworkflow"
+            ],
+            "scopes": [
+                "automation"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deleteaworkflow",
+                "ActionOutput_hubspot_deleteaworkflow"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1318,7 +1551,9 @@
                                 "description": "The unique identifier for the workflow to delete. Example: \"123456789\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deleteaworkflow": {
@@ -1331,7 +1566,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "workflowId"],
+                        "required": [
+                            "success",
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1344,9 +1582,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deletecompany",
             "name": "delete-company",
-            "output": ["ActionOutput_hubspot_deletecompany"],
-            "scopes": ["crm.objects.companies.write"],
-            "usedModels": ["ActionInput_hubspot_deletecompany", "ActionOutput_hubspot_deletecompany"],
+            "output": [
+                "ActionOutput_hubspot_deletecompany"
+            ],
+            "scopes": [
+                "crm.objects.companies.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deletecompany",
+                "ActionOutput_hubspot_deletecompany"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -1358,7 +1603,9 @@
                                 "description": "HubSpot Company ID to delete. Example: \"123456789\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deletecompany": {
@@ -1371,7 +1618,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1384,9 +1634,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_hubspot_deletecontact"],
-            "scopes": ["crm.objects.contacts.write"],
-            "usedModels": ["ActionInput_hubspot_deletecontact", "ActionOutput_hubspot_deletecontact"],
+            "output": [
+                "ActionOutput_hubspot_deletecontact"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deletecontact",
+                "ActionOutput_hubspot_deletecontact"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1398,7 +1655,9 @@
                                 "description": "The ID of the contact to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["contactId"],
+                        "required": [
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deletecontact": {
@@ -1411,7 +1670,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "contactId"],
+                        "required": [
+                            "success",
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1424,9 +1686,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deletedeal",
             "name": "delete-deal",
-            "output": ["ActionOutput_hubspot_deletedeal"],
-            "scopes": ["crm.objects.deals.write"],
-            "usedModels": ["ActionInput_hubspot_deletedeal", "ActionOutput_hubspot_deletedeal"],
+            "output": [
+                "ActionOutput_hubspot_deletedeal"
+            ],
+            "scopes": [
+                "crm.objects.deals.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deletedeal",
+                "ActionOutput_hubspot_deletedeal"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1438,7 +1707,9 @@
                                 "description": "The ID of the deal to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["dealId"],
+                        "required": [
+                            "dealId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deletedeal": {
@@ -1451,7 +1722,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1464,9 +1738,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deletemarketingemail",
             "name": "delete-marketing-email",
-            "output": ["ActionOutput_hubspot_deletemarketingemail"],
-            "scopes": ["content"],
-            "usedModels": ["ActionInput_hubspot_deletemarketingemail", "ActionOutput_hubspot_deletemarketingemail"],
+            "output": [
+                "ActionOutput_hubspot_deletemarketingemail"
+            ],
+            "scopes": [
+                "content"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deletemarketingemail",
+                "ActionOutput_hubspot_deletemarketingemail"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1478,7 +1759,9 @@
                                 "description": "The ID of the marketing email to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["emailId"],
+                        "required": [
+                            "emailId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deletemarketingemail": {
@@ -1494,7 +1777,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "emailId", "message"],
+                        "required": [
+                            "success",
+                            "emailId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1507,9 +1794,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_hubspot_deletetask"],
-            "scopes": ["crm.objects.contacts.write"],
-            "usedModels": ["ActionInput_hubspot_deletetask", "ActionOutput_hubspot_deletetask"],
+            "output": [
+                "ActionOutput_hubspot_deletetask"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deletetask",
+                "ActionOutput_hubspot_deletetask"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -1521,7 +1815,9 @@
                                 "description": "HubSpot task record ID to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deletetask": {
@@ -1534,7 +1830,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "taskId"],
+                        "required": [
+                            "success",
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1547,9 +1846,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deleteticket",
             "name": "delete-ticket",
-            "output": ["ActionOutput_hubspot_deleteticket"],
-            "scopes": ["tickets"],
-            "usedModels": ["ActionInput_hubspot_deleteticket", "ActionOutput_hubspot_deleteticket"],
+            "output": [
+                "ActionOutput_hubspot_deleteticket"
+            ],
+            "scopes": [
+                "tickets"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deleteticket",
+                "ActionOutput_hubspot_deleteticket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1561,7 +1867,9 @@
                                 "description": "The ID of the ticket to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["ticketId"],
+                        "required": [
+                            "ticketId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deleteticket": {
@@ -1574,7 +1882,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "ticketId"],
+                        "required": [
+                            "success",
+                            "ticketId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1587,9 +1898,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_hubspot_deleteuser"],
-            "scopes": ["settings.users.write"],
-            "usedModels": ["ActionInput_hubspot_deleteuser", "ActionOutput_hubspot_deleteuser"],
+            "output": [
+                "ActionOutput_hubspot_deleteuser"
+            ],
+            "scopes": [
+                "settings.users.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_deleteuser",
+                "ActionOutput_hubspot_deleteuser"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1603,10 +1921,15 @@
                             "idProperty": {
                                 "description": "Property to use for identifying the user. Defaults to USER_ID. Use EMAIL if passing an email address as user_id.",
                                 "type": "string",
-                                "enum": ["USER_ID", "EMAIL"]
+                                "enum": [
+                                    "USER_ID",
+                                    "EMAIL"
+                                ]
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_deleteuser": {
@@ -1619,7 +1942,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1632,9 +1958,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_fetchaccountinformation",
             "name": "fetch-account-information",
-            "output": ["ActionOutput_hubspot_fetchaccountinformation"],
-            "scopes": ["settings.account.read"],
-            "usedModels": ["ActionInput_hubspot_fetchaccountinformation", "ActionOutput_hubspot_fetchaccountinformation"],
+            "output": [
+                "ActionOutput_hubspot_fetchaccountinformation"
+            ],
+            "scopes": [
+                "settings.account.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_fetchaccountinformation",
+                "ActionOutput_hubspot_fetchaccountinformation"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1677,7 +2010,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["portalId", "additionalCurrencies"],
+                        "required": [
+                            "portalId",
+                            "additionalCurrencies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1690,9 +2026,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_fetchcustomobjects",
             "name": "fetch-custom-objects",
-            "output": ["ActionOutput_hubspot_fetchcustomobjects"],
-            "scopes": ["crm.schemas.custom.read"],
-            "usedModels": ["ActionInput_hubspot_fetchcustomobjects", "ActionOutput_hubspot_fetchcustomobjects"],
+            "output": [
+                "ActionOutput_hubspot_fetchcustomobjects"
+            ],
+            "scopes": [
+                "crm.schemas.custom.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_fetchcustomobjects",
+                "ActionOutput_hubspot_fetchcustomobjects"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1752,12 +2095,16 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["customObjects"],
+                        "required": [
+                            "customObjects"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1770,9 +2117,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_fetchpipelines",
             "name": "fetch-pipelines",
-            "output": ["ActionOutput_hubspot_fetchpipelines"],
-            "scopes": ["crm.objects.deals.read"],
-            "usedModels": ["ActionInput_hubspot_fetchpipelines", "ActionOutput_hubspot_fetchpipelines"],
+            "output": [
+                "ActionOutput_hubspot_fetchpipelines"
+            ],
+            "scopes": [
+                "crm.objects.deals.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_fetchpipelines",
+                "ActionOutput_hubspot_fetchpipelines"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1828,7 +2182,9 @@
                                                         "additionalProperties": {}
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1839,12 +2195,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "stages"],
+                                    "required": [
+                                        "id",
+                                        "stages"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["pipelines"],
+                        "required": [
+                            "pipelines"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1857,9 +2218,19 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_fetchproperties",
             "name": "fetch-properties",
-            "output": ["ActionOutput_hubspot_fetchproperties"],
-            "scopes": ["crm.schemas.contacts.read", "crm.schemas.companies.read", "crm.schemas.deals.read", "tickets"],
-            "usedModels": ["ActionInput_hubspot_fetchproperties", "ActionOutput_hubspot_fetchproperties"],
+            "output": [
+                "ActionOutput_hubspot_fetchproperties"
+            ],
+            "scopes": [
+                "crm.schemas.contacts.read",
+                "crm.schemas.companies.read",
+                "crm.schemas.deals.read",
+                "tickets"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_fetchproperties",
+                "ActionOutput_hubspot_fetchproperties"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -1871,7 +2242,9 @@
                                 "description": "The CRM object type to fetch properties for (e.g., contacts, companies, deals, tickets). Example: \"companies\""
                             }
                         },
-                        "required": ["objectType"],
+                        "required": [
+                            "objectType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_fetchproperties": {
@@ -1941,7 +2314,10 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["label", "value"],
+                                                "required": [
+                                                    "label",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1952,13 +2328,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "label", "type", "fieldType", "readOnlyValue", "hidden", "archived"],
+                                    "required": [
+                                        "name",
+                                        "label",
+                                        "type",
+                                        "fieldType",
+                                        "readOnlyValue",
+                                        "hidden",
+                                        "archived"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of property metadata for the object type"
                             }
                         },
-                        "required": ["objectType", "properties"],
+                        "required": [
+                            "objectType",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1971,9 +2358,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_fetchroles",
             "name": "fetch-roles",
-            "output": ["ActionOutput_hubspot_fetchroles"],
-            "scopes": ["settings.users.read"],
-            "usedModels": ["ActionInput_hubspot_fetchroles", "ActionOutput_hubspot_fetchroles"],
+            "output": [
+                "ActionOutput_hubspot_fetchroles"
+            ],
+            "scopes": [
+                "settings.users.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_fetchroles",
+                "ActionOutput_hubspot_fetchroles"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -2000,12 +2394,18 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "requiresBillingWrite"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "requiresBillingWrite"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["roles"],
+                        "required": [
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2018,9 +2418,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_getcompany",
             "name": "get-company",
-            "output": ["ActionOutput_hubspot_getcompany"],
-            "scopes": ["crm.objects.companies.read"],
-            "usedModels": ["ActionInput_hubspot_getcompany", "ActionOutput_hubspot_getcompany"],
+            "output": [
+                "ActionOutput_hubspot_getcompany"
+            ],
+            "scopes": [
+                "crm.objects.companies.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_getcompany",
+                "ActionOutput_hubspot_getcompany"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2032,7 +2439,9 @@
                                 "description": "Company ID to retrieve"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_getcompany": {
@@ -2069,7 +2478,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2082,9 +2493,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_hubspot_getcontact"],
-            "scopes": ["crm.objects.contacts.read"],
-            "usedModels": ["ActionInput_hubspot_getcontact", "ActionOutput_hubspot_getcontact"],
+            "output": [
+                "ActionOutput_hubspot_getcontact"
+            ],
+            "scopes": [
+                "crm.objects.contacts.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_getcontact",
+                "ActionOutput_hubspot_getcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2096,7 +2514,9 @@
                                 "description": "HubSpot contact ID. Example: \"123\""
                             }
                         },
-                        "required": ["contactId"],
+                        "required": [
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_getcontact": {
@@ -2121,7 +2541,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2134,9 +2556,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_getdeal",
             "name": "get-deal",
-            "output": ["ActionOutput_hubspot_getdeal"],
-            "scopes": ["crm.objects.deals.read"],
-            "usedModels": ["ActionInput_hubspot_getdeal", "ActionOutput_hubspot_getdeal"],
+            "output": [
+                "ActionOutput_hubspot_getdeal"
+            ],
+            "scopes": [
+                "crm.objects.deals.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_getdeal",
+                "ActionOutput_hubspot_getdeal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2148,7 +2577,9 @@
                                 "description": "The ID of the deal to retrieve. Example: \"12345678\""
                             }
                         },
-                        "required": ["dealId"],
+                        "required": [
+                            "dealId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_getdeal": {
@@ -2182,7 +2613,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2195,9 +2628,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_getmarketingemail",
             "name": "get-marketing-email",
-            "output": ["ActionOutput_hubspot_getmarketingemail"],
-            "scopes": ["content"],
-            "usedModels": ["ActionInput_hubspot_getmarketingemail", "ActionOutput_hubspot_getmarketingemail"],
+            "output": [
+                "ActionOutput_hubspot_getmarketingemail"
+            ],
+            "scopes": [
+                "content"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_getmarketingemail",
+                "ActionOutput_hubspot_getmarketingemail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2209,7 +2649,9 @@
                                 "description": "The ID of the marketing email to retrieve. Example: \"38175169118\""
                             }
                         },
-                        "required": ["emailId"],
+                        "required": [
+                            "emailId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_getmarketingemail": {
@@ -2249,7 +2691,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2262,9 +2706,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_getowner",
             "name": "get-owner",
-            "output": ["ActionOutput_hubspot_getowner"],
-            "scopes": ["crm.objects.owners.read"],
-            "usedModels": ["ActionInput_hubspot_getowner", "ActionOutput_hubspot_getowner"],
+            "output": [
+                "ActionOutput_hubspot_getowner"
+            ],
+            "scopes": [
+                "crm.objects.owners.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_getowner",
+                "ActionOutput_hubspot_getowner"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2276,7 +2727,9 @@
                                 "description": "HubSpot owner ID. Example: \"123\""
                             }
                         },
-                        "required": ["ownerId"],
+                        "required": [
+                            "ownerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_getowner": {
@@ -2304,7 +2757,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2317,9 +2772,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_getticket",
             "name": "get-ticket",
-            "output": ["ActionOutput_hubspot_getticket"],
-            "scopes": ["tickets"],
-            "usedModels": ["ActionInput_hubspot_getticket", "ActionOutput_hubspot_getticket"],
+            "output": [
+                "ActionOutput_hubspot_getticket"
+            ],
+            "scopes": [
+                "tickets"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_getticket",
+                "ActionOutput_hubspot_getticket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2331,7 +2793,9 @@
                                 "description": "HubSpot ticket ID. Example: \"123456789\""
                             }
                         },
-                        "required": ["ticketId"],
+                        "required": [
+                            "ticketId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_getticket": {
@@ -2368,7 +2832,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2381,9 +2847,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_listcompanies",
             "name": "list-companies",
-            "output": ["ActionOutput_hubspot_listcompanies"],
-            "scopes": ["crm.objects.companies.read"],
-            "usedModels": ["ActionInput_hubspot_listcompanies", "ActionOutput_hubspot_listcompanies"],
+            "output": [
+                "ActionOutput_hubspot_listcompanies"
+            ],
+            "scopes": [
+                "crm.objects.companies.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_listcompanies",
+                "ActionOutput_hubspot_listcompanies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2439,7 +2912,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2447,7 +2922,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2460,9 +2937,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_hubspot_listcontacts"],
-            "scopes": ["crm.objects.contacts.read"],
-            "usedModels": ["ActionInput_hubspot_listcontacts", "ActionOutput_hubspot_listcontacts"],
+            "output": [
+                "ActionOutput_hubspot_listcontacts"
+            ],
+            "scopes": [
+                "crm.objects.contacts.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_listcontacts",
+                "ActionOutput_hubspot_listcontacts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2506,7 +2990,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2514,7 +3000,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2527,9 +3015,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_listdeals",
             "name": "list-deals",
-            "output": ["ActionOutput_hubspot_listdeals"],
-            "scopes": ["crm.objects.deals.read"],
-            "usedModels": ["ActionInput_hubspot_listdeals", "ActionOutput_hubspot_listdeals"],
+            "output": [
+                "ActionOutput_hubspot_listdeals"
+            ],
+            "scopes": [
+                "crm.objects.deals.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_listdeals",
+                "ActionOutput_hubspot_listdeals"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2576,7 +3071,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2584,7 +3081,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["deals"],
+                        "required": [
+                            "deals"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2597,9 +3096,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_listforms",
             "name": "list-forms",
-            "output": ["ActionOutput_hubspot_listforms"],
-            "scopes": ["forms"],
-            "usedModels": ["ActionInput_hubspot_listforms", "ActionOutput_hubspot_listforms"],
+            "output": [
+                "ActionOutput_hubspot_listforms"
+            ],
+            "scopes": [
+                "forms"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_listforms",
+                "ActionOutput_hubspot_listforms"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2637,7 +3143,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2645,7 +3153,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2658,9 +3168,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_listmarketingemails",
             "name": "list-marketing-emails",
-            "output": ["ActionOutput_hubspot_listmarketingemails"],
-            "scopes": ["content"],
-            "usedModels": ["ActionInput_hubspot_listmarketingemails", "ActionOutput_hubspot_listmarketingemails"],
+            "output": [
+                "ActionOutput_hubspot_listmarketingemails"
+            ],
+            "scopes": [
+                "content"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_listmarketingemails",
+                "ActionOutput_hubspot_listmarketingemails"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2704,7 +3221,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2712,7 +3231,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["emails"],
+                        "required": [
+                            "emails"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2725,9 +3246,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_listtickets",
             "name": "list-tickets",
-            "output": ["ActionOutput_hubspot_listtickets"],
-            "scopes": ["tickets"],
-            "usedModels": ["ActionInput_hubspot_listtickets", "ActionOutput_hubspot_listtickets"],
+            "output": [
+                "ActionOutput_hubspot_listtickets"
+            ],
+            "scopes": [
+                "tickets"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_listtickets",
+                "ActionOutput_hubspot_listtickets"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2783,7 +3311,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2791,7 +3321,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2804,9 +3336,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_searchcompanies",
             "name": "search-companies",
-            "output": ["ActionOutput_hubspot_searchcompanies"],
-            "scopes": ["crm.objects.companies.read"],
-            "usedModels": ["ActionInput_hubspot_searchcompanies", "ActionOutput_hubspot_searchcompanies"],
+            "output": [
+                "ActionOutput_hubspot_searchcompanies"
+            ],
+            "scopes": [
+                "crm.objects.companies.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_searchcompanies",
+                "ActionOutput_hubspot_searchcompanies"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2866,7 +3405,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2874,7 +3415,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["companies"],
+                        "required": [
+                            "companies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2887,9 +3430,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_searchdeals",
             "name": "search-deals",
-            "output": ["ActionOutput_hubspot_searchdeals"],
-            "scopes": ["crm.objects.deals.read"],
-            "usedModels": ["ActionInput_hubspot_searchdeals", "ActionOutput_hubspot_searchdeals"],
+            "output": [
+                "ActionOutput_hubspot_searchdeals"
+            ],
+            "scopes": [
+                "crm.objects.deals.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_searchdeals",
+                "ActionOutput_hubspot_searchdeals"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2964,7 +3514,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2972,7 +3524,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["deals"],
+                        "required": [
+                            "deals"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2985,9 +3539,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_searchtickets",
             "name": "search-tickets",
-            "output": ["ActionOutput_hubspot_searchtickets"],
-            "scopes": ["tickets"],
-            "usedModels": ["ActionInput_hubspot_searchtickets", "ActionOutput_hubspot_searchtickets"],
+            "output": [
+                "ActionOutput_hubspot_searchtickets"
+            ],
+            "scopes": [
+                "tickets"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_searchtickets",
+                "ActionOutput_hubspot_searchtickets"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3058,13 +3619,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["propertyName", "operator"],
+                                                "required": [
+                                                    "propertyName",
+                                                    "operator"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Array of filters within this group"
                                         }
                                     },
-                                    "required": ["filters"],
+                                    "required": [
+                                        "filters"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3075,7 +3641,11 @@
                             "priority": {
                                 "description": "Filter by ticket priority",
                                 "type": "string",
-                                "enum": ["LOW", "MEDIUM", "HIGH"]
+                                "enum": [
+                                    "LOW",
+                                    "MEDIUM",
+                                    "HIGH"
+                                ]
                             },
                             "category": {
                                 "description": "Filter by ticket category",
@@ -3131,7 +3701,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "archived"],
+                                    "required": [
+                                        "id",
+                                        "archived"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of matching tickets"
@@ -3145,7 +3718,10 @@
                                 "description": "Total number of matching results"
                             }
                         },
-                        "required": ["tickets", "total"],
+                        "required": [
+                            "tickets",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3158,9 +3734,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_updatecompany",
             "name": "update-company",
-            "output": ["ActionOutput_hubspot_updatecompany"],
-            "scopes": ["crm.objects.companies.write"],
-            "usedModels": ["ActionInput_hubspot_updatecompany", "ActionOutput_hubspot_updatecompany"],
+            "output": [
+                "ActionOutput_hubspot_updatecompany"
+            ],
+            "scopes": [
+                "crm.objects.companies.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_updatecompany",
+                "ActionOutput_hubspot_updatecompany"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3208,7 +3791,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_updatecompany": {
@@ -3251,7 +3836,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3264,9 +3851,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_hubspot_updatecontact"],
-            "scopes": ["crm.objects.contacts.write"],
-            "usedModels": ["ActionInput_hubspot_updatecontact", "ActionOutput_hubspot_updatecontact"],
+            "output": [
+                "ActionOutput_hubspot_updatecontact"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_updatecontact",
+                "ActionOutput_hubspot_updatecontact"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3302,7 +3896,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contactId"],
+                        "required": [
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_updatecontact": {
@@ -3336,7 +3932,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3349,9 +3947,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_updatedeal",
             "name": "update-deal",
-            "output": ["ActionOutput_hubspot_updatedeal"],
-            "scopes": ["crm.objects.deals.write"],
-            "usedModels": ["ActionInput_hubspot_updatedeal", "ActionOutput_hubspot_updatedeal"],
+            "output": [
+                "ActionOutput_hubspot_updatedeal"
+            ],
+            "scopes": [
+                "crm.objects.deals.write"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_updatedeal",
+                "ActionOutput_hubspot_updatedeal"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -3383,7 +3988,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dealId"],
+                        "required": [
+                            "dealId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_updatedeal": {
@@ -3414,7 +4021,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3427,9 +4036,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_updatemarketingemail",
             "name": "update-marketing-email",
-            "output": ["ActionOutput_hubspot_updatemarketingemail"],
-            "scopes": ["content"],
-            "usedModels": ["ActionInput_hubspot_updatemarketingemail", "ActionOutput_hubspot_updatemarketingemail"],
+            "output": [
+                "ActionOutput_hubspot_updatemarketingemail"
+            ],
+            "scopes": [
+                "content"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_updatemarketingemail",
+                "ActionOutput_hubspot_updatemarketingemail"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3469,7 +4085,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["emailId"],
+                        "required": [
+                            "emailId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_updatemarketingemail": {
@@ -3491,7 +4109,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3504,9 +4124,17 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_hubspot_updatetask"],
-            "scopes": ["crm.objects.contacts.write", "crm.objects.contacts.read"],
-            "usedModels": ["ActionInput_hubspot_updatetask", "ActionOutput_hubspot_updatetask"],
+            "output": [
+                "ActionOutput_hubspot_updatetask"
+            ],
+            "scopes": [
+                "crm.objects.contacts.write",
+                "crm.objects.contacts.read"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_updatetask",
+                "ActionOutput_hubspot_updatetask"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -3532,17 +4160,28 @@
                             "status": {
                                 "description": "The status of the task.",
                                 "type": "string",
-                                "enum": ["COMPLETED", "NOT_STARTED"]
+                                "enum": [
+                                    "COMPLETED",
+                                    "NOT_STARTED"
+                                ]
                             },
                             "priority": {
                                 "description": "The priority of the task.",
                                 "type": "string",
-                                "enum": ["LOW", "MEDIUM", "HIGH"]
+                                "enum": [
+                                    "LOW",
+                                    "MEDIUM",
+                                    "HIGH"
+                                ]
                             },
                             "taskType": {
                                 "description": "The type of the task.",
                                 "type": "string",
-                                "enum": ["EMAIL", "CALL", "TODO"]
+                                "enum": [
+                                    "EMAIL",
+                                    "CALL",
+                                    "TODO"
+                                ]
                             },
                             "ownerId": {
                                 "description": "The HubSpot owner ID to assign the task to.",
@@ -3553,7 +4192,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_updatetask": {
@@ -3573,15 +4214,26 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["COMPLETED", "NOT_STARTED"]
+                                "enum": [
+                                    "COMPLETED",
+                                    "NOT_STARTED"
+                                ]
                             },
                             "priority": {
                                 "type": "string",
-                                "enum": ["LOW", "MEDIUM", "HIGH"]
+                                "enum": [
+                                    "LOW",
+                                    "MEDIUM",
+                                    "HIGH"
+                                ]
                             },
                             "taskType": {
                                 "type": "string",
-                                "enum": ["EMAIL", "CALL", "TODO"]
+                                "enum": [
+                                    "EMAIL",
+                                    "CALL",
+                                    "TODO"
+                                ]
                             },
                             "ownerId": {
                                 "type": "string"
@@ -3596,7 +4248,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3609,9 +4263,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_updateticket",
             "name": "update-ticket",
-            "output": ["ActionOutput_hubspot_updateticket"],
-            "scopes": ["tickets"],
-            "usedModels": ["ActionInput_hubspot_updateticket", "ActionOutput_hubspot_updateticket"],
+            "output": [
+                "ActionOutput_hubspot_updateticket"
+            ],
+            "scopes": [
+                "tickets"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_updateticket",
+                "ActionOutput_hubspot_updateticket"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3655,7 +4316,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["ticketId"],
+                        "required": [
+                            "ticketId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubspot_updateticket": {
@@ -3695,7 +4358,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3708,9 +4373,16 @@
             "endpoint": null,
             "input": "ActionInput_hubspot_whoami",
             "name": "whoami",
-            "output": ["ActionOutput_hubspot_whoami"],
-            "scopes": ["oauth"],
-            "usedModels": ["ActionInput_hubspot_whoami", "ActionOutput_hubspot_whoami"],
+            "output": [
+                "ActionOutput_hubspot_whoami"
+            ],
+            "scopes": [
+                "oauth"
+            ],
+            "usedModels": [
+                "ActionInput_hubspot_whoami",
+                "ActionOutput_hubspot_whoami"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -3735,7 +4407,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "hubId"],
+                        "required": [
+                            "id",
+                            "email",
+                            "hubId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3757,12 +4433,18 @@
             ],
             "input": null,
             "name": "companies",
-            "output": ["Company"],
+            "output": [
+                "Company"
+            ],
             "runs": "every hour",
-            "scopes": ["crm.objects.companies.read"],
+            "scopes": [
+                "crm.objects.companies.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Company"],
+            "usedModels": [
+                "Company"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3807,12 +4489,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3827,12 +4513,18 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
-            "scopes": ["crm.objects.contacts.read"],
+            "scopes": [
+                "crm.objects.contacts.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "4.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3868,12 +4560,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3888,12 +4584,18 @@
             ],
             "input": null,
             "name": "deals",
-            "output": ["Deal"],
+            "output": [
+                "Deal"
+            ],
             "runs": "every hour",
-            "scopes": ["crm.objects.deals.read"],
+            "scopes": [
+                "crm.objects.deals.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Deal"],
+            "usedModels": [
+                "Deal"
+            ],
             "version": "3.0.4",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3938,12 +4640,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "companyIds", "contactIds", "updatedAt"],
+                        "required": [
+                            "id",
+                            "companyIds",
+                            "contactIds",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3958,12 +4667,18 @@
             ],
             "input": null,
             "name": "marketing-emails",
-            "output": ["MarketingEmail"],
+            "output": [
+                "MarketingEmail"
+            ],
             "runs": "every hour",
-            "scopes": ["content"],
+            "scopes": [
+                "content"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MarketingEmail"],
+            "usedModels": [
+                "MarketingEmail"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4002,12 +4717,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4022,12 +4741,18 @@
             ],
             "input": null,
             "name": "owners",
-            "output": ["Owner"],
+            "output": [
+                "Owner"
+            ],
             "runs": "every hour",
-            "scopes": ["crm.objects.owners.read"],
+            "scopes": [
+                "crm.objects.owners.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Owner"],
+            "usedModels": [
+                "Owner"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4060,12 +4785,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "archived"],
+                        "required": [
+                            "id",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4080,12 +4810,18 @@
             ],
             "input": null,
             "name": "products",
-            "output": ["Product"],
+            "output": [
+                "Product"
+            ],
             "runs": "every hour",
-            "scopes": ["e-commerce"],
+            "scopes": [
+                "e-commerce"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Product"],
+            "usedModels": [
+                "Product"
+            ],
             "version": "3.0.4",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4124,12 +4860,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4144,12 +4884,18 @@
             ],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["crm.objects.contacts.read"],
+            "scopes": [
+                "crm.objects.contacts.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4203,12 +4949,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "contactIds", "companyIds", "dealIds"],
+                        "required": [
+                            "id",
+                            "contactIds",
+                            "companyIds",
+                            "dealIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4223,12 +4976,18 @@
             ],
             "input": null,
             "name": "service-tickets",
-            "output": ["Ticket"],
+            "output": [
+                "Ticket"
+            ],
             "runs": "every hour",
-            "scopes": ["tickets"],
+            "scopes": [
+                "tickets"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Ticket"],
+            "usedModels": [
+                "Ticket"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4267,12 +5026,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4287,12 +5050,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["settings.users.read"],
+            "scopes": [
+                "settings.users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4322,7 +5091,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "secondaryTeamIds", "superAdmin"],
+                        "required": [
+                            "id",
+                            "secondaryTeamIds",
+                            "superAdmin"
+                        ],
                         "additionalProperties": false
                     }
                 }

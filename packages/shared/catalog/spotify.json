@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_addtoqueue",
             "name": "add-to-queue",
-            "output": ["ActionOutput_spotify_addtoqueue"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_addtoqueue", "ActionOutput_spotify_addtoqueue"],
+            "output": [
+                "ActionOutput_spotify_addtoqueue"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_addtoqueue",
+                "ActionOutput_spotify_addtoqueue"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uri"],
+                        "required": [
+                            "uri"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_addtoqueue": {
@@ -35,7 +44,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -48,9 +59,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_createplaylisttrack",
             "name": "create-playlist-track",
-            "output": ["ActionOutput_spotify_createplaylisttrack"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_createplaylisttrack", "ActionOutput_spotify_createplaylisttrack"],
+            "output": [
+                "ActionOutput_spotify_createplaylisttrack"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_createplaylisttrack",
+                "ActionOutput_spotify_createplaylisttrack"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -77,7 +96,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["playlistId", "uris"],
+                        "required": [
+                            "playlistId",
+                            "uris"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_createplaylisttrack": {
@@ -88,7 +110,9 @@
                                 "description": "A snapshot ID for the playlist after the addition"
                             }
                         },
-                        "required": ["snapshotId"],
+                        "required": [
+                            "snapshotId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -101,9 +125,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_createplaylist",
             "name": "create-playlist",
-            "output": ["ActionOutput_spotify_createplaylist"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_createplaylist", "ActionOutput_spotify_createplaylist"],
+            "output": [
+                "ActionOutput_spotify_createplaylist"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_createplaylist",
+                "ActionOutput_spotify_createplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -131,7 +163,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_createplaylist": {
@@ -174,7 +208,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -187,9 +224,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_createsavedalbum",
             "name": "create-saved-album",
-            "output": ["ActionOutput_spotify_createsavedalbum"],
-            "scopes": ["user-library-modify"],
-            "usedModels": ["ActionInput_spotify_createsavedalbum", "ActionOutput_spotify_createsavedalbum"],
+            "output": [
+                "ActionOutput_spotify_createsavedalbum"
+            ],
+            "scopes": [
+                "user-library-modify"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_createsavedalbum",
+                "ActionOutput_spotify_createsavedalbum"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -205,7 +249,9 @@
                                 "description": "Spotify album IDs to save to the user's library. Maximum 20."
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_createsavedalbum": {
@@ -216,7 +262,9 @@
                                 "description": "Whether the albums were successfully saved."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -229,9 +277,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_createsavedtrack",
             "name": "create-saved-track",
-            "output": ["ActionOutput_spotify_createsavedtrack"],
-            "scopes": ["user-library-modify"],
-            "usedModels": ["ActionInput_spotify_createsavedtrack", "ActionOutput_spotify_createsavedtrack"],
+            "output": [
+                "ActionOutput_spotify_createsavedtrack"
+            ],
+            "scopes": [
+                "user-library-modify"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_createsavedtrack",
+                "ActionOutput_spotify_createsavedtrack"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -248,7 +303,9 @@
                                 "description": "An array of Spotify track IDs to save. Between 1 and 40 IDs. Example: [\"70LcF31zb1H0PyJoS1Sx1r\"]"
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_createsavedtrack": {
@@ -259,7 +316,9 @@
                                 "description": "Whether the tracks were successfully saved to the library"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -272,9 +331,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_deleteplaylisttrack",
             "name": "delete-playlist-track",
-            "output": ["ActionOutput_spotify_deleteplaylisttrack"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_deleteplaylisttrack", "ActionOutput_spotify_deleteplaylisttrack"],
+            "output": [
+                "ActionOutput_spotify_deleteplaylisttrack"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_deleteplaylisttrack",
+                "ActionOutput_spotify_deleteplaylisttrack"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -295,7 +362,9 @@
                                             "description": "Spotify URI of the track to remove. Example: \"spotify:track:70LcF31zb1H0PyJoS1Sx1r\""
                                         }
                                     },
-                                    "required": ["uri"],
+                                    "required": [
+                                        "uri"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of track objects with URIs to remove from the playlist"
@@ -305,7 +374,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["playlist_id", "tracks"],
+                        "required": [
+                            "playlist_id",
+                            "tracks"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_deleteplaylisttrack": {
@@ -321,7 +393,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["playlist_id", "snapshot_id", "tracks_removed"],
+                        "required": [
+                            "playlist_id",
+                            "snapshot_id",
+                            "tracks_removed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -334,9 +410,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_deleteplaylist",
             "name": "delete-playlist",
-            "output": ["ActionOutput_spotify_deleteplaylist"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_deleteplaylist", "ActionOutput_spotify_deleteplaylist"],
+            "output": [
+                "ActionOutput_spotify_deleteplaylist"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_deleteplaylist",
+                "ActionOutput_spotify_deleteplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -348,7 +432,9 @@
                                 "description": "The Spotify ID of the playlist to unfollow/remove from the user's library. Example: '5mBo6dx15GhupMndL3T2sk'"
                             }
                         },
-                        "required": ["playlist_id"],
+                        "required": [
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_deleteplaylist": {
@@ -359,7 +445,9 @@
                                 "description": "Whether the playlist was successfully removed from the user's library"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -372,9 +460,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_deletesavedalbum",
             "name": "delete-saved-album",
-            "output": ["ActionOutput_spotify_deletesavedalbum"],
-            "scopes": ["user-library-modify"],
-            "usedModels": ["ActionInput_spotify_deletesavedalbum", "ActionOutput_spotify_deletesavedalbum"],
+            "output": [
+                "ActionOutput_spotify_deletesavedalbum"
+            ],
+            "scopes": [
+                "user-library-modify"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_deletesavedalbum",
+                "ActionOutput_spotify_deletesavedalbum"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -391,7 +486,9 @@
                                 "description": "Array of Spotify album IDs to remove from the user's library. Between 1 and 40 IDs."
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_deletesavedalbum": {
@@ -402,7 +499,9 @@
                                 "description": "Whether the albums were successfully removed from the library."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -415,9 +514,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_deletesavedshow",
             "name": "delete-saved-show",
-            "output": ["ActionOutput_spotify_deletesavedshow"],
-            "scopes": ["user-library-modify"],
-            "usedModels": ["ActionInput_spotify_deletesavedshow", "ActionOutput_spotify_deletesavedshow"],
+            "output": [
+                "ActionOutput_spotify_deletesavedshow"
+            ],
+            "scopes": [
+                "user-library-modify"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_deletesavedshow",
+                "ActionOutput_spotify_deletesavedshow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -434,7 +540,9 @@
                                 "description": "Array of Spotify show IDs to remove from the library. Between 1 and 40 IDs."
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_deletesavedshow": {
@@ -445,7 +553,9 @@
                                 "description": "Whether the shows were successfully removed from the library."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -458,9 +568,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_deletesavedtrack",
             "name": "delete-saved-track",
-            "output": ["ActionOutput_spotify_deletesavedtrack"],
-            "scopes": ["user-library-modify"],
-            "usedModels": ["ActionInput_spotify_deletesavedtrack", "ActionOutput_spotify_deletesavedtrack"],
+            "output": [
+                "ActionOutput_spotify_deletesavedtrack"
+            ],
+            "scopes": [
+                "user-library-modify"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_deletesavedtrack",
+                "ActionOutput_spotify_deletesavedtrack"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -477,7 +594,9 @@
                                 "description": "Spotify track IDs to remove from the library. Between 1 and 50 IDs. Example: [\"70LcF31zb1H0PyJoS1Sx1r\"]"
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_deletesavedtrack": {
@@ -488,7 +607,9 @@
                                 "description": "Whether the tracks were successfully removed"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -501,9 +622,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_followartist",
             "name": "follow-artist",
-            "output": ["ActionOutput_spotify_followartist"],
-            "scopes": ["user-follow-modify"],
-            "usedModels": ["ActionInput_spotify_followartist", "ActionOutput_spotify_followartist"],
+            "output": [
+                "ActionOutput_spotify_followartist"
+            ],
+            "scopes": [
+                "user-follow-modify"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_followartist",
+                "ActionOutput_spotify_followartist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -520,7 +648,9 @@
                                 "description": "Spotify artist IDs to follow. Between 1 and 50 IDs. Example: [\"4Z8W4fKeB5YxbusRsdQVPb\"]"
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_followartist": {
@@ -530,7 +660,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -543,9 +675,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_followplaylist",
             "name": "follow-playlist",
-            "output": ["ActionOutput_spotify_followplaylist"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_followplaylist", "ActionOutput_spotify_followplaylist"],
+            "output": [
+                "ActionOutput_spotify_followplaylist"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_followplaylist",
+                "ActionOutput_spotify_followplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -561,7 +701,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["playlist_id"],
+                        "required": [
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_followplaylist": {
@@ -576,7 +718,10 @@
                                 "description": "The ID of the playlist that was followed"
                             }
                         },
-                        "required": ["success", "playlist_id"],
+                        "required": [
+                            "success",
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -589,9 +734,14 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getalbum",
             "name": "get-album",
-            "output": ["ActionOutput_spotify_getalbum"],
+            "output": [
+                "ActionOutput_spotify_getalbum"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_spotify_getalbum", "ActionOutput_spotify_getalbum"],
+            "usedModels": [
+                "ActionInput_spotify_getalbum",
+                "ActionOutput_spotify_getalbum"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -607,7 +757,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_getalbum": {
@@ -652,7 +804,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -677,7 +831,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type", "uri"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "uri"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -728,7 +887,12 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name", "type", "uri"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "type",
+                                                    "uri"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -736,12 +900,31 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type", "uri", "track_number", "duration_ms", "explicit", "artists"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "uri",
+                                        "track_number",
+                                        "duration_ms",
+                                        "explicit",
+                                        "artists"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "album_type", "total_tracks", "release_date", "release_date_precision", "uri", "images", "artists"],
+                        "required": [
+                            "id",
+                            "name",
+                            "album_type",
+                            "total_tracks",
+                            "release_date",
+                            "release_date_precision",
+                            "uri",
+                            "images",
+                            "artists"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -754,9 +937,14 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getartist",
             "name": "get-artist",
-            "output": ["ActionOutput_spotify_getartist"],
+            "output": [
+                "ActionOutput_spotify_getartist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_spotify_getartist", "ActionOutput_spotify_getartist"],
+            "usedModels": [
+                "ActionInput_spotify_getartist",
+                "ActionOutput_spotify_getartist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -768,7 +956,9 @@
                                 "description": "The Spotify ID for the artist. Example: \"4Z8W4fKeB5YxbusRsdQVPb\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_getartist": {
@@ -797,7 +987,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["spotify"],
+                                "required": [
+                                    "spotify"
+                                ],
                                 "additionalProperties": {}
                             },
                             "genres": {
@@ -815,13 +1007,21 @@
                                             "type": "string"
                                         },
                                         "height": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "width": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -829,20 +1029,31 @@
                                 "type": "object",
                                 "properties": {
                                     "href": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "total": {
                                         "type": "number"
                                     }
                                 },
-                                "required": ["total"],
+                                "required": [
+                                    "total"
+                                ],
                                 "additionalProperties": {}
                             },
                             "popularity": {
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "type", "uri", "href"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type",
+                            "uri",
+                            "href"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -855,9 +1066,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getcurrentplayback",
             "name": "get-current-playback",
-            "output": ["ActionOutput_spotify_getcurrentplayback"],
-            "scopes": ["user-read-playback-state"],
-            "usedModels": ["ActionInput_spotify_getcurrentplayback", "ActionOutput_spotify_getcurrentplayback"],
+            "output": [
+                "ActionOutput_spotify_getcurrentplayback"
+            ],
+            "scopes": [
+                "user-read-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_getcurrentplayback",
+                "ActionOutput_spotify_getcurrentplayback"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -882,7 +1100,10 @@
                                 "type": "object",
                                 "properties": {
                                     "id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "is_active": {
                                         "type": "boolean"
@@ -900,7 +1121,10 @@
                                         "type": "string"
                                     },
                                     "volume_percent": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "supports_volume": {
                                         "type": "boolean"
@@ -949,7 +1173,10 @@
                                 "type": "number"
                             },
                             "progress_ms": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_playing": {
                                 "type": "boolean"
@@ -1030,10 +1257,16 @@
                                                                             "type": "string"
                                                                         },
                                                                         "height": {
-                                                                            "type": ["number", "null"]
+                                                                            "type": [
+                                                                                "number",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "width": {
-                                                                            "type": ["number", "null"]
+                                                                            "type": [
+                                                                                "number",
+                                                                                "null"
+                                                                            ]
                                                                         }
                                                                     },
                                                                     "additionalProperties": false
@@ -1142,7 +1375,10 @@
                                                         "type": "number"
                                                     },
                                                     "preview_url": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "track_number": {
                                                         "type": "number"
@@ -1160,7 +1396,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "audio_preview_url": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "description": {
                                                         "type": "string"
@@ -1198,10 +1437,16 @@
                                                                     "type": "string"
                                                                 },
                                                                 "height": {
-                                                                    "type": ["number", "null"]
+                                                                    "type": [
+                                                                        "number",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "width": {
-                                                                    "type": ["number", "null"]
+                                                                    "type": [
+                                                                        "number",
+                                                                        "null"
+                                                                    ]
                                                                 }
                                                             },
                                                             "additionalProperties": false
@@ -1290,9 +1535,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_spotify_getcurrentuser"],
-            "scopes": ["user-read-private", "user-read-email"],
-            "usedModels": ["ActionInput_spotify_getcurrentuser", "ActionOutput_spotify_getcurrentuser"],
+            "output": [
+                "ActionOutput_spotify_getcurrentuser"
+            ],
+            "scopes": [
+                "user-read-private",
+                "user-read-email"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_getcurrentuser",
+                "ActionOutput_spotify_getcurrentuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1334,7 +1587,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1357,7 +1612,9 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["total"],
+                                "required": [
+                                    "total"
+                                ],
                                 "additionalProperties": false
                             },
                             "href": {
@@ -1370,7 +1627,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1383,9 +1642,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getdevices",
             "name": "get-devices",
-            "output": ["ActionOutput_spotify_getdevices"],
-            "scopes": ["user-read-playback-state"],
-            "usedModels": ["ActionInput_spotify_getdevices", "ActionOutput_spotify_getdevices"],
+            "output": [
+                "ActionOutput_spotify_getdevices"
+            ],
+            "scopes": [
+                "user-read-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_getdevices",
+                "ActionOutput_spotify_getdevices"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1415,15 +1681,24 @@
                                             "type": "boolean"
                                         },
                                         "volume_percent": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["name", "type", "is_active"],
+                                    "required": [
+                                        "name",
+                                        "type",
+                                        "is_active"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["devices"],
+                        "required": [
+                            "devices"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1436,9 +1711,14 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getepisode",
             "name": "get-episode",
-            "output": ["ActionOutput_spotify_getepisode"],
+            "output": [
+                "ActionOutput_spotify_getepisode"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_spotify_getepisode", "ActionOutput_spotify_getepisode"],
+            "usedModels": [
+                "ActionInput_spotify_getepisode",
+                "ActionOutput_spotify_getepisode"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1454,7 +1734,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_getepisode": {
@@ -1493,7 +1775,11 @@
                             },
                             "releaseDatePrecision": {
                                 "type": "string",
-                                "enum": ["year", "month", "day"]
+                                "enum": [
+                                    "year",
+                                    "month",
+                                    "day"
+                                ]
                             },
                             "audioPreviewUrl": {
                                 "type": "string"
@@ -1513,7 +1799,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1533,7 +1821,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name", "href", "uri"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "href",
+                                    "uri"
+                                ],
                                 "additionalProperties": false
                             },
                             "language": {
@@ -1558,11 +1851,22 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["fullyPlayed", "resumePositionMs"],
+                                "required": [
+                                    "fullyPlayed",
+                                    "resumePositionMs"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "durationMs", "explicit", "href", "uri", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "durationMs",
+                            "explicit",
+                            "href",
+                            "uri",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1575,9 +1879,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getplaylist",
             "name": "get-playlist",
-            "output": ["ActionOutput_spotify_getplaylist"],
-            "scopes": ["playlist-read-private", "playlist-read-collaborative"],
-            "usedModels": ["ActionInput_spotify_getplaylist", "ActionOutput_spotify_getplaylist"],
+            "output": [
+                "ActionOutput_spotify_getplaylist"
+            ],
+            "scopes": [
+                "playlist-read-private",
+                "playlist-read-collaborative"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_getplaylist",
+                "ActionOutput_spotify_getplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1597,7 +1909,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["playlist_id"],
+                        "required": [
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_getplaylist": {
@@ -1628,7 +1942,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1641,9 +1958,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getqueue",
             "name": "get-queue",
-            "output": ["ActionOutput_spotify_getqueue"],
-            "scopes": ["user-read-playback-state"],
-            "usedModels": ["ActionInput_spotify_getqueue", "ActionOutput_spotify_getqueue"],
+            "output": [
+                "ActionOutput_spotify_getqueue"
+            ],
+            "scopes": [
+                "user-read-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_getqueue",
+                "ActionOutput_spotify_getqueue"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1681,9 +2005,14 @@
             "endpoint": null,
             "input": "ActionInput_spotify_getshow",
             "name": "get-show",
-            "output": ["ActionOutput_spotify_getshow"],
+            "output": [
+                "ActionOutput_spotify_getshow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_spotify_getshow", "ActionOutput_spotify_getshow"],
+            "usedModels": [
+                "ActionInput_spotify_getshow",
+                "ActionOutput_spotify_getshow"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1699,7 +2028,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_getshow": {
@@ -1732,7 +2063,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1743,7 +2076,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "description"],
+                        "required": [
+                            "id",
+                            "name",
+                            "description"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1756,9 +2093,14 @@
             "endpoint": null,
             "input": "ActionInput_spotify_gettrack",
             "name": "get-track",
-            "output": ["ActionOutput_spotify_gettrack"],
+            "output": [
+                "ActionOutput_spotify_gettrack"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_spotify_gettrack", "ActionOutput_spotify_gettrack"],
+            "usedModels": [
+                "ActionInput_spotify_gettrack",
+                "ActionOutput_spotify_gettrack"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1784,7 +2126,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_gettrack": {
@@ -1842,7 +2186,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1868,11 +2215,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "type", "artists"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type",
+                            "artists"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1885,9 +2240,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_listalbums",
             "name": "list-albums",
-            "output": ["ActionOutput_spotify_listalbums"],
-            "scopes": ["user-library-read"],
-            "usedModels": ["ActionInput_spotify_listalbums", "ActionOutput_spotify_listalbums"],
+            "output": [
+                "ActionOutput_spotify_listalbums"
+            ],
+            "scopes": [
+                "user-library-read"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_listalbums",
+                "ActionOutput_spotify_listalbums"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1935,7 +2297,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1954,7 +2319,9 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["url"],
+                                                "required": [
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1968,7 +2335,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1977,7 +2347,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["albums"],
+                        "required": [
+                            "albums"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1990,9 +2362,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_listartists",
             "name": "list-artists",
-            "output": ["ActionOutput_spotify_listartists"],
-            "scopes": ["user-follow-read"],
-            "usedModels": ["ActionInput_spotify_listartists", "ActionOutput_spotify_listartists"],
+            "output": [
+                "ActionOutput_spotify_listartists"
+            ],
+            "scopes": [
+                "user-follow-read"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_listartists",
+                "ActionOutput_spotify_listartists"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2046,7 +2425,9 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["total"],
+                                            "required": [
+                                                "total"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "genres": {
@@ -2064,13 +2445,21 @@
                                                         "type": "string"
                                                     },
                                                     "height": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "width": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["url"],
+                                                "required": [
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2078,7 +2467,13 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "uri", "href", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "uri",
+                                        "href",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2086,7 +2481,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["artists"],
+                        "required": [
+                            "artists"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2099,9 +2496,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_listplaylisttracks",
             "name": "list-playlist-tracks",
-            "output": ["ActionOutput_spotify_listplaylisttracks"],
-            "scopes": ["playlist-read-private", "playlist-read-collaborative"],
-            "usedModels": ["ActionInput_spotify_listplaylisttracks", "ActionOutput_spotify_listplaylisttracks"],
+            "output": [
+                "ActionOutput_spotify_listplaylisttracks"
+            ],
+            "scopes": [
+                "playlist-read-private",
+                "playlist-read-collaborative"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_listplaylisttracks",
+                "ActionOutput_spotify_listplaylisttracks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2137,7 +2542,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["playlist_id"],
+                        "required": [
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_listplaylisttracks": {
@@ -2174,7 +2581,10 @@
                                             "maximum": 9007199254740991
                                         },
                                         "preview_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "track_number": {
                                             "type": "integer",
@@ -2254,12 +2664,20 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["url", "height", "width"],
+                                                        "required": [
+                                                            "url",
+                                                            "height",
+                                                            "width"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "name", "uri"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "uri"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "artists": {
@@ -2289,12 +2707,20 @@
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["id", "name", "uri"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "uri"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "uri"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "uri"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2309,7 +2735,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2322,9 +2751,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_listplaylists",
             "name": "list-playlists",
-            "output": ["ActionOutput_spotify_listplaylists"],
-            "scopes": ["playlist-read-private", "playlist-read-collaborative"],
-            "usedModels": ["ActionInput_spotify_listplaylists", "ActionOutput_spotify_listplaylists"],
+            "output": [
+                "ActionOutput_spotify_listplaylists"
+            ],
+            "scopes": [
+                "playlist-read-private",
+                "playlist-read-collaborative"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_listplaylists",
+                "ActionOutput_spotify_listplaylists"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2381,7 +2818,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "owner_id"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "owner_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2392,7 +2833,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["playlists", "total"],
+                        "required": [
+                            "playlists",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2405,9 +2849,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_listsavedshows",
             "name": "list-saved-shows",
-            "output": ["ActionOutput_spotify_listsavedshows"],
-            "scopes": ["user-library-read"],
-            "usedModels": ["ActionInput_spotify_listsavedshows", "ActionOutput_spotify_listsavedshows"],
+            "output": [
+                "ActionOutput_spotify_listsavedshows"
+            ],
+            "scopes": [
+                "user-library-read"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_listsavedshows",
+                "ActionOutput_spotify_listsavedshows"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2462,7 +2913,10 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2473,7 +2927,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2486,9 +2942,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_listsavedtracks",
             "name": "list-saved-tracks",
-            "output": ["ActionOutput_spotify_listsavedtracks"],
-            "scopes": ["user-library-read"],
-            "usedModels": ["ActionInput_spotify_listsavedtracks", "ActionOutput_spotify_listsavedtracks"],
+            "output": [
+                "ActionOutput_spotify_listsavedtracks"
+            ],
+            "scopes": [
+                "user-library-read"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_listsavedtracks",
+                "ActionOutput_spotify_listsavedtracks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2549,7 +3012,10 @@
                                                     "type": "number"
                                                 },
                                                 "preview_url": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "track_number": {
                                                     "type": "number"
@@ -2581,18 +3047,29 @@
                                                                         "type": "string"
                                                                     },
                                                                     "height": {
-                                                                        "type": ["number", "null"]
+                                                                        "type": [
+                                                                            "number",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "width": {
-                                                                        "type": ["number", "null"]
+                                                                        "type": [
+                                                                            "number",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
-                                                                "required": ["url"],
+                                                                "required": [
+                                                                    "url"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 "artists": {
@@ -2610,16 +3087,24 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "name"],
+                                                        "required": [
+                                                            "id",
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["track"],
+                                    "required": [
+                                        "track"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2630,7 +3115,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2643,9 +3131,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_pauseplayback",
             "name": "pause-playback",
-            "output": ["ActionOutput_spotify_pauseplayback"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_pauseplayback", "ActionOutput_spotify_pauseplayback"],
+            "output": [
+                "ActionOutput_spotify_pauseplayback"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_pauseplayback",
+                "ActionOutput_spotify_pauseplayback"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2666,7 +3161,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2679,9 +3176,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_reorderplaylisttracks",
             "name": "reorder-playlist-tracks",
-            "output": ["ActionOutput_spotify_reorderplaylisttracks"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_reorderplaylisttracks", "ActionOutput_spotify_reorderplaylisttracks"],
+            "output": [
+                "ActionOutput_spotify_reorderplaylisttracks"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_reorderplaylisttracks",
+                "ActionOutput_spotify_reorderplaylisttracks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2715,7 +3220,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["playlist_id", "range_start", "insert_before"],
+                        "required": [
+                            "playlist_id",
+                            "range_start",
+                            "insert_before"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_reorderplaylisttracks": {
@@ -2737,9 +3246,14 @@
             "endpoint": null,
             "input": "ActionInput_spotify_search",
             "name": "search",
-            "output": ["ActionOutput_spotify_search"],
+            "output": [
+                "ActionOutput_spotify_search"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_spotify_search", "ActionOutput_spotify_search"],
+            "usedModels": [
+                "ActionInput_spotify_search",
+                "ActionOutput_spotify_search"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2755,7 +3269,14 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["track", "album", "artist", "playlist", "show", "episode"]
+                                    "enum": [
+                                        "track",
+                                        "album",
+                                        "artist",
+                                        "playlist",
+                                        "show",
+                                        "episode"
+                                    ]
                                 },
                                 "description": "Types of items to search for. At least one type is required."
                             },
@@ -2778,10 +3299,15 @@
                             "include_external": {
                                 "description": "If \"audio\", response includes any playable audio content.",
                                 "type": "string",
-                                "enum": ["audio"]
+                                "enum": [
+                                    "audio"
+                                ]
                             }
                         },
-                        "required": ["query", "type"],
+                        "required": [
+                            "query",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_search": {
@@ -2794,7 +3320,14 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["track", "album", "artist", "playlist", "show", "episode"]
+                                    "enum": [
+                                        "track",
+                                        "album",
+                                        "artist",
+                                        "playlist",
+                                        "show",
+                                        "episode"
+                                    ]
                                 }
                             },
                             "tracks": {
@@ -2876,12 +3409,19 @@
                                                                         ]
                                                                     }
                                                                 },
-                                                                "required": ["url", "height", "width"],
+                                                                "required": [
+                                                                    "url",
+                                                                    "height",
+                                                                    "width"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "artists": {
@@ -2896,12 +3436,20 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "name"],
+                                                        "required": [
+                                                            "id",
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "name", "uri", "type"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "uri",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2932,11 +3480,19 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["total", "offset", "limit", "hasMore"],
+                                        "required": [
+                                            "total",
+                                            "offset",
+                                            "limit",
+                                            "hasMore"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["items", "paging"],
+                                "required": [
+                                    "items",
+                                    "paging"
+                                ],
                                 "additionalProperties": false
                             },
                             "albums": {
@@ -3001,7 +3557,11 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["url", "height", "width"],
+                                                        "required": [
+                                                            "url",
+                                                            "height",
+                                                            "width"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3017,12 +3577,20 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "name"],
+                                                        "required": [
+                                                            "id",
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "name", "uri", "type"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "uri",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3053,11 +3621,19 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["total", "offset", "limit", "hasMore"],
+                                        "required": [
+                                            "total",
+                                            "offset",
+                                            "limit",
+                                            "hasMore"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["items", "paging"],
+                                "required": [
+                                    "items",
+                                    "paging"
+                                ],
                                 "additionalProperties": false
                             },
                             "artists": {
@@ -3119,7 +3695,11 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["url", "height", "width"],
+                                                        "required": [
+                                                            "url",
+                                                            "height",
+                                                            "width"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3130,7 +3710,12 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "name", "uri", "type"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "uri",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3161,11 +3746,19 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["total", "offset", "limit", "hasMore"],
+                                        "required": [
+                                            "total",
+                                            "offset",
+                                            "limit",
+                                            "hasMore"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["items", "paging"],
+                                "required": [
+                                    "items",
+                                    "paging"
+                                ],
                                 "additionalProperties": false
                             },
                             "playlists": {
@@ -3202,7 +3795,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "images": {
@@ -3238,7 +3833,11 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["url", "height", "width"],
+                                                        "required": [
+                                                            "url",
+                                                            "height",
+                                                            "width"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3248,7 +3847,12 @@
                                                     "maximum": 9007199254740991
                                                 }
                                             },
-                                            "required": ["id", "name", "uri", "type"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "uri",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3279,11 +3883,19 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["total", "offset", "limit", "hasMore"],
+                                        "required": [
+                                            "total",
+                                            "offset",
+                                            "limit",
+                                            "hasMore"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["items", "paging"],
+                                "required": [
+                                    "items",
+                                    "paging"
+                                ],
                                 "additionalProperties": false
                             },
                             "shows": {
@@ -3346,7 +3958,11 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["url", "height", "width"],
+                                                        "required": [
+                                                            "url",
+                                                            "height",
+                                                            "width"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3365,7 +3981,12 @@
                                                     "maximum": 9007199254740991
                                                 }
                                             },
-                                            "required": ["id", "name", "uri", "type"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "uri",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3396,11 +4017,19 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["total", "offset", "limit", "hasMore"],
+                                        "required": [
+                                            "total",
+                                            "offset",
+                                            "limit",
+                                            "hasMore"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["items", "paging"],
+                                "required": [
+                                    "items",
+                                    "paging"
+                                ],
                                 "additionalProperties": false
                             },
                             "episodes": {
@@ -3468,7 +4097,11 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["url", "height", "width"],
+                                                        "required": [
+                                                            "url",
+                                                            "height",
+                                                            "width"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3485,11 +4118,19 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id", "name", "uri", "type"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "uri",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3520,15 +4161,26 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["total", "offset", "limit", "hasMore"],
+                                        "required": [
+                                            "total",
+                                            "offset",
+                                            "limit",
+                                            "hasMore"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["items", "paging"],
+                                "required": [
+                                    "items",
+                                    "paging"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["query", "types"],
+                        "required": [
+                            "query",
+                            "types"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3541,9 +4193,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_seektoposition",
             "name": "seek-to-position",
-            "output": ["ActionOutput_spotify_seektoposition"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_seektoposition", "ActionOutput_spotify_seektoposition"],
+            "output": [
+                "ActionOutput_spotify_seektoposition"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_seektoposition",
+                "ActionOutput_spotify_seektoposition"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3561,7 +4220,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["position_ms"],
+                        "required": [
+                            "position_ms"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_seektoposition": {
@@ -3571,7 +4232,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3584,9 +4247,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_setrepeatmode",
             "name": "set-repeat-mode",
-            "output": ["ActionOutput_spotify_setrepeatmode"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_setrepeatmode", "ActionOutput_spotify_setrepeatmode"],
+            "output": [
+                "ActionOutput_spotify_setrepeatmode"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_setrepeatmode",
+                "ActionOutput_spotify_setrepeatmode"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3595,7 +4265,11 @@
                         "properties": {
                             "state": {
                                 "type": "string",
-                                "enum": ["track", "context", "off"],
+                                "enum": [
+                                    "track",
+                                    "context",
+                                    "off"
+                                ],
                                 "description": "The repeat mode to set. Can be track, context, or off."
                             },
                             "device_id": {
@@ -3603,7 +4277,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["state"],
+                        "required": [
+                            "state"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_setrepeatmode": {
@@ -3614,7 +4290,9 @@
                                 "description": "Whether the repeat mode was successfully set."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3627,9 +4305,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_setvolume",
             "name": "set-volume",
-            "output": ["ActionOutput_spotify_setvolume"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_setvolume", "ActionOutput_spotify_setvolume"],
+            "output": [
+                "ActionOutput_spotify_setvolume"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_setvolume",
+                "ActionOutput_spotify_setvolume"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3647,7 +4332,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["volume_percent"],
+                        "required": [
+                            "volume_percent"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_setvolume": {
@@ -3657,7 +4344,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3670,9 +4359,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_skiptonext",
             "name": "skip-to-next",
-            "output": ["ActionOutput_spotify_skiptonext"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_skiptonext", "ActionOutput_spotify_skiptonext"],
+            "output": [
+                "ActionOutput_spotify_skiptonext"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_skiptonext",
+                "ActionOutput_spotify_skiptonext"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3694,7 +4390,9 @@
                                 "description": "Whether the playback was successfully skipped to the next track."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3707,9 +4405,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_skiptoprevious",
             "name": "skip-to-previous",
-            "output": ["ActionOutput_spotify_skiptoprevious"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_skiptoprevious", "ActionOutput_spotify_skiptoprevious"],
+            "output": [
+                "ActionOutput_spotify_skiptoprevious"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_skiptoprevious",
+                "ActionOutput_spotify_skiptoprevious"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3731,7 +4436,9 @@
                                 "description": "Whether the operation was successful"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3744,9 +4451,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_startplayback",
             "name": "start-playback",
-            "output": ["ActionOutput_spotify_startplayback"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_startplayback", "ActionOutput_spotify_startplayback"],
+            "output": [
+                "ActionOutput_spotify_startplayback"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_startplayback",
+                "ActionOutput_spotify_startplayback"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3800,7 +4514,9 @@
                                 "description": "Whether the playback was started successfully"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3813,9 +4529,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_toggleshuffle",
             "name": "toggle-shuffle",
-            "output": ["ActionOutput_spotify_toggleshuffle"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_toggleshuffle", "ActionOutput_spotify_toggleshuffle"],
+            "output": [
+                "ActionOutput_spotify_toggleshuffle"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_toggleshuffle",
+                "ActionOutput_spotify_toggleshuffle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3831,7 +4554,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["state"],
+                        "required": [
+                            "state"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_toggleshuffle": {
@@ -3841,7 +4566,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3854,9 +4581,16 @@
             "endpoint": null,
             "input": "ActionInput_spotify_transferplayback",
             "name": "transfer-playback",
-            "output": ["ActionOutput_spotify_transferplayback"],
-            "scopes": ["user-modify-playback-state"],
-            "usedModels": ["ActionInput_spotify_transferplayback", "ActionOutput_spotify_transferplayback"],
+            "output": [
+                "ActionOutput_spotify_transferplayback"
+            ],
+            "scopes": [
+                "user-modify-playback-state"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_transferplayback",
+                "ActionOutput_spotify_transferplayback"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3872,7 +4606,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["device_id"],
+                        "required": [
+                            "device_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_transferplayback": {
@@ -3882,7 +4618,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3895,9 +4633,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_unfollowplaylist",
             "name": "unfollow-playlist",
-            "output": ["ActionOutput_spotify_unfollowplaylist"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_unfollowplaylist", "ActionOutput_spotify_unfollowplaylist"],
+            "output": [
+                "ActionOutput_spotify_unfollowplaylist"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_unfollowplaylist",
+                "ActionOutput_spotify_unfollowplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3909,7 +4655,9 @@
                                 "description": "The Spotify ID of the playlist to unfollow. Example: \"5mBo6dx15GhupMndL3T2sk\""
                             }
                         },
-                        "required": ["playlist_id"],
+                        "required": [
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_unfollowplaylist": {
@@ -3924,7 +4672,10 @@
                                 "description": "The ID of the playlist that was unfollowed"
                             }
                         },
-                        "required": ["success", "playlist_id"],
+                        "required": [
+                            "success",
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3937,9 +4688,17 @@
             "endpoint": null,
             "input": "ActionInput_spotify_updateplaylist",
             "name": "update-playlist",
-            "output": ["ActionOutput_spotify_updateplaylist"],
-            "scopes": ["playlist-modify-public", "playlist-modify-private"],
-            "usedModels": ["ActionInput_spotify_updateplaylist", "ActionOutput_spotify_updateplaylist"],
+            "output": [
+                "ActionOutput_spotify_updateplaylist"
+            ],
+            "scopes": [
+                "playlist-modify-public",
+                "playlist-modify-private"
+            ],
+            "usedModels": [
+                "ActionInput_spotify_updateplaylist",
+                "ActionOutput_spotify_updateplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3956,7 +4715,10 @@
                             },
                             "description": {
                                 "description": "The new description for the playlist. Pass null to clear the description.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "public": {
                                 "description": "If true, the playlist will be public. If false, it will be private.",
@@ -3967,7 +4729,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["playlistId"],
+                        "required": [
+                            "playlistId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_spotify_updateplaylist": {
@@ -3980,7 +4744,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "playlistId"],
+                        "required": [
+                            "success",
+                            "playlistId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4001,12 +4768,18 @@
             ],
             "input": null,
             "name": "albums",
-            "output": ["Album"],
+            "output": [
+                "Album"
+            ],
             "runs": "every hour",
-            "scopes": ["user-library-read"],
+            "scopes": [
+                "user-library-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Album"],
+            "usedModels": [
+                "Album"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4035,7 +4808,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4057,7 +4833,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4071,12 +4849,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "addedAt"],
+                        "required": [
+                            "id",
+                            "name",
+                            "addedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4090,12 +4874,18 @@
             ],
             "input": null,
             "name": "artists",
-            "output": ["Artist"],
+            "output": [
+                "Artist"
+            ],
             "runs": "every hour",
-            "scopes": ["user-follow-read"],
+            "scopes": [
+                "user-follow-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Artist"],
+            "usedModels": [
+                "Artist"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4145,7 +4935,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4153,12 +4945,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4172,12 +4969,20 @@
             ],
             "input": "SyncMetadata_spotify_playlisttracks",
             "name": "playlist-tracks",
-            "output": ["PlaylistTrack"],
+            "output": [
+                "PlaylistTrack"
+            ],
             "runs": "every hour",
-            "scopes": ["playlist-read-private", "playlist-read-collaborative"],
+            "scopes": [
+                "playlist-read-private",
+                "playlist-read-collaborative"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PlaylistTrack", "SyncMetadata_spotify_playlisttracks"],
+            "usedModels": [
+                "PlaylistTrack",
+                "SyncMetadata_spotify_playlisttracks"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4202,7 +5007,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["track", "episode"]
+                                "enum": [
+                                    "track",
+                                    "episode"
+                                ]
                             },
                             "uri": {
                                 "type": "string"
@@ -4250,7 +5058,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "playlist_id"],
+                        "required": [
+                            "id",
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_spotify_playlisttracks": {
@@ -4265,12 +5076,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["playlist_id"],
+                        "required": [
+                            "playlist_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4284,12 +5099,19 @@
             ],
             "input": null,
             "name": "playlists",
-            "output": ["Playlist"],
+            "output": [
+                "Playlist"
+            ],
             "runs": "every hour",
-            "scopes": ["playlist-read-private", "playlist-read-collaborative"],
+            "scopes": [
+                "playlist-read-private",
+                "playlist-read-collaborative"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Playlist"],
+            "usedModels": [
+                "Playlist"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4304,13 +5126,19 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "collaborative": {
                                 "type": "boolean"
                             },
                             "public": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "snapshot_id": {
                                 "type": "string"
@@ -4325,7 +5153,10 @@
                                 "type": "string"
                             },
                             "owner_display_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "tracks_total": {
                                 "type": "number"
@@ -4339,23 +5170,42 @@
                                             "type": "string"
                                         },
                                         "height": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "width": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "collaborative", "snapshot_id", "href", "uri", "owner_id", "tracks_total"],
+                        "required": [
+                            "id",
+                            "name",
+                            "collaborative",
+                            "snapshot_id",
+                            "href",
+                            "uri",
+                            "owner_id",
+                            "tracks_total"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4369,12 +5219,18 @@
             ],
             "input": null,
             "name": "recently-played",
-            "output": ["RecentlyPlayed"],
+            "output": [
+                "RecentlyPlayed"
+            ],
             "runs": "every hour",
-            "scopes": ["user-read-recently-played"],
+            "scopes": [
+                "user-read-recently-played"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecentlyPlayed"],
+            "usedModels": [
+                "RecentlyPlayed"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4448,7 +5304,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4462,12 +5320,18 @@
             ],
             "input": null,
             "name": "saved-episodes",
-            "output": ["SavedEpisode"],
+            "output": [
+                "SavedEpisode"
+            ],
             "runs": "every hour",
-            "scopes": ["user-library-read"],
+            "scopes": [
+                "user-library-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SavedEpisode"],
+            "usedModels": [
+                "SavedEpisode"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4517,13 +5381,23 @@
                                             "type": "string"
                                         },
                                         "height": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "width": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["url", "height", "width"],
+                                    "required": [
+                                        "url",
+                                        "height",
+                                        "width"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4534,12 +5408,19 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "duration_ms", "added_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "duration_ms",
+                            "added_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4553,12 +5434,18 @@
             ],
             "input": null,
             "name": "saved-shows",
-            "output": ["SavedShow"],
+            "output": [
+                "SavedShow"
+            ],
             "runs": "every hour",
-            "scopes": ["user-library-read"],
+            "scopes": [
+                "user-library-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SavedShow"],
+            "usedModels": [
+                "SavedShow"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4605,7 +5492,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4625,12 +5514,20 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "added_at", "type", "uri"],
+                        "required": [
+                            "id",
+                            "name",
+                            "added_at",
+                            "type",
+                            "uri"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4644,12 +5541,18 @@
             ],
             "input": null,
             "name": "saved-tracks",
-            "output": ["SavedTrack"],
+            "output": [
+                "SavedTrack"
+            ],
             "runs": "every hour",
-            "scopes": ["user-library-read"],
+            "scopes": [
+                "user-library-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SavedTrack"],
+            "usedModels": [
+                "SavedTrack"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4694,12 +5597,19 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "uri", "addedAt"],
+                        "required": [
+                            "id",
+                            "name",
+                            "uri",
+                            "addedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4713,12 +5623,18 @@
             ],
             "input": null,
             "name": "top-items",
-            "output": ["TopItem"],
+            "output": [
+                "TopItem"
+            ],
             "runs": "every hour",
-            "scopes": ["user-top-read"],
+            "scopes": [
+                "user-top-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TopItem"],
+            "usedModels": [
+                "TopItem"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4734,11 +5650,18 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["artist", "track"]
+                                "enum": [
+                                    "artist",
+                                    "track"
+                                ]
                             },
                             "time_range": {
                                 "type": "string",
-                                "enum": ["short_term", "medium_term", "long_term"]
+                                "enum": [
+                                    "short_term",
+                                    "medium_term",
+                                    "long_term"
+                                ]
                             },
                             "popularity": {
                                 "type": "number"
@@ -4773,7 +5696,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4801,12 +5727,17 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["url"],
+                                            "required": [
+                                                "url"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "duration_ms": {
@@ -4816,12 +5747,19 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "type", "time_range"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type",
+                            "time_range"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

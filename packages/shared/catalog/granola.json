@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_granola_getnote",
             "name": "get-note",
-            "output": ["ActionOutput_granola_getnote"],
+            "output": [
+                "ActionOutput_granola_getnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_granola_getnote", "ActionOutput_granola_getnote"],
+            "usedModels": [
+                "ActionInput_granola_getnote",
+                "ActionOutput_granola_getnote"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +30,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["note_id"],
+                        "required": [
+                            "note_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Granola meeting note."
                     },
@@ -42,21 +49,30 @@
                             },
                             "title": {
                                 "description": "The title of the note, or null if not set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "owner": {
                                 "type": "object",
                                 "properties": {
                                     "name": {
                                         "description": "The name of the user, or null if not set.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
                                         "type": "string",
                                         "description": "The email of the user."
                                     }
                                 },
-                                "required": ["name", "email"],
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The owner of the note."
                             },
@@ -79,7 +95,10 @@
                                         "properties": {
                                             "event_title": {
                                                 "description": "The title of the calendar event, or null if not available.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "invitees": {
                                                 "type": "array",
@@ -91,29 +110,50 @@
                                                             "description": "The email of the calendar invitee."
                                                         }
                                                     },
-                                                    "required": ["email"],
+                                                    "required": [
+                                                        "email"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "description": "The invitees of the calendar event."
                                             },
                                             "organiser": {
                                                 "description": "The email of the organiser, or null if not available.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "calendar_event_id": {
                                                 "description": "The ID of the calendar event, or null if not available.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "scheduled_start_time": {
                                                 "description": "The scheduled start time of the calendar event, or null if not available.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "scheduled_end_time": {
                                                 "description": "The scheduled end time of the calendar event, or null if not available.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["event_title", "invitees", "organiser", "calendar_event_id", "scheduled_start_time", "scheduled_end_time"],
+                                        "required": [
+                                            "event_title",
+                                            "invitees",
+                                            "organiser",
+                                            "calendar_event_id",
+                                            "scheduled_start_time",
+                                            "scheduled_end_time"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -129,14 +169,20 @@
                                     "properties": {
                                         "name": {
                                             "description": "The name of the user, or null if not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
                                             "type": "string",
                                             "description": "The email of the user."
                                         }
                                     },
-                                    "required": ["name", "email"],
+                                    "required": [
+                                        "name",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The attendees of the meeting."
@@ -160,14 +206,22 @@
                                         },
                                         "parent_folder_id": {
                                             "description": "The ID of the parent folder, or null if the folder is top-level.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "space_id": {
                                             "description": "The ID of the space this folder belongs to.",
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "name", "parent_folder_id"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name",
+                                        "parent_folder_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The folders this note belongs to."
@@ -192,7 +246,11 @@
                                             "description": "The name of the space."
                                         }
                                     },
-                                    "required": ["id", "object", "name"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -202,15 +260,24 @@
                             },
                             "summary_markdown": {
                                 "description": "The summary of the note in markdown format, or null if not available.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "private_notes_text": {
                                 "description": "The private notes text of the note owner, or null if the API key does not belong to the owner.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "private_notes_markdown": {
                                 "description": "The private notes markdown of the note owner, or null if the API key does not belong to the owner.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "transcript": {
                                 "anyOf": [
@@ -239,7 +306,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["source"],
+                                                    "required": [
+                                                        "source"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "The speaker information for this transcript segment."
                                                 },
@@ -256,7 +325,12 @@
                                                     "description": "The end time of the transcript segment."
                                                 }
                                             },
-                                            "required": ["speaker", "text", "start_time", "end_time"],
+                                            "required": [
+                                                "speaker",
+                                                "text",
+                                                "start_time",
+                                                "end_time"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -298,9 +372,14 @@
             "endpoint": null,
             "input": "ActionInput_granola_gettranscript",
             "name": "get-transcript",
-            "output": ["ActionOutput_granola_gettranscript"],
+            "output": [
+                "ActionOutput_granola_gettranscript"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_granola_gettranscript", "ActionOutput_granola_gettranscript"],
+            "usedModels": [
+                "ActionInput_granola_gettranscript",
+                "ActionOutput_granola_gettranscript"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -322,7 +401,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["note_id"],
+                        "required": [
+                            "note_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a paginated meeting transcript."
                     },
@@ -366,12 +447,19 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["source"],
+                                            "required": [
+                                                "source"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Speaker information for this segment."
                                         }
                                     },
-                                    "required": ["text", "start_time", "end_time", "speaker"],
+                                    "required": [
+                                        "text",
+                                        "start_time",
+                                        "end_time",
+                                        "speaker"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single segment of a meeting transcript."
                                 },
@@ -386,7 +474,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["transcript", "hasMore"],
+                        "required": [
+                            "transcript",
+                            "hasMore"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing a page of transcript segments and pagination state."
                     }
@@ -400,9 +491,14 @@
             "endpoint": null,
             "input": "ActionInput_granola_listfolders",
             "name": "list-folders",
-            "output": ["ActionOutput_granola_listfolders"],
+            "output": [
+                "ActionOutput_granola_listfolders"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_granola_listfolders", "ActionOutput_granola_listfolders"],
+            "usedModels": [
+                "ActionInput_granola_listfolders",
+                "ActionOutput_granola_listfolders"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -445,14 +541,22 @@
                                         },
                                         "parent_folder_id": {
                                             "description": "ID of the parent folder, or null for top-level folders.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "space_id": {
                                             "description": "ID of the space this folder belongs to.",
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "name", "parent_folder_id"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name",
+                                        "parent_folder_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of folders."
@@ -466,7 +570,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folders", "hasMore"],
+                        "required": [
+                            "folders",
+                            "hasMore"
+                        ],
                         "additionalProperties": false,
                         "description": "Output for listing folders."
                     }
@@ -480,9 +587,14 @@
             "endpoint": null,
             "input": "ActionInput_granola_listnotes",
             "name": "list-notes",
-            "output": ["ActionOutput_granola_listnotes"],
+            "output": [
+                "ActionOutput_granola_listnotes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_granola_listnotes", "ActionOutput_granola_listnotes"],
+            "usedModels": [
+                "ActionInput_granola_listnotes",
+                "ActionOutput_granola_listnotes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -553,7 +665,9 @@
                                                     "description": "The email of the note owner."
                                                 }
                                             },
-                                            "required": ["email"],
+                                            "required": [
+                                                "email"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "The owner of the note."
                                         },
@@ -566,7 +680,13 @@
                                             "description": "The last update time of the note in ISO 8601 format."
                                         }
                                     },
-                                    "required": ["id", "object", "owner", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "owner",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The list of notes visible to the API key."
@@ -580,7 +700,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["notes", "hasMore"],
+                        "required": [
+                            "notes",
+                            "hasMore"
+                        ],
                         "additionalProperties": false,
                         "description": "Output from listing Granola meeting notes."
                     }
@@ -597,12 +720,16 @@
             "endpoints": [],
             "input": null,
             "name": "folders",
-            "output": ["Folder"],
+            "output": [
+                "Folder"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Folder"],
+            "usedModels": [
+                "Folder"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -620,20 +747,29 @@
                             },
                             "parent_folder_id": {
                                 "description": "ID of the parent folder, or null when this folder is top-level",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "space_id": {
                                 "description": "ID of the space this folder belongs to",
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "parent_folder_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "parent_folder_id"
+                        ],
                         "additionalProperties": false,
                         "description": "A folder for organizing meeting notes in Granola"
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -642,12 +778,16 @@
             "endpoints": [],
             "input": null,
             "name": "notes",
-            "output": ["Note"],
+            "output": [
+                "Note"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Note"],
+            "usedModels": [
+                "Note"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -679,7 +819,9 @@
                                         "description": "The email of the user"
                                     }
                                 },
-                                "required": ["email"],
+                                "required": [
+                                    "email"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The owner of the note"
                             },
@@ -713,7 +855,9 @@
                                                     "description": "The email of the calendar invitee"
                                                 }
                                             },
-                                            "required": ["email"],
+                                            "required": [
+                                                "email"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "A calendar invitee"
                                         },
@@ -736,7 +880,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["invitees"],
+                                "required": [
+                                    "invitees"
+                                ],
                                 "additionalProperties": false
                             },
                             "attendees": {
@@ -753,7 +899,9 @@
                                             "description": "The email of the user"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A user"
                                 },
@@ -785,7 +933,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "object", "name"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A folder"
                                 },
@@ -809,7 +961,11 @@
                                             "description": "The name of the space"
                                         }
                                     },
-                                    "required": ["id", "object", "name"],
+                                    "required": [
+                                        "id",
+                                        "object",
+                                        "name"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A Granola space (team workspace)"
                                 },
@@ -849,7 +1005,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createadgroup",
             "name": "create-ad-group",
-            "output": ["ActionOutput_tiktok_ads_createadgroup"],
+            "output": [
+                "ActionOutput_tiktok_ads_createadgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createadgroup", "ActionOutput_tiktok_ads_createadgroup"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createadgroup",
+                "ActionOutput_tiktok_ads_createadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -383,9 +388,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createad",
             "name": "create-ad",
-            "output": ["ActionOutput_tiktok_ads_createad"],
+            "output": [
+                "ActionOutput_tiktok_ads_createad"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createad", "ActionOutput_tiktok_ads_createad"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createad",
+                "ActionOutput_tiktok_ads_createad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -579,13 +589,19 @@
                                             }
                                         }
                                     },
-                                    "required": ["ad_name"],
+                                    "required": [
+                                        "ad_name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of creative objects for the ad."
                             }
                         },
-                        "required": ["advertiser_id", "adgroup_id", "creatives"],
+                        "required": [
+                            "advertiser_id",
+                            "adgroup_id",
+                            "creatives"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createad": {
@@ -607,7 +623,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["ad_ids"],
+                        "required": [
+                            "ad_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -620,9 +638,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createaudience",
             "name": "create-audience",
-            "output": ["ActionOutput_tiktok_ads_createaudience"],
+            "output": [
+                "ActionOutput_tiktok_ads_createaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createaudience", "ActionOutput_tiktok_ads_createaudience"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createaudience",
+                "ActionOutput_tiktok_ads_createaudience"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -664,7 +687,12 @@
                                 "maximum": 365
                             }
                         },
-                        "required": ["advertiser_id", "custom_audience_name", "file_paths", "calculate_type"],
+                        "required": [
+                            "advertiser_id",
+                            "custom_audience_name",
+                            "file_paths",
+                            "calculate_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createaudience": {
@@ -675,7 +703,9 @@
                                 "description": "The ID of the created custom audience."
                             }
                         },
-                        "required": ["custom_audience_id"],
+                        "required": [
+                            "custom_audience_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -688,9 +718,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createautomatedrule",
             "name": "create-automated-rule",
-            "output": ["ActionOutput_tiktok_ads_createautomatedrule"],
+            "output": [
+                "ActionOutput_tiktok_ads_createautomatedrule"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createautomatedrule", "ActionOutput_tiktok_ads_createautomatedrule"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createautomatedrule",
+                "ActionOutput_tiktok_ads_createautomatedrule"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -735,7 +770,9 @@
                                                                 "description": "Frequency type. Example: \"ONCE\", \"CONTINUOUS\""
                                                             }
                                                         },
-                                                        "required": ["type"],
+                                                        "required": [
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "subject_type": {
@@ -761,7 +798,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["subject_type"],
+                                                "required": [
+                                                    "subject_type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -788,7 +827,10 @@
                                                         "description": "Pre-condition type. Example: \"ALL\", \"IN\", \"NOT_IN\""
                                                     }
                                                 },
-                                                "required": ["dimension", "pre_condition_type"],
+                                                "required": [
+                                                    "dimension",
+                                                    "pre_condition_type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -817,7 +859,9 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["subject_type"],
+                                                "required": [
+                                                    "subject_type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -854,7 +898,9 @@
                                                     "description": "Notification type. Example: \"SEND_NOTIFICATION\", \"NO_NOTIFICATION\""
                                                 }
                                             },
-                                            "required": ["notification_type"],
+                                            "required": [
+                                                "notification_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "rule_exec_info": {
@@ -888,12 +934,19 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["date_type", "end_time", "num", "start_time"],
+                                                        "required": [
+                                                            "date_type",
+                                                            "end_time",
+                                                            "num",
+                                                            "start_time"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["exec_time_type"],
+                                            "required": [
+                                                "exec_time_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "tzone": {
@@ -901,12 +954,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["actions", "apply_objects", "conditions", "name", "notification", "rule_exec_info"],
+                                    "required": [
+                                        "actions",
+                                        "apply_objects",
+                                        "conditions",
+                                        "name",
+                                        "notification",
+                                        "rule_exec_info"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["advertiser_id", "rules"],
+                        "required": [
+                            "advertiser_id",
+                            "rules"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createautomatedrule": {
@@ -960,9 +1023,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createcampaign",
             "name": "create-campaign",
-            "output": ["ActionOutput_tiktok_ads_createcampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_createcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createcampaign", "ActionOutput_tiktok_ads_createcampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createcampaign",
+                "ActionOutput_tiktok_ads_createcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1101,7 +1169,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "campaign_name", "objective_type"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_name",
+                            "objective_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createcampaign": {
@@ -1123,7 +1195,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "message"],
+                        "required": [
+                            "code",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1136,9 +1211,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createcatalogfeed",
             "name": "create-catalog-feed",
-            "output": ["ActionOutput_tiktok_ads_createcatalogfeed"],
+            "output": [
+                "ActionOutput_tiktok_ads_createcatalogfeed"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createcatalogfeed", "ActionOutput_tiktok_ads_createcatalogfeed"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createcatalogfeed",
+                "ActionOutput_tiktok_ads_createcatalogfeed"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1201,7 +1281,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["bc_id", "catalog_id", "feed_name", "update_mode"],
+                        "required": [
+                            "bc_id",
+                            "catalog_id",
+                            "feed_name",
+                            "update_mode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createcatalogfeed": {
@@ -1211,7 +1296,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["feed_id"],
+                        "required": [
+                            "feed_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1224,9 +1311,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createcatalog",
             "name": "create-catalog",
-            "output": ["ActionOutput_tiktok_ads_createcatalog"],
+            "output": [
+                "ActionOutput_tiktok_ads_createcatalog"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createcatalog", "ActionOutput_tiktok_ads_createcatalog"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createcatalog",
+                "ActionOutput_tiktok_ads_createcatalog"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1276,7 +1368,10 @@
                                         "description": "Region code for the catalog. Example: \"US\""
                                     }
                                 },
-                                "required": ["currency", "region_code"],
+                                "required": [
+                                    "currency",
+                                    "region_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Catalog configuration including currency and region."
                             },
@@ -1285,7 +1380,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "name", "catalog_type", "catalog_conf"],
+                        "required": [
+                            "advertiser_id",
+                            "name",
+                            "catalog_type",
+                            "catalog_conf"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createcatalog": {
@@ -1314,9 +1414,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createcreativeasset",
             "name": "create-creative-asset",
-            "output": ["ActionOutput_tiktok_ads_createcreativeasset"],
+            "output": [
+                "ActionOutput_tiktok_ads_createcreativeasset"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createcreativeasset", "ActionOutput_tiktok_ads_createcreativeasset"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createcreativeasset",
+                "ActionOutput_tiktok_ads_createcreativeasset"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1329,7 +1434,10 @@
                             },
                             "upload_type": {
                                 "type": "string",
-                                "enum": ["UPLOAD_BY_URL", "UPLOAD_BY_FILE_ID"],
+                                "enum": [
+                                    "UPLOAD_BY_URL",
+                                    "UPLOAD_BY_FILE_ID"
+                                ],
                                 "description": "Image upload method"
                             },
                             "image_url": {
@@ -1346,7 +1454,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "upload_type"],
+                        "required": [
+                            "advertiser_id",
+                            "upload_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createcreativeasset": {
@@ -1374,7 +1485,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["image_id"],
+                        "required": [
+                            "image_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1387,9 +1500,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_creategmvmaxcampaign",
             "name": "create-gmv-max-campaign",
-            "output": ["ActionOutput_tiktok_ads_creategmvmaxcampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_creategmvmaxcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_creategmvmaxcampaign", "ActionOutput_tiktok_ads_creategmvmaxcampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_creategmvmaxcampaign",
+                "ActionOutput_tiktok_ads_creategmvmaxcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1469,7 +1587,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["identity_id", "identity_type"],
+                                            "required": [
+                                                "identity_id",
+                                                "identity_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "item_id": {
@@ -1506,7 +1627,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["identity_id", "identity_type"],
+                                    "required": [
+                                        "identity_id",
+                                        "identity_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1540,7 +1664,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["identity_id", "identity_type"],
+                                            "required": [
+                                                "identity_id",
+                                                "identity_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "item_id": {
@@ -1559,7 +1686,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["video_id"],
+                                            "required": [
+                                                "video_id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1593,7 +1722,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["end_date", "start_date"],
+                                            "required": [
+                                                "end_date",
+                                                "start_date"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1651,9 +1783,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createpixel",
             "name": "create-pixel",
-            "output": ["ActionOutput_tiktok_ads_createpixel"],
+            "output": [
+                "ActionOutput_tiktok_ads_createpixel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createpixel", "ActionOutput_tiktok_ads_createpixel"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createpixel",
+                "ActionOutput_tiktok_ads_createpixel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1677,7 +1814,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "pixel_name"],
+                        "required": [
+                            "advertiser_id",
+                            "pixel_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createpixel": {
@@ -1705,7 +1845,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pixel_id"],
+                        "required": [
+                            "pixel_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1718,9 +1860,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createsmartplusad",
             "name": "create-smart-plus-ad",
-            "output": ["ActionOutput_tiktok_ads_createsmartplusad"],
+            "output": [
+                "ActionOutput_tiktok_ads_createsmartplusad"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createsmartplusad", "ActionOutput_tiktok_ads_createsmartplusad"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createsmartplusad",
+                "ActionOutput_tiktok_ads_createsmartplusad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1777,7 +1924,9 @@
                                                                 "description": "Image ID"
                                                             }
                                                         },
-                                                        "required": ["web_uri"],
+                                                        "required": [
+                                                            "web_uri"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -1789,7 +1938,9 @@
                                                             "description": "Music ID"
                                                         }
                                                     },
-                                                    "required": ["music_id"],
+                                                    "required": [
+                                                        "music_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "tiktok_item_id": {
@@ -1806,15 +1957,21 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["video_id"],
+                                                    "required": [
+                                                        "video_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["ad_format"],
+                                            "required": [
+                                                "ad_format"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["creative_info"],
+                                    "required": [
+                                        "creative_info"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1827,7 +1984,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ad_text"],
+                                    "required": [
+                                        "ad_text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1840,7 +1999,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["auto_message_id"],
+                                    "required": [
+                                        "auto_message_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1853,7 +2014,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["call_to_action"],
+                                    "required": [
+                                        "call_to_action"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1866,7 +2029,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["card_id"],
+                                    "required": [
+                                        "card_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1879,7 +2044,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["page_id"],
+                                    "required": [
+                                        "page_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2010,7 +2177,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id", "adgroup_id", "ad_name"],
+                        "required": [
+                            "advertiser_id",
+                            "adgroup_id",
+                            "ad_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createsmartplusad": {
@@ -2042,7 +2213,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["smart_plus_ad_id"],
+                        "required": [
+                            "smart_plus_ad_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2055,9 +2228,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createsmartplusadgroup",
             "name": "create-smart-plus-adgroup",
-            "output": ["ActionOutput_tiktok_ads_createsmartplusadgroup"],
+            "output": [
+                "ActionOutput_tiktok_ads_createsmartplusadgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createsmartplusadgroup", "ActionOutput_tiktok_ads_createsmartplusadgroup"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createsmartplusadgroup",
+                "ActionOutput_tiktok_ads_createsmartplusadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2427,7 +2605,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "message"],
+                        "required": [
+                            "code",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2440,9 +2621,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_createsmartpluscampaign",
             "name": "create-smart-plus-campaign",
-            "output": ["ActionOutput_tiktok_ads_createsmartpluscampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_createsmartpluscampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_createsmartpluscampaign", "ActionOutput_tiktok_ads_createsmartpluscampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_createsmartpluscampaign",
+                "ActionOutput_tiktok_ads_createsmartpluscampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2545,7 +2731,12 @@
                                 }
                             }
                         },
-                        "required": ["advertiser_id", "campaign_name", "objective_type", "request_id"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_name",
+                            "objective_type",
+                            "request_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_createsmartpluscampaign": {
@@ -2555,7 +2746,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2568,9 +2761,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_deleteadgroup",
             "name": "delete-ad-group",
-            "output": ["ActionOutput_tiktok_ads_deleteadgroup"],
+            "output": [
+                "ActionOutput_tiktok_ads_deleteadgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_deleteadgroup", "ActionOutput_tiktok_ads_deleteadgroup"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_deleteadgroup",
+                "ActionOutput_tiktok_ads_deleteadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2586,7 +2784,10 @@
                                 "description": "Ad group ID to delete. Example: \"1234567890\""
                             }
                         },
-                        "required": ["advertiser_id", "adgroup_id"],
+                        "required": [
+                            "advertiser_id",
+                            "adgroup_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_deleteadgroup": {
@@ -2599,7 +2800,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["adgroup_id"],
+                        "required": [
+                            "adgroup_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2612,9 +2815,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_deletead",
             "name": "delete-ad",
-            "output": ["ActionOutput_tiktok_ads_deletead"],
+            "output": [
+                "ActionOutput_tiktok_ads_deletead"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_deletead", "ActionOutput_tiktok_ads_deletead"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_deletead",
+                "ActionOutput_tiktok_ads_deletead"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2630,7 +2838,10 @@
                                 "description": "The ad ID to delete. Example: \"1234567890123456\""
                             }
                         },
-                        "required": ["advertiser_id", "ad_id"],
+                        "required": [
+                            "advertiser_id",
+                            "ad_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_deletead": {
@@ -2646,7 +2857,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "ad_id"],
+                        "required": [
+                            "success",
+                            "ad_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2659,9 +2873,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_deleteaudience",
             "name": "delete-audience",
-            "output": ["ActionOutput_tiktok_ads_deleteaudience"],
+            "output": [
+                "ActionOutput_tiktok_ads_deleteaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_deleteaudience", "ActionOutput_tiktok_ads_deleteaudience"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_deleteaudience",
+                "ActionOutput_tiktok_ads_deleteaudience"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2677,7 +2896,10 @@
                                 "description": "Custom audience ID to delete. Example: \"1234567890\""
                             }
                         },
-                        "required": ["advertiser_id", "custom_audience_id"],
+                        "required": [
+                            "advertiser_id",
+                            "custom_audience_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_deleteaudience": {
@@ -2696,7 +2918,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "custom_audience_id"],
+                        "required": [
+                            "success",
+                            "custom_audience_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2709,9 +2934,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_deletecampaign",
             "name": "delete-campaign",
-            "output": ["ActionOutput_tiktok_ads_deletecampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_deletecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_deletecampaign", "ActionOutput_tiktok_ads_deletecampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_deletecampaign",
+                "ActionOutput_tiktok_ads_deletecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2727,7 +2957,10 @@
                                 "description": "Campaign ID to delete. Example: \"1234567890\""
                             }
                         },
-                        "required": ["advertiser_id", "campaign_id"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_deletecampaign": {
@@ -2743,7 +2976,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "campaign_id"],
+                        "required": [
+                            "success",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2756,9 +2992,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_deletecatalogfeed",
             "name": "delete-catalog-feed",
-            "output": ["ActionOutput_tiktok_ads_deletecatalogfeed"],
+            "output": [
+                "ActionOutput_tiktok_ads_deletecatalogfeed"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_deletecatalogfeed", "ActionOutput_tiktok_ads_deletecatalogfeed"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_deletecatalogfeed",
+                "ActionOutput_tiktok_ads_deletecatalogfeed"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2778,7 +3019,11 @@
                                 "description": "Feed ID. Example: \"1234567890123456789\""
                             }
                         },
-                        "required": ["bc_id", "catalog_id", "feed_id"],
+                        "required": [
+                            "bc_id",
+                            "catalog_id",
+                            "feed_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_deletecatalogfeed": {
@@ -2794,7 +3039,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2807,9 +3054,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_deletecatalog",
             "name": "delete-catalog",
-            "output": ["ActionOutput_tiktok_ads_deletecatalog"],
+            "output": [
+                "ActionOutput_tiktok_ads_deletecatalog"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_deletecatalog", "ActionOutput_tiktok_ads_deletecatalog"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_deletecatalog",
+                "ActionOutput_tiktok_ads_deletecatalog"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2825,7 +3077,10 @@
                                 "description": "Catalog ID. Example: \"987654321\""
                             }
                         },
-                        "required": ["bc_id", "catalog_id"],
+                        "required": [
+                            "bc_id",
+                            "catalog_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_deletecatalog": {
@@ -2835,7 +3090,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["catalog_id"],
+                        "required": [
+                            "catalog_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2848,9 +3105,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_deletepixel",
             "name": "delete-pixel",
-            "output": ["ActionOutput_tiktok_ads_deletepixel"],
+            "output": [
+                "ActionOutput_tiktok_ads_deletepixel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_deletepixel", "ActionOutput_tiktok_ads_deletepixel"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_deletepixel",
+                "ActionOutput_tiktok_ads_deletepixel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2866,7 +3128,10 @@
                                 "description": "Pixel ID to archive. Example: \"1234567890\""
                             }
                         },
-                        "required": ["advertiser_id", "pixel_id"],
+                        "required": [
+                            "advertiser_id",
+                            "pixel_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_deletepixel": {
@@ -2882,7 +3147,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "pixel_id"],
+                        "required": [
+                            "success",
+                            "pixel_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2895,9 +3163,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getadgroup",
             "name": "get-ad-group",
-            "output": ["ActionOutput_tiktok_ads_getadgroup"],
+            "output": [
+                "ActionOutput_tiktok_ads_getadgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getadgroup", "ActionOutput_tiktok_ads_getadgroup"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getadgroup",
+                "ActionOutput_tiktok_ads_getadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2913,7 +3186,10 @@
                                 "description": "Ad group ID. Example: \"1866248998099217\""
                             }
                         },
-                        "required": ["advertiser_id", "adgroup_id"],
+                        "required": [
+                            "advertiser_id",
+                            "adgroup_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getadgroup": {
@@ -3052,7 +3328,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["adgroup_id", "campaign_id", "advertiser_id"],
+                        "required": [
+                            "adgroup_id",
+                            "campaign_id",
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3065,9 +3345,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getad",
             "name": "get-ad",
-            "output": ["ActionOutput_tiktok_ads_getad"],
+            "output": [
+                "ActionOutput_tiktok_ads_getad"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getad", "ActionOutput_tiktok_ads_getad"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getad",
+                "ActionOutput_tiktok_ads_getad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3079,7 +3364,9 @@
                                 "description": "Ad ID. Example: \"1680067909753890\""
                             }
                         },
-                        "required": ["ad_id"],
+                        "required": [
+                            "ad_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getad": {
@@ -3107,7 +3394,10 @@
                                 "type": "string"
                             },
                             "ad_text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "ad_texts": {
                                 "anyOf": [
@@ -3123,7 +3413,10 @@
                                 ]
                             },
                             "ad_format": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -3132,7 +3425,10 @@
                                 "type": "string"
                             },
                             "operation_status": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "secondary_status": {
                                 "type": "string"
@@ -3144,10 +3440,16 @@
                                 "type": "string"
                             },
                             "landing_page_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "video_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "image_ids": {
                                 "anyOf": [
@@ -3163,19 +3465,33 @@
                                 ]
                             },
                             "is_aco": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "call_to_action": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "open_url_type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "display_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["ad_id"],
+                        "required": [
+                            "ad_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3188,9 +3504,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getadvertiser",
             "name": "get-advertiser",
-            "output": ["ActionOutput_tiktok_ads_getadvertiser"],
+            "output": [
+                "ActionOutput_tiktok_ads_getadvertiser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getadvertiser", "ActionOutput_tiktok_ads_getadvertiser"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getadvertiser",
+                "ActionOutput_tiktok_ads_getadvertiser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3202,7 +3523,9 @@
                                 "description": "Advertiser ID. Example: \"7644143197428744199\""
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getadvertiser": {
@@ -3227,10 +3550,16 @@
                                 "type": "string"
                             },
                             "balance": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "create_time": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "display_timezone": {
                                 "type": "string"
@@ -3278,7 +3607,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3291,9 +3622,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getaudience",
             "name": "get-audience",
-            "output": ["ActionOutput_tiktok_ads_getaudience"],
+            "output": [
+                "ActionOutput_tiktok_ads_getaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getaudience", "ActionOutput_tiktok_ads_getaudience"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getaudience",
+                "ActionOutput_tiktok_ads_getaudience"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3309,7 +3645,10 @@
                                 "description": "Advertiser ID. Example: \"7644143197428744199\""
                             }
                         },
-                        "required": ["audience_id", "advertiser_id"],
+                        "required": [
+                            "audience_id",
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getaudience": {
@@ -3360,7 +3699,10 @@
                                             "type": "string"
                                         },
                                         "msg": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "opt_time": {
                                             "type": "string"
@@ -3369,12 +3711,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["action", "editor", "msg", "opt_time", "action_detail"],
+                                    "required": [
+                                        "action",
+                                        "editor",
+                                        "msg",
+                                        "opt_time",
+                                        "action_detail"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["audience_id"],
+                        "required": [
+                            "audience_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3387,9 +3737,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getautomatedrule",
             "name": "get-automated-rule",
-            "output": ["ActionOutput_tiktok_ads_getautomatedrule"],
+            "output": [
+                "ActionOutput_tiktok_ads_getautomatedrule"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getautomatedrule", "ActionOutput_tiktok_ads_getautomatedrule"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getautomatedrule",
+                "ActionOutput_tiktok_ads_getautomatedrule"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3405,7 +3760,10 @@
                                 "description": "Automated rule ID. Example: \"123456789\""
                             }
                         },
-                        "required": ["advertiser_id", "rule_id"],
+                        "required": [
+                            "advertiser_id",
+                            "rule_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getautomatedrule": {
@@ -3525,7 +3883,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["rule_id"],
+                        "required": [
+                            "rule_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3538,9 +3898,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getcampaign",
             "name": "get-campaign",
-            "output": ["ActionOutput_tiktok_ads_getcampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_getcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getcampaign", "ActionOutput_tiktok_ads_getcampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getcampaign",
+                "ActionOutput_tiktok_ads_getcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3556,7 +3921,10 @@
                                 "description": "The campaign ID. Example: \"1234567890\""
                             }
                         },
-                        "required": ["advertiser_id", "campaign_id"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getcampaign": {
@@ -3671,7 +4039,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign_id", "campaign_name", "advertiser_id"],
+                        "required": [
+                            "campaign_id",
+                            "campaign_name",
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3684,9 +4056,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getcatalogfeed",
             "name": "get-catalog-feed",
-            "output": ["ActionOutput_tiktok_ads_getcatalogfeed"],
+            "output": [
+                "ActionOutput_tiktok_ads_getcatalogfeed"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getcatalogfeed", "ActionOutput_tiktok_ads_getcatalogfeed"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getcatalogfeed",
+                "ActionOutput_tiktok_ads_getcatalogfeed"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3706,7 +4083,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["catalog_id", "bc_id"],
+                        "required": [
+                            "catalog_id",
+                            "bc_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getcatalogfeed": {
@@ -3769,12 +4149,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["feed_id", "feed_name", "update_mode"],
+                                    "required": [
+                                        "feed_id",
+                                        "feed_name",
+                                        "update_mode"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["feeds"],
+                        "required": [
+                            "feeds"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3787,9 +4173,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getcatalog",
             "name": "get-catalog",
-            "output": ["ActionOutput_tiktok_ads_getcatalog"],
+            "output": [
+                "ActionOutput_tiktok_ads_getcatalog"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getcatalog", "ActionOutput_tiktok_ads_getcatalog"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getcatalog",
+                "ActionOutput_tiktok_ads_getcatalog"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3805,7 +4196,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["bc_id"],
+                        "required": [
+                            "bc_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getcatalog": {
@@ -3841,7 +4234,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["catalog_id"],
+                                    "required": [
+                                        "catalog_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3861,11 +4256,18 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["page", "page_size", "total_page", "total_number"],
+                                "required": [
+                                    "page",
+                                    "page_size",
+                                    "total_page",
+                                    "total_number"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["catalogs"],
+                        "required": [
+                            "catalogs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3878,9 +4280,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getcreativeasset",
             "name": "get-creative-asset",
-            "output": ["ActionOutput_tiktok_ads_getcreativeasset"],
+            "output": [
+                "ActionOutput_tiktok_ads_getcreativeasset"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getcreativeasset", "ActionOutput_tiktok_ads_getcreativeasset"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getcreativeasset",
+                "ActionOutput_tiktok_ads_getcreativeasset"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3896,7 +4303,10 @@
                                 "description": "Image ID of the creative asset. Example: \"ad-site-i18n-sg/20260204c7c701257607f54b4b1d87df\""
                             }
                         },
-                        "required": ["advertiser_id", "image_id"],
+                        "required": [
+                            "advertiser_id",
+                            "image_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getcreativeasset": {
@@ -3942,7 +4352,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["image_id"],
+                        "required": [
+                            "image_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3955,9 +4367,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getgmvmaxcampaign",
             "name": "get-gmv-max-campaign",
-            "output": ["ActionOutput_tiktok_ads_getgmvmaxcampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_getgmvmaxcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getgmvmaxcampaign", "ActionOutput_tiktok_ads_getgmvmaxcampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getgmvmaxcampaign",
+                "ActionOutput_tiktok_ads_getgmvmaxcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3973,7 +4390,10 @@
                                 "description": "GMV Max campaign ID. Example: \"1866249031553154\""
                             }
                         },
-                        "required": ["advertiser_id", "campaign_id"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getgmvmaxcampaign": {
@@ -3999,9 +4419,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getpixel",
             "name": "get-pixel",
-            "output": ["ActionOutput_tiktok_ads_getpixel"],
+            "output": [
+                "ActionOutput_tiktok_ads_getpixel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getpixel", "ActionOutput_tiktok_ads_getpixel"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getpixel",
+                "ActionOutput_tiktok_ads_getpixel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4017,7 +4442,10 @@
                                 "description": "Pixel ID. Example: \"1234567890123456789\""
                             }
                         },
-                        "required": ["advertiser_id", "pixel_id"],
+                        "required": [
+                            "advertiser_id",
+                            "pixel_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getpixel": {
@@ -4087,7 +4515,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["pixel_id"],
+                        "required": [
+                            "pixel_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4100,9 +4530,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getsmartplusad",
             "name": "get-smart-plus-ad",
-            "output": ["ActionOutput_tiktok_ads_getsmartplusad"],
+            "output": [
+                "ActionOutput_tiktok_ads_getsmartplusad"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getsmartplusad", "ActionOutput_tiktok_ads_getsmartplusad"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getsmartplusad",
+                "ActionOutput_tiktok_ads_getsmartplusad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4178,7 +4613,9 @@
                                 }
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getsmartplusad": {
@@ -4211,7 +4648,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["ads"],
+                        "required": [
+                            "ads"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4224,9 +4663,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getsmartplusadgroup",
             "name": "get-smart-plus-adgroup",
-            "output": ["ActionOutput_tiktok_ads_getsmartplusadgroup"],
+            "output": [
+                "ActionOutput_tiktok_ads_getsmartplusadgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getsmartplusadgroup", "ActionOutput_tiktok_ads_getsmartplusadgroup"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getsmartplusadgroup",
+                "ActionOutput_tiktok_ads_getsmartplusadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4242,7 +4686,10 @@
                                 "description": "Advertiser ID. Example: \"7644143197428744199\""
                             }
                         },
-                        "required": ["adgroup_id", "advertiser_id"],
+                        "required": [
+                            "adgroup_id",
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getsmartplusadgroup": {
@@ -4335,7 +4782,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["adgroup_id", "campaign_id", "advertiser_id"],
+                        "required": [
+                            "adgroup_id",
+                            "campaign_id",
+                            "advertiser_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -4348,9 +4799,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_getsmartpluscampaign",
             "name": "get-smart-plus-campaign",
-            "output": ["ActionOutput_tiktok_ads_getsmartpluscampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_getsmartpluscampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_getsmartpluscampaign", "ActionOutput_tiktok_ads_getsmartpluscampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_getsmartpluscampaign",
+                "ActionOutput_tiktok_ads_getsmartpluscampaign"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4374,7 +4830,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_getsmartpluscampaign": {
@@ -4425,7 +4883,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["campaign_id", "campaign_name", "advertiser_id"],
+                                    "required": [
+                                        "campaign_id",
+                                        "campaign_name",
+                                        "advertiser_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4445,11 +4907,19 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["total_number", "page", "page_size", "total_page"],
+                                "required": [
+                                    "total_number",
+                                    "page",
+                                    "page_size",
+                                    "total_page"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["campaigns", "page_info"],
+                        "required": [
+                            "campaigns",
+                            "page_info"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4462,9 +4932,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_gettrendingcontent",
             "name": "get-trending-content",
-            "output": ["ActionOutput_tiktok_ads_gettrendingcontent"],
+            "output": [
+                "ActionOutput_tiktok_ads_gettrendingcontent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_gettrendingcontent", "ActionOutput_tiktok_ads_gettrendingcontent"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_gettrendingcontent",
+                "ActionOutput_tiktok_ads_gettrendingcontent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4492,7 +4967,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "discovery_type"],
+                        "required": [
+                            "advertiser_id",
+                            "discovery_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_gettrendingcontent": {
@@ -4534,9 +5012,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listadgroups",
             "name": "list-ad-groups",
-            "output": ["ActionOutput_tiktok_ads_listadgroups"],
+            "output": [
+                "ActionOutput_tiktok_ads_listadgroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listadgroups", "ActionOutput_tiktok_ads_listadgroups"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listadgroups",
+                "ActionOutput_tiktok_ads_listadgroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4576,7 +5059,9 @@
                                 "maximum": 1000
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_listadgroups": {
@@ -4639,7 +5124,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["adgroup_id"],
+                                    "required": [
+                                        "adgroup_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4662,11 +5149,18 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["page", "page_size", "total_number", "total_page"],
+                                "required": [
+                                    "page",
+                                    "page_size",
+                                    "total_number",
+                                    "total_page"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4679,9 +5173,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listads",
             "name": "list-ads",
-            "output": ["ActionOutput_tiktok_ads_listads"],
+            "output": [
+                "ActionOutput_tiktok_ads_listads"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listads", "ActionOutput_tiktok_ads_listads"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listads",
+                "ActionOutput_tiktok_ads_listads"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4769,7 +5268,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_listads": {
@@ -4789,7 +5290,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4802,9 +5305,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listadvertisers",
             "name": "list-advertisers",
-            "output": ["ActionOutput_tiktok_ads_listadvertisers"],
+            "output": [
+                "ActionOutput_tiktok_ads_listadvertisers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listadvertisers", "ActionOutput_tiktok_ads_listadvertisers"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listadvertisers",
+                "ActionOutput_tiktok_ads_listadvertisers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4842,7 +5350,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["advertiser_id"],
+                                    "required": [
+                                        "advertiser_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4850,7 +5360,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4863,9 +5375,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listaudiences",
             "name": "list-audiences",
-            "output": ["ActionOutput_tiktok_ads_listaudiences"],
+            "output": [
+                "ActionOutput_tiktok_ads_listaudiences"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listaudiences", "ActionOutput_tiktok_ads_listaudiences"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listaudiences",
+                "ActionOutput_tiktok_ads_listaudiences"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4887,7 +5404,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_listaudiences": {
@@ -4902,10 +5421,16 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "audience_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "cover_num": {
                                             "anyOf": [
@@ -4920,28 +5445,51 @@
                                             ]
                                         },
                                         "is_valid": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "is_expiring": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "is_creator": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "shared": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "calculate_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "create_time": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "expired_time": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["audience_id"],
+                                    "required": [
+                                        "audience_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4949,7 +5497,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4962,9 +5512,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listautomatedrules",
             "name": "list-automated-rules",
-            "output": ["ActionOutput_tiktok_ads_listautomatedrules"],
+            "output": [
+                "ActionOutput_tiktok_ads_listautomatedrules"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listautomatedrules", "ActionOutput_tiktok_ads_listautomatedrules"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listautomatedrules",
+                "ActionOutput_tiktok_ads_listautomatedrules"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5015,7 +5570,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_listautomatedrules": {
@@ -5067,7 +5624,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5080,9 +5639,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listcampaigns",
             "name": "list-campaigns",
-            "output": ["ActionOutput_tiktok_ads_listcampaigns"],
+            "output": [
+                "ActionOutput_tiktok_ads_listcampaigns"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listcampaigns", "ActionOutput_tiktok_ads_listcampaigns"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listcampaigns",
+                "ActionOutput_tiktok_ads_listcampaigns"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5171,7 +5735,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_listcampaigns": {
@@ -5222,7 +5788,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["campaign_id"],
+                                    "required": [
+                                        "campaign_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -5230,7 +5798,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaigns"],
+                        "required": [
+                            "campaigns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5243,9 +5813,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listcreativeassets",
             "name": "list-creative-assets",
-            "output": ["ActionOutput_tiktok_ads_listcreativeassets"],
+            "output": [
+                "ActionOutput_tiktok_ads_listcreativeassets"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listcreativeassets", "ActionOutput_tiktok_ads_listcreativeassets"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listcreativeassets",
+                "ActionOutput_tiktok_ads_listcreativeassets"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5310,7 +5885,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_listcreativeassets": {
@@ -5386,7 +5963,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5399,9 +5978,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_listpixels",
             "name": "list-pixels",
-            "output": ["ActionOutput_tiktok_ads_listpixels"],
+            "output": [
+                "ActionOutput_tiktok_ads_listpixels"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_listpixels", "ActionOutput_tiktok_ads_listpixels"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_listpixels",
+                "ActionOutput_tiktok_ads_listpixels"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5427,7 +6011,10 @@
                             "order_by": {
                                 "description": "Sort order. Defaults to EARLIEST_CREATE.",
                                 "type": "string",
-                                "enum": ["EARLIEST_CREATE", "LATEST_CREATE"]
+                                "enum": [
+                                    "EARLIEST_CREATE",
+                                    "LATEST_CREATE"
+                                ]
                             },
                             "filtering": {
                                 "description": "Additional filters for the pixel list.",
@@ -5450,7 +6037,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_listpixels": {
@@ -5483,7 +6072,10 @@
                                             "type": "string"
                                         },
                                         "partner_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "has_pcm_config": {},
                                         "events": {
@@ -5506,10 +6098,16 @@
                                             "type": "object",
                                             "properties": {
                                                 "owner_bc_id": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "asset_relation_status": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "updated_at": {
                                                     "type": "number"
@@ -5521,7 +6119,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["pixel_id"],
+                                    "required": [
+                                        "pixel_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -5529,7 +6129,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5542,9 +6144,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_runintegratedreport",
             "name": "run-integrated-report",
-            "output": ["ActionOutput_tiktok_ads_runintegratedreport"],
+            "output": [
+                "ActionOutput_tiktok_ads_runintegratedreport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_runintegratedreport", "ActionOutput_tiktok_ads_runintegratedreport"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_runintegratedreport",
+                "ActionOutput_tiktok_ads_runintegratedreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5632,7 +6239,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["advertiser_id", "report_type"],
+                        "required": [
+                            "advertiser_id",
+                            "report_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_runintegratedreport": {
@@ -5707,9 +6317,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updateadgroup",
             "name": "update-ad-group",
-            "output": ["ActionOutput_tiktok_ads_updateadgroup"],
+            "output": [
+                "ActionOutput_tiktok_ads_updateadgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updateadgroup", "ActionOutput_tiktok_ads_updateadgroup"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updateadgroup",
+                "ActionOutput_tiktok_ads_updateadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5845,7 +6460,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["advertiser_id", "adgroup_id"],
+                        "required": [
+                            "advertiser_id",
+                            "adgroup_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updateadgroup": {
@@ -5858,7 +6476,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["adgroup_id"],
+                        "required": [
+                            "adgroup_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5871,9 +6491,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updatead",
             "name": "update-ad",
-            "output": ["ActionOutput_tiktok_ads_updatead"],
+            "output": [
+                "ActionOutput_tiktok_ads_updatead"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updatead", "ActionOutput_tiktok_ads_updatead"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updatead",
+                "ActionOutput_tiktok_ads_updatead"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6119,7 +6744,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ad_id"],
+                                    "required": [
+                                        "ad_id"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Array of creative objects to update. Each object must include ad_id."
@@ -6129,7 +6756,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["advertiser_id", "adgroup_id", "creatives"],
+                        "required": [
+                            "advertiser_id",
+                            "adgroup_id",
+                            "creatives"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updatead": {
@@ -6157,7 +6788,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["code", "message", "request_id"],
+                        "required": [
+                            "code",
+                            "message",
+                            "request_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6170,9 +6805,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updateaudience",
             "name": "update-audience",
-            "output": ["ActionOutput_tiktok_ads_updateaudience"],
+            "output": [
+                "ActionOutput_tiktok_ads_updateaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updateaudience", "ActionOutput_tiktok_ads_updateaudience"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updateaudience",
+                "ActionOutput_tiktok_ads_updateaudience"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6195,7 +6835,11 @@
                             "action": {
                                 "description": "Modification type for file-based updates. Default: REPLACE.",
                                 "type": "string",
-                                "enum": ["APPEND", "REMOVE", "REPLACE"]
+                                "enum": [
+                                    "APPEND",
+                                    "REMOVE",
+                                    "REPLACE"
+                                ]
                             },
                             "file_paths": {
                                 "description": "Files to upload to update the Customer File audience.",
@@ -6207,14 +6851,20 @@
                             "audience_sub_type": {
                                 "description": "Audience sub type. Only NORMAL to REACH_FREQUENCY is supported.",
                                 "type": "string",
-                                "enum": ["NORMAL", "REACH_FREQUENCY"]
+                                "enum": [
+                                    "NORMAL",
+                                    "REACH_FREQUENCY"
+                                ]
                             },
                             "audience_enhancement": {
                                 "description": "Whether to enable audience enhancement.",
                                 "type": "boolean"
                             }
                         },
-                        "required": ["advertiser_id", "custom_audience_id"],
+                        "required": [
+                            "advertiser_id",
+                            "custom_audience_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updateaudience": {
@@ -6233,7 +6883,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["custom_audience_id"],
+                        "required": [
+                            "custom_audience_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6246,9 +6898,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updateautomatedrule",
             "name": "update-automated-rule",
-            "output": ["ActionOutput_tiktok_ads_updateautomatedrule"],
+            "output": [
+                "ActionOutput_tiktok_ads_updateautomatedrule"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updateautomatedrule", "ActionOutput_tiktok_ads_updateautomatedrule"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updateautomatedrule",
+                "ActionOutput_tiktok_ads_updateautomatedrule"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6325,11 +6982,15 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["type"],
+                                                        "required": [
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["subject_type"],
+                                                "required": [
+                                                    "subject_type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -6356,7 +7017,10 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["dimension", "pre_condition_type"],
+                                                "required": [
+                                                    "dimension",
+                                                    "pre_condition_type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -6388,7 +7052,9 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["subject_type"],
+                                                "required": [
+                                                    "subject_type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -6421,7 +7087,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["notification_type"],
+                                            "required": [
+                                                "notification_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "rule_exec_info": {
@@ -6459,12 +7127,19 @@
                                                                 }
                                                             }
                                                         },
-                                                        "required": ["date_type", "start_time", "end_time", "num"],
+                                                        "required": [
+                                                            "date_type",
+                                                            "start_time",
+                                                            "end_time",
+                                                            "num"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["exec_time_type"],
+                                            "required": [
+                                                "exec_time_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "tzone": {
@@ -6472,13 +7147,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["rule_id", "name", "actions", "apply_objects", "conditions", "notification", "rule_exec_info"],
+                                    "required": [
+                                        "rule_id",
+                                        "name",
+                                        "actions",
+                                        "apply_objects",
+                                        "conditions",
+                                        "notification",
+                                        "rule_exec_info"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of rules to update"
                             }
                         },
-                        "required": ["advertiser_id", "rules"],
+                        "required": [
+                            "advertiser_id",
+                            "rules"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updateautomatedrule": {
@@ -6511,9 +7197,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updatecampaign",
             "name": "update-campaign",
-            "output": ["ActionOutput_tiktok_ads_updatecampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_updatecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updatecampaign", "ActionOutput_tiktok_ads_updatecampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updatecampaign",
+                "ActionOutput_tiktok_ads_updatecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6548,7 +7239,10 @@
                                 }
                             }
                         },
-                        "required": ["advertiser_id", "campaign_id"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updatecampaign": {
@@ -6567,7 +7261,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "message"],
+                        "required": [
+                            "code",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6580,9 +7277,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updatecatalogfeed",
             "name": "update-catalog-feed",
-            "output": ["ActionOutput_tiktok_ads_updatecatalogfeed"],
+            "output": [
+                "ActionOutput_tiktok_ads_updatecatalogfeed"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updatecatalogfeed", "ActionOutput_tiktok_ads_updatecatalogfeed"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updatecatalogfeed",
+                "ActionOutput_tiktok_ads_updatecatalogfeed"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6649,7 +7351,13 @@
                                 "description": "Update mode. Example: \"INCREMENTAL\" or \"REPLACE\""
                             }
                         },
-                        "required": ["bc_id", "catalog_id", "feed_id", "feed_name", "update_mode"],
+                        "required": [
+                            "bc_id",
+                            "catalog_id",
+                            "feed_id",
+                            "feed_name",
+                            "update_mode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updatecatalogfeed": {
@@ -6665,7 +7373,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "message"],
+                        "required": [
+                            "code",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6678,9 +7389,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updategmvmaxcampaign",
             "name": "update-gmv-max-campaign",
-            "output": ["ActionOutput_tiktok_ads_updategmvmaxcampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_updategmvmaxcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updategmvmaxcampaign", "ActionOutput_tiktok_ads_updategmvmaxcampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updategmvmaxcampaign",
+                "ActionOutput_tiktok_ads_updategmvmaxcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6757,7 +7473,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["identity_id", "identity_type"],
+                                            "required": [
+                                                "identity_id",
+                                                "identity_type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -6799,7 +7518,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["identity_id", "identity_type"],
+                                            "required": [
+                                                "identity_id",
+                                                "identity_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "video_info": {
@@ -6810,7 +7532,9 @@
                                                     "description": "Video ID. Example: \"v123\""
                                                 }
                                             },
-                                            "required": ["video_id"],
+                                            "required": [
+                                                "video_id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -6853,7 +7577,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id", "campaign_id"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updategmvmaxcampaign": {
@@ -6872,7 +7599,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "message"],
+                        "required": [
+                            "code",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6885,9 +7615,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updatepixel",
             "name": "update-pixel",
-            "output": ["ActionOutput_tiktok_ads_updatepixel"],
+            "output": [
+                "ActionOutput_tiktok_ads_updatepixel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updatepixel", "ActionOutput_tiktok_ads_updatepixel"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updatepixel",
+                "ActionOutput_tiktok_ads_updatepixel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6920,7 +7655,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id", "pixel_id", "pixel_name"],
+                        "required": [
+                            "advertiser_id",
+                            "pixel_id",
+                            "pixel_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updatepixel": {
@@ -6933,7 +7672,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pixel_id", "pixel_name"],
+                        "required": [
+                            "pixel_id",
+                            "pixel_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6946,9 +7688,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updatesmartplusad",
             "name": "update-smart-plus-ad",
-            "output": ["ActionOutput_tiktok_ads_updatesmartplusad"],
+            "output": [
+                "ActionOutput_tiktok_ads_updatesmartplusad"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updatesmartplusad", "ActionOutput_tiktok_ads_updatesmartplusad"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updatesmartplusad",
+                "ActionOutput_tiktok_ads_updatesmartplusad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -7041,11 +7788,15 @@
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["ad_format"],
+                                            "required": [
+                                                "ad_format"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["creative_info"],
+                                    "required": [
+                                        "creative_info"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -7157,7 +7908,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id", "smart_plus_ad_id"],
+                        "required": [
+                            "advertiser_id",
+                            "smart_plus_ad_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updatesmartplusad": {
@@ -7173,7 +7927,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["smart_plus_ad_id"],
+                        "required": [
+                            "smart_plus_ad_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7186,9 +7942,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updatesmartplusadgroup",
             "name": "update-smart-plus-adgroup",
-            "output": ["ActionOutput_tiktok_ads_updatesmartplusadgroup"],
+            "output": [
+                "ActionOutput_tiktok_ads_updatesmartplusadgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updatesmartplusadgroup", "ActionOutput_tiktok_ads_updatesmartplusadgroup"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updatesmartplusadgroup",
+                "ActionOutput_tiktok_ads_updatesmartplusadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -7423,7 +8184,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["advertiser_id", "adgroup_id"],
+                        "required": [
+                            "advertiser_id",
+                            "adgroup_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updatesmartplusadgroup": {
@@ -7439,7 +8203,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["adgroup_id"],
+                        "required": [
+                            "adgroup_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7452,9 +8218,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_updatesmartpluscampaign",
             "name": "update-smart-plus-campaign",
-            "output": ["ActionOutput_tiktok_ads_updatesmartpluscampaign"],
+            "output": [
+                "ActionOutput_tiktok_ads_updatesmartpluscampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_updatesmartpluscampaign", "ActionOutput_tiktok_ads_updatesmartpluscampaign"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_updatesmartpluscampaign",
+                "ActionOutput_tiktok_ads_updatesmartpluscampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -7482,7 +8253,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "campaign_id"],
+                        "required": [
+                            "advertiser_id",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_updatesmartpluscampaign": {
@@ -7495,7 +8269,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7508,9 +8284,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_uploadimage",
             "name": "upload-image",
-            "output": ["ActionOutput_tiktok_ads_uploadimage"],
+            "output": [
+                "ActionOutput_tiktok_ads_uploadimage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_uploadimage", "ActionOutput_tiktok_ads_uploadimage"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_uploadimage",
+                "ActionOutput_tiktok_ads_uploadimage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -7531,7 +8312,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "image_url"],
+                        "required": [
+                            "advertiser_id",
+                            "image_url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_uploadimage": {
@@ -7574,7 +8358,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["image_id"],
+                        "required": [
+                            "image_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7587,9 +8373,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_ads_uploadvideo",
             "name": "upload-video",
-            "output": ["ActionOutput_tiktok_ads_uploadvideo"],
+            "output": [
+                "ActionOutput_tiktok_ads_uploadvideo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_ads_uploadvideo", "ActionOutput_tiktok_ads_uploadvideo"],
+            "usedModels": [
+                "ActionInput_tiktok_ads_uploadvideo",
+                "ActionOutput_tiktok_ads_uploadvideo"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -7602,7 +8393,10 @@
                             },
                             "upload_type": {
                                 "type": "string",
-                                "enum": ["UPLOAD_BY_URL", "UPLOAD_BY_VIDEO_ID"],
+                                "enum": [
+                                    "UPLOAD_BY_URL",
+                                    "UPLOAD_BY_VIDEO_ID"
+                                ],
                                 "description": "Upload method. UPLOAD_BY_URL or UPLOAD_BY_VIDEO_ID"
                             },
                             "video_url": {
@@ -7634,7 +8428,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["advertiser_id", "upload_type"],
+                        "required": [
+                            "advertiser_id",
+                            "upload_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_ads_uploadvideo": {
@@ -7653,7 +8450,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["video_id"],
+                        "required": [
+                            "video_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7674,12 +8473,16 @@
             ],
             "input": null,
             "name": "ad-groups",
-            "output": ["AdGroup"],
+            "output": [
+                "AdGroup"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AdGroup"],
+            "usedModels": [
+                "AdGroup"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7739,7 +8542,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7758,12 +8563,17 @@
             ],
             "input": "SyncMetadata_tiktok_ads_ads",
             "name": "ads",
-            "output": ["Ad"],
+            "output": [
+                "Ad"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Ad", "SyncMetadata_tiktok_ads_ads"],
+            "usedModels": [
+                "Ad",
+                "SyncMetadata_tiktok_ads_ads"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7799,7 +8609,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_tiktok_ads_ads": {
@@ -7809,12 +8621,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7828,12 +8644,16 @@
             ],
             "input": null,
             "name": "advertisers",
-            "output": ["Advertiser"],
+            "output": [
+                "Advertiser"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Advertiser"],
+            "usedModels": [
+                "Advertiser"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7866,7 +8686,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7885,12 +8707,17 @@
             ],
             "input": "SyncMetadata_tiktok_ads_audiences",
             "name": "audiences",
-            "output": ["Audience"],
+            "output": [
+                "Audience"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Audience", "SyncMetadata_tiktok_ads_audiences"],
+            "usedModels": [
+                "Audience",
+                "SyncMetadata_tiktok_ads_audiences"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7932,7 +8759,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_tiktok_ads_audiences": {
@@ -7942,12 +8771,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7961,12 +8794,17 @@
             ],
             "input": "SyncMetadata_tiktok_ads_automatedrules",
             "name": "automated-rules",
-            "output": ["AutomatedRule"],
+            "output": [
+                "AutomatedRule"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AutomatedRule", "SyncMetadata_tiktok_ads_automatedrules"],
+            "usedModels": [
+                "AutomatedRule",
+                "SyncMetadata_tiktok_ads_automatedrules"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8037,7 +8875,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "SyncMetadata_tiktok_ads_automatedrules": {
@@ -8047,7 +8887,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -8066,12 +8908,17 @@
             ],
             "input": "SyncMetadata_tiktok_ads_campaigns",
             "name": "campaigns",
-            "output": ["Campaign"],
+            "output": [
+                "Campaign"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Campaign", "SyncMetadata_tiktok_ads_campaigns"],
+            "usedModels": [
+                "Campaign",
+                "SyncMetadata_tiktok_ads_campaigns"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8119,7 +8966,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "campaign_id", "advertiser_id"],
+                        "required": [
+                            "id",
+                            "campaign_id",
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_tiktok_ads_campaigns": {
@@ -8129,12 +8980,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -8148,12 +9003,17 @@
             ],
             "input": "SyncMetadata_tiktok_ads_catalogs",
             "name": "catalogs",
-            "output": ["Catalog"],
+            "output": [
+                "Catalog"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Catalog", "SyncMetadata_tiktok_ads_catalogs"],
+            "usedModels": [
+                "Catalog",
+                "SyncMetadata_tiktok_ads_catalogs"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8207,12 +9067,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["feed_id"],
+                                    "required": [
+                                        "feed_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "catalog_id"],
+                        "required": [
+                            "id",
+                            "catalog_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_tiktok_ads_catalogs": {
@@ -8225,7 +9090,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -8244,12 +9111,17 @@
             ],
             "input": "SyncMetadata_tiktok_ads_creativeassets",
             "name": "creative-assets",
-            "output": ["CreativeAsset"],
+            "output": [
+                "CreativeAsset"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CreativeAsset", "SyncMetadata_tiktok_ads_creativeassets"],
+            "usedModels": [
+                "CreativeAsset",
+                "SyncMetadata_tiktok_ads_creativeassets"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8288,7 +9160,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "image_id"],
+                        "required": [
+                            "id",
+                            "image_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_tiktok_ads_creativeassets": {
@@ -8298,12 +9173,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -8317,12 +9196,16 @@
             ],
             "input": null,
             "name": "pixels",
-            "output": ["Pixel"],
+            "output": [
+                "Pixel"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Pixel"],
+            "usedModels": [
+                "Pixel"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8358,7 +9241,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -8377,12 +9262,17 @@
             ],
             "input": "SyncMetadata_tiktok_ads_reports",
             "name": "reports",
-            "output": ["ReportRow"],
+            "output": [
+                "ReportRow"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ReportRow", "SyncMetadata_tiktok_ads_reports"],
+            "usedModels": [
+                "ReportRow",
+                "SyncMetadata_tiktok_ads_reports"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8408,7 +9298,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "dimensions", "metrics"],
+                        "required": [
+                            "id",
+                            "dimensions",
+                            "metrics"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_tiktok_ads_reports": {
@@ -8439,12 +9333,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "dimensions", "metrics"],
+                        "required": [
+                            "advertiser_id",
+                            "dimensions",
+                            "metrics"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

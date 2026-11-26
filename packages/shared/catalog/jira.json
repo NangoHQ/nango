@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_jira_addattachment",
             "name": "add-attachment",
-            "output": ["ActionOutput_jira_addattachment"],
-            "scopes": ["write:jira-work", "read:jira-work"],
-            "usedModels": ["ActionInput_jira_addattachment", "ActionOutput_jira_addattachment"],
+            "output": [
+                "ActionOutput_jira_addattachment"
+            ],
+            "scopes": [
+                "write:jira-work",
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_addattachment",
+                "ActionOutput_jira_addattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -40,11 +48,18 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["content", "filename", "contentType"],
+                                "required": [
+                                    "content",
+                                    "filename",
+                                    "contentType"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["issueIdOrKey", "file"],
+                        "required": [
+                            "issueIdOrKey",
+                            "file"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_addattachment": {
@@ -66,7 +81,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "filename"],
+                        "required": [
+                            "id",
+                            "filename"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -79,9 +97,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_addcomment",
             "name": "add-comment",
-            "output": ["ActionOutput_jira_addcomment"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_addcomment", "ActionOutput_jira_addcomment"],
+            "output": [
+                "ActionOutput_jira_addcomment"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_addcomment",
+                "ActionOutput_jira_addcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -97,7 +122,10 @@
                                 "description": "The plain text content of the comment to add."
                             }
                         },
-                        "required": ["issueIdOrKey", "body"],
+                        "required": [
+                            "issueIdOrKey",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_addcomment": {
@@ -124,7 +152,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["accountId", "displayName"],
+                                "required": [
+                                    "accountId",
+                                    "displayName"
+                                ],
                                 "additionalProperties": false
                             },
                             "created": {
@@ -136,7 +167,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "self"],
+                        "required": [
+                            "id",
+                            "self"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -149,9 +183,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_addwatcher",
             "name": "add-watcher",
-            "output": ["ActionOutput_jira_addwatcher"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_addwatcher", "ActionOutput_jira_addwatcher"],
+            "output": [
+                "ActionOutput_jira_addwatcher"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_addwatcher",
+                "ActionOutput_jira_addwatcher"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -167,7 +208,10 @@
                                 "description": "The account ID of the user to add as a watcher. Example: \"5b10ac8d82e05b22cc7d4ef5\""
                             }
                         },
-                        "required": ["issueIdOrKey", "accountId"],
+                        "required": [
+                            "issueIdOrKey",
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_addwatcher": {
@@ -180,7 +224,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -193,9 +240,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_addworklog",
             "name": "add-worklog",
-            "output": ["ActionOutput_jira_addworklog"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_addworklog", "ActionOutput_jira_addworklog"],
+            "output": [
+                "ActionOutput_jira_addworklog"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_addworklog",
+                "ActionOutput_jira_addworklog"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -219,7 +273,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issue_id_or_key", "time_spent_seconds"],
+                        "required": [
+                            "issue_id_or_key",
+                            "time_spent_seconds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_addworklog": {
@@ -264,7 +321,10 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["group", "role"]
+                                        "enum": [
+                                            "group",
+                                            "role"
+                                        ]
                                     },
                                     "value": {
                                         "type": "string"
@@ -273,11 +333,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "value"],
+                                "required": [
+                                    "type",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "issue_id"],
+                        "required": [
+                            "id",
+                            "issue_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -290,9 +356,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_createissuelink",
             "name": "create-issue-link",
-            "output": ["ActionOutput_jira_createissuelink"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_createissuelink", "ActionOutput_jira_createissuelink"],
+            "output": [
+                "ActionOutput_jira_createissuelink"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_createissuelink",
+                "ActionOutput_jira_createissuelink"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -312,7 +385,11 @@
                                 "description": "The issue key for the outward side of the link (the issue that affects or blocks the other). Example: \"PROJ-456\""
                             }
                         },
-                        "required": ["type", "inwardIssueKey", "outwardIssueKey"],
+                        "required": [
+                            "type",
+                            "inwardIssueKey",
+                            "outwardIssueKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_createissuelink": {
@@ -331,7 +408,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "linkType", "inwardIssueKey", "outwardIssueKey"],
+                        "required": [
+                            "success",
+                            "linkType",
+                            "inwardIssueKey",
+                            "outwardIssueKey"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -344,9 +426,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_createissue",
             "name": "create-issue",
-            "output": ["ActionOutput_jira_createissue"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_createissue", "ActionOutput_jira_createissue"],
+            "output": [
+                "ActionOutput_jira_createissue"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_createissue",
+                "ActionOutput_jira_createissue"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -392,7 +481,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["fields"],
+                        "required": [
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_createissue": {
@@ -418,7 +509,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "key", "self", "url"],
+                        "required": [
+                            "id",
+                            "key",
+                            "self",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -431,9 +527,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_deleteattachment",
             "name": "delete-attachment",
-            "output": ["ActionOutput_jira_deleteattachment"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_deleteattachment", "ActionOutput_jira_deleteattachment"],
+            "output": [
+                "ActionOutput_jira_deleteattachment"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_deleteattachment",
+                "ActionOutput_jira_deleteattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -445,7 +548,9 @@
                                 "description": "The ID of the attachment to delete. Example: \"10001\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_deleteattachment": {
@@ -458,7 +563,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -471,9 +579,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_jira_deletecomment"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_deletecomment", "ActionOutput_jira_deletecomment"],
+            "output": [
+                "ActionOutput_jira_deletecomment"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_deletecomment",
+                "ActionOutput_jira_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -497,7 +612,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issueIdOrKey", "commentId"],
+                        "required": [
+                            "issueIdOrKey",
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_deletecomment": {
@@ -510,7 +628,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -523,9 +644,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_deleteissuelink",
             "name": "delete-issue-link",
-            "output": ["ActionOutput_jira_deleteissuelink"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_deleteissuelink", "ActionOutput_jira_deleteissuelink"],
+            "output": [
+                "ActionOutput_jira_deleteissuelink"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_deleteissuelink",
+                "ActionOutput_jira_deleteissuelink"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -537,7 +665,9 @@
                                 "description": "The ID of the issue link to delete. Example: \"10001\""
                             }
                         },
-                        "required": ["linkId"],
+                        "required": [
+                            "linkId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_deleteissuelink": {
@@ -550,7 +680,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "linkId"],
+                        "required": [
+                            "success",
+                            "linkId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -563,9 +696,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_deleteissue",
             "name": "delete-issue",
-            "output": ["ActionOutput_jira_deleteissue"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_deleteissue", "ActionOutput_jira_deleteissue"],
+            "output": [
+                "ActionOutput_jira_deleteissue"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_deleteissue",
+                "ActionOutput_jira_deleteissue"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -581,7 +721,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_deleteissue": {
@@ -594,7 +736,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "issueIdOrKey"],
+                        "required": [
+                            "success",
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -607,9 +752,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_deleteworklog",
             "name": "delete-worklog",
-            "output": ["ActionOutput_jira_deleteworklog"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_deleteworklog", "ActionOutput_jira_deleteworklog"],
+            "output": [
+                "ActionOutput_jira_deleteworklog"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_deleteworklog",
+                "ActionOutput_jira_deleteworklog"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -625,7 +777,10 @@
                                 "description": "The ID of the worklog to delete. Example: \"10011\""
                             }
                         },
-                        "required": ["issueIdOrKey", "worklogId"],
+                        "required": [
+                            "issueIdOrKey",
+                            "worklogId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_deleteworklog": {
@@ -641,7 +796,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "issueIdOrKey", "worklogId"],
+                        "required": [
+                            "success",
+                            "issueIdOrKey",
+                            "worklogId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -654,9 +813,17 @@
             "endpoint": null,
             "input": "ActionInput_jira_getcreateissuemetadata",
             "name": "get-create-issue-metadata",
-            "output": ["ActionOutput_jira_getcreateissuemetadata"],
-            "scopes": ["read:jira-work", "read:issue-meta:jira"],
-            "usedModels": ["ActionInput_jira_getcreateissuemetadata", "ActionOutput_jira_getcreateissuemetadata"],
+            "output": [
+                "ActionOutput_jira_getcreateissuemetadata"
+            ],
+            "scopes": [
+                "read:jira-work",
+                "read:issue-meta:jira"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getcreateissuemetadata",
+                "ActionOutput_jira_getcreateissuemetadata"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -721,7 +888,11 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "key", "name"],
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -738,9 +909,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_geteditissuemetadata",
             "name": "get-edit-issue-metadata",
-            "output": ["ActionOutput_jira_geteditissuemetadata"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_geteditissuemetadata", "ActionOutput_jira_geteditissuemetadata"],
+            "output": [
+                "ActionOutput_jira_geteditissuemetadata"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_geteditissuemetadata",
+                "ActionOutput_jira_geteditissuemetadata"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -752,7 +930,9 @@
                                 "description": "The ID or key of the issue. Example: \"10000\" or \"PROJ-123\""
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_geteditissuemetadata": {
@@ -760,7 +940,9 @@
                         "properties": {
                             "fields": {}
                         },
-                        "required": ["fields"],
+                        "required": [
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -773,9 +955,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getfield",
             "name": "get-field",
-            "output": ["ActionOutput_jira_getfield"],
-            "scopes": ["read:field:jira"],
-            "usedModels": ["ActionInput_jira_getfield", "ActionOutput_jira_getfield"],
+            "output": [
+                "ActionOutput_jira_getfield"
+            ],
+            "scopes": [
+                "read:field:jira"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getfield",
+                "ActionOutput_jira_getfield"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -787,7 +976,9 @@
                                 "description": "The ID of the field to retrieve. For example: \"summary\", \"description\", or \"customfield_10101\""
                             }
                         },
-                        "required": ["fieldId"],
+                        "required": [
+                            "fieldId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getfield": {
@@ -842,7 +1033,15 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "custom", "clauseNames", "navigable", "orderable", "searchable"],
+                        "required": [
+                            "id",
+                            "name",
+                            "custom",
+                            "clauseNames",
+                            "navigable",
+                            "orderable",
+                            "searchable"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -855,9 +1054,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getissuechangelog",
             "name": "get-issue-changelog",
-            "output": ["ActionOutput_jira_getissuechangelog"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_getissuechangelog", "ActionOutput_jira_getissuechangelog"],
+            "output": [
+                "ActionOutput_jira_getissuechangelog"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getissuechangelog",
+                "ActionOutput_jira_getissuechangelog"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -874,7 +1080,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getissuechangelog": {
@@ -933,16 +1141,28 @@
                                                         "type": "string"
                                                     },
                                                     "from": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "fromString": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "to": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "toString": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -956,7 +1176,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "created", "items"],
+                                    "required": [
+                                        "id",
+                                        "created",
+                                        "items"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -973,7 +1197,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["changelog"],
+                        "required": [
+                            "changelog"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -986,9 +1212,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getissuetype",
             "name": "get-issue-type",
-            "output": ["ActionOutput_jira_getissuetype"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_getissuetype", "ActionOutput_jira_getissuetype"],
+            "output": [
+                "ActionOutput_jira_getissuetype"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getissuetype",
+                "ActionOutput_jira_getissuetype"
+            ],
             "version": "0.0.1",
             "json_schema": {
                 "definitions": {
@@ -1000,7 +1233,9 @@
                                 "description": "The ID of the issue type to retrieve."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getissuetype": {
@@ -1085,19 +1320,31 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "id", "name"],
+                                                "required": [
+                                                    "self",
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "self"],
+                        "required": [
+                            "id",
+                            "name",
+                            "self"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1110,9 +1357,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getissue",
             "name": "get-issue",
-            "output": ["ActionOutput_jira_getissue"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_getissue", "ActionOutput_jira_getissue"],
+            "output": [
+                "ActionOutput_jira_getissue"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getissue",
+                "ActionOutput_jira_getissue"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1136,7 +1390,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getissue": {
@@ -1155,7 +1411,11 @@
                                 "description": "The REST API URL of the issue"
                             }
                         },
-                        "required": ["id", "key", "self"],
+                        "required": [
+                            "id",
+                            "key",
+                            "self"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1168,9 +1428,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getmyself",
             "name": "get-myself",
-            "output": ["ActionOutput_jira_getmyself"],
-            "scopes": ["read:jira-user"],
-            "usedModels": ["ActionInput_jira_getmyself", "ActionOutput_jira_getmyself"],
+            "output": [
+                "ActionOutput_jira_getmyself"
+            ],
+            "scopes": [
+                "read:jira-user"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getmyself",
+                "ActionOutput_jira_getmyself"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1229,7 +1496,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["account_id", "display_name"],
+                        "required": [
+                            "account_id",
+                            "display_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1242,9 +1512,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getpriority",
             "name": "get-priority",
-            "output": ["ActionOutput_jira_getpriority"],
-            "scopes": ["read:priority:jira"],
-            "usedModels": ["ActionInput_jira_getpriority", "ActionOutput_jira_getpriority"],
+            "output": [
+                "ActionOutput_jira_getpriority"
+            ],
+            "scopes": [
+                "read:priority:jira"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getpriority",
+                "ActionOutput_jira_getpriority"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1256,7 +1533,9 @@
                                 "description": "The priority ID. Example: \"1\""
                             }
                         },
-                        "required": ["priorityId"],
+                        "required": [
+                            "priorityId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getpriority": {
@@ -1281,7 +1560,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1294,9 +1576,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_jira_getproject"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_getproject", "ActionOutput_jira_getproject"],
+            "output": [
+                "ActionOutput_jira_getproject"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getproject",
+                "ActionOutput_jira_getproject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1308,7 +1597,9 @@
                                 "description": "The ID or key of the project to retrieve. Example: \"10000\" or \"PROJ\""
                             }
                         },
-                        "required": ["projectIdOrKey"],
+                        "required": [
+                            "projectIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getproject": {
@@ -1372,7 +1663,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "key", "name", "projectType"],
+                        "required": [
+                            "id",
+                            "key",
+                            "name",
+                            "projectType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1385,9 +1681,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getstatus",
             "name": "get-status",
-            "output": ["ActionOutput_jira_getstatus"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_getstatus", "ActionOutput_jira_getstatus"],
+            "output": [
+                "ActionOutput_jira_getstatus"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getstatus",
+                "ActionOutput_jira_getstatus"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1399,7 +1702,9 @@
                                 "description": "Status ID or name. Example: \"10001\" or \"To Do\""
                             }
                         },
-                        "required": ["statusIdOrName"],
+                        "required": [
+                            "statusIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getstatus": {
@@ -1430,11 +1735,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "key", "colorName", "name"],
+                                "required": [
+                                    "id",
+                                    "key",
+                                    "colorName",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1447,9 +1760,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_jira_getuser"],
-            "scopes": ["read:jira-user"],
-            "usedModels": ["ActionInput_jira_getuser", "ActionOutput_jira_getuser"],
+            "output": [
+                "ActionOutput_jira_getuser"
+            ],
+            "scopes": [
+                "read:jira-user"
+            ],
+            "usedModels": [
+                "ActionInput_jira_getuser",
+                "ActionOutput_jira_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1465,7 +1785,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_getuser": {
@@ -1513,7 +1835,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "self"],
+                                    "required": [
+                                        "name",
+                                        "self"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1529,12 +1854,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["key", "name"],
+                                    "required": [
+                                        "key",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1547,9 +1877,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listfields",
             "name": "list-fields",
-            "output": ["ActionOutput_jira_listfields"],
-            "scopes": ["read:field:jira"],
-            "usedModels": ["ActionInput_jira_listfields", "ActionOutput_jira_listfields"],
+            "output": [
+                "ActionOutput_jira_listfields"
+            ],
+            "scopes": [
+                "read:field:jira"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listfields",
+                "ActionOutput_jira_listfields"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1612,12 +1949,17 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["fields"],
+                        "required": [
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1630,9 +1972,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listissuecomments",
             "name": "list-issue-comments",
-            "output": ["ActionOutput_jira_listissuecomments"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_listissuecomments", "ActionOutput_jira_listissuecomments"],
+            "output": [
+                "ActionOutput_jira_listissuecomments"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listissuecomments",
+                "ActionOutput_jira_listissuecomments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1654,14 +2003,21 @@
                             "orderBy": {
                                 "description": "Order comments by created or updated date. Use - prefix for descending order.",
                                 "type": "string",
-                                "enum": ["created", "-created", "updated", "-updated"]
+                                "enum": [
+                                    "created",
+                                    "-created",
+                                    "updated",
+                                    "-updated"
+                                ]
                             },
                             "expand": {
                                 "description": "A comma-separated list of fields to expand in the response. Example: \"renderedBody\"",
                                 "type": "string"
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_listissuecomments": {
@@ -1691,7 +2047,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["accountId", "displayName"],
+                                            "required": [
+                                                "accountId",
+                                                "displayName"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "body": {},
@@ -1717,7 +2076,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["accountId", "displayName"],
+                                            "required": [
+                                                "accountId",
+                                                "displayName"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "self": {
@@ -1736,11 +2098,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1754,7 +2120,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["comments", "maxResults", "startAt", "total"],
+                        "required": [
+                            "comments",
+                            "maxResults",
+                            "startAt",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1767,9 +2138,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listissuetypes",
             "name": "list-issue-types",
-            "output": ["ActionOutput_jira_listissuetypes"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_listissuetypes", "ActionOutput_jira_listissuetypes"],
+            "output": [
+                "ActionOutput_jira_listissuetypes"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listissuetypes",
+                "ActionOutput_jira_listissuetypes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1808,12 +2186,17 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["issueTypes"],
+                        "required": [
+                            "issueTypes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1826,9 +2209,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listpriorities",
             "name": "list-priorities",
-            "output": ["ActionOutput_jira_listpriorities"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_listpriorities", "ActionOutput_jira_listpriorities"],
+            "output": [
+                "ActionOutput_jira_listpriorities"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listpriorities",
+                "ActionOutput_jira_listpriorities"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1872,7 +2262,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "icon_url", "is_default", "self", "status_color"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "icon_url",
+                                        "is_default",
+                                        "self",
+                                        "status_color"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1880,7 +2277,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["priorities"],
+                        "required": [
+                            "priorities"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1893,9 +2292,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listprojectcomponents",
             "name": "list-project-components",
-            "output": ["ActionOutput_jira_listprojectcomponents"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_listprojectcomponents", "ActionOutput_jira_listprojectcomponents"],
+            "output": [
+                "ActionOutput_jira_listprojectcomponents"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listprojectcomponents",
+                "ActionOutput_jira_listprojectcomponents"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1907,7 +2313,9 @@
                                 "description": "The ID or key of the project to list components for. Example: \"10000\" or \"PROJ\""
                             }
                         },
-                        "required": ["projectIdOrKey"],
+                        "required": [
+                            "projectIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_listprojectcomponents": {
@@ -1928,7 +2336,10 @@
                                         },
                                         "description": {
                                             "description": "Component description",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "project": {
                                             "description": "Project key the component belongs to",
@@ -1955,7 +2366,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of project components"
@@ -1965,7 +2379,10 @@
                                 "description": "Number of components returned"
                             }
                         },
-                        "required": ["components", "count"],
+                        "required": [
+                            "components",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1978,9 +2395,17 @@
             "endpoint": null,
             "input": "ActionInput_jira_listprojectversions",
             "name": "list-project-versions",
-            "output": ["ActionOutput_jira_listprojectversions"],
-            "scopes": ["read:jira-work", "read:project-version:jira"],
-            "usedModels": ["ActionInput_jira_listprojectversions", "ActionOutput_jira_listprojectversions"],
+            "output": [
+                "ActionOutput_jira_listprojectversions"
+            ],
+            "scopes": [
+                "read:jira-work",
+                "read:project-version:jira"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listprojectversions",
+                "ActionOutput_jira_listprojectversions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2027,10 +2452,16 @@
                             "status": {
                                 "description": "Filter by version status",
                                 "type": "string",
-                                "enum": ["released", "unreleased", "archived"]
+                                "enum": [
+                                    "released",
+                                    "unreleased",
+                                    "archived"
+                                ]
                             }
                         },
-                        "required": ["projectIdOrKey"],
+                        "required": [
+                            "projectIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_listprojectversions": {
@@ -2096,7 +2527,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2107,7 +2541,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["versions"],
+                        "required": [
+                            "versions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2120,9 +2556,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_jira_listprojects"],
-            "scopes": ["read:project:jira"],
-            "usedModels": ["ActionInput_jira_listprojects", "ActionOutput_jira_listprojects"],
+            "output": [
+                "ActionOutput_jira_listprojects"
+            ],
+            "scopes": [
+                "read:project:jira"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listprojects",
+                "ActionOutput_jira_listprojects"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2196,7 +2639,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "simplified": {
@@ -2218,11 +2664,18 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["totalIssueCount"],
+                                            "required": [
+                                                "totalIssueCount"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "key", "name", "self"],
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "name",
+                                        "self"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2236,7 +2689,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["projects", "total", "isLast"],
+                        "required": [
+                            "projects",
+                            "total",
+                            "isLast"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2249,9 +2706,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_liststatuses",
             "name": "list-statuses",
-            "output": ["ActionOutput_jira_liststatuses"],
-            "scopes": ["read:workflow:jira"],
-            "usedModels": ["ActionInput_jira_liststatuses", "ActionOutput_jira_liststatuses"],
+            "output": [
+                "ActionOutput_jira_liststatuses"
+            ],
+            "scopes": [
+                "read:workflow:jira"
+            ],
+            "usedModels": [
+                "ActionInput_jira_liststatuses",
+                "ActionOutput_jira_liststatuses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2265,7 +2729,11 @@
                             "statusCategory": {
                                 "description": "Filter by status category",
                                 "type": "string",
-                                "enum": ["TODO", "IN_PROGRESS", "DONE"]
+                                "enum": [
+                                    "TODO",
+                                    "IN_PROGRESS",
+                                    "DONE"
+                                ]
                             },
                             "searchString": {
                                 "description": "Search string to filter statuses by name",
@@ -2308,7 +2776,10 @@
                                             "properties": {
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["GLOBAL", "PROJECT"]
+                                                    "enum": [
+                                                        "GLOBAL",
+                                                        "PROJECT"
+                                                    ]
                                                 },
                                                 "project": {
                                                     "type": "object",
@@ -2317,19 +2788,31 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "statusCategory": {
                                             "type": "string",
-                                            "enum": ["TODO", "IN_PROGRESS", "DONE"]
+                                            "enum": [
+                                                "TODO",
+                                                "IN_PROGRESS",
+                                                "DONE"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "statusCategory"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "statusCategory"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2357,7 +2840,13 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["statuses", "total", "startAt", "maxResults", "isLast"],
+                        "required": [
+                            "statuses",
+                            "total",
+                            "startAt",
+                            "maxResults",
+                            "isLast"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2370,9 +2859,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listtransitions",
             "name": "list-transitions",
-            "output": ["ActionOutput_jira_listtransitions"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_listtransitions", "ActionOutput_jira_listtransitions"],
+            "output": [
+                "ActionOutput_jira_listtransitions"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listtransitions",
+                "ActionOutput_jira_listtransitions"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2386,10 +2882,14 @@
                             "expand": {
                                 "description": "Additional fields to expand in the response",
                                 "type": "string",
-                                "enum": ["transitions.fields"]
+                                "enum": [
+                                    "transitions.fields"
+                                ]
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_listtransitions": {
@@ -2435,11 +2935,19 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "key", "colorName", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "key",
+                                                        "colorName",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "The status the transition moves the issue to"
                                         },
@@ -2484,13 +2992,19 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "to"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "to"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Available workflow transitions for the issue"
                             }
                         },
-                        "required": ["transitions"],
+                        "required": [
+                            "transitions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2503,9 +3017,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_jira_listusers"],
-            "scopes": ["read:jira-user"],
-            "usedModels": ["ActionInput_jira_listusers", "ActionOutput_jira_listusers"],
+            "output": [
+                "ActionOutput_jira_listusers"
+            ],
+            "scopes": [
+                "read:jira-user"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listusers",
+                "ActionOutput_jira_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2533,7 +3054,9 @@
                                 "maximum": 1000
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_listusers": {
@@ -2584,7 +3107,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["accountId"],
+                                    "required": [
+                                        "accountId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2594,7 +3119,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2607,9 +3134,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listwatchers",
             "name": "list-watchers",
-            "output": ["ActionOutput_jira_listwatchers"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_listwatchers", "ActionOutput_jira_listwatchers"],
+            "output": [
+                "ActionOutput_jira_listwatchers"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listwatchers",
+                "ActionOutput_jira_listwatchers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2621,7 +3155,9 @@
                                 "description": "The ID or key of the issue. Example: \"10001\" or \"PROJ-123\""
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_listwatchers": {
@@ -2666,12 +3202,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["accountId", "active", "displayName", "self"],
+                                    "required": [
+                                        "accountId",
+                                        "active",
+                                        "displayName",
+                                        "self"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["isWatching", "watchCount", "watchers"],
+                        "required": [
+                            "isWatching",
+                            "watchCount",
+                            "watchers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2684,9 +3229,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_listworklogs",
             "name": "list-worklogs",
-            "output": ["ActionOutput_jira_listworklogs"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_listworklogs", "ActionOutput_jira_listworklogs"],
+            "output": [
+                "ActionOutput_jira_listworklogs"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_listworklogs",
+                "ActionOutput_jira_listworklogs"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2706,7 +3258,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["issueIdOrKey"],
+                        "required": [
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_listworklogs": {
@@ -2842,7 +3396,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2859,7 +3415,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["worklogs"],
+                        "required": [
+                            "worklogs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2872,9 +3430,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_removewatcher",
             "name": "remove-watcher",
-            "output": ["ActionOutput_jira_removewatcher"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_removewatcher", "ActionOutput_jira_removewatcher"],
+            "output": [
+                "ActionOutput_jira_removewatcher"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_removewatcher",
+                "ActionOutput_jira_removewatcher"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2890,7 +3455,10 @@
                                 "description": "The accountId of the user to remove as a watcher. Example: \"5b10ac8d82e05b22cc7d4ef5\""
                             }
                         },
-                        "required": ["issueIdOrKey", "accountId"],
+                        "required": [
+                            "issueIdOrKey",
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_removewatcher": {
@@ -2905,7 +3473,10 @@
                                 "description": "The issue ID or key that was modified"
                             }
                         },
-                        "required": ["success", "issueIdOrKey"],
+                        "required": [
+                            "success",
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2918,9 +3489,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_searchissues",
             "name": "search-issues",
-            "output": ["ActionOutput_jira_searchissues"],
-            "scopes": ["read:jira-work"],
-            "usedModels": ["ActionInput_jira_searchissues", "ActionOutput_jira_searchissues"],
+            "output": [
+                "ActionOutput_jira_searchissues"
+            ],
+            "scopes": [
+                "read:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_searchissues",
+                "ActionOutput_jira_searchissues"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2958,7 +3536,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["jql"],
+                        "required": [
+                            "jql"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_searchissues": {
@@ -2986,7 +3566,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "key", "self"],
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "self"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3004,7 +3588,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issues", "total", "maxResults"],
+                        "required": [
+                            "issues",
+                            "total",
+                            "maxResults"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3017,9 +3605,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_transitionissue",
             "name": "transition-issue",
-            "output": ["ActionOutput_jira_transitionissue"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_transitionissue", "ActionOutput_jira_transitionissue"],
+            "output": [
+                "ActionOutput_jira_transitionissue"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_transitionissue",
+                "ActionOutput_jira_transitionissue"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3049,7 +3644,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["issueIdOrKey", "transitionId"],
+                        "required": [
+                            "issueIdOrKey",
+                            "transitionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_transitionissue": {
@@ -3062,7 +3660,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "issueIdOrKey"],
+                        "required": [
+                            "success",
+                            "issueIdOrKey"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3075,9 +3676,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_jira_updatecomment"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_updatecomment", "ActionOutput_jira_updatecomment"],
+            "output": [
+                "ActionOutput_jira_updatecomment"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_updatecomment",
+                "ActionOutput_jira_updatecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3103,7 +3711,10 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["role", "group"]
+                                        "enum": [
+                                            "role",
+                                            "group"
+                                        ]
                                     },
                                     "value": {
                                         "type": "string"
@@ -3112,7 +3723,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "notifyUsers": {
@@ -3124,7 +3737,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["issueIdOrKey", "commentId", "body"],
+                        "required": [
+                            "issueIdOrKey",
+                            "commentId",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_updatecomment": {
@@ -3188,7 +3805,10 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["role", "group"]
+                                        "enum": [
+                                            "role",
+                                            "group"
+                                        ]
                                     },
                                     "value": {
                                         "type": "string"
@@ -3197,11 +3817,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3214,9 +3838,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_updateissue",
             "name": "update-issue",
-            "output": ["ActionOutput_jira_updateissue"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_updateissue", "ActionOutput_jira_updateissue"],
+            "output": [
+                "ActionOutput_jira_updateissue"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_updateissue",
+                "ActionOutput_jira_updateissue"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3256,7 +3887,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["issue_id_or_key"],
+                        "required": [
+                            "issue_id_or_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_updateissue": {
@@ -3278,11 +3911,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "key", "self"],
+                                "required": [
+                                    "id",
+                                    "key",
+                                    "self"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3295,9 +3934,16 @@
             "endpoint": null,
             "input": "ActionInput_jira_updateworklog",
             "name": "update-worklog",
-            "output": ["ActionOutput_jira_updateworklog"],
-            "scopes": ["write:jira-work"],
-            "usedModels": ["ActionInput_jira_updateworklog", "ActionOutput_jira_updateworklog"],
+            "output": [
+                "ActionOutput_jira_updateworklog"
+            ],
+            "scopes": [
+                "write:jira-work"
+            ],
+            "usedModels": [
+                "ActionInput_jira_updateworklog",
+                "ActionOutput_jira_updateworklog"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3329,7 +3975,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issueIdOrKey", "worklogId"],
+                        "required": [
+                            "issueIdOrKey",
+                            "worklogId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_updateworklog": {
@@ -3402,7 +4051,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3423,12 +4074,18 @@
             ],
             "input": null,
             "name": "fields",
-            "output": ["Field"],
+            "output": [
+                "Field"
+            ],
             "runs": "every hour",
-            "scopes": ["read:field:jira"],
+            "scopes": [
+                "read:field:jira"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Field"],
+            "usedModels": [
+                "Field"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3479,7 +4136,9 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "description": {
@@ -3489,7 +4148,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "custom"],
+                        "required": [
+                            "id",
+                            "name",
+                            "custom"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3508,12 +4171,19 @@
             ],
             "input": "SyncMetadata_jira_issuetypes",
             "name": "issue-types",
-            "output": ["IssueType"],
+            "output": [
+                "IssueType"
+            ],
             "runs": "every hour",
-            "scopes": ["read:jira-work"],
+            "scopes": [
+                "read:jira-work"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["IssueType", "SyncMetadata_jira_issuetypes"],
+            "usedModels": [
+                "IssueType",
+                "SyncMetadata_jira_issuetypes"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3558,18 +4228,26 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["type", "project"],
+                                "required": [
+                                    "type",
+                                    "project"
+                                ],
                                 "additionalProperties": false
                             },
                             "self": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_jira_issuetypes": {
@@ -3600,12 +4278,19 @@
             ],
             "input": "SyncMetadata_jira_issues",
             "name": "issues",
-            "output": ["Issue"],
+            "output": [
+                "Issue"
+            ],
             "runs": "every hour",
-            "scopes": ["read:jira-work"],
+            "scopes": [
+                "read:jira-work"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Issue", "SyncMetadata_jira_issues"],
+            "usedModels": [
+                "Issue",
+                "SyncMetadata_jira_issues"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3666,7 +4351,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "key", "self"],
+                        "required": [
+                            "id",
+                            "key",
+                            "self"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_jira_issues": {
@@ -3686,7 +4375,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3700,12 +4391,18 @@
             ],
             "input": null,
             "name": "project-components",
-            "output": ["ProjectComponent"],
+            "output": [
+                "ProjectComponent"
+            ],
             "runs": "every hour",
-            "scopes": ["read:jira-work"],
+            "scopes": [
+                "read:jira-work"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProjectComponent"],
+            "usedModels": [
+                "ProjectComponent"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3744,12 +4441,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "projectId", "projectKey", "name"],
+                        "required": [
+                            "id",
+                            "projectId",
+                            "projectKey",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3763,12 +4467,20 @@
             ],
             "input": "SyncMetadata_jira_projectversions",
             "name": "project-versions",
-            "output": ["ProjectVersion"],
+            "output": [
+                "ProjectVersion"
+            ],
             "runs": "every hour",
-            "scopes": ["read:jira-work", "read:project-version:jira"],
+            "scopes": [
+                "read:jira-work",
+                "read:project-version:jira"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProjectVersion", "SyncMetadata_jira_projectversions"],
+            "usedModels": [
+                "ProjectVersion",
+                "SyncMetadata_jira_projectversions"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3810,7 +4522,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_jira_projectversions": {
@@ -3833,7 +4548,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3847,12 +4564,18 @@
             ],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["read:project:jira"],
+            "scopes": [
+                "read:project:jira"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "2.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3915,7 +4638,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "avatar_urls": {
@@ -3928,12 +4654,18 @@
                                 }
                             }
                         },
-                        "required": ["id", "key", "name"],
+                        "required": [
+                            "id",
+                            "key",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3947,12 +4679,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["read:jira-user"],
+            "scopes": [
+                "read:jira-user"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3988,12 +4726,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "accountId"],
+                        "required": [
+                            "id",
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

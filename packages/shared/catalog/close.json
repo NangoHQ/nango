@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_close_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_close_createcontact"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_createcontact", "ActionOutput_close_createcontact"],
+            "output": [
+                "ActionOutput_close_createcontact"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_createcontact",
+                "ActionOutput_close_createcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -39,10 +47,17 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["office", "home", "other"]
+                                            "enum": [
+                                                "office",
+                                                "home",
+                                                "other"
+                                            ]
                                         }
                                     },
-                                    "required": ["email", "type"],
+                                    "required": [
+                                        "email",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -57,10 +72,19 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["office", "home", "mobile", "direct", "other"]
+                                            "enum": [
+                                                "office",
+                                                "home",
+                                                "mobile",
+                                                "direct",
+                                                "other"
+                                            ]
                                         }
                                     },
-                                    "required": ["phone", "type"],
+                                    "required": [
+                                        "phone",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -77,12 +101,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["lead_id"],
+                        "required": [
+                            "lead_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_createcontact": {
@@ -115,7 +143,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["email", "type"],
+                                    "required": [
+                                        "email",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -131,13 +162,19 @@
                                             "type": "string"
                                         },
                                         "country": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone_formatted": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["phone", "type"],
+                                    "required": [
+                                        "phone",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -153,12 +190,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["url", "type"],
+                                    "required": [
+                                        "url",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["id", "lead_id"],
+                        "required": [
+                            "id",
+                            "lead_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -171,9 +214,17 @@
             "endpoint": null,
             "input": "ActionInput_close_createlead",
             "name": "create-lead",
-            "output": ["ActionOutput_close_createlead"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_createlead", "ActionOutput_close_createlead"],
+            "output": [
+                "ActionOutput_close_createlead"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_createlead",
+                "ActionOutput_close_createlead"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -245,7 +296,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["email"],
+                                                "required": [
+                                                    "email"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -261,7 +314,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["phone"],
+                                                "required": [
+                                                    "phone"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -277,7 +332,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["url"],
+                                                "required": [
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
@@ -286,7 +343,9 @@
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_createlead": {
@@ -331,25 +390,46 @@
                                     "type": "object",
                                     "properties": {
                                         "address_1": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "address_2": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "city": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "country": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "label": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "state": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "zipcode": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "tz_ids": {
                                             "type": "array",
@@ -358,7 +438,15 @@
                                             }
                                         }
                                     },
-                                    "required": ["address_1", "address_2", "city", "country", "label", "state", "zipcode"],
+                                    "required": [
+                                        "address_1",
+                                        "address_2",
+                                        "city",
+                                        "country",
+                                        "label",
+                                        "state",
+                                        "zipcode"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -371,16 +459,25 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "display_name": {
                                             "type": "string"
                                         },
                                         "lead_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "organization_id": {
                                             "type": "string"
@@ -392,10 +489,16 @@
                                             "type": "string"
                                         },
                                         "created_by": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_by": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "emails": {
                                             "type": "array",
@@ -412,7 +515,10 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["email", "type"],
+                                                "required": [
+                                                    "email",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -431,7 +537,10 @@
                                                         "type": "string"
                                                     },
                                                     "country": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "tz_ids": {
                                                         "type": "array",
@@ -440,7 +549,10 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["phone", "type"],
+                                                "required": [
+                                                    "phone",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -456,7 +568,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["url", "type"],
+                                                "required": [
+                                                    "url",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
@@ -483,7 +598,16 @@
                                 }
                             }
                         },
-                        "required": ["id", "display_name", "status_id", "status_label", "organization_id", "date_created", "date_updated", "html_url"],
+                        "required": [
+                            "id",
+                            "display_name",
+                            "status_id",
+                            "status_label",
+                            "organization_id",
+                            "date_created",
+                            "date_updated",
+                            "html_url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -496,9 +620,17 @@
             "endpoint": null,
             "input": "ActionInput_close_createnoteactivity",
             "name": "create-note-activity",
-            "output": ["ActionOutput_close_createnoteactivity"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_createnoteactivity", "ActionOutput_close_createnoteactivity"],
+            "output": [
+                "ActionOutput_close_createnoteactivity"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_createnoteactivity",
+                "ActionOutput_close_createnoteactivity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -522,7 +654,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["lead_id", "note"],
+                        "required": [
+                            "lead_id",
+                            "note"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_createnoteactivity": {
@@ -583,7 +718,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "_type", "date_created", "date_updated"],
+                        "required": [
+                            "id",
+                            "_type",
+                            "date_created",
+                            "date_updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -596,9 +736,17 @@
             "endpoint": null,
             "input": "ActionInput_close_createopportunity",
             "name": "create-opportunity",
-            "output": ["ActionOutput_close_createopportunity"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_createopportunity", "ActionOutput_close_createopportunity"],
+            "output": [
+                "ActionOutput_close_createopportunity"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_createopportunity",
+                "ActionOutput_close_createopportunity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -636,7 +784,11 @@
                             "value_period": {
                                 "description": "Value period: one_time, monthly, or annual",
                                 "type": "string",
-                                "enum": ["one_time", "monthly", "annual"]
+                                "enum": [
+                                    "one_time",
+                                    "monthly",
+                                    "annual"
+                                ]
                             },
                             "user_id": {
                                 "description": "User ID to assign the opportunity to",
@@ -651,7 +803,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["lead_id", "status_id"],
+                        "required": [
+                            "lead_id",
+                            "status_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_createopportunity": {
@@ -705,7 +860,11 @@
                             },
                             "value_period": {
                                 "type": "string",
-                                "enum": ["one_time", "monthly", "annual"]
+                                "enum": [
+                                    "one_time",
+                                    "monthly",
+                                    "annual"
+                                ]
                             },
                             "annualized_value": {
                                 "type": "number"
@@ -726,7 +885,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -739,9 +900,17 @@
             "endpoint": null,
             "input": "ActionInput_close_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_close_createtask"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_createtask", "ActionOutput_close_createtask"],
+            "output": [
+                "ActionOutput_close_createtask"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_createtask",
+                "ActionOutput_close_createtask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -771,14 +940,21 @@
                             "priority": {
                                 "description": "Task priority. Defaults to medium",
                                 "type": "string",
-                                "enum": ["low", "medium", "high"]
+                                "enum": [
+                                    "low",
+                                    "medium",
+                                    "high"
+                                ]
                             },
                             "contact_id": {
                                 "description": "Contact ID associated with the task",
                                 "type": "string"
                             }
                         },
-                        "required": ["lead_id", "text"],
+                        "required": [
+                            "lead_id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_createtask": {
@@ -818,7 +994,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "lead_id", "is_complete", "is_dateless", "date_created", "date_updated", "organization_id"],
+                        "required": [
+                            "id",
+                            "lead_id",
+                            "is_complete",
+                            "is_dateless",
+                            "date_created",
+                            "date_updated",
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -831,9 +1015,17 @@
             "endpoint": null,
             "input": "ActionInput_close_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_close_createwebhook"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_createwebhook", "ActionOutput_close_createwebhook"],
+            "output": [
+                "ActionOutput_close_createwebhook"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_createwebhook",
+                "ActionOutput_close_createwebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -858,7 +1050,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["url", "events"],
+                        "required": [
+                            "url",
+                            "events"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_createwebhook": {
@@ -882,7 +1077,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["action", "object_type"],
+                                    "required": [
+                                        "action",
+                                        "object_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -911,7 +1109,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "events"],
+                        "required": [
+                            "id",
+                            "url",
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -924,9 +1126,17 @@
             "endpoint": null,
             "input": "ActionInput_close_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_close_deletecontact"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_deletecontact", "ActionOutput_close_deletecontact"],
+            "output": [
+                "ActionOutput_close_deletecontact"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_deletecontact",
+                "ActionOutput_close_deletecontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -938,7 +1148,9 @@
                                 "description": "Contact ID to delete. Example: \"cont_abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_deletecontact": {
@@ -951,7 +1163,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -964,9 +1179,17 @@
             "endpoint": null,
             "input": "ActionInput_close_deletelead",
             "name": "delete-lead",
-            "output": ["ActionOutput_close_deletelead"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_deletelead", "ActionOutput_close_deletelead"],
+            "output": [
+                "ActionOutput_close_deletelead"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_deletelead",
+                "ActionOutput_close_deletelead"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -978,7 +1201,9 @@
                                 "description": "The ID of the lead to delete. Example: \"lead_xxx\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_deletelead": {
@@ -989,7 +1214,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1002,9 +1229,17 @@
             "endpoint": null,
             "input": "ActionInput_close_deletenoteactivity",
             "name": "delete-note-activity",
-            "output": ["ActionOutput_close_deletenoteactivity"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_deletenoteactivity", "ActionOutput_close_deletenoteactivity"],
+            "output": [
+                "ActionOutput_close_deletenoteactivity"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_deletenoteactivity",
+                "ActionOutput_close_deletenoteactivity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1016,7 +1251,9 @@
                                 "description": "The ID of the note activity to delete. Example: \"acti_123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_deletenoteactivity": {
@@ -1026,7 +1263,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1039,9 +1278,17 @@
             "endpoint": null,
             "input": "ActionInput_close_deleteopportunity",
             "name": "delete-opportunity",
-            "output": ["ActionOutput_close_deleteopportunity"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_deleteopportunity", "ActionOutput_close_deleteopportunity"],
+            "output": [
+                "ActionOutput_close_deleteopportunity"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_deleteopportunity",
+                "ActionOutput_close_deleteopportunity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1053,7 +1300,9 @@
                                 "description": "Opportunity ID. Example: \"oppo_OCMnOPla5NoAH69U3S9cZiiWjptaqpCAUPBFWS0yOXo\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_deleteopportunity": {
@@ -1066,7 +1315,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1079,9 +1331,17 @@
             "endpoint": null,
             "input": "ActionInput_close_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_close_deletetask"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_deletetask", "ActionOutput_close_deletetask"],
+            "output": [
+                "ActionOutput_close_deletetask"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_deletetask",
+                "ActionOutput_close_deletetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1093,7 +1353,9 @@
                                 "description": "Close task ID. Example: \"task_123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_deletetask": {
@@ -1103,7 +1365,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1116,9 +1380,17 @@
             "endpoint": null,
             "input": "ActionInput_close_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_close_deletewebhook"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_deletewebhook", "ActionOutput_close_deletewebhook"],
+            "output": [
+                "ActionOutput_close_deletewebhook"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_deletewebhook",
+                "ActionOutput_close_deletewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1130,7 +1402,9 @@
                                 "description": "The ID of the webhook subscription to delete. Example: \"whsub_6un6NQjYTaFdgtIZsTDXP6\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_deletewebhook": {
@@ -1152,9 +1426,17 @@
             "endpoint": null,
             "input": "ActionInput_close_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_close_getcontact"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_getcontact", "ActionOutput_close_getcontact"],
+            "output": [
+                "ActionOutput_close_getcontact"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_getcontact",
+                "ActionOutput_close_getcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1166,7 +1448,9 @@
                                 "description": "Contact ID. Example: \"cont_123\""
                             }
                         },
-                        "required": ["contactId"],
+                        "required": [
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_getcontact": {
@@ -1217,7 +1501,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["email", "type"],
+                                    "required": [
+                                        "email",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1236,7 +1523,10 @@
                                             "type": "string"
                                         },
                                         "country": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "outbound_sms_blocked": {
                                             "type": "boolean"
@@ -1248,7 +1538,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["phone", "type"],
+                                    "required": [
+                                        "phone",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1264,7 +1557,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["url", "type"],
+                                    "required": [
+                                        "url",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1286,12 +1582,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "url"],
+                                    "required": [
+                                        "name",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1304,9 +1605,17 @@
             "endpoint": null,
             "input": "ActionInput_close_getlead",
             "name": "get-lead",
-            "output": ["ActionOutput_close_getlead"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_getlead", "ActionOutput_close_getlead"],
+            "output": [
+                "ActionOutput_close_getlead"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_getlead",
+                "ActionOutput_close_getlead"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1318,7 +1627,9 @@
                                 "description": "Lead ID. Example: \"lead_mELh8FRqV6vRWJ5bgGdx7GpifIkEnoQFHg0hsxmQI1z\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_getlead": {
@@ -1382,7 +1693,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1395,9 +1708,17 @@
             "endpoint": null,
             "input": "ActionInput_close_getme",
             "name": "get-me",
-            "output": ["ActionOutput_close_getme"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_getme", "ActionOutput_close_getme"],
+            "output": [
+                "ActionOutput_close_getme"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_getme",
+                "ActionOutput_close_getme"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1460,7 +1781,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "user_id", "organization_id", "role"],
+                                    "required": [
+                                        "id",
+                                        "user_id",
+                                        "organization_id",
+                                        "role"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1490,7 +1816,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "label"],
+                                                "required": [
+                                                    "id",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1509,7 +1838,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "label"],
+                                                "required": [
+                                                    "id",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1528,12 +1860,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1549,7 +1887,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "email"],
+                                    "required": [
+                                        "id",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1565,12 +1906,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1583,9 +1929,17 @@
             "endpoint": null,
             "input": "ActionInput_close_getopportunity",
             "name": "get-opportunity",
-            "output": ["ActionOutput_close_getopportunity"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_getopportunity", "ActionOutput_close_getopportunity"],
+            "output": [
+                "ActionOutput_close_getopportunity"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_getopportunity",
+                "ActionOutput_close_getopportunity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1597,7 +1951,9 @@
                                 "description": "Opportunity ID. Example: \"oppo_123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_getopportunity": {
@@ -1610,7 +1966,10 @@
                                 "type": "string"
                             },
                             "contact_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status_id": {
                                 "type": "string"
@@ -1628,43 +1987,76 @@
                                 "type": "string"
                             },
                             "user_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "value": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "value_period": {
                                 "type": "string"
                             },
                             "value_currency": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "value_formatted": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "annualized_value": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "annualized_expected_value": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "confidence": {
                                 "type": "number"
                             },
                             "expected_value": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "note": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "pipeline_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "pipeline_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lead_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_created": {
                                 "type": "string"
@@ -1673,22 +2065,40 @@
                                 "type": "string"
                             },
                             "date_won": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_lost": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_by": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_by_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_by": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_by_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_id": {
                                 "type": "string"
@@ -1767,16 +2177,27 @@
                                             "type": "string"
                                         },
                                         "size": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "thumbnail_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "url": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["content_type", "filename", "size", "url"],
+                                    "required": [
+                                        "content_type",
+                                        "filename",
+                                        "size",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1853,9 +2274,17 @@
             "endpoint": null,
             "input": "ActionInput_close_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_close_gettask"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_gettask", "ActionOutput_close_gettask"],
+            "output": [
+                "ActionOutput_close_gettask"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_gettask",
+                "ActionOutput_close_gettask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1867,7 +2296,9 @@
                                 "description": "Task ID. Example: \"task_xxx\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_gettask": {
@@ -1887,7 +2318,11 @@
                             },
                             "priority": {
                                 "type": "string",
-                                "enum": ["low", "medium", "high"]
+                                "enum": [
+                                    "low",
+                                    "medium",
+                                    "high"
+                                ]
                             },
                             "due_date": {
                                 "type": "string"
@@ -1896,7 +2331,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "_type", "is_complete"],
+                        "required": [
+                            "id",
+                            "_type",
+                            "is_complete"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1909,9 +2348,17 @@
             "endpoint": null,
             "input": "ActionInput_close_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_close_getuser"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_getuser", "ActionOutput_close_getuser"],
+            "output": [
+                "ActionOutput_close_getuser"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_getuser",
+                "ActionOutput_close_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1923,7 +2370,9 @@
                                 "description": "User ID. Example: \"user_abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_getuser": {
@@ -1957,7 +2406,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1970,9 +2421,17 @@
             "endpoint": null,
             "input": "ActionInput_close_listactivities",
             "name": "list-activities",
-            "output": ["ActionOutput_close_listactivities"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_listactivities", "ActionOutput_close_listactivities"],
+            "output": [
+                "ActionOutput_close_listactivities"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_listactivities",
+                "ActionOutput_close_listactivities"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2017,7 +2476,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "_type"],
+                                    "required": [
+                                        "id",
+                                        "_type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2028,7 +2490,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2041,9 +2505,17 @@
             "endpoint": null,
             "input": "ActionInput_close_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_close_listcontacts"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_listcontacts", "ActionOutput_close_listcontacts"],
+            "output": [
+                "ActionOutput_close_listcontacts"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_listcontacts",
+                "ActionOutput_close_listcontacts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2082,10 +2554,16 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "emails": {
                                             "anyOf": [
@@ -2098,10 +2576,15 @@
                                                                 "type": "string"
                                                             },
                                                             "type": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["email"],
+                                                        "required": [
+                                                            "email"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 },
@@ -2121,10 +2604,15 @@
                                                                 "type": "string"
                                                             },
                                                             "type": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["phone"],
+                                                        "required": [
+                                                            "phone"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 },
@@ -2134,16 +2622,28 @@
                                             ]
                                         },
                                         "organization_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_created": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_updated": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "lead_id"],
+                                    "required": [
+                                        "id",
+                                        "lead_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2154,7 +2654,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["items", "has_more"],
+                        "required": [
+                            "items",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2167,9 +2670,17 @@
             "endpoint": null,
             "input": "ActionInput_close_listleads",
             "name": "list-leads",
-            "output": ["ActionOutput_close_listleads"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_listleads", "ActionOutput_close_listleads"],
+            "output": [
+                "ActionOutput_close_listleads"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_listleads",
+                "ActionOutput_close_listleads"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2224,7 +2735,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2235,7 +2748,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["data", "has_more"],
+                        "required": [
+                            "data",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2248,9 +2764,17 @@
             "endpoint": null,
             "input": "ActionInput_close_listopportunities",
             "name": "list-opportunities",
-            "output": ["ActionOutput_close_listopportunities"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_listopportunities", "ActionOutput_close_listopportunities"],
+            "output": [
+                "ActionOutput_close_listopportunities"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_listopportunities",
+                "ActionOutput_close_listopportunities"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2298,103 +2822,201 @@
                                             "type": "string"
                                         },
                                         "lead_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lead_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status_label": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status_display_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "pipeline_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "pipeline_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "contact_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "contact_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "user_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "user_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "value": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "value_period": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "value_currency": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "value_formatted": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "annualized_value": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "expected_value": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "annualized_expected_value": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "confidence": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "note": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "note_html": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_created": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_updated": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_won": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_lost": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "organization_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_by": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_by_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_by": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_by_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_stalled": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2441,7 +3063,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2454,9 +3078,17 @@
             "endpoint": null,
             "input": "ActionInput_close_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_close_listtasks"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_listtasks", "ActionOutput_close_listtasks"],
+            "output": [
+                "ActionOutput_close_listtasks"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_listtasks",
+                "ActionOutput_close_listtasks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2522,16 +3154,28 @@
                                             "type": "string"
                                         },
                                         "contact_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "contact_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_by": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_by_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date": {
                                             "type": "string"
@@ -2549,31 +3193,56 @@
                                             "type": "boolean"
                                         },
                                         "lead_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lead_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "object_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "object_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "organization_id": {
                                             "type": "string"
                                         },
                                         "text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_by": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_by_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "_type", "view"],
+                                    "required": [
+                                        "id",
+                                        "_type",
+                                        "view"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2581,7 +3250,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2594,9 +3265,17 @@
             "endpoint": null,
             "input": "ActionInput_close_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_close_listusers"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_listusers", "ActionOutput_close_listusers"],
+            "output": [
+                "ActionOutput_close_listusers"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_listusers",
+                "ActionOutput_close_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2627,7 +3306,9 @@
                                     "items": {}
                                 }
                             },
-                            "required": ["id"],
+                            "required": [
+                                "id"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -2641,9 +3322,17 @@
             "endpoint": null,
             "input": "ActionInput_close_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_close_listwebhooks"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_listwebhooks", "ActionOutput_close_listwebhooks"],
+            "output": [
+                "ActionOutput_close_listwebhooks"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_listwebhooks",
+                "ActionOutput_close_listwebhooks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2688,18 +3377,29 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["action", "object_type"],
+                                                "required": [
+                                                    "action",
+                                                    "object_type"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "List of event subscriptions."
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["active", "paused"],
+                                            "enum": [
+                                                "active",
+                                                "paused"
+                                            ],
                                             "description": "Webhook status."
                                         }
                                     },
-                                    "required": ["id", "url", "events", "status"],
+                                    "required": [
+                                        "id",
+                                        "url",
+                                        "events",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2708,7 +3408,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2721,9 +3423,17 @@
             "endpoint": null,
             "input": "ActionInput_close_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_close_updatecontact"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_updatecontact", "ActionOutput_close_updatecontact"],
+            "output": [
+                "ActionOutput_close_updatecontact"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_updatecontact",
+                "ActionOutput_close_updatecontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2736,11 +3446,17 @@
                             },
                             "name": {
                                 "description": "Contact name",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
                                 "description": "Contact title",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "emails": {
                                 "description": "Email addresses",
@@ -2757,7 +3473,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["email"],
+                                            "required": [
+                                                "email"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2781,7 +3499,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["phone"],
+                                            "required": [
+                                                "phone"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2805,7 +3525,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["url"],
+                                            "required": [
+                                                "url"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2816,10 +3538,15 @@
                             },
                             "timezone": {
                                 "description": "IANA timezone identifier",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_close_updatecontact": {
@@ -2829,10 +3556,16 @@
                                 "type": "string"
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "display_name": {
                                 "type": "string"
@@ -2852,7 +3585,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["email", "type", "is_unsubscribed"],
+                                    "required": [
+                                        "email",
+                                        "type",
+                                        "is_unsubscribed"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2868,7 +3605,10 @@
                                             "type": "string"
                                         },
                                         "country": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone_formatted": {
                                             "type": "string"
@@ -2877,7 +3617,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["phone", "type"],
+                                    "required": [
+                                        "phone",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2893,21 +3636,33 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["url", "type"],
+                                    "required": [
+                                        "url",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "lead_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_id": {
                                 "type": "string"
                             },
                             "created_by": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_by": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_created": {
                                 "type": "string"
@@ -2916,13 +3671,29 @@
                                 "type": "string"
                             },
                             "timezone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "timezone_source": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "title", "display_name", "organization_id", "created_by", "updated_by", "date_created", "date_updated"],
+                        "required": [
+                            "id",
+                            "name",
+                            "title",
+                            "display_name",
+                            "organization_id",
+                            "created_by",
+                            "updated_by",
+                            "date_created",
+                            "date_updated"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2935,9 +3706,17 @@
             "endpoint": null,
             "input": "ActionInput_close_updatelead",
             "name": "update-lead",
-            "output": ["ActionOutput_close_updatelead"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_updatelead", "ActionOutput_close_updatelead"],
+            "output": [
+                "ActionOutput_close_updatelead"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_updatelead",
+                "ActionOutput_close_updatelead"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2954,15 +3733,24 @@
                             },
                             "url": {
                                 "description": "Lead URL. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
                                 "description": "Lead description. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status_id": {
                                 "description": "Valid organization lead status ID. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "contacts": {
                                 "description": "Contacts to update or create.",
@@ -2977,7 +3765,10 @@
                                             "type": "string"
                                         },
                                         "title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phones": {
                                             "type": "array",
@@ -3051,7 +3842,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_updatelead": {
@@ -3171,7 +3964,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3184,9 +3979,17 @@
             "endpoint": null,
             "input": "ActionInput_close_updatenoteactivity",
             "name": "update-note-activity",
-            "output": ["ActionOutput_close_updatenoteactivity"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_updatenoteactivity", "ActionOutput_close_updatenoteactivity"],
+            "output": [
+                "ActionOutput_close_updatenoteactivity"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_updatenoteactivity",
+                "ActionOutput_close_updatenoteactivity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3222,7 +4025,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_updatenoteactivity": {
@@ -3292,7 +4097,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "_type", "date_created", "date_updated", "organization_id"],
+                        "required": [
+                            "id",
+                            "_type",
+                            "date_created",
+                            "date_updated",
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3305,9 +4116,17 @@
             "endpoint": null,
             "input": "ActionInput_close_updateopportunity",
             "name": "update-opportunity",
-            "output": ["ActionOutput_close_updateopportunity"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_updateopportunity", "ActionOutput_close_updateopportunity"],
+            "output": [
+                "ActionOutput_close_updateopportunity"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_updateopportunity",
+                "ActionOutput_close_updateopportunity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3329,7 +4148,11 @@
                             "value_period": {
                                 "description": "Value period. Example: \"one_time\"",
                                 "type": "string",
-                                "enum": ["one_time", "monthly", "annual"]
+                                "enum": [
+                                    "one_time",
+                                    "monthly",
+                                    "annual"
+                                ]
                             },
                             "confidence": {
                                 "description": "Confidence percentage (0–100). Example: 75",
@@ -3343,30 +4166,47 @@
                             },
                             "note_html": {
                                 "description": "Rich-text HTML note. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "contact_id": {
                                 "description": "Contact ID. Pass null to remove association.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user_id": {
                                 "description": "User ID. Pass null to remove assignment.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_won": {
                                 "description": "Date won (ISO 8601). Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_lost": {
                                 "description": "Date lost (ISO 8601). Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "description": "Deprecated status name. Prefer status_id.",
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_updateopportunity": {
@@ -3386,14 +4226,22 @@
                             },
                             "status_type": {
                                 "type": "string",
-                                "enum": ["won", "lost", "active"]
+                                "enum": [
+                                    "won",
+                                    "lost",
+                                    "active"
+                                ]
                             },
                             "value": {
                                 "type": "number"
                             },
                             "value_period": {
                                 "type": "string",
-                                "enum": ["one_time", "monthly", "annual"]
+                                "enum": [
+                                    "one_time",
+                                    "monthly",
+                                    "annual"
+                                ]
                             },
                             "value_currency": {
                                 "type": "string"
@@ -3468,7 +4316,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "lead_id", "status_id"],
+                        "required": [
+                            "id",
+                            "lead_id",
+                            "status_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3481,9 +4333,17 @@
             "endpoint": null,
             "input": "ActionInput_close_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_close_updatetask"],
-            "scopes": ["all.full_access", "offline_access"],
-            "usedModels": ["ActionInput_close_updatetask", "ActionOutput_close_updatetask"],
+            "output": [
+                "ActionOutput_close_updatetask"
+            ],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
+            "usedModels": [
+                "ActionInput_close_updatetask",
+                "ActionOutput_close_updatetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3515,7 +4375,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_close_updatetask": {
@@ -3616,12 +4478,19 @@
             "endpoints": [],
             "input": null,
             "name": "activities",
-            "output": ["Activity"],
+            "output": [
+                "Activity"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Activity"],
+            "usedModels": [
+                "Activity"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3651,12 +4520,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "_type", "date_updated"],
+                        "required": [
+                            "id",
+                            "_type",
+                            "date_updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3665,12 +4540,19 @@
             "endpoints": [],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3705,7 +4587,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3721,7 +4605,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["phone"],
+                                    "required": [
+                                        "phone"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3737,7 +4623,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3754,12 +4642,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "lead_id", "date_updated"],
+                        "required": [
+                            "id",
+                            "lead_id",
+                            "date_updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3768,12 +4662,19 @@
             "endpoints": [],
             "input": null,
             "name": "leads",
-            "output": ["Lead"],
+            "output": [
+                "Lead"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Lead"],
+            "usedModels": [
+                "Lead"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3831,7 +4732,10 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id", "lead_id"],
+                                    "required": [
+                                        "id",
+                                        "lead_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3865,7 +4769,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "lead_id"],
+                                    "required": [
+                                        "id",
+                                        "lead_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3890,7 +4797,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "lead_id"],
+                                    "required": [
+                                        "id",
+                                        "lead_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3908,12 +4818,17 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "date_updated"],
+                        "required": [
+                            "id",
+                            "date_updated"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3922,12 +4837,19 @@
             "endpoints": [],
             "input": null,
             "name": "opportunities",
-            "output": ["Opportunity"],
+            "output": [
+                "Opportunity"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Opportunity"],
+            "usedModels": [
+                "Opportunity"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3940,14 +4862,22 @@
                             },
                             "status_type": {
                                 "type": "string",
-                                "enum": ["active", "won", "lost"]
+                                "enum": [
+                                    "active",
+                                    "won",
+                                    "lost"
+                                ]
                             },
                             "value": {
                                 "type": "number"
                             },
                             "value_period": {
                                 "type": "string",
-                                "enum": ["one_time", "monthly", "annual"]
+                                "enum": [
+                                    "one_time",
+                                    "monthly",
+                                    "annual"
+                                ]
                             },
                             "pipeline_id": {
                                 "type": "string"
@@ -3968,12 +4898,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3982,12 +4916,19 @@
             "endpoints": [],
             "input": null,
             "name": "pipelines",
-            "output": ["Pipeline"],
+            "output": [
+                "Pipeline"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Pipeline"],
+            "usedModels": [
+                "Pipeline"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4023,15 +4964,25 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["active", "won", "lost"]
+                                            "enum": [
+                                                "active",
+                                                "won",
+                                                "lost"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "label", "type"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4045,12 +4996,19 @@
             "endpoints": [],
             "input": null,
             "name": "sequences",
-            "output": ["Sequence"],
+            "output": [
+                "Sequence"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Sequence"],
+            "usedModels": [
+                "Sequence"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4066,7 +5024,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "paused", "archived"]
+                                "enum": [
+                                    "active",
+                                    "paused",
+                                    "archived"
+                                ]
                             },
                             "created_by": {
                                 "type": "string"
@@ -4092,12 +5054,23 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "delay_in_hours"],
+                                    "required": [
+                                        "type",
+                                        "delay_in_hours"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "status", "created_by", "date_created", "date_updated", "steps"],
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "created_by",
+                            "date_created",
+                            "date_updated",
+                            "steps"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4111,12 +5084,19 @@
             "endpoints": [],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4141,7 +5121,11 @@
                             },
                             "priority": {
                                 "type": "string",
-                                "enum": ["low", "medium", "high"]
+                                "enum": [
+                                    "low",
+                                    "medium",
+                                    "high"
+                                ]
                             },
                             "due_date": {
                                 "type": "string"
@@ -4151,15 +5135,24 @@
                             },
                             "view": {
                                 "type": "string",
-                                "enum": ["inbox", "future", "overdue", "complete"]
+                                "enum": [
+                                    "inbox",
+                                    "future",
+                                    "overdue",
+                                    "complete"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4168,12 +5161,19 @@
             "endpoints": [],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["all.full_access", "offline_access"],
+            "scopes": [
+                "all.full_access",
+                "offline_access"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4200,7 +5200,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

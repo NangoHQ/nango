@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_one_drive_personal_createfolder"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_createfolder", "ActionOutput_one_drive_personal_createfolder"],
+            "output": [
+                "ActionOutput_one_drive_personal_createfolder"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_createfolder",
+                "ActionOutput_one_drive_personal_createfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -27,10 +34,17 @@
                             "conflictBehavior": {
                                 "description": "The conflict behavior if a folder with the same name exists. Default is \"rename\".",
                                 "type": "string",
-                                "enum": ["rename", "fail", "replace"]
+                                "enum": [
+                                    "rename",
+                                    "fail",
+                                    "replace"
+                                ]
                             }
                         },
-                        "required": ["parentItemId", "folderName"],
+                        "required": [
+                            "parentItemId",
+                            "folderName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_createfolder": {
@@ -60,7 +74,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -73,9 +90,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_createsharinglink",
             "name": "create-sharing-link",
-            "output": ["ActionOutput_one_drive_personal_createsharinglink"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_createsharinglink", "ActionOutput_one_drive_personal_createsharinglink"],
+            "output": [
+                "ActionOutput_one_drive_personal_createsharinglink"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_createsharinglink",
+                "ActionOutput_one_drive_personal_createsharinglink"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -88,16 +112,26 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["view", "edit"],
+                                "enum": [
+                                    "view",
+                                    "edit"
+                                ],
                                 "description": "The type of sharing link to create. \"view\" allows read-only access, \"edit\" allows read-write access."
                             },
                             "scope": {
                                 "type": "string",
-                                "enum": ["anonymous", "users"],
+                                "enum": [
+                                    "anonymous",
+                                    "users"
+                                ],
                                 "description": "The scope of the sharing link. \"anonymous\" allows anyone with the link to access (no sign-in required), \"users\" restricts to existing organization users."
                             }
                         },
-                        "required": ["item_id", "type", "scope"],
+                        "required": [
+                            "item_id",
+                            "type",
+                            "scope"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_createsharinglink": {
@@ -112,11 +146,18 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["view", "edit"]
+                                        "enum": [
+                                            "view",
+                                            "edit"
+                                        ]
                                     },
                                     "scope": {
                                         "type": "string",
-                                        "enum": ["anonymous", "users", "organization"]
+                                        "enum": [
+                                            "anonymous",
+                                            "users",
+                                            "organization"
+                                        ]
                                     },
                                     "webUrl": {
                                         "description": "The URL that can be used to access the shared item.",
@@ -149,9 +190,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_createuploadsession",
             "name": "create-upload-session",
-            "output": ["ActionOutput_one_drive_personal_createuploadsession"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_createuploadsession", "ActionOutput_one_drive_personal_createuploadsession"],
+            "output": [
+                "ActionOutput_one_drive_personal_createuploadsession"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_createuploadsession",
+                "ActionOutput_one_drive_personal_createuploadsession"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -186,7 +234,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["parent_item_id", "file_name"],
+                        "required": [
+                            "parent_item_id",
+                            "file_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_createuploadsession": {
@@ -208,7 +259,10 @@
                                 }
                             }
                         },
-                        "required": ["upload_url", "expiration_date_time"],
+                        "required": [
+                            "upload_url",
+                            "expiration_date_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -221,9 +275,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_deleteitem",
             "name": "delete-item",
-            "output": ["ActionOutput_one_drive_personal_deleteitem"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_deleteitem", "ActionOutput_one_drive_personal_deleteitem"],
+            "output": [
+                "ActionOutput_one_drive_personal_deleteitem"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_deleteitem",
+                "ActionOutput_one_drive_personal_deleteitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -235,7 +296,9 @@
                                 "description": "The ID of the drive item to delete. Example: \"0123456789abc\""
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_deleteitem": {
@@ -250,7 +313,10 @@
                                 "description": "The ID of the deleted item"
                             }
                         },
-                        "required": ["success", "itemId"],
+                        "required": [
+                            "success",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -263,9 +329,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_deletepermission",
             "name": "delete-permission",
-            "output": ["ActionOutput_one_drive_personal_deletepermission"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_deletepermission", "ActionOutput_one_drive_personal_deletepermission"],
+            "output": [
+                "ActionOutput_one_drive_personal_deletepermission"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_deletepermission",
+                "ActionOutput_one_drive_personal_deletepermission"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -281,7 +354,10 @@
                                 "description": "The ID of the permission to delete. Example: \"b123456789ab!123\""
                             }
                         },
-                        "required": ["itemId", "permissionId"],
+                        "required": [
+                            "itemId",
+                            "permissionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_deletepermission": {
@@ -297,7 +373,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "itemId", "permissionId"],
+                        "required": [
+                            "success",
+                            "itemId",
+                            "permissionId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -310,9 +390,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_downloaditemcontent",
             "name": "download-item-content",
-            "output": ["ActionOutput_one_drive_personal_downloaditemcontent"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_downloaditemcontent", "ActionOutput_one_drive_personal_downloaditemcontent"],
+            "output": [
+                "ActionOutput_one_drive_personal_downloaditemcontent"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_downloaditemcontent",
+                "ActionOutput_one_drive_personal_downloaditemcontent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -324,7 +411,9 @@
                                 "description": "The ID of the file item to download. Example: \"01A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D1E2F3\""
                             }
                         },
-                        "required": ["item_id"],
+                        "required": [
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_downloaditemcontent": {
@@ -347,7 +436,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["content", "content_type", "size"],
+                        "required": [
+                            "content",
+                            "content_type",
+                            "size"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -360,9 +453,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_getdrive",
             "name": "get-drive",
-            "output": ["ActionOutput_one_drive_personal_getdrive"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_getdrive", "ActionOutput_one_drive_personal_getdrive"],
+            "output": [
+                "ActionOutput_one_drive_personal_getdrive"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_getdrive",
+                "ActionOutput_one_drive_personal_getdrive"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -420,7 +520,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "driveType"],
+                        "required": [
+                            "id",
+                            "driveType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -433,9 +536,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_getitem",
             "name": "get-item",
-            "output": ["ActionOutput_one_drive_personal_getitem"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_getitem", "ActionOutput_one_drive_personal_getitem"],
+            "output": [
+                "ActionOutput_one_drive_personal_getitem"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_getitem",
+                "ActionOutput_one_drive_personal_getitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -466,7 +576,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["file", "folder"],
+                                "enum": [
+                                    "file",
+                                    "folder"
+                                ],
                                 "description": "The type of the item"
                             },
                             "size": {
@@ -523,7 +636,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -536,9 +653,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_getpermission",
             "name": "get-permission",
-            "output": ["ActionOutput_one_drive_personal_getpermission"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_getpermission", "ActionOutput_one_drive_personal_getpermission"],
+            "output": [
+                "ActionOutput_one_drive_personal_getpermission"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_getpermission",
+                "ActionOutput_one_drive_personal_getpermission"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -554,7 +678,10 @@
                                 "description": "The ID of the permission to retrieve. Example: \"1\""
                             }
                         },
-                        "required": ["itemId", "permissionId"],
+                        "required": [
+                            "itemId",
+                            "permissionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_getpermission": {
@@ -837,7 +964,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "roles"],
+                        "required": [
+                            "id",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -850,9 +980,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_inviterecipients",
             "name": "invite-recipients",
-            "output": ["ActionOutput_one_drive_personal_inviterecipients"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_inviterecipients", "ActionOutput_one_drive_personal_inviterecipients"],
+            "output": [
+                "ActionOutput_one_drive_personal_inviterecipients"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_inviterecipients",
+                "ActionOutput_one_drive_personal_inviterecipients"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -875,7 +1012,9 @@
                                             "description": "Email address of the recipient. Example: \"user@example.com\""
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of recipients to invite. For personal accounts, use email addresses only."
@@ -884,7 +1023,10 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["read", "write"]
+                                    "enum": [
+                                        "read",
+                                        "write"
+                                    ]
                                 },
                                 "description": "Roles to grant to the recipients. Values: \"read\", \"write\"."
                             },
@@ -897,7 +1039,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["itemId", "recipients", "roles"],
+                        "required": [
+                            "itemId",
+                            "recipients",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_inviterecipients": {
@@ -1073,7 +1219,9 @@
                                 "description": "List of permissions granted to the recipients."
                             }
                         },
-                        "required": ["permissions"],
+                        "required": [
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1086,9 +1234,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_listchildren",
             "name": "list-children",
-            "output": ["ActionOutput_one_drive_personal_listchildren"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_listchildren", "ActionOutput_one_drive_personal_listchildren"],
+            "output": [
+                "ActionOutput_one_drive_personal_listchildren"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_listchildren",
+                "ActionOutput_one_drive_personal_listchildren"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1145,7 +1300,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1153,7 +1311,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1166,9 +1326,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_listpermissions",
             "name": "list-permissions",
-            "output": ["ActionOutput_one_drive_personal_listpermissions"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_listpermissions", "ActionOutput_one_drive_personal_listpermissions"],
+            "output": [
+                "ActionOutput_one_drive_personal_listpermissions"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_listpermissions",
+                "ActionOutput_one_drive_personal_listpermissions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1181,7 +1348,9 @@
                                 "description": "The ID of the drive item to list permissions for. Example: \"123ABC!456\""
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_listpermissions": {
@@ -1277,12 +1446,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["permissions"],
+                        "required": [
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1295,9 +1468,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_listversions",
             "name": "list-versions",
-            "output": ["ActionOutput_one_drive_personal_listversions"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_listversions", "ActionOutput_one_drive_personal_listversions"],
+            "output": [
+                "ActionOutput_one_drive_personal_listversions"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_listversions",
+                "ActionOutput_one_drive_personal_listversions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1309,7 +1489,9 @@
                                 "description": "The ID of the file item. Example: \"0123456789abc\""
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_listversions": {
@@ -1342,12 +1524,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["versions"],
+                        "required": [
+                            "versions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1360,9 +1546,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_moveitem",
             "name": "move-item",
-            "output": ["ActionOutput_one_drive_personal_moveitem"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_moveitem", "ActionOutput_one_drive_personal_moveitem"],
+            "output": [
+                "ActionOutput_one_drive_personal_moveitem"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_moveitem",
+                "ActionOutput_one_drive_personal_moveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1393,7 +1586,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["item_id"],
+                        "required": [
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_moveitem": {
@@ -1430,7 +1625,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1443,9 +1641,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_searchitems",
             "name": "search-items",
-            "output": ["ActionOutput_one_drive_personal_searchitems"],
-            "scopes": ["onedrive.readonly"],
-            "usedModels": ["ActionInput_one_drive_personal_searchitems", "ActionOutput_one_drive_personal_searchitems"],
+            "output": [
+                "ActionOutput_one_drive_personal_searchitems"
+            ],
+            "scopes": [
+                "onedrive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_searchitems",
+                "ActionOutput_one_drive_personal_searchitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1512,7 +1717,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of drive items matching the search query."
@@ -1522,7 +1730,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1535,9 +1745,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_updateitem",
             "name": "update-item",
-            "output": ["ActionOutput_one_drive_personal_updateitem"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_updateitem", "ActionOutput_one_drive_personal_updateitem"],
+            "output": [
+                "ActionOutput_one_drive_personal_updateitem"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_updateitem",
+                "ActionOutput_one_drive_personal_updateitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1554,7 +1771,10 @@
                             },
                             "description": {
                                 "description": "New description for the item. Use null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "parentReference": {
                                 "description": "New parent folder reference to move the item.",
@@ -1569,7 +1789,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "fileSystemInfo": {
@@ -1588,7 +1810,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_updateitem": {
@@ -1613,7 +1837,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "fileSystemInfo": {
@@ -1641,7 +1867,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1654,9 +1883,16 @@
             "endpoint": null,
             "input": "ActionInput_one_drive_personal_uploadsmallfile",
             "name": "upload-small-file",
-            "output": ["ActionOutput_one_drive_personal_uploadsmallfile"],
-            "scopes": ["onedrive.readwrite"],
-            "usedModels": ["ActionInput_one_drive_personal_uploadsmallfile", "ActionOutput_one_drive_personal_uploadsmallfile"],
+            "output": [
+                "ActionOutput_one_drive_personal_uploadsmallfile"
+            ],
+            "scopes": [
+                "onedrive.readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_one_drive_personal_uploadsmallfile",
+                "ActionOutput_one_drive_personal_uploadsmallfile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1680,7 +1916,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["parentItemId", "fileName", "content"],
+                        "required": [
+                            "parentItemId",
+                            "fileName",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_one_drive_personal_uploadsmallfile": {
@@ -1705,7 +1945,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1726,12 +1969,18 @@
             ],
             "input": null,
             "name": "folder-children",
-            "output": ["FolderChild"],
+            "output": [
+                "FolderChild"
+            ],
             "runs": "every hour",
-            "scopes": ["onedrive.readonly"],
+            "scopes": [
+                "onedrive.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FolderChild"],
+            "usedModels": [
+                "FolderChild"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1770,12 +2019,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "folderId", "isFolder"],
+                        "required": [
+                            "id",
+                            "name",
+                            "folderId",
+                            "isFolder"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1784,12 +2040,18 @@
             "endpoints": [],
             "input": null,
             "name": "user-files-selection",
-            "output": ["UserFileSelection"],
+            "output": [
+                "UserFileSelection"
+            ],
             "runs": "every hour",
-            "scopes": ["onedrive.readonly"],
+            "scopes": [
+                "onedrive.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserFileSelection"],
+            "usedModels": [
+                "UserFileSelection"
+            ],
             "version": "2.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1822,12 +2084,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "fileId"],
+                        "required": [
+                            "id",
+                            "fileId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1841,12 +2108,18 @@
             ],
             "input": null,
             "name": "user-files",
-            "output": ["UserFile"],
+            "output": [
+                "UserFile"
+            ],
             "runs": "every hour",
-            "scopes": ["onedrive.readonly"],
+            "scopes": [
+                "onedrive.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserFile"],
+            "usedModels": [
+                "UserFile"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1891,12 +2164,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

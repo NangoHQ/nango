@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_calendly_createuser"],
-            "scopes": ["organizations:write"],
-            "usedModels": ["ActionInput_calendly_createuser", "ActionOutput_calendly_createuser"],
+            "output": [
+                "ActionOutput_calendly_createuser"
+            ],
+            "scopes": [
+                "organizations:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_createuser",
+                "ActionOutput_calendly_createuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -23,7 +30,9 @@
                                 "description": "Email address of the user to invite"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_createuser": {
@@ -46,7 +55,12 @@
                                 "description": "Last name (empty for pending invitations)"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -59,9 +73,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_createwebhooksubscription",
             "name": "create-webhook-subscription",
-            "output": ["ActionOutput_calendly_createwebhooksubscription"],
-            "scopes": ["webhooks:write"],
-            "usedModels": ["ActionInput_calendly_createwebhooksubscription", "ActionOutput_calendly_createwebhooksubscription"],
+            "output": [
+                "ActionOutput_calendly_createwebhooksubscription"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_createwebhooksubscription",
+                "ActionOutput_calendly_createwebhooksubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -87,7 +108,10 @@
                             },
                             "scope": {
                                 "type": "string",
-                                "enum": ["organization", "user"],
+                                "enum": [
+                                    "organization",
+                                    "user"
+                                ],
                                 "description": "The scope of the subscription."
                             },
                             "user": {
@@ -100,7 +124,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["url", "events", "organization", "scope"],
+                        "required": [
+                            "url",
+                            "events",
+                            "organization",
+                            "scope"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_createwebhooksubscription": {
@@ -126,7 +155,10 @@
                             },
                             "retry_started_at": {
                                 "description": "The moment retries started for a failing webhook subscription.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "type": "string",
@@ -161,7 +193,18 @@
                                 "description": "The user URI."
                             }
                         },
-                        "required": ["uri", "callback_url", "created_at", "updated_at", "retry_started_at", "state", "events", "scope", "organization", "user"],
+                        "required": [
+                            "uri",
+                            "callback_url",
+                            "created_at",
+                            "updated_at",
+                            "retry_started_at",
+                            "state",
+                            "events",
+                            "scope",
+                            "organization",
+                            "user"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -174,9 +217,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_deletewebhooksubscription",
             "name": "delete-webhook-subscription",
-            "output": ["ActionOutput_calendly_deletewebhooksubscription"],
-            "scopes": ["webhooks:write"],
-            "usedModels": ["ActionInput_calendly_deletewebhooksubscription", "ActionOutput_calendly_deletewebhooksubscription"],
+            "output": [
+                "ActionOutput_calendly_deletewebhooksubscription"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_deletewebhooksubscription",
+                "ActionOutput_calendly_deletewebhooksubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -188,7 +238,9 @@
                                 "description": "The unique identifier of the webhook subscription to delete. Example: \"ABCD1234...\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_deletewebhooksubscription": {
@@ -201,7 +253,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["uuid", "deleted"],
+                        "required": [
+                            "uuid",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -214,9 +269,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_geteventinvitee",
             "name": "get-event-invitee",
-            "output": ["ActionOutput_calendly_geteventinvitee"],
-            "scopes": ["scheduled_events:read"],
-            "usedModels": ["ActionInput_calendly_geteventinvitee", "ActionOutput_calendly_geteventinvitee"],
+            "output": [
+                "ActionOutput_calendly_geteventinvitee"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_geteventinvitee",
+                "ActionOutput_calendly_geteventinvitee"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -232,7 +294,10 @@
                                 "description": "The UUID of the invitee. Example: \"BBBBBBBBBBBBBBBB\""
                             }
                         },
-                        "required": ["event_uuid", "invitee_uuid"],
+                        "required": [
+                            "event_uuid",
+                            "invitee_uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_geteventinvitee": {
@@ -280,7 +345,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["answer", "position", "question"],
+                                    "required": [
+                                        "answer",
+                                        "position",
+                                        "question"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -345,7 +414,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["canceled_by", "canceler_type", "created_at"],
+                                "required": [
+                                    "canceled_by",
+                                    "canceler_type",
+                                    "created_at"
+                                ],
                                 "additionalProperties": false
                             },
                             "routing_form_submission": {
@@ -373,7 +446,14 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["external_id", "provider", "amount", "currency", "terms", "successful"],
+                                "required": [
+                                    "external_id",
+                                    "provider",
+                                    "amount",
+                                    "currency",
+                                    "terms",
+                                    "successful"
+                                ],
                                 "additionalProperties": false
                             },
                             "no_show": {
@@ -389,7 +469,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["created_at", "confirmed_at"],
+                                "required": [
+                                    "created_at",
+                                    "confirmed_at"
+                                ],
                                 "additionalProperties": false
                             },
                             "scheduling_method": {
@@ -426,9 +509,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_geteventtype",
             "name": "get-event-type",
-            "output": ["ActionOutput_calendly_geteventtype"],
-            "scopes": ["event_types:read"],
-            "usedModels": ["ActionInput_calendly_geteventtype", "ActionOutput_calendly_geteventtype"],
+            "output": [
+                "ActionOutput_calendly_geteventtype"
+            ],
+            "scopes": [
+                "event_types:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_geteventtype",
+                "ActionOutput_calendly_geteventtype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -440,7 +530,9 @@
                                 "description": "The unique identifier (UUID) of the event type. Example: \"AAAAAAAAAAAAAAAA\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_geteventtype": {
@@ -539,11 +631,21 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "name", "owner"],
+                                "required": [
+                                    "type",
+                                    "name",
+                                    "owner"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["uri", "active", "scheduling_url", "duration", "type"],
+                        "required": [
+                            "uri",
+                            "active",
+                            "scheduling_url",
+                            "duration",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -556,9 +658,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_getscheduledevent",
             "name": "get-scheduled-event",
-            "output": ["ActionOutput_calendly_getscheduledevent"],
-            "scopes": ["scheduled_events:read"],
-            "usedModels": ["ActionInput_calendly_getscheduledevent", "ActionOutput_calendly_getscheduledevent"],
+            "output": [
+                "ActionOutput_calendly_getscheduledevent"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getscheduledevent",
+                "ActionOutput_calendly_getscheduledevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -570,7 +679,9 @@
                                 "description": "The unique identifier for the scheduled event. Example: \"8pv58mskifkj5st9o6m2qqde74\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_getscheduledevent": {
@@ -587,7 +698,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "canceled"]
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
                             },
                             "start_time": {
                                 "type": "string"
@@ -622,7 +736,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["user"],
+                                    "required": [
+                                        "user"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -649,7 +765,11 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["active", "limit", "total"],
+                                "required": [
+                                    "active",
+                                    "limit",
+                                    "total"
+                                ],
                                 "additionalProperties": false
                             },
                             "location": {
@@ -674,7 +794,9 @@
                                                 "additionalProperties": {}
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -702,13 +824,28 @@
                                 ]
                             },
                             "meeting_notes_html": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "meeting_notes_plain": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["uri", "event_type", "name", "status", "start_time", "end_time", "created_at", "updated_at"],
+                        "required": [
+                            "uri",
+                            "event_type",
+                            "name",
+                            "status",
+                            "start_time",
+                            "end_time",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -721,9 +858,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_getwebhooksubscription",
             "name": "get-webhook-subscription",
-            "output": ["ActionOutput_calendly_getwebhooksubscription"],
-            "scopes": ["webhooks:read"],
-            "usedModels": ["ActionInput_calendly_getwebhooksubscription", "ActionOutput_calendly_getwebhooksubscription"],
+            "output": [
+                "ActionOutput_calendly_getwebhooksubscription"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getwebhooksubscription",
+                "ActionOutput_calendly_getwebhooksubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -735,7 +879,9 @@
                                 "description": "The unique identifier of the webhook subscription. Example: \"AAAAAAAAAAAAAAAA\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_getwebhooksubscription": {
@@ -759,7 +905,10 @@
                             },
                             "retry_started_at": {
                                 "description": "The date and time the webhook subscription retry started.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "type": "string",
@@ -782,18 +931,36 @@
                             },
                             "user": {
                                 "description": "The user associated with the webhook subscription.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "creator": {
                                 "description": "The user who created the webhook subscription.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "group": {
                                 "description": "The group associated with the webhook subscription.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["uri", "callback_url", "created_at", "updated_at", "state", "events", "scope", "organization"],
+                        "required": [
+                            "uri",
+                            "callback_url",
+                            "created_at",
+                            "updated_at",
+                            "state",
+                            "events",
+                            "scope",
+                            "organization"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -806,9 +973,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_listeventinvitees",
             "name": "list-event-invitees",
-            "output": ["ActionOutput_calendly_listeventinvitees"],
-            "scopes": ["scheduled_events:read"],
-            "usedModels": ["ActionInput_calendly_listeventinvitees", "ActionOutput_calendly_listeventinvitees"],
+            "output": [
+                "ActionOutput_calendly_listeventinvitees"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listeventinvitees",
+                "ActionOutput_calendly_listeventinvitees"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -826,12 +1000,20 @@
                             "status": {
                                 "description": "Filter by invitee status",
                                 "type": "string",
-                                "enum": ["active", "canceled"]
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
                             },
                             "sort": {
                                 "description": "Sort order for results",
                                 "type": "string",
-                                "enum": ["created_at:asc", "created_at:desc", "updated_at:asc", "updated_at:desc"]
+                                "enum": [
+                                    "created_at:asc",
+                                    "created_at:desc",
+                                    "updated_at:asc",
+                                    "updated_at:desc"
+                                ]
                             },
                             "count": {
                                 "description": "Number of results per page (1-100)",
@@ -844,7 +1026,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_uuid"],
+                        "required": [
+                            "event_uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_listeventinvitees": {
@@ -869,7 +1053,10 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["active", "canceled"],
+                                            "enum": [
+                                                "active",
+                                                "canceled"
+                                            ],
                                             "description": "Status of the invitee"
                                         },
                                         "timezone": {
@@ -901,7 +1088,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["question", "answer"],
+                                                "required": [
+                                                    "question",
+                                                    "answer"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -955,7 +1145,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uri", "email", "status", "created_at", "updated_at", "event"],
+                                    "required": [
+                                        "uri",
+                                        "email",
+                                        "status",
+                                        "created_at",
+                                        "updated_at",
+                                        "event"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of event invitees"
@@ -965,7 +1162,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -978,9 +1177,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_calendly_deleteuser"],
-            "scopes": ["organizations:write"],
-            "usedModels": ["ActionInput_calendly_deleteuser", "ActionOutput_calendly_deleteuser"],
+            "output": [
+                "ActionOutput_calendly_deleteuser"
+            ],
+            "scopes": [
+                "organizations:write"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_deleteuser",
+                "ActionOutput_calendly_deleteuser"
+            ],
             "version": "2.1.2",
             "json_schema": {
                 "definitions": {
@@ -992,7 +1198,9 @@
                                 "description": "Organization membership UUID to remove"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_deleteuser": {
@@ -1003,7 +1211,9 @@
                                 "description": "Whether the deletion was successful"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1016,9 +1226,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_getcurrentorganization",
             "name": "get-current-organization",
-            "output": ["ActionOutput_calendly_getcurrentorganization"],
-            "scopes": ["organizations:read"],
-            "usedModels": ["ActionInput_calendly_getcurrentorganization", "ActionOutput_calendly_getcurrentorganization"],
+            "output": [
+                "ActionOutput_calendly_getcurrentorganization"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getcurrentorganization",
+                "ActionOutput_calendly_getcurrentorganization"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1051,7 +1268,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uri", "name"],
+                        "required": [
+                            "uri",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1064,9 +1284,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_calendly_getcurrentuser"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_calendly_getcurrentuser", "ActionOutput_calendly_getcurrentuser"],
+            "output": [
+                "ActionOutput_calendly_getcurrentuser"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getcurrentuser",
+                "ActionOutput_calendly_getcurrentuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1119,7 +1346,17 @@
                                 "description": "Organization URI"
                             }
                         },
-                        "required": ["uri", "email", "name", "slug", "timezone", "created_at", "updated_at", "scheduling_url", "current_organization"],
+                        "required": [
+                            "uri",
+                            "email",
+                            "name",
+                            "slug",
+                            "timezone",
+                            "created_at",
+                            "updated_at",
+                            "scheduling_url",
+                            "current_organization"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1132,9 +1369,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_getorganizationmembership",
             "name": "get-organization-membership",
-            "output": ["ActionOutput_calendly_getorganizationmembership"],
-            "scopes": ["organizations:read"],
-            "usedModels": ["ActionInput_calendly_getorganizationmembership", "ActionOutput_calendly_getorganizationmembership"],
+            "output": [
+                "ActionOutput_calendly_getorganizationmembership"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getorganizationmembership",
+                "ActionOutput_calendly_getorganizationmembership"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1146,7 +1390,9 @@
                                 "description": "The unique identifier (UUID) of the organization membership. Example: \"12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_getorganizationmembership": {
@@ -1212,7 +1458,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["uri"],
+                                "required": [
+                                    "uri"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Primary account details of the user"
                             },
@@ -1225,7 +1473,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uri", "role", "organization", "user"],
+                        "required": [
+                            "uri",
+                            "role",
+                            "organization",
+                            "user"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1238,9 +1491,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_getroutingform",
             "name": "get-routing-form",
-            "output": ["ActionOutput_calendly_getroutingform"],
-            "scopes": ["routing_forms:read"],
-            "usedModels": ["ActionInput_calendly_getroutingform", "ActionOutput_calendly_getroutingform"],
+            "output": [
+                "ActionOutput_calendly_getroutingform"
+            ],
+            "scopes": [
+                "routing_forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_getroutingform",
+                "ActionOutput_calendly_getroutingform"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1252,7 +1512,9 @@
                                 "description": "The unique identifier of the routing form in UUID format. Example: \"9f53ccd3-88e6-4c62-ad9e-91ea57d2187d\""
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_calendly_getroutingform": {
@@ -1271,7 +1533,10 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["published", "unpublished"]
+                                        "enum": [
+                                            "published",
+                                            "unpublished"
+                                        ]
                                     },
                                     "questions": {
                                         "type": "array",
@@ -1304,7 +1569,13 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["uuid", "name", "type", "required", "answer_choices"],
+                                            "required": [
+                                                "uuid",
+                                                "name",
+                                                "type",
+                                                "required",
+                                                "answer_choices"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1315,7 +1586,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["uri", "organization", "name", "status", "questions", "created_at", "updated_at"],
+                                "required": [
+                                    "uri",
+                                    "organization",
+                                    "name",
+                                    "status",
+                                    "questions",
+                                    "created_at",
+                                    "updated_at"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1333,9 +1612,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_listeventtypes",
             "name": "list-event-types",
-            "output": ["ActionOutput_calendly_listeventtypes"],
-            "scopes": ["event_types:read"],
-            "usedModels": ["ActionInput_calendly_listeventtypes", "ActionOutput_calendly_listeventtypes"],
+            "output": [
+                "ActionOutput_calendly_listeventtypes"
+            ],
+            "scopes": [
+                "event_types:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listeventtypes",
+                "ActionOutput_calendly_listeventtypes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1395,13 +1681,19 @@
                                             "type": "string"
                                         },
                                         "description_html": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "duration": {
                                             "type": "number"
                                         },
                                         "internal_note": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "kind": {
                                             "type": "string"
@@ -1410,7 +1702,10 @@
                                             "type": "string"
                                         },
                                         "pooling_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "profile": {
                                             "type": "object",
@@ -1425,7 +1720,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name", "type", "owner"],
+                                            "required": [
+                                                "name",
+                                                "type",
+                                                "owner"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "scheduling_url": {
@@ -1462,7 +1761,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_types"],
+                        "required": [
+                            "event_types"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1475,9 +1776,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_listorganizationmemberships",
             "name": "list-organization-memberships",
-            "output": ["ActionOutput_calendly_listorganizationmemberships"],
-            "scopes": ["organizations:read"],
-            "usedModels": ["ActionInput_calendly_listorganizationmemberships", "ActionOutput_calendly_listorganizationmemberships"],
+            "output": [
+                "ActionOutput_calendly_listorganizationmemberships"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listorganizationmemberships",
+                "ActionOutput_calendly_listorganizationmemberships"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1523,7 +1831,11 @@
                                         },
                                         "role": {
                                             "type": "string",
-                                            "enum": ["owner", "admin", "user"],
+                                            "enum": [
+                                                "owner",
+                                                "admin",
+                                                "user"
+                                            ],
                                             "description": "Role of the user in the organization."
                                         },
                                         "user": {
@@ -1558,7 +1870,15 @@
                                                     "description": "ISO 8601 timestamp when user was last updated."
                                                 }
                                             },
-                                            "required": ["uri", "name", "email", "scheduling_url", "timezone", "created_at", "updated_at"],
+                                            "required": [
+                                                "uri",
+                                                "name",
+                                                "email",
+                                                "scheduling_url",
+                                                "timezone",
+                                                "created_at",
+                                                "updated_at"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "organization": {
@@ -1569,7 +1889,9 @@
                                                     "description": "Organization URI. Example: \"https://api.calendly.com/organizations/ABC123\""
                                                 }
                                             },
-                                            "required": ["uri"],
+                                            "required": [
+                                                "uri"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "created_at": {
@@ -1581,7 +1903,14 @@
                                             "description": "ISO 8601 timestamp when membership was last updated."
                                         }
                                     },
-                                    "required": ["uri", "role", "user", "organization", "created_at", "updated_at"],
+                                    "required": [
+                                        "uri",
+                                        "role",
+                                        "user",
+                                        "organization",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of organization membership records."
@@ -1600,12 +1929,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["count"],
+                                "required": [
+                                    "count"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Pagination metadata for navigating results."
                             }
                         },
-                        "required": ["collection", "pagination"],
+                        "required": [
+                            "collection",
+                            "pagination"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1618,9 +1952,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_listroutingforms",
             "name": "list-routing-forms",
-            "output": ["ActionOutput_calendly_listroutingforms"],
-            "scopes": ["routing_forms:read"],
-            "usedModels": ["ActionInput_calendly_listroutingforms", "ActionOutput_calendly_listroutingforms"],
+            "output": [
+                "ActionOutput_calendly_listroutingforms"
+            ],
+            "scopes": [
+                "routing_forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listroutingforms",
+                "ActionOutput_calendly_listroutingforms"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1681,7 +2022,15 @@
                                             "description": "ISO 8601 timestamp when the routing form was last updated."
                                         }
                                     },
-                                    "required": ["uri", "uuid", "name", "organization", "status", "created_at", "updated_at"],
+                                    "required": [
+                                        "uri",
+                                        "uuid",
+                                        "name",
+                                        "organization",
+                                        "status",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1690,7 +2039,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1703,9 +2054,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_listscheduledevents",
             "name": "list-scheduled-events",
-            "output": ["ActionOutput_calendly_listscheduledevents"],
-            "scopes": ["scheduled_events:read"],
-            "usedModels": ["ActionInput_calendly_listscheduledevents", "ActionOutput_calendly_listscheduledevents"],
+            "output": [
+                "ActionOutput_calendly_listscheduledevents"
+            ],
+            "scopes": [
+                "scheduled_events:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listscheduledevents",
+                "ActionOutput_calendly_listscheduledevents"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1723,7 +2081,10 @@
                             "status": {
                                 "description": "Filter events by status: \"active\" or \"canceled\"",
                                 "type": "string",
-                                "enum": ["active", "canceled"]
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
                             },
                             "invitee_email": {
                                 "description": "Filter events by invitee email address",
@@ -1732,7 +2093,10 @@
                             "sort": {
                                 "description": "Sort order for events. Default is \"start_time:asc\"",
                                 "type": "string",
-                                "enum": ["start_time:asc", "start_time:desc"]
+                                "enum": [
+                                    "start_time:asc",
+                                    "start_time:desc"
+                                ]
                             },
                             "count": {
                                 "description": "Number of events to return per page (max 100)",
@@ -1763,7 +2127,10 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["active", "canceled"]
+                                            "enum": [
+                                                "active",
+                                                "canceled"
+                                            ]
                                         },
                                         "start_time": {
                                             "type": "string"
@@ -1792,7 +2159,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type"],
+                                                    "required": [
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 {
@@ -1813,7 +2182,11 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["active", "limit", "total"],
+                                            "required": [
+                                                "active",
+                                                "limit",
+                                                "total"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "created_at": {
@@ -1841,7 +2214,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1854,9 +2229,16 @@
             "endpoint": null,
             "input": "ActionInput_calendly_listwebhooksubscriptions",
             "name": "list-webhook-subscriptions",
-            "output": ["ActionOutput_calendly_listwebhooksubscriptions"],
-            "scopes": ["webhooks:read"],
-            "usedModels": ["ActionInput_calendly_listwebhooksubscriptions", "ActionOutput_calendly_listwebhooksubscriptions"],
+            "output": [
+                "ActionOutput_calendly_listwebhooksubscriptions"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_calendly_listwebhooksubscriptions",
+                "ActionOutput_calendly_listwebhooksubscriptions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1874,12 +2256,18 @@
                             "scope": {
                                 "description": "Scope of webhook subscriptions to return. Required when filtering by organization or user",
                                 "type": "string",
-                                "enum": ["organization", "user"]
+                                "enum": [
+                                    "organization",
+                                    "user"
+                                ]
                             },
                             "sort": {
                                 "description": "Sort order for results. Default: created_at:desc",
                                 "type": "string",
-                                "enum": ["created_at:asc", "created_at:desc"]
+                                "enum": [
+                                    "created_at:asc",
+                                    "created_at:desc"
+                                ]
                             },
                             "count": {
                                 "description": "Number of results per page. Max: 100, Default: 20",
@@ -1927,7 +2315,10 @@
                                         },
                                         "scope": {
                                             "type": "string",
-                                            "enum": ["organization", "user"],
+                                            "enum": [
+                                                "organization",
+                                                "user"
+                                            ],
                                             "description": "Scope of the webhook subscription"
                                         },
                                         "created_at": {
@@ -1980,16 +2371,24 @@
                                         "maximum": 9007199254740991
                                     },
                                     "next_page_token": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "previous_page_token": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["collection"],
+                        "required": [
+                            "collection"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2010,12 +2409,18 @@
             ],
             "input": null,
             "name": "event-invitees",
-            "output": ["Invitee"],
+            "output": [
+                "Invitee"
+            ],
             "runs": "every hour",
-            "scopes": ["scheduled_events:read"],
+            "scopes": [
+                "scheduled_events:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invitee"],
+            "usedModels": [
+                "Invitee"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2061,7 +2466,10 @@
                                 "type": "string"
                             },
                             "text_reminder_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "questions_and_answers": {
                                 "type": "array",
@@ -2078,7 +2486,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["question", "answer", "position"],
+                                    "required": [
+                                        "question",
+                                        "answer",
+                                        "position"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2086,22 +2498,40 @@
                                 "type": "object",
                                 "properties": {
                                     "utm_campaign": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "utm_source": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "utm_medium": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "utm_content": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "utm_term": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "salesforce_uuid": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -2128,16 +2558,32 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["external_id", "provider", "amount", "currency", "successful"],
+                                "required": [
+                                    "external_id",
+                                    "provider",
+                                    "amount",
+                                    "currency",
+                                    "successful"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "email", "name", "status", "created_at", "updated_at", "event"],
+                        "required": [
+                            "id",
+                            "email",
+                            "name",
+                            "status",
+                            "created_at",
+                            "updated_at",
+                            "event"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2151,12 +2597,18 @@
             ],
             "input": null,
             "name": "event-types",
-            "output": ["EventType"],
+            "output": [
+                "EventType"
+            ],
             "runs": "every hour",
-            "scopes": ["event_types:read"],
+            "scopes": [
+                "event_types:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EventType"],
+            "usedModels": [
+                "EventType"
+            ],
             "version": "4.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2183,7 +2635,10 @@
                             "booking_method": {
                                 "description": "Booking method",
                                 "type": "string",
-                                "enum": ["instant", "poll"]
+                                "enum": [
+                                    "instant",
+                                    "poll"
+                                ]
                             },
                             "color": {
                                 "description": "Hex color value",
@@ -2216,13 +2671,19 @@
                             "kind": {
                                 "description": "Event type kind",
                                 "type": "string",
-                                "enum": ["solo"]
+                                "enum": [
+                                    "solo"
+                                ]
                             },
                             "pooling_type": {
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["round_robin", "collective", "multi_pool"]
+                                        "enum": [
+                                            "round_robin",
+                                            "collective",
+                                            "multi_pool"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -2245,15 +2706,26 @@
                             "type": {
                                 "description": "Event type category",
                                 "type": "string",
-                                "enum": ["StandardEventType", "AdhocEventType"]
+                                "enum": [
+                                    "StandardEventType",
+                                    "AdhocEventType"
+                                ]
                             }
                         },
-                        "required": ["id", "uri", "active", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "uri",
+                            "active",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2267,12 +2739,18 @@
             ],
             "input": null,
             "name": "organization-memberships",
-            "output": ["OrganizationMembership"],
+            "output": [
+                "OrganizationMembership"
+            ],
             "runs": "every hour",
-            "scopes": ["organizations:read"],
+            "scopes": [
+                "organizations:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["OrganizationMembership"],
+            "usedModels": [
+                "OrganizationMembership"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2308,12 +2786,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uri", "role", "organizationUri", "userUri"],
+                        "required": [
+                            "id",
+                            "uri",
+                            "role",
+                            "organizationUri",
+                            "userUri"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2327,12 +2813,18 @@
             ],
             "input": null,
             "name": "routing-forms",
-            "output": ["RoutingForm"],
+            "output": [
+                "RoutingForm"
+            ],
             "runs": "every hour",
-            "scopes": ["routing_forms:read"],
+            "scopes": [
+                "routing_forms:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RoutingForm"],
+            "usedModels": [
+                "RoutingForm"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2386,7 +2878,13 @@
                                             ]
                                         }
                                     },
-                                    "required": ["uuid", "name", "type", "required", "answer_choices"],
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "type",
+                                        "required",
+                                        "answer_choices"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2397,12 +2895,23 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uri", "organization", "name", "status", "questions", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "uri",
+                            "organization",
+                            "name",
+                            "status",
+                            "questions",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2416,12 +2925,18 @@
             ],
             "input": null,
             "name": "scheduled-events",
-            "output": ["ScheduledEvent"],
+            "output": [
+                "ScheduledEvent"
+            ],
             "runs": "every hour",
-            "scopes": ["scheduled_events:read"],
+            "scopes": [
+                "scheduled_events:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ScheduledEvent"],
+            "usedModels": [
+                "ScheduledEvent"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2440,7 +2955,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "canceled"]
+                                "enum": [
+                                    "active",
+                                    "canceled"
+                                ]
                             },
                             "start_time": {
                                 "type": "string"
@@ -2530,12 +3048,21 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "uri", "start_time", "end_time", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "uri",
+                            "start_time",
+                            "end_time",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2549,12 +3076,18 @@
             ],
             "input": null,
             "name": "webhook-subscriptions",
-            "output": ["WebhookSubscription"],
+            "output": [
+                "WebhookSubscription"
+            ],
             "runs": "every hour",
-            "scopes": ["webhooks:read"],
+            "scopes": [
+                "webhooks:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["WebhookSubscription"],
+            "usedModels": [
+                "WebhookSubscription"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2583,7 +3116,11 @@
                             },
                             "scope": {
                                 "type": "string",
-                                "enum": ["organization", "user", "group"],
+                                "enum": [
+                                    "organization",
+                                    "user",
+                                    "group"
+                                ],
                                 "description": "Scope of the webhook subscription"
                             },
                             "organization": {
@@ -2613,19 +3150,33 @@
                             "status": {
                                 "description": "Current status of the webhook",
                                 "type": "string",
-                                "enum": ["active", "disabled"]
+                                "enum": [
+                                    "active",
+                                    "disabled"
+                                ]
                             },
                             "state": {
                                 "description": "Additional state information",
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uri", "callback_url", "events", "scope", "organization", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "uri",
+                            "callback_url",
+                            "events",
+                            "scope",
+                            "organization",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

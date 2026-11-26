@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_supabase_copystorageobject",
             "name": "copy-storage-object",
-            "output": ["ActionOutput_supabase_copystorageobject"],
-            "scopes": ["storage"],
-            "usedModels": ["ActionInput_supabase_copystorageobject", "ActionOutput_supabase_copystorageobject"],
+            "output": [
+                "ActionOutput_supabase_copystorageobject"
+            ],
+            "scopes": [
+                "storage"
+            ],
+            "usedModels": [
+                "ActionInput_supabase_copystorageobject",
+                "ActionOutput_supabase_copystorageobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -33,7 +40,12 @@
                                 "description": "Path for the copied object in the destination bucket. Example: \"docs/readme-copy.txt\""
                             }
                         },
-                        "required": ["bucketId", "sourceKey", "destinationBucket", "destinationKey"],
+                        "required": [
+                            "bucketId",
+                            "sourceKey",
+                            "destinationBucket",
+                            "destinationKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_copystorageobject": {
@@ -91,7 +103,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "bucket_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "bucket_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -104,9 +120,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_createauthuser",
             "name": "create-auth-user",
-            "output": ["ActionOutput_supabase_createauthuser"],
+            "output": [
+                "ActionOutput_supabase_createauthuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_createauthuser", "ActionOutput_supabase_createauthuser"],
+            "usedModels": [
+                "ActionInput_supabase_createauthuser",
+                "ActionOutput_supabase_createauthuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -204,7 +225,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "user_id"],
+                                    "required": [
+                                        "id",
+                                        "user_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -223,7 +247,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -236,9 +264,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_createsigneduploadurl",
             "name": "create-signed-upload-url",
-            "output": ["ActionOutput_supabase_createsigneduploadurl"],
+            "output": [
+                "ActionOutput_supabase_createsigneduploadurl"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_createsigneduploadurl", "ActionOutput_supabase_createsigneduploadurl"],
+            "usedModels": [
+                "ActionInput_supabase_createsigneduploadurl",
+                "ActionOutput_supabase_createsigneduploadurl"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -254,7 +287,10 @@
                                 "description": "Object path within the bucket. Example: \"uploads/file.txt\""
                             }
                         },
-                        "required": ["bucket_id", "path"],
+                        "required": [
+                            "bucket_id",
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_createsigneduploadurl": {
@@ -269,7 +305,10 @@
                                 "description": "Token included in the signed URL."
                             }
                         },
-                        "required": ["signed_url", "token"],
+                        "required": [
+                            "signed_url",
+                            "token"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -282,9 +321,16 @@
             "endpoint": null,
             "input": "ActionInput_supabase_createsignedurl",
             "name": "create-signed-url",
-            "output": ["ActionOutput_supabase_createsignedurl"],
-            "scopes": ["storage.objects.read"],
-            "usedModels": ["ActionInput_supabase_createsignedurl", "ActionOutput_supabase_createsignedurl"],
+            "output": [
+                "ActionOutput_supabase_createsignedurl"
+            ],
+            "scopes": [
+                "storage.objects.read"
+            ],
+            "usedModels": [
+                "ActionInput_supabase_createsignedurl",
+                "ActionOutput_supabase_createsignedurl"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -306,7 +352,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["bucket_id", "path"],
+                        "required": [
+                            "bucket_id",
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_createsignedurl": {
@@ -317,7 +366,9 @@
                                 "description": "Absolute URL for accessing the object."
                             }
                         },
-                        "required": ["signed_url"],
+                        "required": [
+                            "signed_url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -330,9 +381,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_createstoragebucket",
             "name": "create-storage-bucket",
-            "output": ["ActionOutput_supabase_createstoragebucket"],
+            "output": [
+                "ActionOutput_supabase_createstoragebucket"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_createstoragebucket", "ActionOutput_supabase_createstoragebucket"],
+            "usedModels": [
+                "ActionInput_supabase_createstoragebucket",
+                "ActionOutput_supabase_createstoragebucket"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -365,10 +421,15 @@
                             "type": {
                                 "description": "Bucket type. Defaults to STANDARD.",
                                 "type": "string",
-                                "enum": ["STANDARD", "ANALYTICS"]
+                                "enum": [
+                                    "STANDARD",
+                                    "ANALYTICS"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_createstoragebucket": {
@@ -406,10 +467,17 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["STANDARD", "ANALYTICS"]
+                                "enum": [
+                                    "STANDARD",
+                                    "ANALYTICS"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "public"],
+                        "required": [
+                            "id",
+                            "name",
+                            "public"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -422,9 +490,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_createstorageobject",
             "name": "create-storage-object",
-            "output": ["ActionOutput_supabase_createstorageobject"],
+            "output": [
+                "ActionOutput_supabase_createstorageobject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_createstorageobject", "ActionOutput_supabase_createstorageobject"],
+            "usedModels": [
+                "ActionInput_supabase_createstorageobject",
+                "ActionOutput_supabase_createstorageobject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -452,7 +525,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["bucket_id", "path", "content", "content_type"],
+                        "required": [
+                            "bucket_id",
+                            "path",
+                            "content",
+                            "content_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_createstorageobject": {
@@ -465,7 +543,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["key", "id"],
+                        "required": [
+                            "key",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -478,9 +559,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_deleteauthfactor",
             "name": "delete-auth-factor",
-            "output": ["ActionOutput_supabase_deleteauthfactor"],
+            "output": [
+                "ActionOutput_supabase_deleteauthfactor"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_deleteauthfactor", "ActionOutput_supabase_deleteauthfactor"],
+            "usedModels": [
+                "ActionInput_supabase_deleteauthfactor",
+                "ActionOutput_supabase_deleteauthfactor"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -500,7 +586,10 @@
                                 "description": "MFA factor UUID to delete. Example: \"b1c2d3e4-f5a6-7890-1234-567890abcdef\""
                             }
                         },
-                        "required": ["user_id", "factor_id"],
+                        "required": [
+                            "user_id",
+                            "factor_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_deleteauthfactor": {
@@ -525,7 +614,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "user_id", "factor_id"],
+                        "required": [
+                            "success",
+                            "user_id",
+                            "factor_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -538,9 +631,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_deleteauthuser",
             "name": "delete-auth-user",
-            "output": ["ActionOutput_supabase_deleteauthuser"],
+            "output": [
+                "ActionOutput_supabase_deleteauthuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_deleteauthuser", "ActionOutput_supabase_deleteauthuser"],
+            "usedModels": [
+                "ActionInput_supabase_deleteauthuser",
+                "ActionOutput_supabase_deleteauthuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -554,7 +652,9 @@
                                 "description": "The UUID of the auth user to delete. Example: \"afece930-4935-43c3-9484-46bc38da98f7\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_deleteauthuser": {
@@ -567,7 +667,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "user_id"],
+                        "required": [
+                            "success",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -580,9 +683,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_deletestoragebucket",
             "name": "delete-storage-bucket",
-            "output": ["ActionOutput_supabase_deletestoragebucket"],
+            "output": [
+                "ActionOutput_supabase_deletestoragebucket"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_deletestoragebucket", "ActionOutput_supabase_deletestoragebucket"],
+            "usedModels": [
+                "ActionInput_supabase_deletestoragebucket",
+                "ActionOutput_supabase_deletestoragebucket"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -594,7 +702,9 @@
                                 "description": "Storage bucket ID to delete. Example: \"nango-del-bucket-1\""
                             }
                         },
-                        "required": ["bucket_id"],
+                        "required": [
+                            "bucket_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_deletestoragebucket": {
@@ -607,7 +717,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "bucket_id"],
+                        "required": [
+                            "success",
+                            "bucket_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -620,9 +733,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_deletestorageobject",
             "name": "delete-storage-object",
-            "output": ["ActionOutput_supabase_deletestorageobject"],
+            "output": [
+                "ActionOutput_supabase_deletestorageobject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_deletestorageobject", "ActionOutput_supabase_deletestorageobject"],
+            "usedModels": [
+                "ActionInput_supabase_deletestorageobject",
+                "ActionOutput_supabase_deletestorageobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -642,7 +760,10 @@
                                 "description": "Object paths to delete. Example: [\"delete-me-1.txt\"]"
                             }
                         },
-                        "required": ["bucketId", "prefixes"],
+                        "required": [
+                            "bucketId",
+                            "prefixes"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_deletestorageobject": {
@@ -691,12 +812,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["deleted"],
+                        "required": [
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -709,9 +834,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_deletetablerows",
             "name": "delete-table-rows",
-            "output": ["ActionOutput_supabase_deletetablerows"],
+            "output": [
+                "ActionOutput_supabase_deletetablerows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_deletetablerows", "ActionOutput_supabase_deletetablerows"],
+            "usedModels": [
+                "ActionInput_supabase_deletetablerows",
+                "ActionOutput_supabase_deletetablerows"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -737,7 +867,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["table", "filters"],
+                        "required": [
+                            "table",
+                            "filters"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_deletetablerows": {
@@ -769,9 +902,16 @@
             "endpoint": null,
             "input": "ActionInput_supabase_generateauthlink",
             "name": "generate-auth-link",
-            "output": ["ActionOutput_supabase_generateauthlink"],
-            "scopes": ["service_role"],
-            "usedModels": ["ActionInput_supabase_generateauthlink", "ActionOutput_supabase_generateauthlink"],
+            "output": [
+                "ActionOutput_supabase_generateauthlink"
+            ],
+            "scopes": [
+                "service_role"
+            ],
+            "usedModels": [
+                "ActionInput_supabase_generateauthlink",
+                "ActionOutput_supabase_generateauthlink"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -828,7 +968,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["type", "email"],
+                        "required": [
+                            "type",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_generateauthlink": {
@@ -871,9 +1014,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_getauthuser",
             "name": "get-auth-user",
-            "output": ["ActionOutput_supabase_getauthuser"],
+            "output": [
+                "ActionOutput_supabase_getauthuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_getauthuser", "ActionOutput_supabase_getauthuser"],
+            "usedModels": [
+                "ActionInput_supabase_getauthuser",
+                "ActionOutput_supabase_getauthuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -887,7 +1035,9 @@
                                 "description": "The UUID of the user to retrieve. Example: \"a02e344e-4eba-473d-b299-b751cbd1fa2c\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_getauthuser": {
@@ -906,19 +1056,34 @@
                                 "type": "string"
                             },
                             "phone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email_confirmed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone_confirmed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "confirmed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_sign_in_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "app_metadata": {
                                 "type": "object",
@@ -965,7 +1130,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "user_id", "provider"],
+                                    "required": [
+                                        "id",
+                                        "user_id",
+                                        "provider"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -993,7 +1162,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1007,10 +1178,15 @@
                                 "type": "boolean"
                             },
                             "banned_until": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1023,9 +1199,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_getstoragebucket",
             "name": "get-storage-bucket",
-            "output": ["ActionOutput_supabase_getstoragebucket"],
+            "output": [
+                "ActionOutput_supabase_getstoragebucket"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_getstoragebucket", "ActionOutput_supabase_getstoragebucket"],
+            "usedModels": [
+                "ActionInput_supabase_getstoragebucket",
+                "ActionOutput_supabase_getstoragebucket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1037,7 +1218,9 @@
                                 "description": "Storage bucket ID. Example: \"nango-test-public\""
                             }
                         },
-                        "required": ["bucketId"],
+                        "required": [
+                            "bucketId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_getstoragebucket": {
@@ -1060,10 +1243,16 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["STANDARD", "ANALYTICS"]
+                                "enum": [
+                                    "STANDARD",
+                                    "ANALYTICS"
+                                ]
                             },
                             "file_size_limit": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "allowed_mime_types": {
                                 "anyOf": [
@@ -1085,7 +1274,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "public"],
+                        "required": [
+                            "id",
+                            "name",
+                            "public"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1098,9 +1291,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_getstorageobject",
             "name": "get-storage-object",
-            "output": ["ActionOutput_supabase_getstorageobject"],
+            "output": [
+                "ActionOutput_supabase_getstorageobject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_getstorageobject", "ActionOutput_supabase_getstorageobject"],
+            "usedModels": [
+                "ActionInput_supabase_getstorageobject",
+                "ActionOutput_supabase_getstorageobject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1116,7 +1314,10 @@
                                 "description": "Object path within the bucket. Example: \"docs/readme.txt\""
                             }
                         },
-                        "required": ["bucketId", "path"],
+                        "required": [
+                            "bucketId",
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_getstorageobject": {
@@ -1141,7 +1342,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "id", "size", "contentType", "created_at", "updated_at"],
+                        "required": [
+                            "name",
+                            "id",
+                            "size",
+                            "contentType",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1154,9 +1362,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_inserttablerow",
             "name": "insert-table-row",
-            "output": ["ActionOutput_supabase_inserttablerow"],
+            "output": [
+                "ActionOutput_supabase_inserttablerow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_inserttablerow", "ActionOutput_supabase_inserttablerow"],
+            "usedModels": [
+                "ActionInput_supabase_inserttablerow",
+                "ActionOutput_supabase_inserttablerow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1176,7 +1389,10 @@
                                 "description": "The row object to insert. Example: {\"name\": \"new-record\", \"value\": \"delta\"}"
                             }
                         },
-                        "required": ["table", "row"],
+                        "required": [
+                            "table",
+                            "row"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_inserttablerow": {
@@ -1199,9 +1415,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_invokerpc",
             "name": "invoke-rpc",
-            "output": ["ActionOutput_supabase_invokerpc"],
+            "output": [
+                "ActionOutput_supabase_invokerpc"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_invokerpc", "ActionOutput_supabase_invokerpc"],
+            "usedModels": [
+                "ActionInput_supabase_invokerpc",
+                "ActionOutput_supabase_invokerpc"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1225,7 +1446,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["function_name"],
+                        "required": [
+                            "function_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_invokerpc": {}
@@ -1239,9 +1462,16 @@
             "endpoint": null,
             "input": "ActionInput_supabase_listauthfactors",
             "name": "list-auth-factors",
-            "output": ["ActionOutput_supabase_listauthfactors"],
-            "scopes": ["service_role"],
-            "usedModels": ["ActionInput_supabase_listauthfactors", "ActionOutput_supabase_listauthfactors"],
+            "output": [
+                "ActionOutput_supabase_listauthfactors"
+            ],
+            "scopes": [
+                "service_role"
+            ],
+            "usedModels": [
+                "ActionInput_supabase_listauthfactors",
+                "ActionOutput_supabase_listauthfactors"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1255,7 +1485,9 @@
                                 "description": "The UUID of the Supabase Auth user whose MFA factors to list. Example: \"a02e344e-4eba-473d-b299-b751cbd1fa2c\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_listauthfactors": {
@@ -1277,11 +1509,17 @@
                                         },
                                         "factor_type": {
                                             "type": "string",
-                                            "enum": ["totp", "phone"]
+                                            "enum": [
+                                                "totp",
+                                                "phone"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["verified", "unverified"]
+                                            "enum": [
+                                                "verified",
+                                                "unverified"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -1290,12 +1528,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "user_id"],
+                                    "required": [
+                                        "id",
+                                        "user_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["factors"],
+                        "required": [
+                            "factors"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1308,9 +1551,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_listauthusers",
             "name": "list-auth-users",
-            "output": ["ActionOutput_supabase_listauthusers"],
+            "output": [
+                "ActionOutput_supabase_listauthusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_listauthusers", "ActionOutput_supabase_listauthusers"],
+            "usedModels": [
+                "ActionInput_supabase_listauthusers",
+                "ActionOutput_supabase_listauthusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1347,79 +1595,148 @@
                                             "type": "string"
                                         },
                                         "role": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email_confirmed_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone_confirmed_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "confirmed_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email_change": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email_change_sent_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email_change_confirm_status": {
                                             "type": "number"
                                         },
                                         "phone_change": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone_change_sent_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone_change_token": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "recovery_sent_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "recovery_token": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "new_email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "new_phone": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "invited_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "confirmation_sent_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "confirmation_token": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "reauthentication_sent_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "reauthentication_token": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_super_admin": {
                                             "type": "boolean"
                                         },
                                         "created_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_sign_in_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "app_metadata": {
                                             "type": "object",
@@ -1455,7 +1772,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1470,7 +1789,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1483,9 +1804,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_liststoragebuckets",
             "name": "list-storage-buckets",
-            "output": ["ActionOutput_supabase_liststoragebuckets"],
+            "output": [
+                "ActionOutput_supabase_liststoragebuckets"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_liststoragebuckets", "ActionOutput_supabase_liststoragebuckets"],
+            "usedModels": [
+                "ActionInput_supabase_liststoragebuckets",
+                "ActionOutput_supabase_liststoragebuckets"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1505,12 +1831,20 @@
                             "sort_column": {
                                 "description": "Column to sort by. Example: \"created_at\"",
                                 "type": "string",
-                                "enum": ["id", "name", "created_at", "updated_at"]
+                                "enum": [
+                                    "id",
+                                    "name",
+                                    "created_at",
+                                    "updated_at"
+                                ]
                             },
                             "sort_order": {
                                 "description": "Sort direction. Example: \"desc\"",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "search": {
                                 "description": "Search term to filter bucket names. Example: \"prod\"",
@@ -1537,16 +1871,28 @@
                                             "type": "boolean"
                                         },
                                         "owner": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "file_size_limit": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "allowed_mime_types": {
                                             "anyOf": [
@@ -1562,10 +1908,17 @@
                                             ]
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "public"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "public"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1573,7 +1926,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1586,9 +1941,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_liststorageobjects",
             "name": "list-storage-objects",
-            "output": ["ActionOutput_supabase_liststorageobjects"],
+            "output": [
+                "ActionOutput_supabase_liststorageobjects"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_liststorageobjects", "ActionOutput_supabase_liststorageobjects"],
+            "usedModels": [
+                "ActionInput_supabase_liststorageobjects",
+                "ActionOutput_supabase_liststorageobjects"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1616,7 +1976,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["bucket_id"],
+                        "required": [
+                            "bucket_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_liststorageobjects": {
@@ -1667,7 +2029,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1676,7 +2040,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1689,9 +2055,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_querytablerows",
             "name": "query-table-rows",
-            "output": ["ActionOutput_supabase_querytablerows"],
+            "output": [
+                "ActionOutput_supabase_querytablerows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_querytablerows", "ActionOutput_supabase_querytablerows"],
+            "usedModels": [
+                "ActionInput_supabase_querytablerows",
+                "ActionOutput_supabase_querytablerows"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1722,10 +2093,18 @@
                                         },
                                         "value": {
                                             "description": "Filter value. Example: \"alpha\"",
-                                            "type": ["string", "number", "boolean"]
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
                                         }
                                     },
-                                    "required": ["column", "operator", "value"],
+                                    "required": [
+                                        "column",
+                                        "operator",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1750,7 +2129,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["table"],
+                        "required": [
+                            "table"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_querytablerows": {
@@ -1784,7 +2165,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["rows"],
+                        "required": [
+                            "rows"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1797,9 +2180,16 @@
             "endpoint": null,
             "input": "ActionInput_supabase_updateauthuser",
             "name": "update-auth-user",
-            "output": ["ActionOutput_supabase_updateauthuser"],
-            "scopes": ["service_role"],
-            "usedModels": ["ActionInput_supabase_updateauthuser", "ActionOutput_supabase_updateauthuser"],
+            "output": [
+                "ActionOutput_supabase_updateauthuser"
+            ],
+            "scopes": [
+                "service_role"
+            ],
+            "usedModels": [
+                "ActionInput_supabase_updateauthuser",
+                "ActionOutput_supabase_updateauthuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1853,7 +2243,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_updateauthuser": {
@@ -1925,12 +2317,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "user_id", "provider"],
+                                    "required": [
+                                        "id",
+                                        "user_id",
+                                        "provider"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1943,9 +2341,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_updatestoragebucket",
             "name": "update-storage-bucket",
-            "output": ["ActionOutput_supabase_updatestoragebucket"],
+            "output": [
+                "ActionOutput_supabase_updatestoragebucket"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_updatestoragebucket", "ActionOutput_supabase_updatestoragebucket"],
+            "usedModels": [
+                "ActionInput_supabase_updatestoragebucket",
+                "ActionOutput_supabase_updatestoragebucket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1962,7 +2365,11 @@
                             },
                             "fileSizeLimit": {
                                 "description": "Maximum file size in bytes or as a string like \"100MB\"",
-                                "type": ["number", "string", "null"]
+                                "type": [
+                                    "number",
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "allowedMimeTypes": {
                                 "description": "Allowed MIME types. Example: [\"image/png\", \"image/jpg\"]",
@@ -1979,7 +2386,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_updatestoragebucket": {
@@ -1989,7 +2398,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2002,9 +2413,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_updatestorageobject",
             "name": "update-storage-object",
-            "output": ["ActionOutput_supabase_updatestorageobject"],
+            "output": [
+                "ActionOutput_supabase_updatestorageobject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_updatestorageobject", "ActionOutput_supabase_updatestorageobject"],
+            "usedModels": [
+                "ActionInput_supabase_updatestorageobject",
+                "ActionOutput_supabase_updatestorageobject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2036,7 +2452,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["bucket_id", "path"],
+                        "required": [
+                            "bucket_id",
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_updatestorageobject": {
@@ -2067,9 +2486,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_updatetablerows",
             "name": "update-table-rows",
-            "output": ["ActionOutput_supabase_updatetablerows"],
+            "output": [
+                "ActionOutput_supabase_updatetablerows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_updatetablerows", "ActionOutput_supabase_updatetablerows"],
+            "usedModels": [
+                "ActionInput_supabase_updatetablerows",
+                "ActionOutput_supabase_updatetablerows"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2100,7 +2524,11 @@
                                 "description": "PostgREST filters as query params. Example: {\"id\":\"eq.964cc467-144e-4215-b7d0-d124607a6d72\"}"
                             }
                         },
-                        "required": ["table", "updates", "filters"],
+                        "required": [
+                            "table",
+                            "updates",
+                            "filters"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_updatetablerows": {
@@ -2123,9 +2551,14 @@
             "endpoint": null,
             "input": "ActionInput_supabase_upserttablerow",
             "name": "upsert-table-row",
-            "output": ["ActionOutput_supabase_upserttablerow"],
+            "output": [
+                "ActionOutput_supabase_upserttablerow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_supabase_upserttablerow", "ActionOutput_supabase_upserttablerow"],
+            "usedModels": [
+                "ActionInput_supabase_upserttablerow",
+                "ActionOutput_supabase_upserttablerow"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2149,7 +2582,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["table", "row"],
+                        "required": [
+                            "table",
+                            "row"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_supabase_upserttablerow": {
@@ -2164,7 +2600,9 @@
                                 "description": "The upserted row"
                             }
                         },
-                        "required": ["row"],
+                        "required": [
+                            "row"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2185,12 +2623,16 @@
             ],
             "input": null,
             "name": "auth-users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2226,12 +2668,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2245,12 +2691,16 @@
             ],
             "input": null,
             "name": "storage-buckets",
-            "output": ["Bucket"],
+            "output": [
+                "Bucket"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Bucket"],
+            "usedModels": [
+                "Bucket"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2271,7 +2721,10 @@
                                 "type": "string"
                             },
                             "file_size_limit": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "allowed_mime_types": {
                                 "anyOf": [
@@ -2293,15 +2746,27 @@
                                 "type": "string"
                             },
                             "type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "public", "owner", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "public",
+                            "owner",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2315,12 +2780,16 @@
             ],
             "input": null,
             "name": "storage-objects",
-            "output": ["StorageObject"],
+            "output": [
+                "StorageObject"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StorageObject"],
+            "usedModels": [
+                "StorageObject"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2356,12 +2825,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "bucket_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "bucket_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2375,12 +2850,17 @@
             ],
             "input": "SyncMetadata_supabase_tablerows",
             "name": "table-rows",
-            "output": ["TableRow"],
+            "output": [
+                "TableRow"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TableRow", "SyncMetadata_supabase_tablerows"],
+            "usedModels": [
+                "TableRow",
+                "SyncMetadata_supabase_tablerows"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2395,7 +2875,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "SyncMetadata_supabase_tablerows": {
@@ -2434,12 +2916,16 @@
                                 "maximum": 1000
                             }
                         },
-                        "required": ["table"],
+                        "required": [
+                            "table"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_addgroupusers",
             "name": "add-group-users",
-            "output": ["ActionOutput_docusign_addgroupusers"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_addgroupusers", "ActionOutput_docusign_addgroupusers"],
+            "output": [
+                "ActionOutput_docusign_addgroupusers"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_addgroupusers",
+                "ActionOutput_docusign_addgroupusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -30,13 +37,18 @@
                                             "description": "User ID. Example: \"c9a996ed-50d2-4df4-ac91-a45032721bb6\""
                                         }
                                     },
-                                    "required": ["userId"],
+                                    "required": [
+                                        "userId"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of users to add to the group"
                             }
                         },
-                        "required": ["groupId", "users"],
+                        "required": [
+                            "groupId",
+                            "users"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_addgroupusers": {
@@ -82,9 +94,16 @@
             },
             "input": "ActionInput_docusign_createconnectconfiguration",
             "name": "create-connect-configuration",
-            "output": ["ActionOutput_docusign_createconnectconfiguration"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createconnectconfiguration", "ActionOutput_docusign_createconnectconfiguration"],
+            "output": [
+                "ActionOutput_docusign_createconnectconfiguration"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createconnectconfiguration",
+                "ActionOutput_docusign_createconnectconfiguration"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -119,7 +138,13 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["sent", "delivered", "completed", "declined", "voided"]
+                                    "enum": [
+                                        "sent",
+                                        "delivered",
+                                        "completed",
+                                        "declined",
+                                        "voided"
+                                    ]
                                 },
                                 "description": "Envelope event statuses to subscribe to. Example: [\"sent\", \"delivered\", \"completed\"]"
                             },
@@ -127,12 +152,26 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["Sent", "Delivered", "Completed", "Declined", "AuthenticationFailed", "AutoResponded"]
+                                    "enum": [
+                                        "Sent",
+                                        "Delivered",
+                                        "Completed",
+                                        "Declined",
+                                        "AuthenticationFailed",
+                                        "AutoResponded"
+                                    ]
                                 },
                                 "description": "Recipient event statuses to subscribe to. Example: [\"Sent\", \"Delivered\", \"Completed\"]"
                             }
                         },
-                        "required": ["name", "urlToPublishTo", "allUsers", "allowEnvelopePublish", "envelopeEvents", "recipientEvents"],
+                        "required": [
+                            "name",
+                            "urlToPublishTo",
+                            "allUsers",
+                            "allowEnvelopePublish",
+                            "envelopeEvents",
+                            "recipientEvents"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_createconnectconfiguration": {
@@ -173,7 +212,12 @@
                                 }
                             }
                         },
-                        "required": ["connectId", "configurationType", "name", "urlToPublishTo"],
+                        "required": [
+                            "connectId",
+                            "configurationType",
+                            "name",
+                            "urlToPublishTo"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -186,9 +230,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_createdocumentopenedtrigger",
             "name": "create-document-opened-trigger",
-            "output": ["ActionOutput_docusign_createdocumentopenedtrigger"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createdocumentopenedtrigger", "ActionOutput_docusign_createdocumentopenedtrigger"],
+            "output": [
+                "ActionOutput_docusign_createdocumentopenedtrigger"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createdocumentopenedtrigger",
+                "ActionOutput_docusign_createdocumentopenedtrigger"
+            ],
             "version": "2.0.0",
             "json_schema": {
                 "definitions": {
@@ -215,7 +266,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "urlToPublishTo"],
+                        "required": [
+                            "name",
+                            "urlToPublishTo"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a DocuSign Connect webhook that fires when a recipient opens or views an envelope document."
                     },
@@ -266,7 +320,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["connectId", "name", "urlToPublishTo", "events"],
+                        "required": [
+                            "connectId",
+                            "name",
+                            "urlToPublishTo",
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "Details of the DocuSign Connect webhook configuration that was created."
                     }
@@ -280,9 +339,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_createenvelopefromtemplate",
             "name": "create-envelope-from-template",
-            "output": ["ActionOutput_docusign_createenvelopefromtemplate"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createenvelopefromtemplate", "ActionOutput_docusign_createenvelopefromtemplate"],
+            "output": [
+                "ActionOutput_docusign_createenvelopefromtemplate"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createenvelopefromtemplate",
+                "ActionOutput_docusign_createenvelopefromtemplate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -324,7 +390,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["tabLabel", "value"],
+                                                        "required": [
+                                                            "tabLabel",
+                                                            "value"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
@@ -332,7 +401,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["roleName", "name", "email"],
+                                    "required": [
+                                        "roleName",
+                                        "name",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Role assignments for the template recipients."
@@ -340,7 +413,10 @@
                             "status": {
                                 "description": "Envelope status. Defaults to \"created\".",
                                 "type": "string",
-                                "enum": ["created", "sent"]
+                                "enum": [
+                                    "created",
+                                    "sent"
+                                ]
                             },
                             "emailSubject": {
                                 "description": "Email subject for the envelope.",
@@ -351,7 +427,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["templateId", "templateRoles"],
+                        "required": [
+                            "templateId",
+                            "templateRoles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_createenvelopefromtemplate": {
@@ -370,7 +449,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -383,9 +464,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_createenvelope",
             "name": "create-envelope",
-            "output": ["ActionOutput_docusign_createenvelope"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createenvelope", "ActionOutput_docusign_createenvelope"],
+            "output": [
+                "ActionOutput_docusign_createenvelope"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createenvelope",
+                "ActionOutput_docusign_createenvelope"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -395,7 +483,10 @@
                             "status": {
                                 "description": "Envelope status: created (draft) or sent (immediately). Example: \"created\"",
                                 "type": "string",
-                                "enum": ["created", "sent"]
+                                "enum": [
+                                    "created",
+                                    "sent"
+                                ]
                             },
                             "emailSubject": {
                                 "description": "Email subject line. Example: \"Please sign this document\"",
@@ -428,7 +519,12 @@
                                             "description": "File extension. Example: \"pdf\""
                                         }
                                     },
-                                    "required": ["documentBase64", "name", "documentId", "fileExtension"],
+                                    "required": [
+                                        "documentBase64",
+                                        "name",
+                                        "documentId",
+                                        "fileExtension"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -459,7 +555,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["email", "name", "recipientId"],
+                                            "required": [
+                                                "email",
+                                                "name",
+                                                "recipientId"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -486,7 +586,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["email", "name", "recipientId"],
+                                            "required": [
+                                                "email",
+                                                "name",
+                                                "recipientId"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -516,7 +620,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -529,9 +635,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_createeventsubscription",
             "name": "create-event-subscription",
-            "output": ["ActionOutput_docusign_createeventsubscription"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createeventsubscription", "ActionOutput_docusign_createeventsubscription"],
+            "output": [
+                "ActionOutput_docusign_createeventsubscription"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createeventsubscription",
+                "ActionOutput_docusign_createeventsubscription"
+            ],
             "version": "2.0.0",
             "json_schema": {
                 "definitions": {
@@ -673,7 +786,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "urlToPublishTo", "events"],
+                        "required": [
+                            "name",
+                            "urlToPublishTo",
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a DocuSign Connect webhook subscribed to any set of events."
                     },
@@ -742,7 +859,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["connectId", "name", "urlToPublishTo", "events", "includeData"],
+                        "required": [
+                            "connectId",
+                            "name",
+                            "urlToPublishTo",
+                            "events",
+                            "includeData"
+                        ],
                         "additionalProperties": false,
                         "description": "Details of the DocuSign Connect webhook configuration that was created."
                     }
@@ -756,9 +879,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_creategroup",
             "name": "create-group",
-            "output": ["ActionOutput_docusign_creategroup"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_creategroup", "ActionOutput_docusign_creategroup"],
+            "output": [
+                "ActionOutput_docusign_creategroup"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_creategroup",
+                "ActionOutput_docusign_creategroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -780,13 +910,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["groupName"],
+                                    "required": [
+                                        "groupName"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "One or more custom groups to create."
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_creategroup": {
@@ -810,12 +944,18 @@
                                             "description": "Type of the group. Example: \"customGroup\""
                                         }
                                     },
-                                    "required": ["groupId", "groupName", "groupType"],
+                                    "required": [
+                                        "groupId",
+                                        "groupName",
+                                        "groupType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -831,9 +971,16 @@
             },
             "input": "ActionInput_docusign_createrecipienttabs",
             "name": "create-recipient-tabs",
-            "output": ["ActionOutput_docusign_createrecipienttabs"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createrecipienttabs", "ActionOutput_docusign_createrecipienttabs"],
+            "output": [
+                "ActionOutput_docusign_createrecipienttabs"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createrecipienttabs",
+                "ActionOutput_docusign_createrecipienttabs"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -869,7 +1016,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["documentId", "pageNumber", "xPosition", "yPosition"],
+                                            "required": [
+                                                "documentId",
+                                                "pageNumber",
+                                                "xPosition",
+                                                "yPosition"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -891,7 +1043,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["documentId", "pageNumber", "xPosition", "yPosition"],
+                                            "required": [
+                                                "documentId",
+                                                "pageNumber",
+                                                "xPosition",
+                                                "yPosition"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -913,7 +1070,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["documentId", "pageNumber", "xPosition", "yPosition"],
+                                            "required": [
+                                                "documentId",
+                                                "pageNumber",
+                                                "xPosition",
+                                                "yPosition"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -935,7 +1097,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["documentId", "pageNumber", "xPosition", "yPosition"],
+                                            "required": [
+                                                "documentId",
+                                                "pageNumber",
+                                                "xPosition",
+                                                "yPosition"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -957,7 +1124,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["documentId", "pageNumber", "xPosition", "yPosition"],
+                                            "required": [
+                                                "documentId",
+                                                "pageNumber",
+                                                "xPosition",
+                                                "yPosition"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -979,7 +1151,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["documentId", "pageNumber", "xPosition", "yPosition"],
+                                            "required": [
+                                                "documentId",
+                                                "pageNumber",
+                                                "xPosition",
+                                                "yPosition"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
@@ -987,7 +1164,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["envelopeId", "recipientId", "tabs"],
+                        "required": [
+                            "envelopeId",
+                            "recipientId",
+                            "tabs"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_createrecipienttabs": {
@@ -1057,9 +1238,16 @@
             },
             "input": "ActionInput_docusign_createrecipientview",
             "name": "create-recipient-view",
-            "output": ["ActionOutput_docusign_createrecipientview"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createrecipientview", "ActionOutput_docusign_createrecipientview"],
+            "output": [
+                "ActionOutput_docusign_createrecipientview"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createrecipientview",
+                "ActionOutput_docusign_createrecipientview"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1097,7 +1285,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["envelopeId", "recipientId", "email", "userName", "clientUserId", "returnUrl"],
+                        "required": [
+                            "envelopeId",
+                            "recipientId",
+                            "email",
+                            "userName",
+                            "clientUserId",
+                            "returnUrl"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_createrecipientview": {
@@ -1143,7 +1338,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1156,9 +1353,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_createtemplate",
             "name": "create-template",
-            "output": ["ActionOutput_docusign_createtemplate"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createtemplate", "ActionOutput_docusign_createtemplate"],
+            "output": [
+                "ActionOutput_docusign_createtemplate"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createtemplate",
+                "ActionOutput_docusign_createtemplate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1204,7 +1408,12 @@
                                             "description": "Base64-encoded document content."
                                         }
                                     },
-                                    "required": ["documentId", "name", "fileExtension", "documentBase64"],
+                                    "required": [
+                                        "documentId",
+                                        "name",
+                                        "fileExtension",
+                                        "documentBase64"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1262,7 +1471,14 @@
                                                                         "description": "Y position. Example: \"100\""
                                                                     }
                                                                 },
-                                                                "required": ["tabType", "documentId", "pageNumber", "recipientId", "xPosition", "yPosition"],
+                                                                "required": [
+                                                                    "tabType",
+                                                                    "documentId",
+                                                                    "pageNumber",
+                                                                    "recipientId",
+                                                                    "xPosition",
+                                                                    "yPosition"
+                                                                ],
                                                                 "additionalProperties": {}
                                                             }
                                                         }
@@ -1270,7 +1486,10 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["roleName", "recipientId"],
+                                            "required": [
+                                                "roleName",
+                                                "recipientId"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -1278,7 +1497,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["name", "emailSubject"],
+                        "required": [
+                            "name",
+                            "emailSubject"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_createtemplate": {
@@ -1297,7 +1519,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["templateId"],
+                        "required": [
+                            "templateId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1310,9 +1534,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_docusign_createuser"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_createuser", "ActionOutput_docusign_createuser"],
+            "output": [
+                "ActionOutput_docusign_createuser"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_createuser",
+                "ActionOutput_docusign_createuser"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -1336,7 +1567,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userName", "email", "password"],
+                        "required": [
+                            "userName",
+                            "email",
+                            "password"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_createuser": {
@@ -1370,9 +1605,16 @@
             },
             "input": "ActionInput_docusign_deleteconnectconfiguration",
             "name": "delete-connect-configuration",
-            "output": ["ActionOutput_docusign_deleteconnectconfiguration"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_deleteconnectconfiguration", "ActionOutput_docusign_deleteconnectconfiguration"],
+            "output": [
+                "ActionOutput_docusign_deleteconnectconfiguration"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_deleteconnectconfiguration",
+                "ActionOutput_docusign_deleteconnectconfiguration"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1384,7 +1626,9 @@
                                 "description": "Connect configuration ID to delete. Example: \"22210640\""
                             }
                         },
-                        "required": ["connectId"],
+                        "required": [
+                            "connectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_deleteconnectconfiguration": {
@@ -1395,7 +1639,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1411,9 +1657,16 @@
             },
             "input": "ActionInput_docusign_deleteenveloperecipients",
             "name": "delete-envelope-recipients",
-            "output": ["ActionOutput_docusign_deleteenveloperecipients"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_deleteenveloperecipients", "ActionOutput_docusign_deleteenveloperecipients"],
+            "output": [
+                "ActionOutput_docusign_deleteenveloperecipients"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_deleteenveloperecipients",
+                "ActionOutput_docusign_deleteenveloperecipients"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1434,13 +1687,18 @@
                                             "description": "The recipient ID to delete. Example: \"1\""
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of recipients to remove from the envelope"
                             }
                         },
-                        "required": ["envelopeId", "recipients"],
+                        "required": [
+                            "envelopeId",
+                            "recipients"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_deleteenveloperecipients": {
@@ -1458,12 +1716,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["envelopeId", "deletedRecipients"],
+                        "required": [
+                            "envelopeId",
+                            "deletedRecipients"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1479,9 +1742,16 @@
             },
             "input": "ActionInput_docusign_deleteenvelope",
             "name": "delete-envelope",
-            "output": ["ActionOutput_docusign_deleteenvelope"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_deleteenvelope", "ActionOutput_docusign_deleteenvelope"],
+            "output": [
+                "ActionOutput_docusign_deleteenvelope"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_deleteenvelope",
+                "ActionOutput_docusign_deleteenvelope"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1493,7 +1763,9 @@
                                 "description": "The ID of the draft envelope to move to the recycle bin. Example: \"acdc2f1a-fba9-871d-8159-abe4af6518ef\""
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_deleteenvelope": {
@@ -1509,7 +1781,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "envelopeId", "folderId"],
+                        "required": [
+                            "success",
+                            "envelopeId",
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1525,9 +1801,16 @@
             },
             "input": "ActionInput_docusign_deletegroups",
             "name": "delete-groups",
-            "output": ["ActionOutput_docusign_deletegroups"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_deletegroups", "ActionOutput_docusign_deletegroups"],
+            "output": [
+                "ActionOutput_docusign_deletegroups"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_deletegroups",
+                "ActionOutput_docusign_deletegroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1543,7 +1826,9 @@
                                 "description": "Array of group IDs to delete. Example: [\"36047264\", \"36047265\"]"
                             }
                         },
-                        "required": ["groupIds"],
+                        "required": [
+                            "groupIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_deletegroups": {
@@ -1564,12 +1849,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["groupId"],
+                                    "required": [
+                                        "groupId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1582,9 +1871,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_docusign_deleteuser"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_deleteuser", "ActionOutput_docusign_deleteuser"],
+            "output": [
+                "ActionOutput_docusign_deleteuser"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_deleteuser",
+                "ActionOutput_docusign_deleteuser"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -1596,7 +1892,9 @@
                                 "description": "The user ID to close/remove. Example: \"c9a996ed-50d2-4df4-ac91-a45032721bb6\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_deleteuser": {
@@ -1626,9 +1924,16 @@
             },
             "input": "ActionInput_docusign_getaccountsettings",
             "name": "get-account-settings",
-            "output": ["ActionOutput_docusign_getaccountsettings"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_getaccountsettings", "ActionOutput_docusign_getaccountsettings"],
+            "output": [
+                "ActionOutput_docusign_getaccountsettings"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_getaccountsettings",
+                "ActionOutput_docusign_getaccountsettings"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1655,9 +1960,16 @@
             },
             "input": "ActionInput_docusign_getbrand",
             "name": "get-brand",
-            "output": ["ActionOutput_docusign_getbrand"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_getbrand", "ActionOutput_docusign_getbrand"],
+            "output": [
+                "ActionOutput_docusign_getbrand"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_getbrand",
+                "ActionOutput_docusign_getbrand"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1669,7 +1981,9 @@
                                 "description": "Brand ID. Example: \"12345\""
                             }
                         },
-                        "required": ["brandId"],
+                        "required": [
+                            "brandId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_getbrand": {
@@ -1721,9 +2035,16 @@
             },
             "input": "ActionInput_docusign_getenvelopeauditevents",
             "name": "get-envelope-audit-events",
-            "output": ["ActionOutput_docusign_getenvelopeauditevents"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_getenvelopeauditevents", "ActionOutput_docusign_getenvelopeauditevents"],
+            "output": [
+                "ActionOutput_docusign_getenvelopeauditevents"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_getenvelopeauditevents",
+                "ActionOutput_docusign_getenvelopeauditevents"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1735,7 +2056,9 @@
                                 "description": "The envelope ID. Example: \"ffbe2429-fc88-8ef2-803e-8ad9296118b6\""
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_getenvelopeauditevents": {
@@ -1778,9 +2101,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_getenvelopeformdata",
             "name": "get-envelope-form-data",
-            "output": ["ActionOutput_docusign_getenvelopeformdata"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_getenvelopeformdata", "ActionOutput_docusign_getenvelopeformdata"],
+            "output": [
+                "ActionOutput_docusign_getenvelopeformdata"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_getenvelopeformdata",
+                "ActionOutput_docusign_getenvelopeformdata"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1792,7 +2122,9 @@
                                 "description": "The envelope ID. Example: \"ffbe2429-fc88-8ef2-803e-8ad9296118b6\""
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_getenvelopeformdata": {
@@ -1907,9 +2239,16 @@
             },
             "input": "ActionInput_docusign_getenvelope",
             "name": "get-envelope",
-            "output": ["ActionOutput_docusign_getenvelope"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_getenvelope", "ActionOutput_docusign_getenvelope"],
+            "output": [
+                "ActionOutput_docusign_getenvelope"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_getenvelope",
+                "ActionOutput_docusign_getenvelope"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1921,7 +2260,9 @@
                                 "description": "DocuSign envelope ID. Example: \"ffbe2429-fc88-8ef2-803e-8ad9296118b6\""
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_getenvelope": {
@@ -2006,11 +2347,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["envelopeId", "status"],
+                                "required": [
+                                    "envelopeId",
+                                    "status"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["envelope"],
+                        "required": [
+                            "envelope"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2026,9 +2372,16 @@
             },
             "input": "ActionInput_docusign_gettemplate",
             "name": "get-template",
-            "output": ["ActionOutput_docusign_gettemplate"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_gettemplate", "ActionOutput_docusign_gettemplate"],
+            "output": [
+                "ActionOutput_docusign_gettemplate"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_gettemplate",
+                "ActionOutput_docusign_gettemplate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2040,7 +2393,9 @@
                                 "description": "Template ID. Example: \"e13866df-36e6-462b-b35b-dcda35982abc\""
                             }
                         },
-                        "required": ["templateId"],
+                        "required": [
+                            "templateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_gettemplate": {
@@ -3292,7 +3647,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["templateId"],
+                        "required": [
+                            "templateId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3308,9 +3665,16 @@
             },
             "input": "ActionInput_docusign_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_docusign_getuser"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_getuser", "ActionOutput_docusign_getuser"],
+            "output": [
+                "ActionOutput_docusign_getuser"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_getuser",
+                "ActionOutput_docusign_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3322,7 +3686,9 @@
                                 "description": "The user ID (GUID) to retrieve. Example: \"c9a996ed-50d2-4df4-ac91-a45032721bb6\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_getuser": {
@@ -3430,7 +3796,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3446,9 +3814,16 @@
             },
             "input": "ActionInput_docusign_listbrands",
             "name": "list-brands",
-            "output": ["ActionOutput_docusign_listbrands"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listbrands", "ActionOutput_docusign_listbrands"],
+            "output": [
+                "ActionOutput_docusign_listbrands"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listbrands",
+                "ActionOutput_docusign_listbrands"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3472,7 +3847,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["brandId"],
+                                    "required": [
+                                        "brandId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3483,7 +3860,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["brands"],
+                        "required": [
+                            "brands"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3496,9 +3875,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_listconnectconfigurations",
             "name": "list-connect-configurations",
-            "output": ["ActionOutput_docusign_listconnectconfigurations"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listconnectconfigurations", "ActionOutput_docusign_listconnectconfigurations"],
+            "output": [
+                "ActionOutput_docusign_listconnectconfigurations"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listconnectconfigurations",
+                "ActionOutput_docusign_listconnectconfigurations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3621,7 +4007,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["configurations"],
+                        "required": [
+                            "configurations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3637,9 +4025,16 @@
             },
             "input": "ActionInput_docusign_listenvelopedocuments",
             "name": "list-envelope-documents",
-            "output": ["ActionOutput_docusign_listenvelopedocuments"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listenvelopedocuments", "ActionOutput_docusign_listenvelopedocuments"],
+            "output": [
+                "ActionOutput_docusign_listenvelopedocuments"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listenvelopedocuments",
+                "ActionOutput_docusign_listenvelopedocuments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3651,7 +4046,9 @@
                                 "description": "DocuSign envelope ID. Example: \"ffbe2429-fc88-8ef2-803e-8ad9296118b6\""
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_listenvelopedocuments": {
@@ -3681,12 +4078,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["documentId"],
+                                    "required": [
+                                        "documentId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["envelopeId", "documents"],
+                        "required": [
+                            "envelopeId",
+                            "documents"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3702,9 +4104,16 @@
             },
             "input": "ActionInput_docusign_listenveloperecipients",
             "name": "list-envelope-recipients",
-            "output": ["ActionOutput_docusign_listenveloperecipients"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listenveloperecipients", "ActionOutput_docusign_listenveloperecipients"],
+            "output": [
+                "ActionOutput_docusign_listenveloperecipients"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listenveloperecipients",
+                "ActionOutput_docusign_listenveloperecipients"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3716,7 +4125,9 @@
                                 "description": "The envelope ID. Example: \"ffbe2429-fc88-8ef2-803e-8ad9296118b6\""
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_listenveloperecipients": {
@@ -4023,9 +4434,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_listenvelopes",
             "name": "list-envelopes",
-            "output": ["ActionOutput_docusign_listenvelopes"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listenvelopes", "ActionOutput_docusign_listenvelopes"],
+            "output": [
+                "ActionOutput_docusign_listenvelopes"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listenvelopes",
+                "ActionOutput_docusign_listenvelopes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4082,10 +4500,16 @@
                                             "type": "string"
                                         },
                                         "emailSubject": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "emailBlurb": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sender": {
                                             "anyOf": [
@@ -4093,13 +4517,22 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "userName": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "userId": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "email": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": {}
@@ -4110,64 +4543,124 @@
                                             ]
                                         },
                                         "createdDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sentDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "completedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "statusChangedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastModifiedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "voidedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "voidedReason": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "declinedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "deliveredDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "deletedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "initialSentDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "documentsUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "recipientsUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "envelopeUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "customFieldsUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "notificationUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "certificateUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "templatesUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "documentsCombinedUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "attachmentsUri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "customFields": {
                                             "anyOf": [
@@ -4215,7 +4708,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["envelopeId", "status"],
+                                    "required": [
+                                        "envelopeId",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4223,7 +4719,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4239,9 +4737,16 @@
             },
             "input": "ActionInput_docusign_listfolderenvelopes",
             "name": "list-folder-envelopes",
-            "output": ["ActionOutput_docusign_listfolderenvelopes"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listfolderenvelopes", "ActionOutput_docusign_listfolderenvelopes"],
+            "output": [
+                "ActionOutput_docusign_listfolderenvelopes"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listfolderenvelopes",
+                "ActionOutput_docusign_listfolderenvelopes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4263,7 +4768,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_listfolderenvelopes": {
@@ -4311,7 +4818,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["envelopeId"],
+                                    "required": [
+                                        "envelopeId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4319,7 +4828,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4335,9 +4846,16 @@
             },
             "input": "ActionInput_docusign_listfolders",
             "name": "list-folders",
-            "output": ["ActionOutput_docusign_listfolders"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listfolders", "ActionOutput_docusign_listfolders"],
+            "output": [
+                "ActionOutput_docusign_listfolders"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listfolders",
+                "ActionOutput_docusign_listfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4371,12 +4889,19 @@
                                             "description": "Number of items in the folder. Example: \"5\""
                                         }
                                     },
-                                    "required": ["folderId", "name", "type", "itemCount"],
+                                    "required": [
+                                        "folderId",
+                                        "name",
+                                        "type",
+                                        "itemCount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4392,9 +4917,16 @@
             },
             "input": "ActionInput_docusign_listgroupusers",
             "name": "list-group-users",
-            "output": ["ActionOutput_docusign_listgroupusers"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listgroupusers", "ActionOutput_docusign_listgroupusers"],
+            "output": [
+                "ActionOutput_docusign_listgroupusers"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listgroupusers",
+                "ActionOutput_docusign_listgroupusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4414,7 +4946,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_listgroupusers": {
@@ -4454,7 +4988,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4470,9 +5006,16 @@
             },
             "input": "ActionInput_docusign_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_docusign_listgroups"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listgroups", "ActionOutput_docusign_listgroups"],
+            "output": [
+                "ActionOutput_docusign_listgroups"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listgroups",
+                "ActionOutput_docusign_listgroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4497,18 +5040,26 @@
                                         },
                                         "groupType": {
                                             "type": "string",
-                                            "enum": ["adminGroup", "everyoneGroup", "customGroup"]
+                                            "enum": [
+                                                "adminGroup",
+                                                "everyoneGroup",
+                                                "customGroup"
+                                            ]
                                         },
                                         "usersCount": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["groupId"],
+                                    "required": [
+                                        "groupId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4521,9 +5072,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_listpermissionprofiles",
             "name": "list-permission-profiles",
-            "output": ["ActionOutput_docusign_listpermissionprofiles"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listpermissionprofiles", "ActionOutput_docusign_listpermissionprofiles"],
+            "output": [
+                "ActionOutput_docusign_listpermissionprofiles"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listpermissionprofiles",
+                "ActionOutput_docusign_listpermissionprofiles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4550,12 +5108,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["permissionProfileId", "permissionProfileName"],
+                                    "required": [
+                                        "permissionProfileId",
+                                        "permissionProfileName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["permissionProfiles"],
+                        "required": [
+                            "permissionProfiles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4571,9 +5134,16 @@
             },
             "input": "ActionInput_docusign_listrecipienttabs",
             "name": "list-recipient-tabs",
-            "output": ["ActionOutput_docusign_listrecipienttabs"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listrecipienttabs", "ActionOutput_docusign_listrecipienttabs"],
+            "output": [
+                "ActionOutput_docusign_listrecipienttabs"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listrecipienttabs",
+                "ActionOutput_docusign_listrecipienttabs"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4589,7 +5159,10 @@
                                 "description": "Recipient ID. Example: \"1\""
                             }
                         },
-                        "required": ["envelopeId", "recipientId"],
+                        "required": [
+                            "envelopeId",
+                            "recipientId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_listrecipienttabs": {
@@ -5601,9 +6174,16 @@
             },
             "input": "ActionInput_docusign_listsigninggroups",
             "name": "list-signing-groups",
-            "output": ["ActionOutput_docusign_listsigninggroups"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listsigninggroups", "ActionOutput_docusign_listsigninggroups"],
+            "output": [
+                "ActionOutput_docusign_listsigninggroups"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listsigninggroups",
+                "ActionOutput_docusign_listsigninggroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5669,7 +6249,9 @@
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5685,9 +6267,16 @@
             },
             "input": "ActionInput_docusign_listtemplaterecipients",
             "name": "list-template-recipients",
-            "output": ["ActionOutput_docusign_listtemplaterecipients"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listtemplaterecipients", "ActionOutput_docusign_listtemplaterecipients"],
+            "output": [
+                "ActionOutput_docusign_listtemplaterecipients"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listtemplaterecipients",
+                "ActionOutput_docusign_listtemplaterecipients"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5699,7 +6288,9 @@
                                 "description": "Template ID. Example: \"e13866df-36e6-462b-b35b-dcda35982abc\""
                             }
                         },
-                        "required": ["templateId"],
+                        "required": [
+                            "templateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_listtemplaterecipients": {
@@ -5731,13 +6322,17 @@
                                             "description": "The type of recipient (e.g., signer, carbonCopy)"
                                         }
                                     },
-                                    "required": ["recipientType"],
+                                    "required": [
+                                        "recipientType"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of recipient roles defined in the template"
                             }
                         },
-                        "required": ["recipients"],
+                        "required": [
+                            "recipients"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5753,9 +6348,16 @@
             },
             "input": "ActionInput_docusign_listtemplates",
             "name": "list-templates",
-            "output": ["ActionOutput_docusign_listtemplates"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listtemplates", "ActionOutput_docusign_listtemplates"],
+            "output": [
+                "ActionOutput_docusign_listtemplates"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listtemplates",
+                "ActionOutput_docusign_listtemplates"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5824,7 +6426,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["templateId"],
+                                    "required": [
+                                        "templateId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5832,7 +6436,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5848,9 +6454,16 @@
             },
             "input": "ActionInput_docusign_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_docusign_listusers"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_listusers", "ActionOutput_docusign_listusers"],
+            "output": [
+                "ActionOutput_docusign_listusers"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_listusers",
+                "ActionOutput_docusign_listusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5913,7 +6526,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["userId"],
+                                    "required": [
+                                        "userId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5921,7 +6536,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5937,9 +6554,16 @@
             },
             "input": "ActionInput_docusign_removegroupusers",
             "name": "remove-group-users",
-            "output": ["ActionOutput_docusign_removegroupusers"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_removegroupusers", "ActionOutput_docusign_removegroupusers"],
+            "output": [
+                "ActionOutput_docusign_removegroupusers"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_removegroupusers",
+                "ActionOutput_docusign_removegroupusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5961,12 +6585,17 @@
                                             "description": "User ID to remove from the group. Example: \"c9a996ed-50d2-4df4-ac91-a45032721bb6\""
                                         }
                                     },
-                                    "required": ["userId"],
+                                    "required": [
+                                        "userId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groupId", "users"],
+                        "required": [
+                            "groupId",
+                            "users"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_removegroupusers": {
@@ -6030,9 +6659,16 @@
             },
             "input": "ActionInput_docusign_updateconnectconfiguration",
             "name": "update-connect-configuration",
-            "output": ["ActionOutput_docusign_updateconnectconfiguration"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_updateconnectconfiguration", "ActionOutput_docusign_updateconnectconfiguration"],
+            "output": [
+                "ActionOutput_docusign_updateconnectconfiguration"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_updateconnectconfiguration",
+                "ActionOutput_docusign_updateconnectconfiguration"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6113,7 +6749,10 @@
                             "deliveryMode": {
                                 "description": "The delivery mode.",
                                 "type": "string",
-                                "enum": ["SIM", "aggregate"]
+                                "enum": [
+                                    "SIM",
+                                    "aggregate"
+                                ]
                             },
                             "eventData": {
                                 "description": "Event data format configuration.",
@@ -6233,7 +6872,9 @@
                                 }
                             }
                         },
-                        "required": ["connectId"],
+                        "required": [
+                            "connectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_updateconnectconfiguration": {
@@ -6408,9 +7049,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_updateenveloperecipients",
             "name": "update-envelope-recipients",
-            "output": ["ActionOutput_docusign_updateenveloperecipients"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_updateenveloperecipients", "ActionOutput_docusign_updateenveloperecipients"],
+            "output": [
+                "ActionOutput_docusign_updateenveloperecipients"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_updateenveloperecipients",
+                "ActionOutput_docusign_updateenveloperecipients"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6444,13 +7092,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Signers to update"
                             }
                         },
-                        "required": ["envelopeId", "signers"],
+                        "required": [
+                            "envelopeId",
+                            "signers"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_updateenveloperecipients": {
@@ -6486,7 +7139,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6520,7 +7175,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6554,7 +7211,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6588,7 +7247,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6622,7 +7283,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6656,7 +7319,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -6690,7 +7355,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recipientId"],
+                                    "required": [
+                                        "recipientId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -6707,9 +7374,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_updateenvelope",
             "name": "update-envelope",
-            "output": ["ActionOutput_docusign_updateenvelope"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_updateenvelope", "ActionOutput_docusign_updateenvelope"],
+            "output": [
+                "ActionOutput_docusign_updateenvelope"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_updateenvelope",
+                "ActionOutput_docusign_updateenvelope"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -6768,7 +7442,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_updateenvelope": {
@@ -6835,9 +7511,16 @@
             },
             "input": "ActionInput_docusign_updategroup",
             "name": "update-group",
-            "output": ["ActionOutput_docusign_updategroup"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_updategroup", "ActionOutput_docusign_updategroup"],
+            "output": [
+                "ActionOutput_docusign_updategroup"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_updategroup",
+                "ActionOutput_docusign_updategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6857,7 +7540,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_updategroup": {
@@ -6888,7 +7573,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6904,9 +7591,16 @@
             },
             "input": "ActionInput_docusign_updaterecipienttabs",
             "name": "update-recipient-tabs",
-            "output": ["ActionOutput_docusign_updaterecipienttabs"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_updaterecipienttabs", "ActionOutput_docusign_updaterecipienttabs"],
+            "output": [
+                "ActionOutput_docusign_updaterecipienttabs"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_updaterecipienttabs",
+                "ActionOutput_docusign_updaterecipienttabs"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7119,7 +7813,11 @@
                                 "description": "Tabs payload to update or create on the recipient."
                             }
                         },
-                        "required": ["envelopeId", "recipientId", "tabs"],
+                        "required": [
+                            "envelopeId",
+                            "recipientId",
+                            "tabs"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_updaterecipienttabs": {
@@ -7328,9 +8026,16 @@
             "endpoint": null,
             "input": "ActionInput_docusign_updatetemplate",
             "name": "update-template",
-            "output": ["ActionOutput_docusign_updatetemplate"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_updatetemplate", "ActionOutput_docusign_updatetemplate"],
+            "output": [
+                "ActionOutput_docusign_updatetemplate"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_updatetemplate",
+                "ActionOutput_docusign_updatetemplate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7347,7 +8052,10 @@
                             },
                             "description": {
                                 "description": "New template description. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "emailSubject": {
                                 "description": "Email subject for envelopes created from this template",
@@ -7358,7 +8066,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["templateId"],
+                        "required": [
+                            "templateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_updatetemplate": {
@@ -7374,7 +8084,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["templateId"],
+                        "required": [
+                            "templateId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7390,9 +8102,16 @@
             },
             "input": "ActionInput_docusign_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_docusign_updateuser"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_updateuser", "ActionOutput_docusign_updateuser"],
+            "output": [
+                "ActionOutput_docusign_updateuser"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_updateuser",
+                "ActionOutput_docusign_updateuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -7434,7 +8153,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_updateuser": {
@@ -7504,9 +8225,16 @@
             },
             "input": "ActionInput_docusign_voidenvelope",
             "name": "void-envelope",
-            "output": ["ActionOutput_docusign_voidenvelope"],
-            "scopes": ["signature"],
-            "usedModels": ["ActionInput_docusign_voidenvelope", "ActionOutput_docusign_voidenvelope"],
+            "output": [
+                "ActionOutput_docusign_voidenvelope"
+            ],
+            "scopes": [
+                "signature"
+            ],
+            "usedModels": [
+                "ActionInput_docusign_voidenvelope",
+                "ActionOutput_docusign_voidenvelope"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -7522,7 +8250,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["envelopeId"],
+                        "required": [
+                            "envelopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_docusign_voidenvelope": {
@@ -7545,7 +8275,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["envelopeId", "status"],
+                        "required": [
+                            "envelopeId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7561,12 +8294,18 @@
             "endpoints": [],
             "input": null,
             "name": "brands",
-            "output": ["Brand"],
+            "output": [
+                "Brand"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Brand"],
+            "usedModels": [
+                "Brand"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7608,7 +8347,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "brandId"],
+                        "required": [
+                            "id",
+                            "brandId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7622,12 +8364,19 @@
             "endpoints": [],
             "input": "SyncMetadata_docusign_connectconfigurations",
             "name": "connect-configurations",
-            "output": ["ConnectConfiguration"],
+            "output": [
+                "ConnectConfiguration"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ConnectConfiguration", "SyncMetadata_docusign_connectconfigurations"],
+            "usedModels": [
+                "ConnectConfiguration",
+                "SyncMetadata_docusign_connectconfigurations"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7715,7 +8464,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_docusign_connectconfigurations": {
@@ -7744,12 +8495,19 @@
             ],
             "input": "SyncMetadata_docusign_customfields",
             "name": "custom-fields",
-            "output": ["CustomField"],
+            "output": [
+                "CustomField"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CustomField", "SyncMetadata_docusign_customfields"],
+            "usedModels": [
+                "CustomField",
+                "SyncMetadata_docusign_customfields"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7785,7 +8543,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "fieldId", "name", "type"],
+                        "required": [
+                            "id",
+                            "fieldId",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_docusign_customfields": {
@@ -7814,12 +8577,18 @@
             ],
             "input": null,
             "name": "envelopes",
-            "output": ["Envelope"],
+            "output": [
+                "Envelope"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Envelope"],
+            "usedModels": [
+                "Envelope"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7891,12 +8660,19 @@
                                 }
                             }
                         },
-                        "required": ["id", "envelopeId", "status", "statusChangedDateTime"],
+                        "required": [
+                            "id",
+                            "envelopeId",
+                            "status",
+                            "statusChangedDateTime"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7910,12 +8686,19 @@
             ],
             "input": "SyncMetadata_docusign_folders",
             "name": "folders",
-            "output": ["Folder"],
+            "output": [
+                "Folder"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Folder", "SyncMetadata_docusign_folders"],
+            "usedModels": [
+                "Folder",
+                "SyncMetadata_docusign_folders"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7951,7 +8734,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_docusign_folders": {
@@ -7966,7 +8753,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7975,12 +8764,18 @@
             "endpoints": [],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8022,12 +8817,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "groupId"],
+                        "required": [
+                            "id",
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -8041,12 +8841,18 @@
             ],
             "input": null,
             "name": "permission-profiles",
-            "output": ["PermissionProfile"],
+            "output": [
+                "PermissionProfile"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PermissionProfile"],
+            "usedModels": [
+                "PermissionProfile"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8078,7 +8884,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "permissionProfileId"],
+                        "required": [
+                            "id",
+                            "permissionProfileId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -8097,12 +8906,18 @@
             ],
             "input": null,
             "name": "signing-groups",
-            "output": ["SigningGroup"],
+            "output": [
+                "SigningGroup"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SigningGroup"],
+            "usedModels": [
+                "SigningGroup"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8135,12 +8950,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "signingGroupId"],
+                        "required": [
+                            "id",
+                            "signingGroupId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -8154,12 +8974,19 @@
             ],
             "input": "SyncMetadata_docusign_templates",
             "name": "templates",
-            "output": ["Template"],
+            "output": [
+                "Template"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Template", "SyncMetadata_docusign_templates"],
+            "usedModels": [
+                "Template",
+                "SyncMetadata_docusign_templates"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8186,7 +9013,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_docusign_templates": {
@@ -8201,7 +9030,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -8215,12 +9046,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["signature"],
+            "scopes": [
+                "signature"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -8253,12 +9090,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

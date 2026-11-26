@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_attachfileinvoice",
             "name": "attach-file-invoice",
-            "output": ["ActionOutput_exact_online_attachfileinvoice"],
-            "scopes": ["documents"],
-            "usedModels": ["ActionInput_exact_online_attachfileinvoice", "ActionOutput_exact_online_attachfileinvoice"],
+            "output": [
+                "ActionOutput_exact_online_attachfileinvoice"
+            ],
+            "scopes": [
+                "documents"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_attachfileinvoice",
+                "ActionOutput_exact_online_attachfileinvoice"
+            ],
             "version": "3.0.3",
             "json_schema": {
                 "definitions": {
@@ -45,7 +52,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["subject", "documentDate", "account", "type", "fileName", "fileContent"],
+                        "required": [
+                            "subject",
+                            "documentDate",
+                            "account",
+                            "type",
+                            "fileName",
+                            "fileContent"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_attachfileinvoice": {
@@ -56,7 +70,9 @@
                                 "description": "Created document ID."
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -72,9 +88,16 @@
             },
             "input": "ActionInput_exact_online_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_exact_online_createcontact"],
-            "scopes": ["crm.Contacts"],
-            "usedModels": ["ActionInput_exact_online_createcontact", "ActionOutput_exact_online_createcontact"],
+            "output": [
+                "ActionOutput_exact_online_createcontact"
+            ],
+            "scopes": [
+                "crm.Contacts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_createcontact",
+                "ActionOutput_exact_online_createcontact"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -106,7 +129,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["account", "firstName", "lastName"],
+                        "required": [
+                            "account",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_createcontact": {
@@ -134,7 +161,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -150,9 +179,16 @@
             },
             "input": "ActionInput_exact_online_createcustomer",
             "name": "create-customer",
-            "output": ["ActionOutput_exact_online_createcustomer"],
-            "scopes": ["crm.Accounts"],
-            "usedModels": ["ActionInput_exact_online_createcustomer", "ActionOutput_exact_online_createcustomer"],
+            "output": [
+                "ActionOutput_exact_online_createcustomer"
+            ],
+            "scopes": [
+                "crm.Accounts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_createcustomer",
+                "ActionOutput_exact_online_createcustomer"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -166,7 +202,10 @@
                             "Status": {
                                 "description": "Account status: C=Customer, S=Supplier",
                                 "type": "string",
-                                "enum": ["C", "S"]
+                                "enum": [
+                                    "C",
+                                    "S"
+                                ]
                             },
                             "Email": {
                                 "description": "Email address",
@@ -189,7 +228,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["Name"],
+                        "required": [
+                            "Name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_createcustomer": {
@@ -226,7 +267,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -242,9 +285,16 @@
             },
             "input": "ActionInput_exact_online_createinvoice",
             "name": "create-invoice",
-            "output": ["ActionOutput_exact_online_createinvoice"],
-            "scopes": ["SalesInvoices"],
-            "usedModels": ["ActionInput_exact_online_createinvoice", "ActionOutput_exact_online_createinvoice"],
+            "output": [
+                "ActionOutput_exact_online_createinvoice"
+            ],
+            "scopes": [
+                "SalesInvoices"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_createinvoice",
+                "ActionOutput_exact_online_createinvoice"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -295,12 +345,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["quantity", "net_price"],
+                                    "required": [
+                                        "quantity",
+                                        "net_price"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["ordered_by", "sales_invoice_lines"],
+                        "required": [
+                            "ordered_by",
+                            "sales_invoice_lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_createinvoice": {
@@ -352,7 +408,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -365,9 +423,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_createitem",
             "name": "create-item",
-            "output": ["ActionOutput_exact_online_createitem"],
-            "scopes": ["Items"],
-            "usedModels": ["ActionInput_exact_online_createitem", "ActionOutput_exact_online_createitem"],
+            "output": [
+                "ActionOutput_exact_online_createitem"
+            ],
+            "scopes": [
+                "Items"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_createitem",
+                "ActionOutput_exact_online_createitem"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -403,7 +468,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "description", "itemGroup"],
+                        "required": [
+                            "code",
+                            "description",
+                            "itemGroup"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_createitem": {
@@ -434,7 +503,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -450,9 +521,16 @@
             },
             "input": "ActionInput_exact_online_createpurchaseinvoice",
             "name": "create-purchase-invoice",
-            "output": ["ActionOutput_exact_online_createpurchaseinvoice"],
-            "scopes": ["purchaseentry.PurchaseEntries"],
-            "usedModels": ["ActionInput_exact_online_createpurchaseinvoice", "ActionOutput_exact_online_createpurchaseinvoice"],
+            "output": [
+                "ActionOutput_exact_online_createpurchaseinvoice"
+            ],
+            "scopes": [
+                "purchaseentry.PurchaseEntries"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_createpurchaseinvoice",
+                "ActionOutput_exact_online_createpurchaseinvoice"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -502,13 +580,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["glAccountId", "amountDc", "vatCode"],
+                                    "required": [
+                                        "glAccountId",
+                                        "amountDc",
+                                        "vatCode"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Purchase entry lines"
                             }
                         },
-                        "required": ["journalCode", "supplierId", "entryDate", "purchaseEntryLines"],
+                        "required": [
+                            "journalCode",
+                            "supplierId",
+                            "entryDate",
+                            "purchaseEntryLines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_createpurchaseinvoice": {
@@ -592,9 +679,16 @@
             },
             "input": "ActionInput_exact_online_createsalesorder",
             "name": "create-sales-order",
-            "output": ["ActionOutput_exact_online_createsalesorder"],
-            "scopes": ["Sales orders"],
-            "usedModels": ["ActionInput_exact_online_createsalesorder", "ActionOutput_exact_online_createsalesorder"],
+            "output": [
+                "ActionOutput_exact_online_createsalesorder"
+            ],
+            "scopes": [
+                "Sales orders"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_createsalesorder",
+                "ActionOutput_exact_online_createsalesorder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -623,7 +717,11 @@
                                             "description": "Net price. Example: 100.00"
                                         }
                                     },
-                                    "required": ["Item", "Quantity", "NetPrice"],
+                                    "required": [
+                                        "Item",
+                                        "Quantity",
+                                        "NetPrice"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Sales order lines"
@@ -633,7 +731,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["OrderedBy", "SalesOrderLines"],
+                        "required": [
+                            "OrderedBy",
+                            "SalesOrderLines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_createsalesorder": {
@@ -679,9 +780,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_exact_online_deletecontact"],
-            "scopes": ["Crm.Contacts"],
-            "usedModels": ["ActionInput_exact_online_deletecontact", "ActionOutput_exact_online_deletecontact"],
+            "output": [
+                "ActionOutput_exact_online_deletecontact"
+            ],
+            "scopes": [
+                "Crm.Contacts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_deletecontact",
+                "ActionOutput_exact_online_deletecontact"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -693,7 +801,9 @@
                                 "description": "Contact ID to delete. Example: \"eee35efb-2d64-4682-9642-c6ae745bb8ce\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_deletecontact": {
@@ -706,7 +816,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -722,9 +835,16 @@
             },
             "input": "ActionInput_exact_online_deletecustomer",
             "name": "delete-customer",
-            "output": ["ActionOutput_exact_online_deletecustomer"],
-            "scopes": ["Crm.Accounts"],
-            "usedModels": ["ActionInput_exact_online_deletecustomer", "ActionOutput_exact_online_deletecustomer"],
+            "output": [
+                "ActionOutput_exact_online_deletecustomer"
+            ],
+            "scopes": [
+                "Crm.Accounts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_deletecustomer",
+                "ActionOutput_exact_online_deletecustomer"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -736,7 +856,9 @@
                                 "description": "Exact Online Account ID (GUID). Example: \"2a64d87a-5e60-442a-84f0-2dff86e9d706\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_deletecustomer": {
@@ -749,7 +871,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -762,9 +887,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_deleteitem",
             "name": "delete-item",
-            "output": ["ActionOutput_exact_online_deleteitem"],
-            "scopes": ["Items"],
-            "usedModels": ["ActionInput_exact_online_deleteitem", "ActionOutput_exact_online_deleteitem"],
+            "output": [
+                "ActionOutput_exact_online_deleteitem"
+            ],
+            "scopes": [
+                "Items"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_deleteitem",
+                "ActionOutput_exact_online_deleteitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -776,7 +908,9 @@
                                 "description": "Item ID. Example: \"1c0a1580-8e05-4c9d-a898-0148d213d8ec\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_deleteitem": {
@@ -789,7 +923,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -805,9 +942,16 @@
             },
             "input": "ActionInput_exact_online_getaccount",
             "name": "get-account",
-            "output": ["ActionOutput_exact_online_getaccount"],
-            "scopes": ["crm.Accounts"],
-            "usedModels": ["ActionInput_exact_online_getaccount", "ActionOutput_exact_online_getaccount"],
+            "output": [
+                "ActionOutput_exact_online_getaccount"
+            ],
+            "scopes": [
+                "crm.Accounts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_getaccount",
+                "ActionOutput_exact_online_getaccount"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -819,7 +963,9 @@
                                 "description": "Account ID. Example: \"a58c29d9-ef92-40f1-b817-31b36990898c\""
                             }
                         },
-                        "required": ["account_id"],
+                        "required": [
+                            "account_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_getaccount": {
@@ -871,7 +1017,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -887,9 +1035,16 @@
             },
             "input": "ActionInput_exact_online_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_exact_online_getcontact"],
-            "scopes": ["crm.Contacts"],
-            "usedModels": ["ActionInput_exact_online_getcontact", "ActionOutput_exact_online_getcontact"],
+            "output": [
+                "ActionOutput_exact_online_getcontact"
+            ],
+            "scopes": [
+                "crm.Contacts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_getcontact",
+                "ActionOutput_exact_online_getcontact"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -901,7 +1056,9 @@
                                 "description": "The GUID of the contact to retrieve"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_getcontact": {
@@ -919,9 +1076,14 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_exact_online_getcurrentuser"],
+            "output": [
+                "ActionOutput_exact_online_getcurrentuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exact_online_getcurrentuser", "ActionOutput_exact_online_getcurrentuser"],
+            "usedModels": [
+                "ActionInput_exact_online_getcurrentuser",
+                "ActionOutput_exact_online_getcurrentuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -948,7 +1110,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["current_division", "user_id"],
+                        "required": [
+                            "current_division",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -961,9 +1126,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_getsalesinvoice",
             "name": "get-sales-invoice",
-            "output": ["ActionOutput_exact_online_getsalesinvoice"],
-            "scopes": ["SalesInvoices"],
-            "usedModels": ["ActionInput_exact_online_getsalesinvoice", "ActionOutput_exact_online_getsalesinvoice"],
+            "output": [
+                "ActionOutput_exact_online_getsalesinvoice"
+            ],
+            "scopes": [
+                "SalesInvoices"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_getsalesinvoice",
+                "ActionOutput_exact_online_getsalesinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -975,53 +1147,97 @@
                                 "description": "The InvoiceID of the sales invoice. Example: \"7b282ae4-d920-46b0-87fd-3da21b818780\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_getsalesinvoice": {
                         "type": "object",
                         "properties": {
                             "InvoiceID": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "InvoiceNumber": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "InvoiceDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "DueDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "Status": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "AmountDC": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "AmountFC": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "Currency": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "Description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "Journal": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "OrderNumber": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "Type": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "Modified": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "Created": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "additionalProperties": {}
@@ -1039,9 +1255,16 @@
             },
             "input": "ActionInput_exact_online_listaccounts",
             "name": "list-accounts",
-            "output": ["ActionOutput_exact_online_listaccounts"],
-            "scopes": ["crm.Accounts"],
-            "usedModels": ["ActionInput_exact_online_listaccounts", "ActionOutput_exact_online_listaccounts"],
+            "output": [
+                "ActionOutput_exact_online_listaccounts"
+            ],
+            "scopes": [
+                "crm.Accounts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listaccounts",
+                "ActionOutput_exact_online_listaccounts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1051,7 +1274,11 @@
                             "status": {
                                 "description": "Account status filter: C=Customer, S=Supplier, A=Both",
                                 "type": "string",
-                                "enum": ["C", "S", "A"]
+                                "enum": [
+                                    "C",
+                                    "S",
+                                    "A"
+                                ]
                             },
                             "limit": {
                                 "description": "Max records per page (1-1000)",
@@ -1115,7 +1342,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1123,7 +1352,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1136,9 +1367,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_exact_online_listcontacts"],
-            "scopes": ["crm.Contacts"],
-            "usedModels": ["ActionInput_exact_online_listcontacts", "ActionOutput_exact_online_listcontacts"],
+            "output": [
+                "ActionOutput_exact_online_listcontacts"
+            ],
+            "scopes": [
+                "crm.Contacts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listcontacts",
+                "ActionOutput_exact_online_listcontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1193,7 +1431,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ID"],
+                                    "required": [
+                                        "ID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1201,7 +1441,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1217,9 +1459,14 @@
             },
             "input": "ActionInput_exact_online_listdivisions",
             "name": "list-divisions",
-            "output": ["ActionOutput_exact_online_listdivisions"],
+            "output": [
+                "ActionOutput_exact_online_listdivisions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exact_online_listdivisions", "ActionOutput_exact_online_listdivisions"],
+            "usedModels": [
+                "ActionInput_exact_online_listdivisions",
+                "ActionOutput_exact_online_listdivisions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1252,12 +1499,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["Code"],
+                                    "required": [
+                                        "Code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["divisions"],
+                        "required": [
+                            "divisions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1273,9 +1524,16 @@
             },
             "input": "ActionInput_exact_online_listdocumentattachments",
             "name": "list-document-attachments",
-            "output": ["ActionOutput_exact_online_listdocumentattachments"],
-            "scopes": ["documents"],
-            "usedModels": ["ActionInput_exact_online_listdocumentattachments", "ActionOutput_exact_online_listdocumentattachments"],
+            "output": [
+                "ActionOutput_exact_online_listdocumentattachments"
+            ],
+            "scopes": [
+                "documents"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listdocumentattachments",
+                "ActionOutput_exact_online_listdocumentattachments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1313,7 +1571,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ID"],
+                                    "required": [
+                                        "ID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1321,7 +1581,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1337,9 +1599,16 @@
             },
             "input": "ActionInput_exact_online_listdocuments",
             "name": "list-documents",
-            "output": ["ActionOutput_exact_online_listdocuments"],
-            "scopes": ["documents"],
-            "usedModels": ["ActionInput_exact_online_listdocuments", "ActionOutput_exact_online_listdocuments"],
+            "output": [
+                "ActionOutput_exact_online_listdocuments"
+            ],
+            "scopes": [
+                "documents"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listdocuments",
+                "ActionOutput_exact_online_listdocuments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1382,7 +1651,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ID"],
+                                    "required": [
+                                        "ID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1391,7 +1662,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1407,9 +1680,16 @@
             },
             "input": "ActionInput_exact_online_listfinancialtransactions",
             "name": "list-financial-transactions",
-            "output": ["ActionOutput_exact_online_listfinancialtransactions"],
-            "scopes": ["FinancialTransactions"],
-            "usedModels": ["ActionInput_exact_online_listfinancialtransactions", "ActionOutput_exact_online_listfinancialtransactions"],
+            "output": [
+                "ActionOutput_exact_online_listfinancialtransactions"
+            ],
+            "scopes": [
+                "FinancialTransactions"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listfinancialtransactions",
+                "ActionOutput_exact_online_listfinancialtransactions"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1464,7 +1744,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["EntryID"],
+                                    "required": [
+                                        "EntryID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1472,7 +1754,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1488,9 +1772,16 @@
             },
             "input": "ActionInput_exact_online_listglaccounts",
             "name": "list-gl-accounts",
-            "output": ["ActionOutput_exact_online_listglaccounts"],
-            "scopes": ["financial"],
-            "usedModels": ["ActionInput_exact_online_listglaccounts", "ActionOutput_exact_online_listglaccounts"],
+            "output": [
+                "ActionOutput_exact_online_listglaccounts"
+            ],
+            "scopes": [
+                "financial"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listglaccounts",
+                "ActionOutput_exact_online_listglaccounts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1534,7 +1825,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ID"],
+                                    "required": [
+                                        "ID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1542,7 +1835,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1558,9 +1853,16 @@
             },
             "input": "ActionInput_exact_online_listitemgroups",
             "name": "list-item-groups",
-            "output": ["ActionOutput_exact_online_listitemgroups"],
-            "scopes": ["Items"],
-            "usedModels": ["ActionInput_exact_online_listitemgroups", "ActionOutput_exact_online_listitemgroups"],
+            "output": [
+                "ActionOutput_exact_online_listitemgroups"
+            ],
+            "scopes": [
+                "Items"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listitemgroups",
+                "ActionOutput_exact_online_listitemgroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1586,16 +1888,27 @@
                                             "type": "string"
                                         },
                                         "Code": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "Description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "Modified": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["ID"],
+                                    "required": [
+                                        "ID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1603,7 +1916,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1619,9 +1934,16 @@
             },
             "input": "ActionInput_exact_online_listitems",
             "name": "list-items",
-            "output": ["ActionOutput_exact_online_listitems"],
-            "scopes": ["Items"],
-            "usedModels": ["ActionInput_exact_online_listitems", "ActionOutput_exact_online_listitems"],
+            "output": [
+                "ActionOutput_exact_online_listitems"
+            ],
+            "scopes": [
+                "Items"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listitems",
+                "ActionOutput_exact_online_listitems"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1665,7 +1987,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ID"],
+                                    "required": [
+                                        "ID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1673,7 +1997,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1689,9 +2015,16 @@
             },
             "input": "ActionInput_exact_online_listjournals",
             "name": "list-journals",
-            "output": ["ActionOutput_exact_online_listjournals"],
-            "scopes": ["financial"],
-            "usedModels": ["ActionInput_exact_online_listjournals", "ActionOutput_exact_online_listjournals"],
+            "output": [
+                "ActionOutput_exact_online_listjournals"
+            ],
+            "scopes": [
+                "financial"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listjournals",
+                "ActionOutput_exact_online_listjournals"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1726,7 +2059,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "code"],
+                                    "required": [
+                                        "id",
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1734,7 +2070,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1750,9 +2088,16 @@
             },
             "input": "ActionInput_exact_online_listpayments",
             "name": "list-payments",
-            "output": ["ActionOutput_exact_online_listpayments"],
-            "scopes": ["Financial cashflow"],
-            "usedModels": ["ActionInput_exact_online_listpayments", "ActionOutput_exact_online_listpayments"],
+            "output": [
+                "ActionOutput_exact_online_listpayments"
+            ],
+            "scopes": [
+                "Financial cashflow"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listpayments",
+                "ActionOutput_exact_online_listpayments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1798,7 +2143,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ID"],
+                                    "required": [
+                                        "ID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1806,7 +2153,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["Items"],
+                        "required": [
+                            "Items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1819,9 +2168,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_listpurchaseinvoices",
             "name": "list-purchase-invoices",
-            "output": ["ActionOutput_exact_online_listpurchaseinvoices"],
-            "scopes": ["purchaseentry.PurchaseEntries"],
-            "usedModels": ["ActionInput_exact_online_listpurchaseinvoices", "ActionOutput_exact_online_listpurchaseinvoices"],
+            "output": [
+                "ActionOutput_exact_online_listpurchaseinvoices"
+            ],
+            "scopes": [
+                "purchaseentry.PurchaseEntries"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listpurchaseinvoices",
+                "ActionOutput_exact_online_listpurchaseinvoices"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1865,7 +2221,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["EntryID"],
+                                    "required": [
+                                        "EntryID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1873,7 +2231,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1889,9 +2249,16 @@
             },
             "input": "ActionInput_exact_online_listsalesinvoices",
             "name": "list-sales-invoices",
-            "output": ["ActionOutput_exact_online_listsalesinvoices"],
-            "scopes": ["salesinvoices"],
-            "usedModels": ["ActionInput_exact_online_listsalesinvoices", "ActionOutput_exact_online_listsalesinvoices"],
+            "output": [
+                "ActionOutput_exact_online_listsalesinvoices"
+            ],
+            "scopes": [
+                "salesinvoices"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listsalesinvoices",
+                "ActionOutput_exact_online_listsalesinvoices"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1923,26 +2290,43 @@
                                         },
                                         "InvoiceNumber": {
                                             "description": "Invoice number. Example: 24700006",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "OrderedBy": {
                                             "description": "Customer account GUID. Example: a58c29d9-ef92-40f1-b817-31b36990898c",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "AmountDC": {
                                             "description": "Invoice amount in default currency",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "Status": {
                                             "description": "Invoice status. 20=Open, 50=Processed/Posted",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "Modified": {
                                             "description": "Last modified timestamp. Example: 2024-05-30T12:00:00Z",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["InvoiceID"],
+                                    "required": [
+                                        "InvoiceID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1951,7 +2335,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1967,9 +2353,16 @@
             },
             "input": "ActionInput_exact_online_listsalesorders",
             "name": "list-sales-orders",
-            "output": ["ActionOutput_exact_online_listsalesorders"],
-            "scopes": ["SalesOrders"],
-            "usedModels": ["ActionInput_exact_online_listsalesorders", "ActionOutput_exact_online_listsalesorders"],
+            "output": [
+                "ActionOutput_exact_online_listsalesorders"
+            ],
+            "scopes": [
+                "SalesOrders"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listsalesorders",
+                "ActionOutput_exact_online_listsalesorders"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2020,7 +2413,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["OrderID"],
+                                    "required": [
+                                        "OrderID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2028,7 +2423,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2044,9 +2441,16 @@
             },
             "input": "ActionInput_exact_online_listtransactionlines",
             "name": "list-transaction-lines",
-            "output": ["ActionOutput_exact_online_listtransactionlines"],
-            "scopes": ["FinancialTransactions"],
-            "usedModels": ["ActionInput_exact_online_listtransactionlines", "ActionOutput_exact_online_listtransactionlines"],
+            "output": [
+                "ActionOutput_exact_online_listtransactionlines"
+            ],
+            "scopes": [
+                "FinancialTransactions"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listtransactionlines",
+                "ActionOutput_exact_online_listtransactionlines"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2105,7 +2509,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ID", "EntryID", "AmountDC"],
+                                    "required": [
+                                        "ID",
+                                        "EntryID",
+                                        "AmountDC"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2113,7 +2521,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2129,9 +2539,16 @@
             },
             "input": "ActionInput_exact_online_listvatcodes",
             "name": "list-vat-codes",
-            "output": ["ActionOutput_exact_online_listvatcodes"],
-            "scopes": ["financial"],
-            "usedModels": ["ActionInput_exact_online_listvatcodes", "ActionOutput_exact_online_listvatcodes"],
+            "output": [
+                "ActionOutput_exact_online_listvatcodes"
+            ],
+            "scopes": [
+                "financial"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_listvatcodes",
+                "ActionOutput_exact_online_listvatcodes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2166,7 +2583,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2174,7 +2593,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2190,9 +2611,16 @@
             },
             "input": "ActionInput_exact_online_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_exact_online_updatecontact"],
-            "scopes": ["crm.contacts"],
-            "usedModels": ["ActionInput_exact_online_updatecontact", "ActionOutput_exact_online_updatecontact"],
+            "output": [
+                "ActionOutput_exact_online_updatecontact"
+            ],
+            "scopes": [
+                "crm.contacts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_updatecontact",
+                "ActionOutput_exact_online_updatecontact"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2205,30 +2633,50 @@
                             },
                             "firstName": {
                                 "description": "First name of the contact.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastName": {
                                 "description": "Last name of the contact.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
                                 "description": "Email address of the contact.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone": {
                                 "description": "Phone number of the contact.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mobile": {
                                 "description": "Mobile number of the contact.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
                                 "description": "Title of the contact.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_updatecontact": {
@@ -2256,7 +2704,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2269,9 +2719,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_updatecustomer",
             "name": "update-customer",
-            "output": ["ActionOutput_exact_online_updatecustomer"],
-            "scopes": ["crm.accounts"],
-            "usedModels": ["ActionInput_exact_online_updatecustomer", "ActionOutput_exact_online_updatecustomer"],
+            "output": [
+                "ActionOutput_exact_online_updatecustomer"
+            ],
+            "scopes": [
+                "crm.accounts"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_updatecustomer",
+                "ActionOutput_exact_online_updatecustomer"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -2331,7 +2788,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_updatecustomer": {
@@ -2377,7 +2836,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2393,9 +2854,16 @@
             },
             "input": "ActionInput_exact_online_updateinvoice",
             "name": "update-invoice",
-            "output": ["ActionOutput_exact_online_updateinvoice"],
-            "scopes": ["SalesInvoice"],
-            "usedModels": ["ActionInput_exact_online_updateinvoice", "ActionOutput_exact_online_updateinvoice"],
+            "output": [
+                "ActionOutput_exact_online_updateinvoice"
+            ],
+            "scopes": [
+                "SalesInvoice"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_updateinvoice",
+                "ActionOutput_exact_online_updateinvoice"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -2431,7 +2899,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["ID"],
+                        "required": [
+                            "ID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_updateinvoice": {
@@ -2441,34 +2911,63 @@
                                 "type": "string"
                             },
                             "InvoiceNumber": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "Description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "YourRef": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "Remarks": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "InvoiceDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "DueDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "OrderDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "Status": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "AmountDC": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["InvoiceID"],
+                        "required": [
+                            "InvoiceID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2481,9 +2980,16 @@
             "endpoint": null,
             "input": "ActionInput_exact_online_updateitem",
             "name": "update-item",
-            "output": ["ActionOutput_exact_online_updateitem"],
-            "scopes": ["Items"],
-            "usedModels": ["ActionInput_exact_online_updateitem", "ActionOutput_exact_online_updateitem"],
+            "output": [
+                "ActionOutput_exact_online_updateitem"
+            ],
+            "scopes": [
+                "Items"
+            ],
+            "usedModels": [
+                "ActionInput_exact_online_updateitem",
+                "ActionOutput_exact_online_updateitem"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2504,7 +3010,10 @@
                             },
                             "extraDescription": {
                                 "description": "Extra description",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "itemGroup": {
                                 "description": "Item group ID. Example: \"e54a5a52-21b7-4ce5-80ed-976b2100c02b\"",
@@ -2543,7 +3052,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_exact_online_updateitem": {
@@ -2609,12 +3120,16 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2647,12 +3162,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "modified"],
+                        "required": [
+                            "id",
+                            "modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2666,12 +3186,16 @@
             ],
             "input": null,
             "name": "customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer"],
+            "usedModels": [
+                "Customer"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2707,12 +3231,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "modified"],
+                        "required": [
+                            "id",
+                            "modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2726,12 +3255,16 @@
             ],
             "input": null,
             "name": "divisions",
-            "output": ["Division"],
+            "output": [
+                "Division"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Division"],
+            "usedModels": [
+                "Division"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2765,12 +3298,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "Code"],
+                        "required": [
+                            "id",
+                            "Code"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2784,12 +3322,16 @@
             ],
             "input": null,
             "name": "document-attachments",
-            "output": ["DocumentAttachment"],
+            "output": [
+                "DocumentAttachment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DocumentAttachment"],
+            "usedModels": [
+                "DocumentAttachment"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2813,12 +3355,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2832,12 +3378,16 @@
             ],
             "input": null,
             "name": "documents",
-            "output": ["Document"],
+            "output": [
+                "Document"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Document"],
+            "usedModels": [
+                "Document"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2858,12 +3408,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "Modified"],
+                        "required": [
+                            "id",
+                            "Modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2877,12 +3432,16 @@
             ],
             "input": null,
             "name": "financial-transactions",
-            "output": ["Transaction"],
+            "output": [
+                "Transaction"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Transaction"],
+            "usedModels": [
+                "Transaction"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2919,12 +3478,16 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2938,12 +3501,16 @@
             ],
             "input": null,
             "name": "gl-accounts",
-            "output": ["GlAccount"],
+            "output": [
+                "GlAccount"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GlAccount"],
+            "usedModels": [
+                "GlAccount"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2964,12 +3531,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "modified"],
+                        "required": [
+                            "id",
+                            "modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2983,12 +3555,16 @@
             ],
             "input": null,
             "name": "item-groups",
-            "output": ["ItemGroup"],
+            "output": [
+                "ItemGroup"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ItemGroup"],
+            "usedModels": [
+                "ItemGroup"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3009,12 +3585,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3028,12 +3608,16 @@
             ],
             "input": null,
             "name": "items",
-            "output": ["Item"],
+            "output": [
+                "Item"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Item"],
+            "usedModels": [
+                "Item"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3067,12 +3651,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "Modified"],
+                        "required": [
+                            "id",
+                            "Modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3086,12 +3675,16 @@
             ],
             "input": null,
             "name": "journals",
-            "output": ["Journal"],
+            "output": [
+                "Journal"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Journal"],
+            "usedModels": [
+                "Journal"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3112,12 +3705,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "code"],
+                        "required": [
+                            "id",
+                            "code"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3131,12 +3729,16 @@
             ],
             "input": null,
             "name": "payments",
-            "output": ["Payment"],
+            "output": [
+                "Payment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Payment"],
+            "usedModels": [
+                "Payment"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3163,12 +3765,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3177,12 +3783,16 @@
             "endpoints": [],
             "input": null,
             "name": "purchase-invoices",
-            "output": ["PurchaseInvoice"],
+            "output": [
+                "PurchaseInvoice"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PurchaseInvoice"],
+            "usedModels": [
+                "PurchaseInvoice"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3220,12 +3830,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "EntryID", "Modified"],
+                        "required": [
+                            "id",
+                            "EntryID",
+                            "Modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3239,12 +3855,16 @@
             ],
             "input": null,
             "name": "sales-invoices",
-            "output": ["Invoice"],
+            "output": [
+                "Invoice"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invoice"],
+            "usedModels": [
+                "Invoice"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3275,12 +3895,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3289,12 +3913,16 @@
             "endpoints": [],
             "input": null,
             "name": "sales-orders",
-            "output": ["SalesOrder"],
+            "output": [
+                "SalesOrder"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SalesOrder"],
+            "usedModels": [
+                "SalesOrder"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3321,12 +3949,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3335,12 +3967,16 @@
             "endpoints": [],
             "input": null,
             "name": "transaction-lines",
-            "output": ["TransactionLine"],
+            "output": [
+                "TransactionLine"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TransactionLine"],
+            "usedModels": [
+                "TransactionLine"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3373,12 +4009,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "Modified"],
+                        "required": [
+                            "id",
+                            "Modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3387,12 +4028,16 @@
             "endpoints": [],
             "input": null,
             "name": "vat-codes",
-            "output": ["VatCode"],
+            "output": [
+                "VatCode"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["VatCode"],
+            "usedModels": [
+                "VatCode"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3413,12 +4058,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

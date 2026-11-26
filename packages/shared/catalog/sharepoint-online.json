@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_addcontenttypetolist",
             "name": "add-content-type-to-list",
-            "output": ["ActionOutput_sharepoint_online_addcontenttypetolist"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_addcontenttypetolist", "ActionOutput_sharepoint_online_addcontenttypetolist"],
+            "output": [
+                "ActionOutput_sharepoint_online_addcontenttypetolist"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_addcontenttypetolist",
+                "ActionOutput_sharepoint_online_addcontenttypetolist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -33,7 +40,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_addcontenttypetolist": {
@@ -76,9 +86,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_adddriveitempermission",
             "name": "add-drive-item-permission",
-            "output": ["ActionOutput_sharepoint_online_adddriveitempermission"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_adddriveitempermission", "ActionOutput_sharepoint_online_adddriveitempermission"],
+            "output": [
+                "ActionOutput_sharepoint_online_adddriveitempermission"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_adddriveitempermission",
+                "ActionOutput_sharepoint_online_adddriveitempermission"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -141,7 +158,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId", "recipients", "roles"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId",
+                            "recipients",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_adddriveitempermission": {
@@ -183,12 +206,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "roles"],
+                                    "required": [
+                                        "id",
+                                        "roles"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["permissions"],
+                        "required": [
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -201,9 +229,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_copydriveitem",
             "name": "copy-drive-item",
-            "output": ["ActionOutput_sharepoint_online_copydriveitem"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_copydriveitem", "ActionOutput_sharepoint_online_copydriveitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_copydriveitem"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_copydriveitem",
+                "ActionOutput_sharepoint_online_copydriveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -245,10 +280,20 @@
                             "conflictBehavior": {
                                 "description": "How to handle name conflicts.",
                                 "type": "string",
-                                "enum": ["fail", "replace", "rename"]
+                                "enum": [
+                                    "fail",
+                                    "replace",
+                                    "rename"
+                                ]
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId", "parentDriveId", "parentItemId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId",
+                            "parentDriveId",
+                            "parentItemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_copydriveitem": {
@@ -264,7 +309,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -277,9 +324,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createcontenttype",
             "name": "create-content-type",
-            "output": ["ActionOutput_sharepoint_online_createcontenttype"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createcontenttype", "ActionOutput_sharepoint_online_createcontenttype"],
+            "output": [
+                "ActionOutput_sharepoint_online_createcontenttype"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createcontenttype",
+                "ActionOutput_sharepoint_online_createcontenttype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -311,11 +365,16 @@
                                         "description": "Base content type ID. Example: \"0x01\" for Item, \"0x0101\" for Document."
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["siteId", "name"],
+                        "required": [
+                            "siteId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createcontenttype": {
@@ -349,7 +408,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -362,9 +423,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createdrivefolder",
             "name": "create-drive-folder",
-            "output": ["ActionOutput_sharepoint_online_createdrivefolder"],
-            "scopes": ["Sites.ReadWrite.All", "Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createdrivefolder", "ActionOutput_sharepoint_online_createdrivefolder"],
+            "output": [
+                "ActionOutput_sharepoint_online_createdrivefolder"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All",
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createdrivefolder",
+                "ActionOutput_sharepoint_online_createdrivefolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -390,10 +459,19 @@
                             "conflictBehavior": {
                                 "description": "Conflict behavior if a folder with the same name exists. Defaults to \"rename\".",
                                 "type": "string",
-                                "enum": ["rename", "fail", "replace"]
+                                "enum": [
+                                    "rename",
+                                    "fail",
+                                    "replace"
+                                ]
                             }
                         },
-                        "required": ["siteId", "driveId", "parentItemId", "name"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "parentItemId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createdrivefolder": {
@@ -442,7 +520,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -455,9 +536,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createdriveuploadsession",
             "name": "create-drive-upload-session",
-            "output": ["ActionOutput_sharepoint_online_createdriveuploadsession"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createdriveuploadsession", "ActionOutput_sharepoint_online_createdriveuploadsession"],
+            "output": [
+                "ActionOutput_sharepoint_online_createdriveuploadsession"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createdriveuploadsession",
+                "ActionOutput_sharepoint_online_createdriveuploadsession"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -483,7 +571,11 @@
                             "conflictBehavior": {
                                 "description": "Conflict behavior if the file already exists. Default: \"fail\"",
                                 "type": "string",
-                                "enum": ["fail", "replace", "rename"]
+                                "enum": [
+                                    "fail",
+                                    "replace",
+                                    "rename"
+                                ]
                             },
                             "deferCommit": {
                                 "description": "If true, the final creation requires an explicit completion request. Default: false",
@@ -498,7 +590,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "driveId", "parentItemId", "fileName"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "parentItemId",
+                            "fileName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createdriveuploadsession": {
@@ -517,7 +614,10 @@
                                 }
                             }
                         },
-                        "required": ["uploadUrl", "expirationDateTime"],
+                        "required": [
+                            "uploadUrl",
+                            "expirationDateTime"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -530,9 +630,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createlistcolumn",
             "name": "create-list-column",
-            "output": ["ActionOutput_sharepoint_online_createlistcolumn"],
-            "scopes": ["Sites.ReadWrite.All", "Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createlistcolumn", "ActionOutput_sharepoint_online_createlistcolumn"],
+            "output": [
+                "ActionOutput_sharepoint_online_createlistcolumn"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All",
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createlistcolumn",
+                "ActionOutput_sharepoint_online_createlistcolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -668,7 +776,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["siteId", "listId", "name"],
+                        "required": [
+                            "siteId",
+                            "listId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createlistcolumn": {
@@ -803,7 +915,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -816,9 +931,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createlistitem",
             "name": "create-list-item",
-            "output": ["ActionOutput_sharepoint_online_createlistitem"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createlistitem", "ActionOutput_sharepoint_online_createlistitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_createlistitem"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createlistitem",
+                "ActionOutput_sharepoint_online_createlistitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -842,7 +964,11 @@
                                 "description": "Field values that match the list schema."
                             }
                         },
-                        "required": ["siteId", "listId", "fields"],
+                        "required": [
+                            "siteId",
+                            "listId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createlistitem": {
@@ -907,7 +1033,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -920,9 +1048,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createlist",
             "name": "create-list",
-            "output": ["ActionOutput_sharepoint_online_createlist"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createlist", "ActionOutput_sharepoint_online_createlist"],
+            "output": [
+                "ActionOutput_sharepoint_online_createlist"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createlist",
+                "ActionOutput_sharepoint_online_createlist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1000,7 +1135,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1009,7 +1146,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["siteId", "displayName"],
+                        "required": [
+                            "siteId",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createlist": {
@@ -1054,7 +1194,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "displayName"],
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1067,9 +1210,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createsharinglink",
             "name": "create-sharing-link",
-            "output": ["ActionOutput_sharepoint_online_createsharinglink"],
-            "scopes": ["Sites.ReadWrite.All", "Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createsharinglink", "ActionOutput_sharepoint_online_createsharinglink"],
+            "output": [
+                "ActionOutput_sharepoint_online_createsharinglink"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All",
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createsharinglink",
+                "ActionOutput_sharepoint_online_createsharinglink"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1090,16 +1241,29 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["view", "edit", "embed"],
+                                "enum": [
+                                    "view",
+                                    "edit",
+                                    "embed"
+                                ],
                                 "description": "The type of sharing link to create."
                             },
                             "scope": {
                                 "type": "string",
-                                "enum": ["anonymous", "organization"],
+                                "enum": [
+                                    "anonymous",
+                                    "organization"
+                                ],
                                 "description": "The scope of access granted by the sharing link."
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId", "type", "scope"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId",
+                            "type",
+                            "scope"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createsharinglink": {
@@ -1151,9 +1315,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createsitecolumn",
             "name": "create-site-column",
-            "output": ["ActionOutput_sharepoint_online_createsitecolumn"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createsitecolumn", "ActionOutput_sharepoint_online_createsitecolumn"],
+            "output": [
+                "ActionOutput_sharepoint_online_createsitecolumn"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createsitecolumn",
+                "ActionOutput_sharepoint_online_createsitecolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1243,7 +1414,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["siteId", "name"],
+                        "required": [
+                            "siteId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createsitecolumn": {
@@ -1320,9 +1494,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_createsitepage",
             "name": "create-site-page",
-            "output": ["ActionOutput_sharepoint_online_createsitepage"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_createsitepage", "ActionOutput_sharepoint_online_createsitepage"],
+            "output": [
+                "ActionOutput_sharepoint_online_createsitepage"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_createsitepage",
+                "ActionOutput_sharepoint_online_createsitepage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1445,7 +1626,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["siteId", "name", "title", "pageLayout"],
+                        "required": [
+                            "siteId",
+                            "name",
+                            "title",
+                            "pageLayout"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_createsitepage": {
@@ -1479,7 +1665,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1492,9 +1680,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_deletecontenttype",
             "name": "delete-content-type",
-            "output": ["ActionOutput_sharepoint_online_deletecontenttype"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_deletecontenttype", "ActionOutput_sharepoint_online_deletecontenttype"],
+            "output": [
+                "ActionOutput_sharepoint_online_deletecontenttype"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_deletecontenttype",
+                "ActionOutput_sharepoint_online_deletecontenttype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1510,7 +1705,10 @@
                                 "description": "SharePoint content type ID. Example: \"0x0101009D1CB325DA4B6BDA4F5C51B469A07A12\""
                             }
                         },
-                        "required": ["siteId", "contentTypeId"],
+                        "required": [
+                            "siteId",
+                            "contentTypeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_deletecontenttype": {
@@ -1520,7 +1718,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1533,9 +1733,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_deletedriveitem",
             "name": "delete-drive-item",
-            "output": ["ActionOutput_sharepoint_online_deletedriveitem"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_deletedriveitem", "ActionOutput_sharepoint_online_deletedriveitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_deletedriveitem"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_deletedriveitem",
+                "ActionOutput_sharepoint_online_deletedriveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1555,7 +1762,11 @@
                                 "description": "The unique identifier of the drive item. Example: \"0123456789ABC!123\""
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_deletedriveitem": {
@@ -1565,7 +1776,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1578,9 +1791,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_deletelistcolumn",
             "name": "delete-list-column",
-            "output": ["ActionOutput_sharepoint_online_deletelistcolumn"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_deletelistcolumn", "ActionOutput_sharepoint_online_deletelistcolumn"],
+            "output": [
+                "ActionOutput_sharepoint_online_deletelistcolumn"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_deletelistcolumn",
+                "ActionOutput_sharepoint_online_deletelistcolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1600,7 +1820,11 @@
                                 "description": "SharePoint column definition ID. Example: \"12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["siteId", "listId", "columnId"],
+                        "required": [
+                            "siteId",
+                            "listId",
+                            "columnId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_deletelistcolumn": {
@@ -1610,7 +1834,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1623,9 +1849,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_deletelistitem",
             "name": "delete-list-item",
-            "output": ["ActionOutput_sharepoint_online_deletelistitem"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_deletelistitem", "ActionOutput_sharepoint_online_deletelistitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_deletelistitem"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_deletelistitem",
+                "ActionOutput_sharepoint_online_deletelistitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1645,7 +1878,11 @@
                                 "description": "SharePoint list item ID. Example: \"1\""
                             }
                         },
-                        "required": ["siteId", "listId", "itemId"],
+                        "required": [
+                            "siteId",
+                            "listId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_deletelistitem": {
@@ -1655,7 +1892,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1668,9 +1907,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_deletelist",
             "name": "delete-list",
-            "output": ["ActionOutput_sharepoint_online_deletelist"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_deletelist", "ActionOutput_sharepoint_online_deletelist"],
+            "output": [
+                "ActionOutput_sharepoint_online_deletelist"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_deletelist",
+                "ActionOutput_sharepoint_online_deletelist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1686,7 +1932,10 @@
                                 "description": "SharePoint list ID. Example: \"12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_deletelist": {
@@ -1699,7 +1948,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1712,9 +1964,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_deletesitecolumn",
             "name": "delete-site-column",
-            "output": ["ActionOutput_sharepoint_online_deletesitecolumn"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_deletesitecolumn", "ActionOutput_sharepoint_online_deletesitecolumn"],
+            "output": [
+                "ActionOutput_sharepoint_online_deletesitecolumn"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_deletesitecolumn",
+                "ActionOutput_sharepoint_online_deletesitecolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1730,7 +1989,10 @@
                                 "description": "Site column ID (GUID). Example: \"00000000-0000-0000-0000-000000000000\""
                             }
                         },
-                        "required": ["siteId", "columnId"],
+                        "required": [
+                            "siteId",
+                            "columnId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_deletesitecolumn": {
@@ -1740,7 +2002,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1753,9 +2017,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_deletesitepage",
             "name": "delete-site-page",
-            "output": ["ActionOutput_sharepoint_online_deletesitepage"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_deletesitepage", "ActionOutput_sharepoint_online_deletesitepage"],
+            "output": [
+                "ActionOutput_sharepoint_online_deletesitepage"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_deletesitepage",
+                "ActionOutput_sharepoint_online_deletesitepage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1771,7 +2042,10 @@
                                 "description": "SharePoint site page ID. Example: \"2\""
                             }
                         },
-                        "required": ["siteId", "pageId"],
+                        "required": [
+                            "siteId",
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_deletesitepage": {
@@ -1787,7 +2061,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["siteId", "pageId", "success"],
+                        "required": [
+                            "siteId",
+                            "pageId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1800,9 +2078,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_downloaddriveitemcontent",
             "name": "download-drive-item-content",
-            "output": ["ActionOutput_sharepoint_online_downloaddriveitemcontent"],
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_downloaddriveitemcontent", "ActionOutput_sharepoint_online_downloaddriveitemcontent"],
+            "output": [
+                "ActionOutput_sharepoint_online_downloaddriveitemcontent"
+            ],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_downloaddriveitemcontent",
+                "ActionOutput_sharepoint_online_downloaddriveitemcontent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1822,7 +2108,11 @@
                                 "description": "Drive item ID. Example: \"item-id\""
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_downloaddriveitemcontent": {
@@ -1841,7 +2131,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["content", "size"],
+                        "required": [
+                            "content",
+                            "size"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1854,9 +2147,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getcontenttype",
             "name": "get-content-type",
-            "output": ["ActionOutput_sharepoint_online_getcontenttype"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getcontenttype", "ActionOutput_sharepoint_online_getcontenttype"],
+            "output": [
+                "ActionOutput_sharepoint_online_getcontenttype"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getcontenttype",
+                "ActionOutput_sharepoint_online_getcontenttype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1872,7 +2172,10 @@
                                 "description": "The unique identifier of the content type. Example: \"0x0101\""
                             }
                         },
-                        "required": ["siteId", "contentTypeId"],
+                        "required": [
+                            "siteId",
+                            "contentTypeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_getcontenttype": {
@@ -2373,9 +2676,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getdriveitemthumbnail",
             "name": "get-drive-item-thumbnail",
-            "output": ["ActionOutput_sharepoint_online_getdriveitemthumbnail"],
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getdriveitemthumbnail", "ActionOutput_sharepoint_online_getdriveitemthumbnail"],
+            "output": [
+                "ActionOutput_sharepoint_online_getdriveitemthumbnail"
+            ],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getdriveitemthumbnail",
+                "ActionOutput_sharepoint_online_getdriveitemthumbnail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2395,7 +2706,11 @@
                                 "description": "Drive item ID. Example: \"01NKDM7HMOJTVYMDOSXFDK2QJDXCDI3WUK\""
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_getdriveitemthumbnail": {
@@ -2455,12 +2770,16 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["thumbnailSets"],
+                        "required": [
+                            "thumbnailSets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2473,9 +2792,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getdriveitem",
             "name": "get-drive-item",
-            "output": ["ActionOutput_sharepoint_online_getdriveitem"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getdriveitem", "ActionOutput_sharepoint_online_getdriveitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_getdriveitem"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getdriveitem",
+                "ActionOutput_sharepoint_online_getdriveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2495,7 +2821,11 @@
                                 "description": "Drive item ID. Example: \"01A2B3C4D5E6F7G8H9I0J1K2L3M4N5O6P7Q8R9S0T1U2V3W4X5Y6Z7A8B9C0D1E2F\""
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_getdriveitem": {
@@ -2541,7 +2871,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2554,9 +2886,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getdrive",
             "name": "get-drive",
-            "output": ["ActionOutput_sharepoint_online_getdrive"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getdrive", "ActionOutput_sharepoint_online_getdrive"],
+            "output": [
+                "ActionOutput_sharepoint_online_getdrive"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getdrive",
+                "ActionOutput_sharepoint_online_getdrive"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2572,7 +2911,10 @@
                                 "description": "SharePoint drive ID. Example: \"b!IhduHTCTMEuqkrc...\""
                             }
                         },
-                        "required": ["siteId", "driveId"],
+                        "required": [
+                            "siteId",
+                            "driveId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_getdrive": {
@@ -2627,7 +2969,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "driveType", "webUrl"],
+                        "required": [
+                            "id",
+                            "name",
+                            "driveType",
+                            "webUrl"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2640,9 +2987,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getlistitem",
             "name": "get-list-item",
-            "output": ["ActionOutput_sharepoint_online_getlistitem"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getlistitem", "ActionOutput_sharepoint_online_getlistitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_getlistitem"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getlistitem",
+                "ActionOutput_sharepoint_online_getlistitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2666,7 +3020,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["siteId", "listId", "itemId"],
+                        "required": [
+                            "siteId",
+                            "listId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_getlistitem": {
@@ -2752,7 +3110,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2765,9 +3125,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_sharepoint_online_getlist"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getlist", "ActionOutput_sharepoint_online_getlist"],
+            "output": [
+                "ActionOutput_sharepoint_online_getlist"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getlist",
+                "ActionOutput_sharepoint_online_getlist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2783,7 +3150,10 @@
                                 "description": "SharePoint list ID. Example: \"12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_getlist": {
@@ -2820,7 +3190,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2833,9 +3205,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getsitepage",
             "name": "get-site-page",
-            "output": ["ActionOutput_sharepoint_online_getsitepage"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getsitepage", "ActionOutput_sharepoint_online_getsitepage"],
+            "output": [
+                "ActionOutput_sharepoint_online_getsitepage"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getsitepage",
+                "ActionOutput_sharepoint_online_getsitepage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2851,7 +3230,10 @@
                                 "description": "Site page ID. Example: \"df69e386-6c58-4df2-afc0-ab6327d5b202\""
                             }
                         },
-                        "required": ["siteId", "pageId"],
+                        "required": [
+                            "siteId",
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_getsitepage": {
@@ -2980,7 +3362,9 @@
                             "titleArea": {},
                             "canvasLayout": {}
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2993,9 +3377,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_getsite",
             "name": "get-site",
-            "output": ["ActionOutput_sharepoint_online_getsite"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_getsite", "ActionOutput_sharepoint_online_getsite"],
+            "output": [
+                "ActionOutput_sharepoint_online_getsite"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_getsite",
+                "ActionOutput_sharepoint_online_getsite"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3051,7 +3442,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3064,9 +3457,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listcontenttypes",
             "name": "list-content-types",
-            "output": ["ActionOutput_sharepoint_online_listcontenttypes"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listcontenttypes", "ActionOutput_sharepoint_online_listcontenttypes"],
+            "output": [
+                "ActionOutput_sharepoint_online_listcontenttypes"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listcontenttypes",
+                "ActionOutput_sharepoint_online_listcontenttypes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3078,7 +3478,9 @@
                                 "description": "SharePoint site ID. Example: \"contoso.sharepoint.com,12345678-1234-1234-1234-123456789012,12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["siteId"],
+                        "required": [
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listcontenttypes": {
@@ -3117,11 +3519,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3129,7 +3535,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contentTypes"],
+                        "required": [
+                            "contentTypes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3142,9 +3550,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listdrivechildren",
             "name": "list-drive-children",
-            "output": ["ActionOutput_sharepoint_online_listdrivechildren"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listdrivechildren", "ActionOutput_sharepoint_online_listdrivechildren"],
+            "output": [
+                "ActionOutput_sharepoint_online_listdrivechildren"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listdrivechildren",
+                "ActionOutput_sharepoint_online_listdrivechildren"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3168,7 +3583,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "driveId"],
+                        "required": [
+                            "siteId",
+                            "driveId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listdrivechildren": {
@@ -3213,7 +3631,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3222,7 +3643,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3235,9 +3658,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listdriveitempermissions",
             "name": "list-drive-item-permissions",
-            "output": ["ActionOutput_sharepoint_online_listdriveitempermissions"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listdriveitempermissions", "ActionOutput_sharepoint_online_listdriveitempermissions"],
+            "output": [
+                "ActionOutput_sharepoint_online_listdriveitempermissions"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listdriveitempermissions",
+                "ActionOutput_sharepoint_online_listdriveitempermissions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3257,7 +3687,11 @@
                                 "description": "Drive item ID. Example: \"1234567890ABC!123\""
                             }
                         },
-                        "required": ["site_id", "drive_id", "item_id"],
+                        "required": [
+                            "site_id",
+                            "drive_id",
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listdriveitempermissions": {
@@ -3626,12 +4060,16 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["permissions"],
+                        "required": [
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3644,9 +4082,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listdriveitemversions",
             "name": "list-drive-item-versions",
-            "output": ["ActionOutput_sharepoint_online_listdriveitemversions"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listdriveitemversions", "ActionOutput_sharepoint_online_listdriveitemversions"],
+            "output": [
+                "ActionOutput_sharepoint_online_listdriveitemversions"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listdriveitemversions",
+                "ActionOutput_sharepoint_online_listdriveitemversions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3670,7 +4115,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["site_id", "drive_id", "item_id"],
+                        "required": [
+                            "site_id",
+                            "drive_id",
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listdriveitemversions": {
@@ -3709,7 +4158,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3717,7 +4168,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3730,9 +4183,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listdrives",
             "name": "list-drives",
-            "output": ["ActionOutput_sharepoint_online_listdrives"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listdrives", "ActionOutput_sharepoint_online_listdrives"],
+            "output": [
+                "ActionOutput_sharepoint_online_listdrives"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listdrives",
+                "ActionOutput_sharepoint_online_listdrives"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3748,7 +4208,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId"],
+                        "required": [
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listdrives": {
@@ -3781,7 +4243,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3789,7 +4254,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3802,9 +4269,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listlistcolumns",
             "name": "list-list-columns",
-            "output": ["ActionOutput_sharepoint_online_listlistcolumns"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listlistcolumns", "ActionOutput_sharepoint_online_listlistcolumns"],
+            "output": [
+                "ActionOutput_sharepoint_online_listlistcolumns"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listlistcolumns",
+                "ActionOutput_sharepoint_online_listlistcolumns"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3824,7 +4298,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listlistcolumns": {
@@ -3866,7 +4343,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "displayName"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "displayName"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3875,7 +4356,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["columns"],
+                        "required": [
+                            "columns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3888,9 +4371,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listlistcontenttypes",
             "name": "list-list-content-types",
-            "output": ["ActionOutput_sharepoint_online_listlistcontenttypes"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listlistcontenttypes", "ActionOutput_sharepoint_online_listlistcontenttypes"],
+            "output": [
+                "ActionOutput_sharepoint_online_listlistcontenttypes"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listlistcontenttypes",
+                "ActionOutput_sharepoint_online_listlistcontenttypes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3910,7 +4400,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listlistcontenttypes": {
@@ -3961,7 +4454,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3969,7 +4464,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3982,9 +4479,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listlistitems",
             "name": "list-list-items",
-            "output": ["ActionOutput_sharepoint_online_listlistitems"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listlistitems", "ActionOutput_sharepoint_online_listlistitems"],
+            "output": [
+                "ActionOutput_sharepoint_online_listlistitems"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listlistitems",
+                "ActionOutput_sharepoint_online_listlistitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4018,7 +4522,10 @@
                                 "maximum": 999
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listlistitems": {
@@ -4105,7 +4612,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4113,7 +4622,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4126,9 +4637,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_sharepoint_online_listlists"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listlists", "ActionOutput_sharepoint_online_listlists"],
+            "output": [
+                "ActionOutput_sharepoint_online_listlists"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listlists",
+                "ActionOutput_sharepoint_online_listlists"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4144,7 +4662,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId"],
+                        "required": [
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listlists": {
@@ -4186,7 +4706,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4194,7 +4716,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4207,9 +4731,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listsharedsites",
             "name": "list-shared-sites",
-            "output": ["ActionOutput_sharepoint_online_listsharedsites"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listsharedsites", "ActionOutput_sharepoint_online_listsharedsites"],
+            "output": [
+                "ActionOutput_sharepoint_online_listsharedsites"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listsharedsites",
+                "ActionOutput_sharepoint_online_listsharedsites"
+            ],
             "version": "4.0.1",
             "json_schema": {
                 "definitions": {
@@ -4253,7 +4784,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4261,7 +4794,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sites"],
+                        "required": [
+                            "sites"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4274,9 +4809,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listsitecolumns",
             "name": "list-site-columns",
-            "output": ["ActionOutput_sharepoint_online_listsitecolumns"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listsitecolumns", "ActionOutput_sharepoint_online_listsitecolumns"],
+            "output": [
+                "ActionOutput_sharepoint_online_listsitecolumns"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listsitecolumns",
+                "ActionOutput_sharepoint_online_listsitecolumns"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4293,7 +4835,9 @@
                                 "format": "uri"
                             }
                         },
-                        "required": ["siteId"],
+                        "required": [
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listsitecolumns": {
@@ -4354,7 +4898,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["columns"],
+                        "required": [
+                            "columns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4367,9 +4913,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_listsitepages",
             "name": "list-site-pages",
-            "output": ["ActionOutput_sharepoint_online_listsitepages"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_listsitepages", "ActionOutput_sharepoint_online_listsitepages"],
+            "output": [
+                "ActionOutput_sharepoint_online_listsitepages"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_listsitepages",
+                "ActionOutput_sharepoint_online_listsitepages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4385,7 +4938,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId"],
+                        "required": [
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_listsitepages": {
@@ -4509,7 +5064,9 @@
                                         },
                                         "titleArea": {}
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4517,7 +5074,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4530,9 +5089,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_publishsitepage",
             "name": "publish-site-page",
-            "output": ["ActionOutput_sharepoint_online_publishsitepage"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_publishsitepage", "ActionOutput_sharepoint_online_publishsitepage"],
+            "output": [
+                "ActionOutput_sharepoint_online_publishsitepage"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_publishsitepage",
+                "ActionOutput_sharepoint_online_publishsitepage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4548,7 +5114,10 @@
                                 "description": "Site page ID. Example: \"page-id-guid\""
                             }
                         },
-                        "required": ["siteId", "pageId"],
+                        "required": [
+                            "siteId",
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_publishsitepage": {
@@ -4564,7 +5133,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "siteId", "pageId"],
+                        "required": [
+                            "success",
+                            "siteId",
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4577,9 +5150,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_removedriveitempermission",
             "name": "remove-drive-item-permission",
-            "output": ["ActionOutput_sharepoint_online_removedriveitempermission"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_removedriveitempermission", "ActionOutput_sharepoint_online_removedriveitempermission"],
+            "output": [
+                "ActionOutput_sharepoint_online_removedriveitempermission"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_removedriveitempermission",
+                "ActionOutput_sharepoint_online_removedriveitempermission"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4603,7 +5183,12 @@
                                 "description": "The ID of the permission to remove. Example: \"1\""
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId", "permissionId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId",
+                            "permissionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_removedriveitempermission": {
@@ -4613,7 +5198,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4626,9 +5213,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_restoredriveitemversion",
             "name": "restore-drive-item-version",
-            "output": ["ActionOutput_sharepoint_online_restoredriveitemversion"],
-            "scopes": ["Sites.ReadWrite.All", "Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_restoredriveitemversion", "ActionOutput_sharepoint_online_restoredriveitemversion"],
+            "output": [
+                "ActionOutput_sharepoint_online_restoredriveitemversion"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All",
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_restoredriveitemversion",
+                "ActionOutput_sharepoint_online_restoredriveitemversion"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4652,7 +5247,12 @@
                                 "description": "Version ID to restore. Example: \"1.0\""
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId", "versionId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId",
+                            "versionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_restoredriveitemversion": {
@@ -4663,7 +5263,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4676,9 +5278,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_searchdriveitems",
             "name": "search-drive-items",
-            "output": ["ActionOutput_sharepoint_online_searchdriveitems"],
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_searchdriveitems", "ActionOutput_sharepoint_online_searchdriveitems"],
+            "output": [
+                "ActionOutput_sharepoint_online_searchdriveitems"
+            ],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_searchdriveitems",
+                "ActionOutput_sharepoint_online_searchdriveitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4706,7 +5316,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "driveId", "query"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_searchdriveitems": {
@@ -4739,7 +5353,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "childCount": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -4748,7 +5365,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "mimeType": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -4757,19 +5377,30 @@
                                             "type": "object",
                                             "properties": {
                                                 "driveId": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "id": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "path": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4777,7 +5408,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4790,9 +5423,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_searchsites",
             "name": "search-sites",
-            "output": ["ActionOutput_sharepoint_online_searchsites"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_sharepoint_online_searchsites", "ActionOutput_sharepoint_online_searchsites"],
+            "output": [
+                "ActionOutput_sharepoint_online_searchsites"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_searchsites",
+                "ActionOutput_sharepoint_online_searchsites"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4808,7 +5448,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_searchsites": {
@@ -4838,7 +5480,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4846,7 +5490,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4859,9 +5505,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_updatedriveitempermission",
             "name": "update-drive-item-permission",
-            "output": ["ActionOutput_sharepoint_online_updatedriveitempermission"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_updatedriveitempermission", "ActionOutput_sharepoint_online_updatedriveitempermission"],
+            "output": [
+                "ActionOutput_sharepoint_online_updatedriveitempermission"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_updatedriveitempermission",
+                "ActionOutput_sharepoint_online_updatedriveitempermission"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4892,7 +5545,13 @@
                                 "description": "Roles to assign. Example: [\"write\"]"
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId", "permissionId", "roles"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId",
+                            "permissionId",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_updatedriveitempermission": {
@@ -4995,7 +5654,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "roles"],
+                        "required": [
+                            "id",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5008,9 +5670,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_updatedriveitem",
             "name": "update-drive-item",
-            "output": ["ActionOutput_sharepoint_online_updatedriveitem"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_updatedriveitem", "ActionOutput_sharepoint_online_updatedriveitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_updatedriveitem"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_updatedriveitem",
+                "ActionOutput_sharepoint_online_updatedriveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5045,7 +5714,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["siteId", "driveId", "itemId"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_updatedriveitem": {
@@ -5098,7 +5771,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5111,9 +5786,17 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_updatelistcolumn",
             "name": "update-list-column",
-            "output": ["ActionOutput_sharepoint_online_updatelistcolumn"],
-            "scopes": ["Sites.ReadWrite.All", "Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_updatelistcolumn", "ActionOutput_sharepoint_online_updatelistcolumn"],
+            "output": [
+                "ActionOutput_sharepoint_online_updatelistcolumn"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All",
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_updatelistcolumn",
+                "ActionOutput_sharepoint_online_updatelistcolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5139,7 +5822,12 @@
                                 "description": "The columnDefinition properties to update."
                             }
                         },
-                        "required": ["siteId", "listId", "columnId", "columnDefinition"],
+                        "required": [
+                            "siteId",
+                            "listId",
+                            "columnId",
+                            "columnDefinition"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_updatelistcolumn": {
@@ -5185,9 +5873,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_updatelistitem",
             "name": "update-list-item",
-            "output": ["ActionOutput_sharepoint_online_updatelistitem"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_updatelistitem", "ActionOutput_sharepoint_online_updatelistitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_updatelistitem"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_updatelistitem",
+                "ActionOutput_sharepoint_online_updatelistitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5215,7 +5910,12 @@
                                 "description": "Field values keyed by internal column name."
                             }
                         },
-                        "required": ["site_id", "list_id", "item_id", "fields"],
+                        "required": [
+                            "site_id",
+                            "list_id",
+                            "item_id",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_updatelistitem": {
@@ -5238,7 +5938,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["site_id", "list_id", "item_id", "fields"],
+                        "required": [
+                            "site_id",
+                            "list_id",
+                            "item_id",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5251,9 +5956,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_updatelist",
             "name": "update-list",
-            "output": ["ActionOutput_sharepoint_online_updatelist"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_updatelist", "ActionOutput_sharepoint_online_updatelist"],
+            "output": [
+                "ActionOutput_sharepoint_online_updatelist"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_updatelist",
+                "ActionOutput_sharepoint_online_updatelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5277,7 +5989,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "listId"],
+                        "required": [
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_updatelist": {
@@ -5320,7 +6035,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5333,9 +6050,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_updatesitecolumn",
             "name": "update-site-column",
-            "output": ["ActionOutput_sharepoint_online_updatesitecolumn"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_updatesitecolumn", "ActionOutput_sharepoint_online_updatesitecolumn"],
+            "output": [
+                "ActionOutput_sharepoint_online_updatesitecolumn"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_updatesitecolumn",
+                "ActionOutput_sharepoint_online_updatesitecolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5474,7 +6198,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["siteId", "columnId"],
+                        "required": [
+                            "siteId",
+                            "columnId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_updatesitecolumn": {
@@ -5610,7 +6337,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5623,9 +6353,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_updatesitepage",
             "name": "update-site-page",
-            "output": ["ActionOutput_sharepoint_online_updatesitepage"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_updatesitepage", "ActionOutput_sharepoint_online_updatesitepage"],
+            "output": [
+                "ActionOutput_sharepoint_online_updatesitepage"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_updatesitepage",
+                "ActionOutput_sharepoint_online_updatesitepage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5677,7 +6414,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["siteId", "pageId"],
+                        "required": [
+                            "siteId",
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_updatesitepage": {
@@ -5792,7 +6532,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5805,9 +6547,16 @@
             "endpoint": null,
             "input": "ActionInput_sharepoint_online_uploaddriveitem",
             "name": "upload-drive-item",
-            "output": ["ActionOutput_sharepoint_online_uploaddriveitem"],
-            "scopes": ["Sites.ReadWrite.All"],
-            "usedModels": ["ActionInput_sharepoint_online_uploaddriveitem", "ActionOutput_sharepoint_online_uploaddriveitem"],
+            "output": [
+                "ActionOutput_sharepoint_online_uploaddriveitem"
+            ],
+            "scopes": [
+                "Sites.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_sharepoint_online_uploaddriveitem",
+                "ActionOutput_sharepoint_online_uploaddriveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5839,7 +6588,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["siteId", "driveId", "parentItemId", "fileName", "content"],
+                        "required": [
+                            "siteId",
+                            "driveId",
+                            "parentItemId",
+                            "fileName",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sharepoint_online_uploaddriveitem": {
@@ -5864,7 +6619,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5885,12 +6642,18 @@
             ],
             "input": null,
             "name": "content-types",
-            "output": ["ContentType"],
+            "output": [
+                "ContentType"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ContentType"],
+            "usedModels": [
+                "ContentType"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5956,12 +6719,17 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "siteId"],
+                        "required": [
+                            "id",
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5975,12 +6743,20 @@
             ],
             "input": "SyncMetadata_sharepoint_online_driveitemversions",
             "name": "drive-item-versions",
-            "output": ["DriveItemVersion"],
+            "output": [
+                "DriveItemVersion"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DriveItemVersion", "SyncMetadata_sharepoint_online_driveitemversions"],
+            "usedModels": [
+                "DriveItemVersion",
+                "SyncMetadata_sharepoint_online_driveitemversions"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6013,7 +6789,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "itemId", "driveId", "siteId", "versionId"],
+                        "required": [
+                            "id",
+                            "itemId",
+                            "driveId",
+                            "siteId",
+                            "versionId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_driveitemversions": {
@@ -6031,7 +6813,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["siteId", "driveId"],
+                                    "required": [
+                                        "siteId",
+                                        "driveId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -6040,7 +6825,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6054,12 +6841,20 @@
             ],
             "input": "SyncMetadata_sharepoint_online_driveitems",
             "name": "drive-items",
-            "output": ["DriveItem"],
+            "output": [
+                "DriveItem"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DriveItem", "SyncMetadata_sharepoint_online_driveitems"],
+            "usedModels": [
+                "DriveItem",
+                "SyncMetadata_sharepoint_online_driveitems"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6101,7 +6896,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "driveId"],
+                        "required": [
+                            "id",
+                            "driveId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_driveitems": {
@@ -6118,7 +6916,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6132,12 +6932,19 @@
             ],
             "input": "SyncMetadata_sharepoint_online_drives",
             "name": "drives",
-            "output": ["Drive"],
+            "output": [
+                "Drive"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Drive", "SyncMetadata_sharepoint_online_drives"],
+            "usedModels": [
+                "Drive",
+                "SyncMetadata_sharepoint_online_drives"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6170,7 +6977,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "siteId"],
+                        "required": [
+                            "id",
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_drives": {
@@ -6187,7 +6997,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6201,12 +7013,18 @@
             ],
             "input": null,
             "name": "list-columns",
-            "output": ["ListColumn"],
+            "output": [
+                "ListColumn"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ListColumn"],
+            "usedModels": [
+                "ListColumn"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6251,12 +7069,18 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "siteId", "listId"],
+                        "required": [
+                            "id",
+                            "siteId",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6270,12 +7094,18 @@
             ],
             "input": null,
             "name": "list-items",
-            "output": ["ListItem"],
+            "output": [
+                "ListItem"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ListItem"],
+            "usedModels": [
+                "ListItem"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6321,12 +7151,19 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "siteId", "listId", "itemId"],
+                        "required": [
+                            "id",
+                            "siteId",
+                            "listId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6340,12 +7177,19 @@
             ],
             "input": "SyncMetadata_sharepoint_online_lists",
             "name": "lists",
-            "output": ["List"],
+            "output": [
+                "List"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["List", "SyncMetadata_sharepoint_online_lists"],
+            "usedModels": [
+                "List",
+                "SyncMetadata_sharepoint_online_lists"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6387,7 +7231,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "site_id"],
+                        "required": [
+                            "id",
+                            "site_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_lists": {
@@ -6404,7 +7251,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6418,12 +7267,20 @@
             ],
             "input": "SyncMetadata_sharepoint_online_permissions",
             "name": "permissions",
-            "output": ["Permission"],
+            "output": [
+                "Permission"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Permission", "SyncMetadata_sharepoint_online_permissions"],
+            "usedModels": [
+                "Permission",
+                "SyncMetadata_sharepoint_online_permissions"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6494,7 +7351,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "itemId", "permissionId"],
+                        "required": [
+                            "id",
+                            "itemId",
+                            "permissionId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_permissions": {
@@ -6512,17 +7373,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["siteId", "driveId"],
+                                    "required": [
+                                        "siteId",
+                                        "driveId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["drives"],
+                        "required": [
+                            "drives"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6536,12 +7404,20 @@
             ],
             "input": "SyncMetadata_sharepoint_online_sharedsitesselection",
             "name": "shared-sites-selection",
-            "output": ["SharedSiteFile"],
+            "output": [
+                "SharedSiteFile"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SharedSiteFile", "SyncMetadata_sharepoint_online_sharedsitesselection"],
+            "usedModels": [
+                "SharedSiteFile",
+                "SyncMetadata_sharepoint_online_sharedsitesselection"
+            ],
             "version": "4.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6583,7 +7459,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "siteId", "driveId", "itemId"],
+                        "required": [
+                            "id",
+                            "siteId",
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_sharedsitesselection": {
@@ -6606,7 +7487,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6620,12 +7503,19 @@
             ],
             "input": "SyncMetadata_sharepoint_online_sitecolumns",
             "name": "site-columns",
-            "output": ["SiteColumn"],
+            "output": [
+                "SiteColumn"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SiteColumn", "SyncMetadata_sharepoint_online_sitecolumns"],
+            "usedModels": [
+                "SiteColumn",
+                "SyncMetadata_sharepoint_online_sitecolumns"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6785,7 +7675,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "columnId", "siteId"],
+                        "required": [
+                            "id",
+                            "columnId",
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_sitecolumns": {
@@ -6798,12 +7692,16 @@
                                 }
                             }
                         },
-                        "required": ["siteIds"],
+                        "required": [
+                            "siteIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6817,12 +7715,19 @@
             ],
             "input": "SyncMetadata_sharepoint_online_sitepages",
             "name": "site-pages",
-            "output": ["SitePage"],
+            "output": [
+                "SitePage"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SitePage", "SyncMetadata_sharepoint_online_sitepages"],
+            "usedModels": [
+                "SitePage",
+                "SyncMetadata_sharepoint_online_sitepages"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6843,7 +7748,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_sitepages": {
@@ -6860,7 +7767,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6874,12 +7783,19 @@
             ],
             "input": "SyncMetadata_sharepoint_online_sites",
             "name": "sites",
-            "output": ["Site"],
+            "output": [
+                "Site"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Site", "SyncMetadata_sharepoint_online_sites"],
+            "usedModels": [
+                "Site",
+                "SyncMetadata_sharepoint_online_sites"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6912,7 +7828,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_sites": {
@@ -6941,7 +7859,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6955,12 +7875,18 @@
             ],
             "input": null,
             "name": "subsites",
-            "output": ["Subsite"],
+            "output": [
+                "Subsite"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All"],
+            "scopes": [
+                "Sites.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subsite"],
+            "usedModels": [
+                "Subsite"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6993,12 +7919,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7012,12 +7942,20 @@
             ],
             "input": "SyncMetadata_sharepoint_online_userfilesselection",
             "name": "user-files-selection",
-            "output": ["UserFileSelection"],
+            "output": [
+                "UserFileSelection"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserFileSelection", "SyncMetadata_sharepoint_online_userfilesselection"],
+            "usedModels": [
+                "UserFileSelection",
+                "SyncMetadata_sharepoint_online_userfilesselection"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7062,11 +8000,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["driveId", "id"],
+                                "required": [
+                                    "driveId",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "driveId"],
+                        "required": [
+                            "id",
+                            "driveId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_sharepoint_online_userfilesselection": {
@@ -7090,7 +8034,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["driveId", "id"],
+                                    "required": [
+                                        "driveId",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -7099,7 +8046,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7113,12 +8062,19 @@
             ],
             "input": null,
             "name": "user-files",
-            "output": ["UserFile"],
+            "output": [
+                "UserFile"
+            ],
             "runs": "every hour",
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserFile"],
+            "usedModels": [
+                "UserFile"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7172,12 +8128,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "driveId", "itemId"],
+                        "required": [
+                            "id",
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

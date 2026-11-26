@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_createaudience",
             "name": "create-audience",
-            "output": ["ActionOutput_mailchimp_createaudience"],
+            "output": [
+                "ActionOutput_mailchimp_createaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_createaudience", "ActionOutput_mailchimp_createaudience"],
+            "usedModels": [
+                "ActionInput_mailchimp_createaudience",
+                "ActionOutput_mailchimp_createaudience"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -47,7 +52,14 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["company", "address1", "city", "state", "zip", "country"],
+                                "required": [
+                                    "company",
+                                    "address1",
+                                    "city",
+                                    "state",
+                                    "zip",
+                                    "country"
+                                ],
                                 "additionalProperties": false
                             },
                             "permission_reminder": {
@@ -69,7 +81,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["from_name", "from_email", "subject", "language"],
+                                "required": [
+                                    "from_name",
+                                    "from_email",
+                                    "subject",
+                                    "language"
+                                ],
                                 "additionalProperties": false
                             },
                             "email_type_option": {
@@ -77,7 +94,10 @@
                             },
                             "visibility": {
                                 "type": "string",
-                                "enum": ["pub", "prv"]
+                                "enum": [
+                                    "pub",
+                                    "prv"
+                                ]
                             },
                             "notify_on_subscribe": {
                                 "type": "string"
@@ -89,7 +109,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "contact", "permission_reminder", "campaign_defaults", "email_type_option"],
+                        "required": [
+                            "name",
+                            "contact",
+                            "permission_reminder",
+                            "campaign_defaults",
+                            "email_type_option"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_createaudience": {
@@ -111,7 +137,10 @@
                                         "type": "string"
                                     },
                                     "address2": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "city": {
                                         "type": "string"
@@ -126,10 +155,20 @@
                                         "type": "string"
                                     },
                                     "phone": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["company", "address1", "city", "state", "zip", "country"],
+                                "required": [
+                                    "company",
+                                    "address1",
+                                    "city",
+                                    "state",
+                                    "zip",
+                                    "country"
+                                ],
                                 "additionalProperties": false
                             },
                             "permission_reminder": {
@@ -151,7 +190,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["from_name", "from_email", "subject", "language"],
+                                "required": [
+                                    "from_name",
+                                    "from_email",
+                                    "subject",
+                                    "language"
+                                ],
                                 "additionalProperties": false
                             },
                             "email_type_option": {
@@ -161,7 +205,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "contact", "permission_reminder", "campaign_defaults", "email_type_option"],
+                        "required": [
+                            "id",
+                            "name",
+                            "contact",
+                            "permission_reminder",
+                            "campaign_defaults",
+                            "email_type_option"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -174,9 +225,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_createcampaign",
             "name": "create-campaign",
-            "output": ["ActionOutput_mailchimp_createcampaign"],
+            "output": [
+                "ActionOutput_mailchimp_createcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_createcampaign", "ActionOutput_mailchimp_createcampaign"],
+            "usedModels": [
+                "ActionInput_mailchimp_createcampaign",
+                "ActionOutput_mailchimp_createcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -185,7 +241,13 @@
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "enum": ["regular", "plaintext", "absplit", "rss", "variate"],
+                                "enum": [
+                                    "regular",
+                                    "plaintext",
+                                    "absplit",
+                                    "rss",
+                                    "variate"
+                                ],
                                 "description": "Campaign type. Example: \"regular\""
                             },
                             "recipients": {
@@ -212,7 +274,9 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["list_id"],
+                                "required": [
+                                    "list_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "settings": {
@@ -324,7 +388,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["type", "recipients"],
+                        "required": [
+                            "type",
+                            "recipients"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_createcampaign": {
@@ -382,11 +449,18 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["list_id"],
+                                "required": [
+                                    "list_id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "web_id", "type", "status"],
+                        "required": [
+                            "id",
+                            "web_id",
+                            "type",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -399,9 +473,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_createmember",
             "name": "create-member",
-            "output": ["ActionOutput_mailchimp_createmember"],
+            "output": [
+                "ActionOutput_mailchimp_createmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_createmember", "ActionOutput_mailchimp_createmember"],
+            "usedModels": [
+                "ActionInput_mailchimp_createmember",
+                "ActionOutput_mailchimp_createmember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -418,7 +497,13 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["subscribed", "unsubscribed", "cleaned", "pending", "transactional"],
+                                "enum": [
+                                    "subscribed",
+                                    "unsubscribed",
+                                    "cleaned",
+                                    "pending",
+                                    "transactional"
+                                ],
                                 "description": "Subscriber's current status."
                             },
                             "merge_fields": {
@@ -467,7 +552,10 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["latitude", "longitude"],
+                                "required": [
+                                    "latitude",
+                                    "longitude"
+                                ],
                                 "additionalProperties": false
                             },
                             "ip_signup": {
@@ -487,7 +575,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["list_id", "email_address", "status"],
+                        "required": [
+                            "list_id",
+                            "email_address",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_createmember": {
@@ -547,7 +639,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email_address", "status"],
+                        "required": [
+                            "id",
+                            "email_address",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -560,9 +656,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_createsegment",
             "name": "create-segment",
-            "output": ["ActionOutput_mailchimp_createsegment"],
+            "output": [
+                "ActionOutput_mailchimp_createsegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_createsegment", "ActionOutput_mailchimp_createsegment"],
+            "usedModels": [
+                "ActionInput_mailchimp_createsegment",
+                "ActionOutput_mailchimp_createsegment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -590,7 +691,10 @@
                                 "properties": {
                                     "match": {
                                         "type": "string",
-                                        "enum": ["any", "all"]
+                                        "enum": [
+                                            "any",
+                                            "all"
+                                        ]
                                     },
                                     "conditions": {
                                         "type": "array",
@@ -615,7 +719,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["list_id", "name"],
+                        "required": [
+                            "list_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_createsegment": {
@@ -647,7 +754,10 @@
                                 "properties": {
                                     "match": {
                                         "type": "string",
-                                        "enum": ["any", "all"]
+                                        "enum": [
+                                            "any",
+                                            "all"
+                                        ]
                                     },
                                     "conditions": {
                                         "type": "array",
@@ -672,7 +782,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "member_count", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "member_count",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -685,9 +800,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_createstore",
             "name": "create-store",
-            "output": ["ActionOutput_mailchimp_createstore"],
+            "output": [
+                "ActionOutput_mailchimp_createstore"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_createstore", "ActionOutput_mailchimp_createstore"],
+            "usedModels": [
+                "ActionInput_mailchimp_createstore",
+                "ActionOutput_mailchimp_createstore"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -780,7 +900,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "list_id", "name", "currency_code"],
+                        "required": [
+                            "id",
+                            "list_id",
+                            "name",
+                            "currency_code"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_createstore": {
@@ -868,7 +993,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "list_id", "name", "currency_code"],
+                        "required": [
+                            "id",
+                            "list_id",
+                            "name",
+                            "currency_code"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -881,9 +1011,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_createtemplate",
             "name": "create-template",
-            "output": ["ActionOutput_mailchimp_createtemplate"],
+            "output": [
+                "ActionOutput_mailchimp_createtemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_createtemplate", "ActionOutput_mailchimp_createtemplate"],
+            "usedModels": [
+                "ActionInput_mailchimp_createtemplate",
+                "ActionOutput_mailchimp_createtemplate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -903,7 +1038,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name", "html"],
+                        "required": [
+                            "name",
+                            "html"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_createtemplate": {
@@ -937,7 +1075,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -950,9 +1090,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_deleteaudience",
             "name": "delete-audience",
-            "output": ["ActionOutput_mailchimp_deleteaudience"],
+            "output": [
+                "ActionOutput_mailchimp_deleteaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_deleteaudience", "ActionOutput_mailchimp_deleteaudience"],
+            "usedModels": [
+                "ActionInput_mailchimp_deleteaudience",
+                "ActionOutput_mailchimp_deleteaudience"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -964,7 +1109,9 @@
                                 "description": "The unique ID for the audience/list to delete. Example: \"a1b2c3d4e5\""
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_deleteaudience": {
@@ -977,7 +1124,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -990,9 +1139,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_deletecampaign",
             "name": "delete-campaign",
-            "output": ["ActionOutput_mailchimp_deletecampaign"],
+            "output": [
+                "ActionOutput_mailchimp_deletecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_deletecampaign", "ActionOutput_mailchimp_deletecampaign"],
+            "usedModels": [
+                "ActionInput_mailchimp_deletecampaign",
+                "ActionOutput_mailchimp_deletecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1004,7 +1158,9 @@
                                 "description": "The unique ID of the campaign to delete. Example: \"a1b2c3d4e5\""
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_deletecampaign": {
@@ -1017,7 +1173,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "campaign_id"],
+                        "required": [
+                            "success",
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1030,9 +1189,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_deletemember",
             "name": "delete-member",
-            "output": ["ActionOutput_mailchimp_deletemember"],
+            "output": [
+                "ActionOutput_mailchimp_deletemember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_deletemember", "ActionOutput_mailchimp_deletemember"],
+            "usedModels": [
+                "ActionInput_mailchimp_deletemember",
+                "ActionOutput_mailchimp_deletemember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1048,7 +1212,10 @@
                                 "description": "The MD5 hash of the lowercase version of the list member's email address. Example: \"f52b1fb13b40f6b01297aa7e5c1d8e5c\""
                             }
                         },
-                        "required": ["list_id", "subscriber_hash"],
+                        "required": [
+                            "list_id",
+                            "subscriber_hash"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_deletemember": {
@@ -1066,7 +1233,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1079,9 +1248,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_deletesegment",
             "name": "delete-segment",
-            "output": ["ActionOutput_mailchimp_deletesegment"],
+            "output": [
+                "ActionOutput_mailchimp_deletesegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_deletesegment", "ActionOutput_mailchimp_deletesegment"],
+            "usedModels": [
+                "ActionInput_mailchimp_deletesegment",
+                "ActionOutput_mailchimp_deletesegment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1097,7 +1271,10 @@
                                 "description": "The unique ID of the segment to delete. Example: \"3730784\""
                             }
                         },
-                        "required": ["list_id", "segment_id"],
+                        "required": [
+                            "list_id",
+                            "segment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_deletesegment": {
@@ -1113,7 +1290,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "list_id", "segment_id"],
+                        "required": [
+                            "success",
+                            "list_id",
+                            "segment_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1126,9 +1307,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_deletetemplate",
             "name": "delete-template",
-            "output": ["ActionOutput_mailchimp_deletetemplate"],
+            "output": [
+                "ActionOutput_mailchimp_deletetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_deletetemplate", "ActionOutput_mailchimp_deletetemplate"],
+            "usedModels": [
+                "ActionInput_mailchimp_deletetemplate",
+                "ActionOutput_mailchimp_deletetemplate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1140,7 +1326,9 @@
                                 "description": "The ID of the template to delete. Example: \"1234\""
                             }
                         },
-                        "required": ["template_id"],
+                        "required": [
+                            "template_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_deletetemplate": {
@@ -1153,7 +1341,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1166,9 +1356,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_getaudience",
             "name": "get-audience",
-            "output": ["ActionOutput_mailchimp_getaudience"],
+            "output": [
+                "ActionOutput_mailchimp_getaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_getaudience", "ActionOutput_mailchimp_getaudience"],
+            "usedModels": [
+                "ActionInput_mailchimp_getaudience",
+                "ActionOutput_mailchimp_getaudience"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1180,7 +1375,9 @@
                                 "description": "The unique ID for the list. Example: \"a1b2c3d4e5\""
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_getaudience": {
@@ -1387,7 +1584,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1400,9 +1599,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_getautomation",
             "name": "get-automation",
-            "output": ["ActionOutput_mailchimp_getautomation"],
+            "output": [
+                "ActionOutput_mailchimp_getautomation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_getautomation", "ActionOutput_mailchimp_getautomation"],
+            "usedModels": [
+                "ActionInput_mailchimp_getautomation",
+                "ActionOutput_mailchimp_getautomation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1414,7 +1618,9 @@
                                 "description": "The unique id for the Automation workflow. Example: \"1a2b3c4d5e\""
                             }
                         },
-                        "required": ["workflow_id"],
+                        "required": [
+                            "workflow_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_getautomation": {
@@ -1632,7 +1838,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1645,9 +1853,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_getcampaignreport",
             "name": "get-campaign-report",
-            "output": ["ActionOutput_mailchimp_getcampaignreport"],
+            "output": [
+                "ActionOutput_mailchimp_getcampaignreport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_getcampaignreport", "ActionOutput_mailchimp_getcampaignreport"],
+            "usedModels": [
+                "ActionInput_mailchimp_getcampaignreport",
+                "ActionOutput_mailchimp_getcampaignreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1659,7 +1872,9 @@
                                 "description": "The unique ID of the campaign. Example: \"abc123\""
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_getcampaignreport": {
@@ -1864,9 +2079,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_getcampaign",
             "name": "get-campaign",
-            "output": ["ActionOutput_mailchimp_getcampaign"],
+            "output": [
+                "ActionOutput_mailchimp_getcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_getcampaign", "ActionOutput_mailchimp_getcampaign"],
+            "usedModels": [
+                "ActionInput_mailchimp_getcampaign",
+                "ActionOutput_mailchimp_getcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1878,7 +2098,9 @@
                                 "description": "The unique id for the campaign. Example: \"a1b2c3d4e5\""
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_getcampaign": {
@@ -1912,7 +2134,10 @@
                                 "type": "number"
                             },
                             "send_time": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "content_type": {
                                 "type": "string"
@@ -2326,7 +2551,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2339,9 +2566,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_getmember",
             "name": "get-member",
-            "output": ["ActionOutput_mailchimp_getmember"],
+            "output": [
+                "ActionOutput_mailchimp_getmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_getmember", "ActionOutput_mailchimp_getmember"],
+            "usedModels": [
+                "ActionInput_mailchimp_getmember",
+                "ActionOutput_mailchimp_getmember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2359,7 +2591,10 @@
                                 "description": "The email address of the member to retrieve. The subscriber hash will be computed automatically. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["list_id", "email"],
+                        "required": [
+                            "list_id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_getmember": {
@@ -2458,7 +2693,10 @@
                                 "type": "string"
                             },
                             "member_rating": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "last_changed": {
                                 "type": "string"
@@ -2596,9 +2834,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_getsegment",
             "name": "get-segment",
-            "output": ["ActionOutput_mailchimp_getsegment"],
+            "output": [
+                "ActionOutput_mailchimp_getsegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_getsegment", "ActionOutput_mailchimp_getsegment"],
+            "usedModels": [
+                "ActionInput_mailchimp_getsegment",
+                "ActionOutput_mailchimp_getsegment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2616,7 +2859,10 @@
                                 "description": "The unique ID for the segment. Example: 12345"
                             }
                         },
-                        "required": ["list_id", "segment_id"],
+                        "required": [
+                            "list_id",
+                            "segment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_getsegment": {
@@ -2691,7 +2937,15 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "member_count", "type", "created_at", "updated_at", "list_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "member_count",
+                            "type",
+                            "created_at",
+                            "updated_at",
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2704,9 +2958,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_getstore",
             "name": "get-store",
-            "output": ["ActionOutput_mailchimp_getstore"],
+            "output": [
+                "ActionOutput_mailchimp_getstore"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_getstore", "ActionOutput_mailchimp_getstore"],
+            "usedModels": [
+                "ActionInput_mailchimp_getstore",
+                "ActionOutput_mailchimp_getstore"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2718,7 +2977,9 @@
                                 "description": "The unique identifier for the store. Example: \"store123\""
                             }
                         },
-                        "required": ["store_id"],
+                        "required": [
+                            "store_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_getstore": {
@@ -2911,9 +3172,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_gettemplate",
             "name": "get-template",
-            "output": ["ActionOutput_mailchimp_gettemplate"],
+            "output": [
+                "ActionOutput_mailchimp_gettemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_gettemplate", "ActionOutput_mailchimp_gettemplate"],
+            "usedModels": [
+                "ActionInput_mailchimp_gettemplate",
+                "ActionOutput_mailchimp_gettemplate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2925,7 +3191,9 @@
                                 "description": "The ID of the template to retrieve. Example: 12345"
                             }
                         },
-                        "required": ["template_id"],
+                        "required": [
+                            "template_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_gettemplate": {
@@ -3001,7 +3269,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3014,9 +3284,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_listaudiences",
             "name": "list-audiences",
-            "output": ["ActionOutput_mailchimp_listaudiences"],
+            "output": [
+                "ActionOutput_mailchimp_listaudiences"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_listaudiences", "ActionOutput_mailchimp_listaudiences"],
+            "usedModels": [
+                "ActionInput_mailchimp_listaudiences",
+                "ActionOutput_mailchimp_listaudiences"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3189,7 +3464,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3200,7 +3477,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["lists"],
+                        "required": [
+                            "lists"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3213,9 +3492,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_listautomations",
             "name": "list-automations",
-            "output": ["ActionOutput_mailchimp_listautomations"],
+            "output": [
+                "ActionOutput_mailchimp_listautomations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_listautomations", "ActionOutput_mailchimp_listautomations"],
+            "usedModels": [
+                "ActionInput_mailchimp_listautomations",
+                "ActionOutput_mailchimp_listautomations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3242,7 +3526,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["save", "paused", "sending"]
+                                "enum": [
+                                    "save",
+                                    "paused",
+                                    "sending"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3259,16 +3547,28 @@
                                             "type": "string"
                                         },
                                         "create_time": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "start_time": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "emails_sent": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "recipients": {
                                             "anyOf": [
@@ -3327,7 +3627,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3335,10 +3637,16 @@
                                 "type": "number"
                             },
                             "next_offset": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["automations", "total_items"],
+                        "required": [
+                            "automations",
+                            "total_items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3351,9 +3659,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_listcampaigns",
             "name": "list-campaigns",
-            "output": ["ActionOutput_mailchimp_listcampaigns"],
+            "output": [
+                "ActionOutput_mailchimp_listcampaigns"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_listcampaigns", "ActionOutput_mailchimp_listcampaigns"],
+            "usedModels": [
+                "ActionInput_mailchimp_listcampaigns",
+                "ActionOutput_mailchimp_listcampaigns"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3498,7 +3811,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3509,7 +3824,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "total_items"],
+                        "required": [
+                            "items",
+                            "total_items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3522,9 +3840,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_listmembers",
             "name": "list-members",
-            "output": ["ActionOutput_mailchimp_listmembers"],
+            "output": [
+                "ActionOutput_mailchimp_listmembers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_listmembers", "ActionOutput_mailchimp_listmembers"],
+            "usedModels": [
+                "ActionInput_mailchimp_listmembers",
+                "ActionOutput_mailchimp_listmembers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3548,7 +3871,13 @@
                             "status": {
                                 "description": "The subscriber's status.",
                                 "type": "string",
-                                "enum": ["subscribed", "unsubscribed", "cleaned", "pending", "transactional"]
+                                "enum": [
+                                    "subscribed",
+                                    "unsubscribed",
+                                    "cleaned",
+                                    "pending",
+                                    "transactional"
+                                ]
                             },
                             "since_timestamp_opt": {
                                 "description": "Restrict results to subscribers who opted-in after the set timeframe. Uses ISO 8601 time format: 2015-10-21T15:41:36+00:00.",
@@ -3567,7 +3896,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_listmembers": {
@@ -3713,7 +4044,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "email_address"],
+                                    "required": [
+                                        "id",
+                                        "email_address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3724,7 +4058,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3737,9 +4073,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_listsegments",
             "name": "list-segments",
-            "output": ["ActionOutput_mailchimp_listsegments"],
+            "output": [
+                "ActionOutput_mailchimp_listsegments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_listsegments", "ActionOutput_mailchimp_listsegments"],
+            "usedModels": [
+                "ActionInput_mailchimp_listsegments",
+                "ActionOutput_mailchimp_listsegments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3766,7 +4107,11 @@
                             "exclude_type": {
                                 "description": "Exclude results based on segment type.",
                                 "type": "string",
-                                "enum": ["saved", "static", "fuzzy"]
+                                "enum": [
+                                    "saved",
+                                    "static",
+                                    "fuzzy"
+                                ]
                             },
                             "since_created_at": {
                                 "description": "Restrict results to segments created after the set time. Uses ISO 8601 time format.",
@@ -3797,7 +4142,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_listsegments": {
@@ -3819,7 +4166,11 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["saved", "static", "fuzzy"]
+                                            "enum": [
+                                                "saved",
+                                                "static",
+                                                "fuzzy"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3832,7 +4183,10 @@
                                             "properties": {
                                                 "match": {
                                                     "type": "string",
-                                                    "enum": ["any", "all"]
+                                                    "enum": [
+                                                        "any",
+                                                        "all"
+                                                    ]
                                                 },
                                                 "conditions": {
                                                     "type": "array",
@@ -3849,7 +4203,10 @@
                                                                 "type": "string"
                                                             },
                                                             "value": {
-                                                                "type": ["string", "number"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "number"
+                                                                ]
                                                             },
                                                             "extra": {
                                                                 "type": "string"
@@ -3862,7 +4219,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name", "member_count"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "member_count"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3870,7 +4231,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3883,9 +4246,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_liststores",
             "name": "list-stores",
-            "output": ["ActionOutput_mailchimp_liststores"],
+            "output": [
+                "ActionOutput_mailchimp_liststores"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_liststores", "ActionOutput_mailchimp_liststores"],
+            "usedModels": [
+                "ActionInput_mailchimp_liststores",
+                "ActionOutput_mailchimp_liststores"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3992,7 +4360,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4000,7 +4370,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4013,9 +4385,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_listtemplates",
             "name": "list-templates",
-            "output": ["ActionOutput_mailchimp_listtemplates"],
+            "output": [
+                "ActionOutput_mailchimp_listtemplates"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_listtemplates", "ActionOutput_mailchimp_listtemplates"],
+            "usedModels": [
+                "ActionInput_mailchimp_listtemplates",
+                "ActionOutput_mailchimp_listtemplates"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4112,7 +4489,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The list of templates."
@@ -4122,7 +4501,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4135,9 +4516,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_schedulecampaign",
             "name": "schedule-campaign",
-            "output": ["ActionOutput_mailchimp_schedulecampaign"],
+            "output": [
+                "ActionOutput_mailchimp_schedulecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_schedulecampaign", "ActionOutput_mailchimp_schedulecampaign"],
+            "usedModels": [
+                "ActionInput_mailchimp_schedulecampaign",
+                "ActionOutput_mailchimp_schedulecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4153,7 +4539,10 @@
                                 "description": "The date and time to schedule the campaign in ISO 8601 format. Example: \"2026-05-25T14:00:00Z\""
                             }
                         },
-                        "required": ["campaign_id", "schedule_time"],
+                        "required": [
+                            "campaign_id",
+                            "schedule_time"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_schedulecampaign": {
@@ -4169,7 +4558,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign_id", "schedule_time"],
+                        "required": [
+                            "campaign_id",
+                            "schedule_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4182,9 +4574,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_tagmember",
             "name": "tag-member",
-            "output": ["ActionOutput_mailchimp_tagmember"],
+            "output": [
+                "ActionOutput_mailchimp_tagmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_tagmember", "ActionOutput_mailchimp_tagmember"],
+            "usedModels": [
+                "ActionInput_mailchimp_tagmember",
+                "ActionOutput_mailchimp_tagmember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4210,17 +4607,27 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["active", "inactive"],
+                                            "enum": [
+                                                "active",
+                                                "inactive"
+                                            ],
                                             "description": "Use \"active\" to add the tag, \"inactive\" to remove it."
                                         }
                                     },
-                                    "required": ["name", "status"],
+                                    "required": [
+                                        "name",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Tags to add or remove on the member."
                             }
                         },
-                        "required": ["list_id", "email", "tags"],
+                        "required": [
+                            "list_id",
+                            "email",
+                            "tags"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_tagmember": {
@@ -4230,7 +4637,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4243,9 +4652,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_updateaudience",
             "name": "update-audience",
-            "output": ["ActionOutput_mailchimp_updateaudience"],
+            "output": [
+                "ActionOutput_mailchimp_updateaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_updateaudience", "ActionOutput_mailchimp_updateaudience"],
+            "usedModels": [
+                "ActionInput_mailchimp_updateaudience",
+                "ActionOutput_mailchimp_updateaudience"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4329,10 +4743,15 @@
                             "visibility": {
                                 "description": "The visibility of the audience.",
                                 "type": "string",
-                                "enum": ["pub", "prv"]
+                                "enum": [
+                                    "pub",
+                                    "prv"
+                                ]
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_updateaudience": {
@@ -4396,16 +4815,25 @@
                                 "additionalProperties": false
                             },
                             "notify_on_subscribe": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notify_on_unsubscribe": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email_type_option": {
                                 "type": "boolean"
                             },
                             "visibility": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "web_id": {
                                 "type": "number"
@@ -4417,7 +4845,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "contact", "permission_reminder", "campaign_defaults", "email_type_option"],
+                        "required": [
+                            "id",
+                            "name",
+                            "contact",
+                            "permission_reminder",
+                            "campaign_defaults",
+                            "email_type_option"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4430,9 +4865,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_updatecampaign",
             "name": "update-campaign",
-            "output": ["ActionOutput_mailchimp_updatecampaign"],
+            "output": [
+                "ActionOutput_mailchimp_updatecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_updatecampaign", "ActionOutput_mailchimp_updatecampaign"],
+            "usedModels": [
+                "ActionInput_mailchimp_updatecampaign",
+                "ActionOutput_mailchimp_updatecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4589,7 +5029,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_updatecampaign": {
@@ -4707,7 +5149,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4720,9 +5164,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_updatemember",
             "name": "update-member",
-            "output": ["ActionOutput_mailchimp_updatemember"],
+            "output": [
+                "ActionOutput_mailchimp_updatemember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_updatemember", "ActionOutput_mailchimp_updatemember"],
+            "usedModels": [
+                "ActionInput_mailchimp_updatemember",
+                "ActionOutput_mailchimp_updatemember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4748,7 +5197,13 @@
                             "status": {
                                 "description": "Subscriber's current status.",
                                 "type": "string",
-                                "enum": ["subscribed", "unsubscribed", "cleaned", "pending", "transactional"]
+                                "enum": [
+                                    "subscribed",
+                                    "unsubscribed",
+                                    "cleaned",
+                                    "pending",
+                                    "transactional"
+                                ]
                             },
                             "merge_fields": {
                                 "description": "An individual merge var and value for a member.",
@@ -4821,7 +5276,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["list_id", "subscriber_hash"],
+                        "required": [
+                            "list_id",
+                            "subscriber_hash"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_updatemember": {
@@ -4856,7 +5314,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email_address", "status", "list_id"],
+                        "required": [
+                            "id",
+                            "email_address",
+                            "status",
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4869,9 +5332,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_updatesegment",
             "name": "update-segment",
-            "output": ["ActionOutput_mailchimp_updatesegment"],
+            "output": [
+                "ActionOutput_mailchimp_updatesegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_updatesegment", "ActionOutput_mailchimp_updatesegment"],
+            "usedModels": [
+                "ActionInput_mailchimp_updatesegment",
+                "ActionOutput_mailchimp_updatesegment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4895,7 +5363,10 @@
                                 "properties": {
                                     "match": {
                                         "type": "string",
-                                        "enum": ["any", "all"]
+                                        "enum": [
+                                            "any",
+                                            "all"
+                                        ]
                                     },
                                     "conditions": {
                                         "type": "array",
@@ -4917,7 +5388,11 @@
                                 }
                             }
                         },
-                        "required": ["list_id", "segment_id", "name"],
+                        "required": [
+                            "list_id",
+                            "segment_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_updatesegment": {
@@ -4934,7 +5409,11 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["saved", "static", "fuzzy"]
+                                "enum": [
+                                    "saved",
+                                    "static",
+                                    "fuzzy"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -4947,7 +5426,10 @@
                                 "properties": {
                                     "match": {
                                         "type": "string",
-                                        "enum": ["any", "all"]
+                                        "enum": [
+                                            "any",
+                                            "all"
+                                        ]
                                     },
                                     "conditions": {
                                         "type": "array",
@@ -4963,7 +5445,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4976,9 +5461,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_updatestore",
             "name": "update-store",
-            "output": ["ActionOutput_mailchimp_updatestore"],
+            "output": [
+                "ActionOutput_mailchimp_updatestore"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_updatestore", "ActionOutput_mailchimp_updatestore"],
+            "usedModels": [
+                "ActionInput_mailchimp_updatestore",
+                "ActionOutput_mailchimp_updatestore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5067,7 +5557,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["store_id"],
+                        "required": [
+                            "store_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_updatestore": {
@@ -5212,7 +5704,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5225,9 +5719,14 @@
             "endpoint": null,
             "input": "ActionInput_mailchimp_updatetemplate",
             "name": "update-template",
-            "output": ["ActionOutput_mailchimp_updatetemplate"],
+            "output": [
+                "ActionOutput_mailchimp_updatetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailchimp_updatetemplate", "ActionOutput_mailchimp_updatetemplate"],
+            "usedModels": [
+                "ActionInput_mailchimp_updatetemplate",
+                "ActionOutput_mailchimp_updatetemplate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5251,7 +5750,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["template_id"],
+                        "required": [
+                            "template_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mailchimp_updatetemplate": {
@@ -5303,7 +5804,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5324,12 +5827,16 @@
             ],
             "input": null,
             "name": "audiences",
-            "output": ["Audience"],
+            "output": [
+                "Audience"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Audience"],
+            "usedModels": [
+                "Audience"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5393,7 +5900,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5412,12 +5922,16 @@
             ],
             "input": null,
             "name": "automations",
-            "output": ["Automation"],
+            "output": [
+                "Automation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Automation"],
+            "usedModels": [
+                "Automation"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5459,7 +5973,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "create_time", "status"],
+                        "required": [
+                            "id",
+                            "create_time",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5478,12 +5996,16 @@
             ],
             "input": null,
             "name": "members",
-            "output": ["Member"],
+            "output": [
+                "Member"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Member"],
+            "usedModels": [
+                "Member"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5614,12 +6136,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5633,12 +6159,16 @@
             ],
             "input": null,
             "name": "segments",
-            "output": ["Segment"],
+            "output": [
+                "Segment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Segment"],
+            "usedModels": [
+                "Segment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5679,12 +6209,17 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "list_id"],
+                        "required": [
+                            "id",
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5698,12 +6233,16 @@
             ],
             "input": null,
             "name": "stores",
-            "output": ["Store"],
+            "output": [
+                "Store"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Store"],
+            "usedModels": [
+                "Store"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5784,7 +6323,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

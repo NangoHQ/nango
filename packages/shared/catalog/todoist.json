@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_archiveproject",
             "name": "archive-project",
-            "output": ["ActionOutput_todoist_archiveproject"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_archiveproject", "ActionOutput_todoist_archiveproject"],
+            "output": [
+                "ActionOutput_todoist_archiveproject"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_archiveproject",
+                "ActionOutput_todoist_archiveproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -21,7 +28,9 @@
                                 "description": "Project ID. Example: \"6h78PW84RjxxRW8q\""
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_archiveproject": {
@@ -37,7 +46,10 @@
                                 "type": "string"
                             },
                             "parent_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "child_order": {
                                 "type": "number"
@@ -85,7 +97,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -98,9 +113,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_closetask",
             "name": "close-task",
-            "output": ["ActionOutput_todoist_closetask"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_closetask", "ActionOutput_todoist_closetask"],
+            "output": [
+                "ActionOutput_todoist_closetask"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_closetask",
+                "ActionOutput_todoist_closetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -112,7 +134,9 @@
                                 "description": "The ID of the task to close. Example: \"6h78Pj92jVFp2Xcq\""
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_closetask": {
@@ -125,7 +149,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "is_closed"],
+                        "required": [
+                            "id",
+                            "is_closed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -138,9 +165,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_todoist_createcomment"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_createcomment", "ActionOutput_todoist_createcomment"],
+            "output": [
+                "ActionOutput_todoist_createcomment"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_createcomment",
+                "ActionOutput_todoist_createcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -180,7 +214,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_createcomment": {
@@ -224,7 +260,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "content", "posted_at", "posted_uid"],
+                        "required": [
+                            "id",
+                            "content",
+                            "posted_at",
+                            "posted_uid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -237,9 +278,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_createlabel",
             "name": "create-label",
-            "output": ["ActionOutput_todoist_createlabel"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_createlabel", "ActionOutput_todoist_createlabel"],
+            "output": [
+                "ActionOutput_todoist_createlabel"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_createlabel",
+                "ActionOutput_todoist_createlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -252,7 +300,10 @@
                             },
                             "color": {
                                 "description": "Label color name or legacy numeric color code. Example: \"charcoal\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "order": {
                                 "description": "Custom label order value. Example: 0",
@@ -263,7 +314,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_createlabel": {
@@ -285,7 +338,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -298,9 +354,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_todoist_createproject"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_createproject", "ActionOutput_todoist_createproject"],
+            "output": [
+                "ActionOutput_todoist_createproject"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_createproject",
+                "ActionOutput_todoist_createproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -313,15 +376,25 @@
                             },
                             "description": {
                                 "description": "Description of the project.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "parent_id": {
                                 "description": "Parent project ID. If provided, creates this project as a sub-project.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Color of the project icon. Defaults to \"charcoal\".",
-                                "type": ["string", "number", "null"]
+                                "type": [
+                                    "string",
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_favorite": {
                                 "description": "Whether the project is a favorite for the user. Defaults to false.",
@@ -329,14 +402,22 @@
                             },
                             "view_style": {
                                 "description": "View style of the project.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "workspace_id": {
                                 "description": "Workspace ID. If provided, creates a workspace project instead of a personal project.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_createproject": {
@@ -358,7 +439,10 @@
                                 "type": "boolean"
                             },
                             "color": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "creator_uid": {
                                 "type": "string"
@@ -403,7 +487,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -416,9 +502,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_createsection",
             "name": "create-section",
-            "output": ["ActionOutput_todoist_createsection"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_createsection", "ActionOutput_todoist_createsection"],
+            "output": [
+                "ActionOutput_todoist_createsection"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_createsection",
+                "ActionOutput_todoist_createsection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -434,7 +527,10 @@
                                 "description": "Name of the new section. Example: \"New Section\""
                             }
                         },
-                        "required": ["project_id", "name"],
+                        "required": [
+                            "project_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_createsection": {
@@ -459,7 +555,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "project_id", "name"],
+                        "required": [
+                            "id",
+                            "project_id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -472,9 +572,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_todoist_createtask"],
-            "scopes": ["task:add"],
-            "usedModels": ["ActionInput_todoist_createtask", "ActionOutput_todoist_createtask"],
+            "output": [
+                "ActionOutput_todoist_createtask"
+            ],
+            "scopes": [
+                "task:add"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_createtask",
+                "ActionOutput_todoist_createtask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -547,14 +654,19 @@
                             "duration_unit": {
                                 "description": "Unit for duration. Must be provided together with duration",
                                 "type": "string",
-                                "enum": ["minute", "day"]
+                                "enum": [
+                                    "minute",
+                                    "day"
+                                ]
                             },
                             "deadline_date": {
                                 "description": "Deadline date in YYYY-MM-DD format",
                                 "type": "string"
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_createtask": {
@@ -570,19 +682,31 @@
                                 "type": "string"
                             },
                             "section_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "parent_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "added_by_uid": {
                                 "type": "string"
                             },
                             "assigned_by_uid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "responsible_uid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "labels": {
                                 "type": "array",
@@ -602,7 +726,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["date"],
+                                        "required": [
+                                            "date"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -622,7 +748,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "unit"],
+                                        "required": [
+                                            "amount",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -643,10 +772,16 @@
                                 "type": "string"
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_by_uid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_at": {
                                 "type": "string"
@@ -660,7 +795,10 @@
                                                 "type": "string"
                                             },
                                             "timezone": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "string": {
                                                 "type": "string"
@@ -672,7 +810,12 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["date", "string", "lang", "is_recurring"],
+                                        "required": [
+                                            "date",
+                                            "string",
+                                            "lang",
+                                            "is_recurring"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -690,13 +833,19 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "note_count": {
                                 "type": "number"
                             },
                             "day_order": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "goal_ids": {
                                 "anyOf": [
@@ -712,10 +861,16 @@
                                 ]
                             },
                             "completed_count": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "postponed_count": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -745,9 +900,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_todoist_deletecomment"],
-            "scopes": ["data:delete"],
-            "usedModels": ["ActionInput_todoist_deletecomment", "ActionOutput_todoist_deletecomment"],
+            "output": [
+                "ActionOutput_todoist_deletecomment"
+            ],
+            "scopes": [
+                "data:delete"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_deletecomment",
+                "ActionOutput_todoist_deletecomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -759,7 +921,9 @@
                                 "description": "Comment ID. Example: \"6h78PmWXw7GQRXMq\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_deletecomment": {
@@ -772,7 +936,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -785,9 +952,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_deletelabel",
             "name": "delete-label",
-            "output": ["ActionOutput_todoist_deletelabel"],
-            "scopes": ["data:delete"],
-            "usedModels": ["ActionInput_todoist_deletelabel", "ActionOutput_todoist_deletelabel"],
+            "output": [
+                "ActionOutput_todoist_deletelabel"
+            ],
+            "scopes": [
+                "data:delete"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_deletelabel",
+                "ActionOutput_todoist_deletelabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -799,7 +973,9 @@
                                 "description": "The ID of the personal label to delete. Example: \"2184371052\""
                             }
                         },
-                        "required": ["label_id"],
+                        "required": [
+                            "label_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_deletelabel": {
@@ -810,7 +986,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -823,9 +1001,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_deleteproject",
             "name": "delete-project",
-            "output": ["ActionOutput_todoist_deleteproject"],
-            "scopes": ["project:delete"],
-            "usedModels": ["ActionInput_todoist_deleteproject", "ActionOutput_todoist_deleteproject"],
+            "output": [
+                "ActionOutput_todoist_deleteproject"
+            ],
+            "scopes": [
+                "project:delete"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_deleteproject",
+                "ActionOutput_todoist_deleteproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -837,7 +1022,9 @@
                                 "description": "The ID of the project to delete. Example: \"6h78PXjmJfqpxmQV\""
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_deleteproject": {
@@ -847,7 +1034,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -860,9 +1049,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_deletesection",
             "name": "delete-section",
-            "output": ["ActionOutput_todoist_deletesection"],
-            "scopes": ["data:delete"],
-            "usedModels": ["ActionInput_todoist_deletesection", "ActionOutput_todoist_deletesection"],
+            "output": [
+                "ActionOutput_todoist_deletesection"
+            ],
+            "scopes": [
+                "data:delete"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_deletesection",
+                "ActionOutput_todoist_deletesection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -874,7 +1070,9 @@
                                 "description": "The ID of the section to delete. Example: \"6h78Pf2Vf8WCMH2q\""
                             }
                         },
-                        "required": ["section_id"],
+                        "required": [
+                            "section_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_deletesection": {
@@ -884,7 +1082,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -897,9 +1097,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_todoist_deletetask"],
-            "scopes": ["data:delete"],
-            "usedModels": ["ActionInput_todoist_deletetask", "ActionOutput_todoist_deletetask"],
+            "output": [
+                "ActionOutput_todoist_deletetask"
+            ],
+            "scopes": [
+                "data:delete"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_deletetask",
+                "ActionOutput_todoist_deletetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -911,7 +1118,9 @@
                                 "description": "The ID of the task to delete. Example: \"6h78PhwG6Mpjx4PH\""
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_deletetask": {
@@ -924,7 +1133,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["task_id", "success"],
+                        "required": [
+                            "task_id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -937,9 +1149,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_filtertasks",
             "name": "filter-tasks",
-            "output": ["ActionOutput_todoist_filtertasks"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_filtertasks", "ActionOutput_todoist_filtertasks"],
+            "output": [
+                "ActionOutput_todoist_filtertasks"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_filtertasks",
+                "ActionOutput_todoist_filtertasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -967,7 +1186,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_filtertasks": {
@@ -1057,7 +1278,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "unit"],
+                                            "required": [
+                                                "amount",
+                                                "unit"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "deadline": {
@@ -1109,7 +1333,12 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "content", "project_id", "priority"],
+                                    "required": [
+                                        "id",
+                                        "content",
+                                        "project_id",
+                                        "priority"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1117,7 +1346,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1130,9 +1361,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_getcomment",
             "name": "get-comment",
-            "output": ["ActionOutput_todoist_getcomment"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_getcomment", "ActionOutput_todoist_getcomment"],
+            "output": [
+                "ActionOutput_todoist_getcomment"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_getcomment",
+                "ActionOutput_todoist_getcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1144,7 +1382,9 @@
                                 "description": "Comment ID. Example: \"6h78PmPWvxqw3H8q\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_getcomment": {
@@ -1212,7 +1452,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "posted_uid", "content", "is_deleted", "posted_at"],
+                        "required": [
+                            "id",
+                            "posted_uid",
+                            "content",
+                            "is_deleted",
+                            "posted_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1225,9 +1471,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_getlabel",
             "name": "get-label",
-            "output": ["ActionOutput_todoist_getlabel"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_getlabel", "ActionOutput_todoist_getlabel"],
+            "output": [
+                "ActionOutput_todoist_getlabel"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_getlabel",
+                "ActionOutput_todoist_getlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1239,7 +1492,9 @@
                                 "description": "The ID of the personal label to retrieve. Example: \"2184371051\""
                             }
                         },
-                        "required": ["label_id"],
+                        "required": [
+                            "label_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_getlabel": {
@@ -1261,7 +1516,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1274,9 +1532,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_todoist_getproject"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_getproject", "ActionOutput_todoist_getproject"],
+            "output": [
+                "ActionOutput_todoist_getproject"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_getproject",
+                "ActionOutput_todoist_getproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1288,7 +1553,9 @@
                                 "description": "The ID of the project to retrieve. Example: \"6h78PW84RjxxRW8q\""
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_getproject": {
@@ -1331,7 +1598,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "color"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1344,9 +1615,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_getsection",
             "name": "get-section",
-            "output": ["ActionOutput_todoist_getsection"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_getsection", "ActionOutput_todoist_getsection"],
+            "output": [
+                "ActionOutput_todoist_getsection"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_getsection",
+                "ActionOutput_todoist_getsection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1358,7 +1636,9 @@
                                 "description": "The ID of the section to retrieve. Example: \"6h78Pcqxgv66G2rq\""
                             }
                         },
-                        "required": ["section_id"],
+                        "required": [
+                            "section_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_getsection": {
@@ -1431,9 +1711,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_todoist_gettask"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_gettask", "ActionOutput_todoist_gettask"],
+            "output": [
+                "ActionOutput_todoist_gettask"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_gettask",
+                "ActionOutput_todoist_gettask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1445,7 +1732,9 @@
                                 "description": "Task ID. Example: \"6h78Phpj8jH59jWq\""
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_gettask": {
@@ -1530,7 +1819,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "unit"],
+                                "required": [
+                                    "amount",
+                                    "unit"
+                                ],
                                 "additionalProperties": false
                             },
                             "deadline": {
@@ -1582,7 +1874,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "content", "project_id"],
+                        "required": [
+                            "id",
+                            "content",
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1595,9 +1891,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_todoist_listcomments"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listcomments", "ActionOutput_todoist_listcomments"],
+            "output": [
+                "ActionOutput_todoist_listcomments"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listcomments",
+                "ActionOutput_todoist_listcomments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1637,16 +1940,25 @@
                                             "type": "string"
                                         },
                                         "posted_uid": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "content": {
                                             "type": "string"
                                         },
                                         "task_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "project_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "file_attachment": {
                                             "anyOf": [
@@ -1673,7 +1985,10 @@
                                             "type": "boolean"
                                         },
                                         "posted_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "reactions": {
                                             "anyOf": [
@@ -1695,7 +2010,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "content", "is_deleted"],
+                                    "required": [
+                                        "id",
+                                        "content",
+                                        "is_deleted"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1703,7 +2022,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1716,9 +2037,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listcompletedtasksbycompletiondate",
             "name": "list-completed-tasks-by-completion-date",
-            "output": ["ActionOutput_todoist_listcompletedtasksbycompletiondate"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listcompletedtasksbycompletiondate", "ActionOutput_todoist_listcompletedtasksbycompletiondate"],
+            "output": [
+                "ActionOutput_todoist_listcompletedtasksbycompletiondate"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listcompletedtasksbycompletiondate",
+                "ActionOutput_todoist_listcompletedtasksbycompletiondate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1760,7 +2088,10 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["since", "until"],
+                        "required": [
+                            "since",
+                            "until"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_listcompletedtasksbycompletiondate": {
@@ -1825,7 +2156,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "unit"],
+                                            "required": [
+                                                "amount",
+                                                "unit"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "checked": {
@@ -1919,7 +2253,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1932,9 +2268,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listcompletedtasksbyduedate",
             "name": "list-completed-tasks-by-due-date",
-            "output": ["ActionOutput_todoist_listcompletedtasksbyduedate"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listcompletedtasksbyduedate", "ActionOutput_todoist_listcompletedtasksbyduedate"],
+            "output": [
+                "ActionOutput_todoist_listcompletedtasksbyduedate"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listcompletedtasksbyduedate",
+                "ActionOutput_todoist_listcompletedtasksbyduedate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1984,7 +2327,10 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["since", "until"],
+                        "required": [
+                            "since",
+                            "until"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_listcompletedtasksbyduedate": {
@@ -2035,7 +2381,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["date"],
+                                            "required": [
+                                                "date"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "duration": {
@@ -2050,7 +2398,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "unit"],
+                                            "required": [
+                                                "amount",
+                                                "unit"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "checked": {
@@ -2084,16 +2435,25 @@
                                                     "type": "boolean"
                                                 },
                                                 "datetime": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "timezone": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "lang": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["date", "is_recurring"],
+                                            "required": [
+                                                "date",
+                                                "is_recurring"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "priority": {
@@ -2148,7 +2508,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2161,9 +2523,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listlabels",
             "name": "list-labels",
-            "output": ["ActionOutput_todoist_listlabels"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listlabels", "ActionOutput_todoist_listlabels"],
+            "output": [
+                "ActionOutput_todoist_listlabels"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listlabels",
+                "ActionOutput_todoist_listlabels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2207,7 +2576,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "color", "order", "is_favorite"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "color",
+                                        "order",
+                                        "is_favorite"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2215,7 +2590,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2228,9 +2605,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_todoist_listprojects"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listprojects", "ActionOutput_todoist_listprojects"],
+            "output": [
+                "ActionOutput_todoist_listprojects"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listprojects",
+                "ActionOutput_todoist_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2268,7 +2652,10 @@
                                             "type": "string"
                                         },
                                         "parent_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "child_order": {
                                             "type": "number"
@@ -2307,7 +2694,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2315,7 +2704,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2328,9 +2719,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listsections",
             "name": "list-sections",
-            "output": ["ActionOutput_todoist_listsections"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listsections", "ActionOutput_todoist_listsections"],
+            "output": [
+                "ActionOutput_todoist_listsections"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listsections",
+                "ActionOutput_todoist_listsections"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2377,7 +2775,11 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["id", "name", "project_id"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "project_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2385,7 +2787,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2398,9 +2802,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listsharedlabels",
             "name": "list-shared-labels",
-            "output": ["ActionOutput_todoist_listsharedlabels"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listsharedlabels", "ActionOutput_todoist_listsharedlabels"],
+            "output": [
+                "ActionOutput_todoist_listsharedlabels"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listsharedlabels",
+                "ActionOutput_todoist_listsharedlabels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2437,7 +2848,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2450,9 +2863,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_todoist_listtasks"],
-            "scopes": ["data:read"],
-            "usedModels": ["ActionInput_todoist_listtasks", "ActionOutput_todoist_listtasks"],
+            "output": [
+                "ActionOutput_todoist_listtasks"
+            ],
+            "scopes": [
+                "data:read"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_listtasks",
+                "ActionOutput_todoist_listtasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2509,10 +2929,16 @@
                                             "type": "string"
                                         },
                                         "section_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "parent_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "labels": {
                                             "type": "array",
@@ -2543,10 +2969,16 @@
                                                             "type": "boolean"
                                                         },
                                                         "datetime": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "timezone": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -2557,10 +2989,16 @@
                                             ]
                                         },
                                         "assignee_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "assigner_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "creator_id": {
                                             "type": "string"
@@ -2623,7 +3061,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "content", "project_id", "section_id", "parent_id", "due", "duration", "deadline"],
+                                    "required": [
+                                        "id",
+                                        "content",
+                                        "project_id",
+                                        "section_id",
+                                        "parent_id",
+                                        "due",
+                                        "duration",
+                                        "deadline"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2631,7 +3078,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2644,9 +3093,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_movetask",
             "name": "move-task",
-            "output": ["ActionOutput_todoist_movetask"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_movetask", "ActionOutput_todoist_movetask"],
+            "output": [
+                "ActionOutput_todoist_movetask"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_movetask",
+                "ActionOutput_todoist_movetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2670,7 +3126,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_movetask": {
@@ -2755,7 +3213,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "unit"],
+                                "required": [
+                                    "amount",
+                                    "unit"
+                                ],
                                 "additionalProperties": false
                             },
                             "deadline": {
@@ -2807,7 +3268,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "content", "project_id"],
+                        "required": [
+                            "id",
+                            "content",
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2820,9 +3285,17 @@
             "endpoint": null,
             "input": "ActionInput_todoist_quickaddtask",
             "name": "quick-add-task",
-            "output": ["ActionOutput_todoist_quickaddtask"],
-            "scopes": ["task:add", "data:read_write"],
-            "usedModels": ["ActionInput_todoist_quickaddtask", "ActionOutput_todoist_quickaddtask"],
+            "output": [
+                "ActionOutput_todoist_quickaddtask"
+            ],
+            "scopes": [
+                "task:add",
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_quickaddtask",
+                "ActionOutput_todoist_quickaddtask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2851,7 +3324,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["text", "meta"],
+                        "required": [
+                            "text",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_quickaddtask": {
@@ -2870,10 +3346,16 @@
                                 "type": "string"
                             },
                             "section_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "parent_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "labels": {
                                 "anyOf": [
@@ -2909,13 +3391,26 @@
                                                 "type": "boolean"
                                             },
                                             "datetime": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "timezone": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["date", "string", "lang", "is_recurring", "datetime", "timezone"],
+                                        "required": [
+                                            "date",
+                                            "string",
+                                            "lang",
+                                            "is_recurring",
+                                            "datetime",
+                                            "timezone"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2935,7 +3430,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["date", "lang"],
+                                        "required": [
+                                            "date",
+                                            "lang"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2955,7 +3453,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "unit"],
+                                        "required": [
+                                            "amount",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2991,16 +3492,28 @@
                                 "type": "number"
                             },
                             "responsible_uid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "assigned_by_uid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_by_uid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "added_by_uid": {
                                 "type": "string"
@@ -3020,10 +3533,16 @@
                                                 "type": "array",
                                                 "items": [
                                                     {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 ],
                                                 "additionalItems": false,
@@ -3034,10 +3553,16 @@
                                                 "type": "array",
                                                 "items": [
                                                     {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 ],
                                                 "additionalItems": false,
@@ -3048,10 +3573,16 @@
                                                 "type": "array",
                                                 "items": [
                                                     {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 ],
                                                 "additionalItems": false,
@@ -3085,13 +3616,26 @@
                                                                 "type": "boolean"
                                                             },
                                                             "datetime": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "timezone": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["date", "string", "lang", "is_recurring", "datetime", "timezone"],
+                                                        "required": [
+                                                            "date",
+                                                            "string",
+                                                            "lang",
+                                                            "is_recurring",
+                                                            "datetime",
+                                                            "timezone"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     {
@@ -3111,7 +3655,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["date", "lang"],
+                                                        "required": [
+                                                            "date",
+                                                            "lang"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     {
@@ -3120,7 +3667,14 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["project", "section", "assignee", "labels", "due", "deadline"],
+                                        "required": [
+                                            "project",
+                                            "section",
+                                            "assignee",
+                                            "labels",
+                                            "due",
+                                            "deadline"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3129,7 +3683,12 @@
                                 ]
                             }
                         },
-                        "required": ["id", "content", "project_id", "priority"],
+                        "required": [
+                            "id",
+                            "content",
+                            "project_id",
+                            "priority"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3142,9 +3701,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_removesharedlabel",
             "name": "remove-shared-label",
-            "output": ["ActionOutput_todoist_removesharedlabel"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_removesharedlabel", "ActionOutput_todoist_removesharedlabel"],
+            "output": [
+                "ActionOutput_todoist_removesharedlabel"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_removesharedlabel",
+                "ActionOutput_todoist_removesharedlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3157,7 +3723,9 @@
                                 "description": "The label name to remove from all tasks. Example: \"nango-seed-keep\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_removesharedlabel": {
@@ -3167,7 +3735,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3180,9 +3750,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_renamesharedlabel",
             "name": "rename-shared-label",
-            "output": ["ActionOutput_todoist_renamesharedlabel"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_renamesharedlabel", "ActionOutput_todoist_renamesharedlabel"],
+            "output": [
+                "ActionOutput_todoist_renamesharedlabel"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_renamesharedlabel",
+                "ActionOutput_todoist_renamesharedlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3200,7 +3777,10 @@
                                 "description": "New label name to apply across tasks. Example: \"nango-seed-renamed\""
                             }
                         },
-                        "required": ["name", "new_name"],
+                        "required": [
+                            "name",
+                            "new_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_renamesharedlabel": {
@@ -3210,7 +3790,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3223,9 +3805,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_reopentask",
             "name": "reopen-task",
-            "output": ["ActionOutput_todoist_reopentask"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_reopentask", "ActionOutput_todoist_reopentask"],
+            "output": [
+                "ActionOutput_todoist_reopentask"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_reopentask",
+                "ActionOutput_todoist_reopentask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3237,7 +3826,9 @@
                                 "description": "The ID of the task to reopen. Example: \"6h78Pj92jVFp2Xcq\""
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_reopentask": {
@@ -3248,7 +3839,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3261,9 +3854,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_unarchiveproject",
             "name": "unarchive-project",
-            "output": ["ActionOutput_todoist_unarchiveproject"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_unarchiveproject", "ActionOutput_todoist_unarchiveproject"],
+            "output": [
+                "ActionOutput_todoist_unarchiveproject"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_unarchiveproject",
+                "ActionOutput_todoist_unarchiveproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3275,7 +3875,9 @@
                                 "description": "The ID of the project to unarchive. Example: \"6h78PXjmJfqpxmQV\""
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_unarchiveproject": {
@@ -3357,7 +3959,10 @@
                                                 "additionalProperties": {}
                                             }
                                         },
-                                        "required": ["visibility", "configuration"],
+                                        "required": [
+                                            "visibility",
+                                            "configuration"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3375,13 +3980,19 @@
                                 }
                             },
                             "parent_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "inbox_project": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3394,9 +4005,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_todoist_updatecomment"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_updatecomment", "ActionOutput_todoist_updatecomment"],
+            "output": [
+                "ActionOutput_todoist_updatecomment"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_updatecomment",
+                "ActionOutput_todoist_updatecomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3412,7 +4030,10 @@
                                 "description": "New comment content. Example: \"Updated comment text\""
                             }
                         },
-                        "required": ["id", "content"],
+                        "required": [
+                            "id",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_updatecomment": {
@@ -3456,7 +4077,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "content", "posted_at", "posted_uid"],
+                        "required": [
+                            "id",
+                            "content",
+                            "posted_at",
+                            "posted_uid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3469,9 +4095,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_updatelabel",
             "name": "update-label",
-            "output": ["ActionOutput_todoist_updatelabel"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_updatelabel", "ActionOutput_todoist_updatelabel"],
+            "output": [
+                "ActionOutput_todoist_updatelabel"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_updatelabel",
+                "ActionOutput_todoist_updatelabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3501,7 +4134,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["label_id"],
+                        "required": [
+                            "label_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_updatelabel": {
@@ -3523,7 +4158,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3536,9 +4174,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_todoist_updateproject"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_updateproject", "ActionOutput_todoist_updateproject"],
+            "output": [
+                "ActionOutput_todoist_updateproject"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_updateproject",
+                "ActionOutput_todoist_updateproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3555,22 +4200,36 @@
                             },
                             "description": {
                                 "description": "Updated project description. Passing null or omitting leaves it unchanged.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Updated project color. Passing null or omitting leaves it unchanged.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_favorite": {
                                 "description": "Whether the project is marked as a favorite. Passing null or omitting leaves it unchanged.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "view_style": {
                                 "description": "Updated project view style (e.g. list or board). Passing null or omitting leaves it unchanged.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_updateproject": {
@@ -3658,7 +4317,10 @@
                                                 "additionalProperties": {}
                                             }
                                         },
-                                        "required": ["visibility", "configuration"],
+                                        "required": [
+                                            "visibility",
+                                            "configuration"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3676,7 +4338,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3689,9 +4353,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_updatesection",
             "name": "update-section",
-            "output": ["ActionOutput_todoist_updatesection"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_updatesection", "ActionOutput_todoist_updatesection"],
+            "output": [
+                "ActionOutput_todoist_updatesection"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_updatesection",
+                "ActionOutput_todoist_updatesection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3707,7 +4378,10 @@
                                 "description": "New name for the section. Example: \"Updated Section Name\""
                             }
                         },
-                        "required": ["section_id", "name"],
+                        "required": [
+                            "section_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_updatesection": {
@@ -3726,7 +4400,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "project_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3739,9 +4417,16 @@
             "endpoint": null,
             "input": "ActionInput_todoist_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_todoist_updatetask"],
-            "scopes": ["data:read_write"],
-            "usedModels": ["ActionInput_todoist_updatetask", "ActionOutput_todoist_updatetask"],
+            "output": [
+                "ActionOutput_todoist_updatetask"
+            ],
+            "scopes": [
+                "data:read_write"
+            ],
+            "usedModels": [
+                "ActionInput_todoist_updatetask",
+                "ActionOutput_todoist_updatetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3807,7 +4492,10 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["minute", "day"]
+                                        "enum": [
+                                            "minute",
+                                            "day"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -3816,10 +4504,15 @@
                             },
                             "deadline_date": {
                                 "description": "Deadline date in YYYY-MM-DD format, or null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_todoist_updatetask": {
@@ -3863,10 +4556,16 @@
                                                 "type": "string"
                                             },
                                             "datetime": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "timezone": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3954,7 +4653,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "content"],
+                        "required": [
+                            "id",
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3970,12 +4672,18 @@
             "endpoints": [],
             "input": null,
             "name": "comments",
-            "output": ["Comment"],
+            "output": [
+                "Comment"
+            ],
             "runs": "every hour",
-            "scopes": ["data:read"],
+            "scopes": [
+                "data:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Comment"],
+            "usedModels": [
+                "Comment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4024,12 +4732,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4038,12 +4750,18 @@
             "endpoints": [],
             "input": null,
             "name": "labels",
-            "output": ["Label"],
+            "output": [
+                "Label"
+            ],
             "runs": "every hour",
-            "scopes": ["data:read"],
+            "scopes": [
+                "data:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Label"],
+            "usedModels": [
+                "Label"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4067,12 +4785,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4081,12 +4804,18 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["data:read"],
+            "scopes": [
+                "data:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4152,12 +4881,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4166,12 +4900,18 @@
             "endpoints": [],
             "input": null,
             "name": "sections",
-            "output": ["Section"],
+            "output": [
+                "Section"
+            ],
             "runs": "every hour",
-            "scopes": ["data:read"],
+            "scopes": [
+                "data:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Section"],
+            "usedModels": [
+                "Section"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4224,12 +4964,18 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "project_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4238,12 +4984,18 @@
             "endpoints": [],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["data:read"],
+            "scopes": [
+                "data:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4308,12 +5060,21 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "content", "description", "project_id", "labels", "priority"],
+                        "required": [
+                            "id",
+                            "content",
+                            "description",
+                            "project_id",
+                            "labels",
+                            "priority"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

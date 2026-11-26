@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_cancelworkflow",
             "name": "cancel-workflow",
-            "output": ["ActionOutput_ironclad_cancelworkflow"],
-            "scopes": ["public.workflows.cancel"],
-            "usedModels": ["ActionInput_ironclad_cancelworkflow", "ActionOutput_ironclad_cancelworkflow"],
+            "output": [
+                "ActionOutput_ironclad_cancelworkflow"
+            ],
+            "scopes": [
+                "public.workflows.cancel"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_cancelworkflow",
+                "ActionOutput_ironclad_cancelworkflow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "The cancellation comment message. Example: \"Cancelling per request.\""
                             }
                         },
-                        "required": ["workflowId", "comment"],
+                        "required": [
+                            "workflowId",
+                            "comment"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_cancelworkflow": {
@@ -38,7 +48,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["workflowId", "cancelled"],
+                        "required": [
+                            "workflowId",
+                            "cancelled"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -51,9 +64,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_createentity",
             "name": "create-entity",
-            "output": ["ActionOutput_ironclad_createentity"],
-            "scopes": ["public.entities.createEntities"],
-            "usedModels": ["ActionInput_ironclad_createentity", "ActionOutput_ironclad_createentity"],
+            "output": [
+                "ActionOutput_ironclad_createentity"
+            ],
+            "scopes": [
+                "public.entities.createEntities"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_createentity",
+                "ActionOutput_ironclad_createentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -75,7 +95,10 @@
                             "status": {
                                 "description": "The status of the entity. Defaults to ACTIVE.",
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ]
                             },
                             "properties": {
                                 "description": "A map of entity properties to set.",
@@ -90,7 +113,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_createentity": {
@@ -125,10 +150,19 @@
                                 }
                             },
                             "parentId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "ironcladId", "name", "status", "lastUpdated"],
+                        "required": [
+                            "id",
+                            "ironcladId",
+                            "name",
+                            "status",
+                            "lastUpdated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -141,9 +175,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_createrecord",
             "name": "create-record",
-            "output": ["ActionOutput_ironclad_createrecord"],
-            "scopes": ["public.records.createRecords"],
-            "usedModels": ["ActionInput_ironclad_createrecord", "ActionOutput_ironclad_createrecord"],
+            "output": [
+                "ActionOutput_ironclad_createrecord"
+            ],
+            "scopes": [
+                "public.records.createRecords"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_createrecord",
+                "ActionOutput_ironclad_createrecord"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -172,12 +213,18 @@
                                         },
                                         "value": {}
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["type", "name"],
+                        "required": [
+                            "type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_createrecord": {
@@ -205,7 +252,10 @@
                                         },
                                         "value": {}
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -216,7 +266,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -229,9 +281,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_ironclad_createwebhook"],
-            "scopes": ["public.webhooks.createWebhooks"],
-            "usedModels": ["ActionInput_ironclad_createwebhook", "ActionOutput_ironclad_createwebhook"],
+            "output": [
+                "ActionOutput_ironclad_createwebhook"
+            ],
+            "scopes": [
+                "public.webhooks.createWebhooks"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_createwebhook",
+                "ActionOutput_ironclad_createwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -297,10 +356,16 @@
                             "status": {
                                 "description": "The status of the webhook. Defaults to \"enabled\".",
                                 "type": "string",
-                                "enum": ["enabled", "disabled"]
+                                "enum": [
+                                    "enabled",
+                                    "disabled"
+                                ]
                             }
                         },
-                        "required": ["targetURL", "events"],
+                        "required": [
+                            "targetURL",
+                            "events"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_createwebhook": {
@@ -367,7 +432,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["enabled", "disabled", "disabledBySystem"]
+                                "enum": [
+                                    "enabled",
+                                    "disabled",
+                                    "disabledBySystem"
+                                ]
                             },
                             "statusLastUpdatedAt": {
                                 "type": "string"
@@ -382,7 +451,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "events", "targetURL", "companyId", "status", "consecutiveFailureCount"],
+                        "required": [
+                            "id",
+                            "events",
+                            "targetURL",
+                            "companyId",
+                            "status",
+                            "consecutiveFailureCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -395,9 +471,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_createworkflowasync",
             "name": "create-workflow-async",
-            "output": ["ActionOutput_ironclad_createworkflowasync"],
-            "scopes": ["public.workflows.createWorkflows"],
-            "usedModels": ["ActionInput_ironclad_createworkflowasync", "ActionOutput_ironclad_createworkflowasync"],
+            "output": [
+                "ActionOutput_ironclad_createworkflowasync"
+            ],
+            "scopes": [
+                "public.workflows.createWorkflows"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_createworkflowasync",
+                "ActionOutput_ironclad_createworkflowasync"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -437,7 +520,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["template", "attributes"],
+                        "required": [
+                            "template",
+                            "attributes"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_createworkflowasync": {
@@ -532,7 +618,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "displayName"],
+                                    "required": [
+                                        "id",
+                                        "displayName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -592,9 +681,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_createworkflowcomment",
             "name": "create-workflow-comment",
-            "output": ["ActionOutput_ironclad_createworkflowcomment"],
-            "scopes": ["public.workflows.createComments"],
-            "usedModels": ["ActionInput_ironclad_createworkflowcomment", "ActionOutput_ironclad_createworkflowcomment"],
+            "output": [
+                "ActionOutput_ironclad_createworkflowcomment"
+            ],
+            "scopes": [
+                "public.workflows.createComments"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_createworkflowcomment",
+                "ActionOutput_ironclad_createworkflowcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -610,7 +706,10 @@
                                 "description": "Comment text to post. Example: \"This is a test comment\""
                             }
                         },
-                        "required": ["workflowId", "comment"],
+                        "required": [
+                            "workflowId",
+                            "comment"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_createworkflowcomment": {
@@ -638,7 +737,13 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "displayName", "email", "userId", "companyName"],
+                                "required": [
+                                    "type",
+                                    "displayName",
+                                    "email",
+                                    "userId",
+                                    "companyName"
+                                ],
                                 "additionalProperties": false
                             },
                             "timestamp": {
@@ -660,7 +765,9 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -673,9 +780,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_createworkflow",
             "name": "create-workflow",
-            "output": ["ActionOutput_ironclad_createworkflow"],
-            "scopes": ["public.workflows.createWorkflows"],
-            "usedModels": ["ActionInput_ironclad_createworkflow", "ActionOutput_ironclad_createworkflow"],
+            "output": [
+                "ActionOutput_ironclad_createworkflow"
+            ],
+            "scopes": [
+                "public.workflows.createWorkflows"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_createworkflow",
+                "ActionOutput_ironclad_createworkflow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -695,7 +809,10 @@
                                 "description": "Attribute values keyed by attribute ID. IDs are schema-specific and discoverable via list-workflow-schemas/get-workflow-schema."
                             }
                         },
-                        "required": ["template", "attributes"],
+                        "required": [
+                            "template",
+                            "attributes"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_createworkflow": {
@@ -714,7 +831,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -727,9 +846,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_deleteentity",
             "name": "delete-entity",
-            "output": ["ActionOutput_ironclad_deleteentity"],
-            "scopes": ["public.entities.deleteEntities"],
-            "usedModels": ["ActionInput_ironclad_deleteentity", "ActionOutput_ironclad_deleteentity"],
+            "output": [
+                "ActionOutput_ironclad_deleteentity"
+            ],
+            "scopes": [
+                "public.entities.deleteEntities"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_deleteentity",
+                "ActionOutput_ironclad_deleteentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -741,7 +867,9 @@
                                 "description": "The unique identifier of the entity to delete. Example: \"9bb40d70-5e85-4894-b2fe-e945d9fb2f11\""
                             }
                         },
-                        "required": ["entityId"],
+                        "required": [
+                            "entityId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_deleteentity": {
@@ -751,7 +879,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -764,9 +894,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_deleterecord",
             "name": "delete-record",
-            "output": ["ActionOutput_ironclad_deleterecord"],
-            "scopes": ["public.records.deleteRecords"],
-            "usedModels": ["ActionInput_ironclad_deleterecord", "ActionOutput_ironclad_deleterecord"],
+            "output": [
+                "ActionOutput_ironclad_deleterecord"
+            ],
+            "scopes": [
+                "public.records.deleteRecords"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_deleterecord",
+                "ActionOutput_ironclad_deleterecord"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -778,7 +915,9 @@
                                 "description": "The ID of the record to delete. Example: \"c3ebdcb3-de93-43da-9067-2191c727d942\""
                             }
                         },
-                        "required": ["recordId"],
+                        "required": [
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_deleterecord": {
@@ -792,7 +931,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "recordId"],
+                        "required": [
+                            "success",
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -805,9 +947,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_ironclad_deletewebhook"],
-            "scopes": ["public.webhooks.deleteWebhooks"],
-            "usedModels": ["ActionInput_ironclad_deletewebhook", "ActionOutput_ironclad_deletewebhook"],
+            "output": [
+                "ActionOutput_ironclad_deletewebhook"
+            ],
+            "scopes": [
+                "public.webhooks.deleteWebhooks"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_deletewebhook",
+                "ActionOutput_ironclad_deletewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -819,7 +968,9 @@
                                 "description": "The ID of the webhook to delete. Example: \"6a6b346ef69937b9258f29ad\""
                             }
                         },
-                        "required": ["webhookId"],
+                        "required": [
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_deletewebhook": {
@@ -829,7 +980,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -842,9 +995,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_downloadworkflowdocument",
             "name": "download-workflow-document",
-            "output": ["ActionOutput_ironclad_downloadworkflowdocument"],
-            "scopes": ["public.workflows.readDocuments"],
-            "usedModels": ["ActionInput_ironclad_downloadworkflowdocument", "ActionOutput_ironclad_downloadworkflowdocument"],
+            "output": [
+                "ActionOutput_ironclad_downloadworkflowdocument"
+            ],
+            "scopes": [
+                "public.workflows.readDocuments"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_downloadworkflowdocument",
+                "ActionOutput_ironclad_downloadworkflowdocument"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -860,7 +1020,10 @@
                                 "description": "Document key from list-workflow-documents. Example: \"F7IYVm-59VHKoqCLLuiFd\""
                             }
                         },
-                        "required": ["workflowId", "documentKey"],
+                        "required": [
+                            "workflowId",
+                            "documentKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_downloadworkflowdocument": {
@@ -879,7 +1042,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -892,9 +1057,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_exportrecordsxlsx",
             "name": "export-records-xlsx",
-            "output": ["ActionOutput_ironclad_exportrecordsxlsx"],
-            "scopes": ["public.records.readRecords"],
-            "usedModels": ["ActionInput_ironclad_exportrecordsxlsx", "ActionOutput_ironclad_exportrecordsxlsx"],
+            "output": [
+                "ActionOutput_ironclad_exportrecordsxlsx"
+            ],
+            "scopes": [
+                "public.records.readRecords"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_exportrecordsxlsx",
+                "ActionOutput_ironclad_exportrecordsxlsx"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -914,7 +1086,10 @@
                                 "description": "Property keys to include in the export. Example: [\"name\", \"contractStatus\"]"
                             }
                         },
-                        "required": ["recordType", "properties"],
+                        "required": [
+                            "recordType",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_exportrecordsxlsx": {
@@ -933,7 +1108,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["content", "contentType"],
+                        "required": [
+                            "content",
+                            "contentType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -946,9 +1124,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getentity",
             "name": "get-entity",
-            "output": ["ActionOutput_ironclad_getentity"],
-            "scopes": ["public.entities.readEntities"],
-            "usedModels": ["ActionInput_ironclad_getentity", "ActionOutput_ironclad_getentity"],
+            "output": [
+                "ActionOutput_ironclad_getentity"
+            ],
+            "scopes": [
+                "public.entities.readEntities"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_getentity",
+                "ActionOutput_ironclad_getentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -960,7 +1145,9 @@
                                 "description": "Entity ID. Example: \"9bb40d70-5e85-4894-b2fe-e945d9fb2f11\""
                             }
                         },
-                        "required": ["entityId"],
+                        "required": [
+                            "entityId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_getentity": {
@@ -998,7 +1185,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "ironcladId", "name", "status", "lastUpdated", "properties"],
+                        "required": [
+                            "id",
+                            "ironcladId",
+                            "name",
+                            "status",
+                            "lastUpdated",
+                            "properties"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1011,9 +1205,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getrecord",
             "name": "get-record",
-            "output": ["ActionOutput_ironclad_getrecord"],
-            "scopes": ["public.records.readRecords"],
-            "usedModels": ["ActionInput_ironclad_getrecord", "ActionOutput_ironclad_getrecord"],
+            "output": [
+                "ActionOutput_ironclad_getrecord"
+            ],
+            "scopes": [
+                "public.records.readRecords"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_getrecord",
+                "ActionOutput_ironclad_getrecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1025,7 +1226,9 @@
                                 "description": "Record ID. Example: \"c3ebdcb3-de93-43da-9067-2191c727d942\""
                             }
                         },
-                        "required": ["recordId"],
+                        "required": [
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_getrecord": {
@@ -1053,7 +1256,10 @@
                                         },
                                         "value": {}
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1064,7 +1270,10 @@
                                 "type": "string"
                             },
                             "archived": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "creator": {
                                 "type": "object",
@@ -1079,7 +1288,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "editor": {
@@ -1095,11 +1307,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "name"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1112,9 +1331,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getsignstatus",
             "name": "get-sign-status",
-            "output": ["ActionOutput_ironclad_getsignstatus"],
-            "scopes": ["public.workflows.readSignStatus"],
-            "usedModels": ["ActionInput_ironclad_getsignstatus", "ActionOutput_ironclad_getsignstatus"],
+            "output": [
+                "ActionOutput_ironclad_getsignstatus"
+            ],
+            "scopes": [
+                "public.workflows.readSignStatus"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_getsignstatus",
+                "ActionOutput_ironclad_getsignstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1126,7 +1352,9 @@
                                 "description": "The unique identifier or Ironclad ID of a workflow. Example: \"6a6b328004308879e7d439b6\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_getsignstatus": {
@@ -1150,7 +1378,13 @@
                                                 },
                                                 "status": {
                                                     "type": "string",
-                                                    "enum": ["pending", "declined", "sent", "viewed", "signed"]
+                                                    "enum": [
+                                                        "pending",
+                                                        "declined",
+                                                        "sent",
+                                                        "viewed",
+                                                        "signed"
+                                                    ]
                                                 },
                                                 "isWetSigned": {
                                                     "type": "boolean"
@@ -1181,7 +1415,13 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name", "email", "roleName", "status", "type"],
+                                            "required": [
+                                                "name",
+                                                "email",
+                                                "roleName",
+                                                "status",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -1198,7 +1438,13 @@
                                                 },
                                                 "status": {
                                                     "type": "string",
-                                                    "enum": ["pending", "declined", "sent", "viewed", "signed"]
+                                                    "enum": [
+                                                        "pending",
+                                                        "declined",
+                                                        "sent",
+                                                        "viewed",
+                                                        "signed"
+                                                    ]
                                                 },
                                                 "isWetSigned": {
                                                     "type": "boolean"
@@ -1226,7 +1472,13 @@
                                                     "const": "external"
                                                 }
                                             },
-                                            "required": ["name", "email", "roleName", "status", "type"],
+                                            "required": [
+                                                "name",
+                                                "email",
+                                                "roleName",
+                                                "status",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -1234,11 +1486,19 @@
                             },
                             "routing": {
                                 "type": "string",
-                                "enum": ["sequential", "parallel"]
+                                "enum": [
+                                    "sequential",
+                                    "parallel"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["not_sent", "sent", "action_required", "complete"]
+                                "enum": [
+                                    "not_sent",
+                                    "sent",
+                                    "action_required",
+                                    "complete"
+                                ]
                             },
                             "requireSignedDocumentUpload": {
                                 "type": "boolean"
@@ -1290,9 +1550,14 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getwebhookverificationkey",
             "name": "get-webhook-verification-key",
-            "output": ["ActionOutput_ironclad_getwebhookverificationkey"],
+            "output": [
+                "ActionOutput_ironclad_getwebhookverificationkey"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ironclad_getwebhookverificationkey", "ActionOutput_ironclad_getwebhookverificationkey"],
+            "usedModels": [
+                "ActionInput_ironclad_getwebhookverificationkey",
+                "ActionOutput_ironclad_getwebhookverificationkey"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1308,7 +1573,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["key"],
+                        "required": [
+                            "key"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1321,9 +1588,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getwebhook",
             "name": "get-webhook",
-            "output": ["ActionOutput_ironclad_getwebhook"],
-            "scopes": ["public.webhooks.readWebhooks"],
-            "usedModels": ["ActionInput_ironclad_getwebhook", "ActionOutput_ironclad_getwebhook"],
+            "output": [
+                "ActionOutput_ironclad_getwebhook"
+            ],
+            "scopes": [
+                "public.webhooks.readWebhooks"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_getwebhook",
+                "ActionOutput_ironclad_getwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1335,7 +1609,9 @@
                                 "description": "The ID of the webhook to retrieve. Example: \"6a6b346ef69937b9258f29ad\""
                             }
                         },
-                        "required": ["webhookId"],
+                        "required": [
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_getwebhook": {
@@ -1360,7 +1636,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "targetURL", "events"],
+                        "required": [
+                            "id",
+                            "targetURL",
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1373,9 +1653,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getworkflowasyncjobstatus",
             "name": "get-workflow-async-job-status",
-            "output": ["ActionOutput_ironclad_getworkflowasyncjobstatus"],
-            "scopes": ["public.workflows.createWorkflows"],
-            "usedModels": ["ActionInput_ironclad_getworkflowasyncjobstatus", "ActionOutput_ironclad_getworkflowasyncjobstatus"],
+            "output": [
+                "ActionOutput_ironclad_getworkflowasyncjobstatus"
+            ],
+            "scopes": [
+                "public.workflows.createWorkflows"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_getworkflowasyncjobstatus",
+                "ActionOutput_ironclad_getworkflowasyncjobstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1387,7 +1674,9 @@
                                 "description": "The async job ID returned by create-workflow-async. Example: \"abc123\""
                             }
                         },
-                        "required": ["jobId"],
+                        "required": [
+                            "jobId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_getworkflowasyncjobstatus": {
@@ -1494,7 +1783,10 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "displayName"],
+                                            "required": [
+                                                "id",
+                                                "displayName"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1545,7 +1837,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1558,9 +1852,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getworkflowschema",
             "name": "get-workflow-schema",
-            "output": ["ActionOutput_ironclad_getworkflowschema"],
-            "scopes": ["public.workflows.readSchemas"],
-            "usedModels": ["ActionInput_ironclad_getworkflowschema", "ActionOutput_ironclad_getworkflowschema"],
+            "output": [
+                "ActionOutput_ironclad_getworkflowschema"
+            ],
+            "scopes": [
+                "public.workflows.readSchemas"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_getworkflowschema",
+                "ActionOutput_ironclad_getworkflowschema"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1572,7 +1873,9 @@
                                 "description": "Workflow schema ID. Example: \"68dc41e5a7987b1e623e4711\""
                             }
                         },
-                        "required": ["schemaId"],
+                        "required": [
+                            "schemaId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_getworkflowschema": {
@@ -1632,7 +1935,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["type", "displayName", "required"],
+                                    "required": [
+                                        "type",
+                                        "displayName",
+                                        "required"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1643,7 +1950,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "schema", "permissions"],
+                        "required": [
+                            "id",
+                            "name",
+                            "schema",
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1656,9 +1968,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_getworkflow",
             "name": "get-workflow",
-            "output": ["ActionOutput_ironclad_getworkflow"],
-            "scopes": ["public.workflows.readWorkflows"],
-            "usedModels": ["ActionInput_ironclad_getworkflow", "ActionOutput_ironclad_getworkflow"],
+            "output": [
+                "ActionOutput_ironclad_getworkflow"
+            ],
+            "scopes": [
+                "public.workflows.readWorkflows"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_getworkflow",
+                "ActionOutput_ironclad_getworkflow"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1670,7 +1989,9 @@
                                 "description": "The unique identifier of the workflow. Example: \"6a6b328004308879e7d439b6\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_getworkflow": {
@@ -1765,7 +2086,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "displayName"],
+                                    "required": [
+                                        "id",
+                                        "displayName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1825,9 +2149,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listapprovalrequests",
             "name": "list-approval-requests",
-            "output": ["ActionOutput_ironclad_listapprovalrequests"],
-            "scopes": ["public.workflows.readApprovals"],
-            "usedModels": ["ActionInput_ironclad_listapprovalrequests", "ActionOutput_ironclad_listapprovalrequests"],
+            "output": [
+                "ActionOutput_ironclad_listapprovalrequests"
+            ],
+            "scopes": [
+                "public.workflows.readApprovals"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listapprovalrequests",
+                "ActionOutput_ironclad_listapprovalrequests"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1843,7 +2174,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listapprovalrequests": {
@@ -1907,7 +2240,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["list"],
+                        "required": [
+                            "list"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1920,9 +2255,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listeligibleassignees",
             "name": "list-eligible-assignees",
-            "output": ["ActionOutput_ironclad_listeligibleassignees"],
-            "scopes": ["public.workflows.readRoleAssignees"],
-            "usedModels": ["ActionInput_ironclad_listeligibleassignees", "ActionOutput_ironclad_listeligibleassignees"],
+            "output": [
+                "ActionOutput_ironclad_listeligibleassignees"
+            ],
+            "scopes": [
+                "public.workflows.readRoleAssignees"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listeligibleassignees",
+                "ActionOutput_ironclad_listeligibleassignees"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1948,7 +2290,10 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["workflowId", "roleName"],
+                        "required": [
+                            "workflowId",
+                            "roleName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listeligibleassignees": {
@@ -1979,7 +2324,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1992,9 +2339,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listentities",
             "name": "list-entities",
-            "output": ["ActionOutput_ironclad_listentities"],
-            "scopes": ["public.entities.readEntities"],
-            "usedModels": ["ActionInput_ironclad_listentities", "ActionOutput_ironclad_listentities"],
+            "output": [
+                "ActionOutput_ironclad_listentities"
+            ],
+            "scopes": [
+                "public.entities.readEntities"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listentities",
+                "ActionOutput_ironclad_listentities"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2025,12 +2379,18 @@
                             "sortField": {
                                 "description": "Field to sort by. Default is name.",
                                 "type": "string",
-                                "enum": ["name", "lastUpdated"]
+                                "enum": [
+                                    "name",
+                                    "lastUpdated"
+                                ]
                             },
                             "sortDirection": {
                                 "description": "Sort direction. Default is DESC.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2075,7 +2435,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "ironcladId", "name", "status", "lastUpdated"],
+                                    "required": [
+                                        "id",
+                                        "ironcladId",
+                                        "name",
+                                        "status",
+                                        "lastUpdated"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2092,7 +2458,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "page", "pageSize", "count"],
+                        "required": [
+                            "items",
+                            "page",
+                            "pageSize",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2105,9 +2476,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listentityrelationshiptypes",
             "name": "list-entity-relationship-types",
-            "output": ["ActionOutput_ironclad_listentityrelationshiptypes"],
-            "scopes": ["public.entities.readRelationshipTypes"],
-            "usedModels": ["ActionInput_ironclad_listentityrelationshiptypes", "ActionOutput_ironclad_listentityrelationshiptypes"],
+            "output": [
+                "ActionOutput_ironclad_listentityrelationshiptypes"
+            ],
+            "scopes": [
+                "public.entities.readRelationshipTypes"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listentityrelationshiptypes",
+                "ActionOutput_ironclad_listentityrelationshiptypes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2154,17 +2532,25 @@
                                                         "items": {}
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["relationship_types"],
+                        "required": [
+                            "relationship_types"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2177,9 +2563,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listrecordsmetadata",
             "name": "list-records-metadata",
-            "output": ["ActionOutput_ironclad_listrecordsmetadata"],
-            "scopes": ["public.records.readSchemas"],
-            "usedModels": ["ActionInput_ironclad_listrecordsmetadata", "ActionOutput_ironclad_listrecordsmetadata"],
+            "output": [
+                "ActionOutput_ironclad_listrecordsmetadata"
+            ],
+            "scopes": [
+                "public.records.readSchemas"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listrecordsmetadata",
+                "ActionOutput_ironclad_listrecordsmetadata"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2209,7 +2602,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "displayName"],
+                                    "required": [
+                                        "type",
+                                        "displayName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2225,15 +2621,23 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["displayName"],
+                                    "required": [
+                                        "displayName"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["properties", "recordTypes"],
+                        "required": [
+                            "properties",
+                            "recordTypes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2246,9 +2650,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listrecords",
             "name": "list-records",
-            "output": ["ActionOutput_ironclad_listrecords"],
-            "scopes": ["public.records.readRecords"],
-            "usedModels": ["ActionInput_ironclad_listrecords", "ActionOutput_ironclad_listrecords"],
+            "output": [
+                "ActionOutput_ironclad_listrecords"
+            ],
+            "scopes": [
+                "public.records.readRecords"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listrecords",
+                "ActionOutput_ironclad_listrecords"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2298,12 +2709,18 @@
                                                     },
                                                     "value": {}
                                                 },
-                                                "required": ["type", "value"],
+                                                "required": [
+                                                    "type",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2311,7 +2728,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2324,9 +2743,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_ironclad_listwebhooks"],
-            "scopes": ["public.webhooks.readWebhooks"],
-            "usedModels": ["ActionInput_ironclad_listwebhooks", "ActionOutput_ironclad_listwebhooks"],
+            "output": [
+                "ActionOutput_ironclad_listwebhooks"
+            ],
+            "scopes": [
+                "public.webhooks.readWebhooks"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listwebhooks",
+                "ActionOutput_ironclad_listwebhooks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2389,7 +2815,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "events", "targetURL", "companyId", "status", "consecutiveFailureCount"],
+                                    "required": [
+                                        "id",
+                                        "events",
+                                        "targetURL",
+                                        "companyId",
+                                        "status",
+                                        "consecutiveFailureCount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2403,7 +2836,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["webhooks", "page", "pageSize"],
+                        "required": [
+                            "webhooks",
+                            "page",
+                            "pageSize"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2416,9 +2853,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflowapprovals",
             "name": "list-workflow-approvals",
-            "output": ["ActionOutput_ironclad_listworkflowapprovals"],
-            "scopes": ["public.workflows.readApprovals"],
-            "usedModels": ["ActionInput_ironclad_listworkflowapprovals", "ActionOutput_ironclad_listworkflowapprovals"],
+            "output": [
+                "ActionOutput_ironclad_listworkflowapprovals"
+            ],
+            "scopes": [
+                "public.workflows.readApprovals"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflowapprovals",
+                "ActionOutput_ironclad_listworkflowapprovals"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2430,7 +2874,9 @@
                                 "description": "The unique identifier or Ironclad ID of the workflow. Example: \"5f595f76c4fc9b3571413c3ac\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listworkflowapprovals": {
@@ -2463,7 +2909,10 @@
                                                     },
                                                     "status": {
                                                         "type": "string",
-                                                        "enum": ["pending", "approved"]
+                                                        "enum": [
+                                                            "pending",
+                                                            "approved"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -2471,7 +2920,11 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["pending", "approved", "active"]
+                                            "enum": [
+                                                "pending",
+                                                "approved",
+                                                "active"
+                                            ]
                                         },
                                         "order": {
                                             "type": "number"
@@ -2526,9 +2979,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflowcomments",
             "name": "list-workflow-comments",
-            "output": ["ActionOutput_ironclad_listworkflowcomments"],
-            "scopes": ["public.workflows.readComments"],
-            "usedModels": ["ActionInput_ironclad_listworkflowcomments", "ActionOutput_ironclad_listworkflowcomments"],
+            "output": [
+                "ActionOutput_ironclad_listworkflowcomments"
+            ],
+            "scopes": [
+                "public.workflows.readComments"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflowcomments",
+                "ActionOutput_ironclad_listworkflowcomments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2550,7 +3010,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listworkflowcomments": {
@@ -2595,7 +3057,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "companyName"],
+                                                    "required": [
+                                                        "type",
+                                                        "companyName"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2615,7 +3080,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "companyName"],
+                                                    "required": [
+                                                        "type",
+                                                        "companyName"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2629,7 +3097,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "displayName"],
+                                                    "required": [
+                                                        "type",
+                                                        "displayName"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2644,7 +3115,10 @@
                                                             "const": "Ironclad"
                                                         }
                                                     },
-                                                    "required": ["type", "displayName"],
+                                                    "required": [
+                                                        "type",
+                                                        "displayName"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             ]
@@ -2677,7 +3151,10 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["type", "companyName"],
+                                                            "required": [
+                                                                "type",
+                                                                "companyName"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -2697,7 +3174,10 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["type", "companyName"],
+                                                            "required": [
+                                                                "type",
+                                                                "companyName"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -2711,7 +3191,10 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["type", "displayName"],
+                                                            "required": [
+                                                                "type",
+                                                                "displayName"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -2726,13 +3209,19 @@
                                                                     "const": "Ironclad"
                                                                 }
                                                             },
-                                                            "required": ["type", "displayName"],
+                                                            "required": [
+                                                                "type",
+                                                                "displayName"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     ]
                                                 }
                                             },
-                                            "required": ["item", "itemAuthor"],
+                                            "required": [
+                                                "item",
+                                                "itemAuthor"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "mentionedUserDetails": {
@@ -2750,7 +3239,11 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "displayName", "email"],
+                                                "required": [
+                                                    "id",
+                                                    "displayName",
+                                                    "email"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2792,7 +3285,10 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["type", "companyName"],
+                                                                    "required": [
+                                                                        "type",
+                                                                        "companyName"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 {
@@ -2812,7 +3308,10 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["type", "companyName"],
+                                                                    "required": [
+                                                                        "type",
+                                                                        "companyName"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 {
@@ -2826,7 +3325,10 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["type", "displayName"],
+                                                                    "required": [
+                                                                        "type",
+                                                                        "displayName"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 {
@@ -2841,19 +3343,33 @@
                                                                             "const": "Ironclad"
                                                                         }
                                                                     },
-                                                                    "required": ["type", "displayName"],
+                                                                    "required": [
+                                                                        "type",
+                                                                        "displayName"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             ]
                                                         }
                                                     }
                                                 },
-                                                "required": ["emojiId", "reactors"],
+                                                "required": [
+                                                    "emojiId",
+                                                    "reactors"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "commentMessage", "timestamp", "author", "mentionedUserDetails", "addedParticipants", "reactions"],
+                                    "required": [
+                                        "id",
+                                        "commentMessage",
+                                        "timestamp",
+                                        "author",
+                                        "mentionedUserDetails",
+                                        "addedParticipants",
+                                        "reactions"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2867,7 +3383,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "pageSize"],
+                        "required": [
+                            "items",
+                            "pageSize"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2880,9 +3399,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflowdocuments",
             "name": "list-workflow-documents",
-            "output": ["ActionOutput_ironclad_listworkflowdocuments"],
-            "scopes": ["public.workflows.readDocuments"],
-            "usedModels": ["ActionInput_ironclad_listworkflowdocuments", "ActionOutput_ironclad_listworkflowdocuments"],
+            "output": [
+                "ActionOutput_ironclad_listworkflowdocuments"
+            ],
+            "scopes": [
+                "public.workflows.readDocuments"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflowdocuments",
+                "ActionOutput_ironclad_listworkflowdocuments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2894,7 +3420,9 @@
                                 "description": "Workflow ID. Example: \"6a6b328004308879e7d439b6\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listworkflowdocuments": {
@@ -2944,9 +3472,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflowparticipants",
             "name": "list-workflow-participants",
-            "output": ["ActionOutput_ironclad_listworkflowparticipants"],
-            "scopes": ["public.workflows.readParticipants"],
-            "usedModels": ["ActionInput_ironclad_listworkflowparticipants", "ActionOutput_ironclad_listworkflowparticipants"],
+            "output": [
+                "ActionOutput_ironclad_listworkflowparticipants"
+            ],
+            "scopes": [
+                "public.workflows.readParticipants"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflowparticipants",
+                "ActionOutput_ironclad_listworkflowparticipants"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2972,7 +3507,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listworkflowparticipants": {
@@ -2990,7 +3527,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["userId"],
+                                    "required": [
+                                        "userId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3007,7 +3546,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "page", "pageSize", "count"],
+                        "required": [
+                            "items",
+                            "page",
+                            "pageSize",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3020,9 +3564,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflowschemas",
             "name": "list-workflow-schemas",
-            "output": ["ActionOutput_ironclad_listworkflowschemas"],
-            "scopes": ["public.workflows.readSchemas"],
-            "usedModels": ["ActionInput_ironclad_listworkflowschemas", "ActionOutput_ironclad_listworkflowschemas"],
+            "output": [
+                "ActionOutput_ironclad_listworkflowschemas"
+            ],
+            "scopes": [
+                "public.workflows.readSchemas"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflowschemas",
+                "ActionOutput_ironclad_listworkflowschemas"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3059,12 +3610,17 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["schemas"],
+                        "required": [
+                            "schemas"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3077,9 +3633,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflowsignatures",
             "name": "list-workflow-signatures",
-            "output": ["ActionOutput_ironclad_listworkflowsignatures"],
-            "scopes": ["public.workflows.readSignatures"],
-            "usedModels": ["ActionInput_ironclad_listworkflowsignatures", "ActionOutput_ironclad_listworkflowsignatures"],
+            "output": [
+                "ActionOutput_ironclad_listworkflowsignatures"
+            ],
+            "scopes": [
+                "public.workflows.readSignatures"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflowsignatures",
+                "ActionOutput_ironclad_listworkflowsignatures"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3091,7 +3654,9 @@
                                 "description": "Workflow ID. Example: \"6a6b328004308879e7d439b6\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listworkflowsignatures": {
@@ -3124,14 +3689,22 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["status"],
+                                            "required": [
+                                                "status"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "routingOrder": {
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["roleName", "name", "email", "signatureStatus", "routingOrder"],
+                                    "required": [
+                                        "roleName",
+                                        "name",
+                                        "email",
+                                        "signatureStatus",
+                                        "routingOrder"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3139,7 +3712,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workflowId", "title", "signers", "routing"],
+                        "required": [
+                            "workflowId",
+                            "title",
+                            "signers",
+                            "routing"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3152,9 +3730,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflowturnhistory",
             "name": "list-workflow-turn-history",
-            "output": ["ActionOutput_ironclad_listworkflowturnhistory"],
-            "scopes": ["public.workflows.readTurnHistory"],
-            "usedModels": ["ActionInput_ironclad_listworkflowturnhistory", "ActionOutput_ironclad_listworkflowturnhistory"],
+            "output": [
+                "ActionOutput_ironclad_listworkflowturnhistory"
+            ],
+            "scopes": [
+                "public.workflows.readTurnHistory"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflowturnhistory",
+                "ActionOutput_ironclad_listworkflowturnhistory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3176,7 +3761,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_listworkflowturnhistory": {
@@ -3223,7 +3810,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3236,9 +3825,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_listworkflows",
             "name": "list-workflows",
-            "output": ["ActionOutput_ironclad_listworkflows"],
-            "scopes": ["public.workflows.readWorkflows"],
-            "usedModels": ["ActionInput_ironclad_listworkflows", "ActionOutput_ironclad_listworkflows"],
+            "output": [
+                "ActionOutput_ironclad_listworkflows"
+            ],
+            "scopes": [
+                "public.workflows.readWorkflows"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_listworkflows",
+                "ActionOutput_ironclad_listworkflows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3322,7 +3918,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "template", "step", "status", "created"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "template",
+                                        "step",
+                                        "status",
+                                        "created"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3330,7 +3933,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["page", "pageSize", "count", "items"],
+                        "required": [
+                            "page",
+                            "pageSize",
+                            "count",
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3343,9 +3951,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_pauseworkflow",
             "name": "pause-workflow",
-            "output": ["ActionOutput_ironclad_pauseworkflow"],
-            "scopes": ["public.workflows.pauseAndResume"],
-            "usedModels": ["ActionInput_ironclad_pauseworkflow", "ActionOutput_ironclad_pauseworkflow"],
+            "output": [
+                "ActionOutput_ironclad_pauseworkflow"
+            ],
+            "scopes": [
+                "public.workflows.pauseAndResume"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_pauseworkflow",
+                "ActionOutput_ironclad_pauseworkflow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3361,7 +3976,10 @@
                                 "description": "Comment message required for the pause action. Example: \"Pausing for review\""
                             }
                         },
-                        "required": ["workflowId", "comment"],
+                        "required": [
+                            "workflowId",
+                            "comment"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_pauseworkflow": {
@@ -3371,7 +3989,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3384,9 +4004,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_replacerecord",
             "name": "replace-record",
-            "output": ["ActionOutput_ironclad_replacerecord"],
-            "scopes": ["public.records.updateRecords"],
-            "usedModels": ["ActionInput_ironclad_replacerecord", "ActionOutput_ironclad_replacerecord"],
+            "output": [
+                "ActionOutput_ironclad_replacerecord"
+            ],
+            "scopes": [
+                "public.records.updateRecords"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_replacerecord",
+                "ActionOutput_ironclad_replacerecord"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3414,7 +4041,12 @@
                                 "description": "Full typed properties object matching the record schema."
                             }
                         },
-                        "required": ["record_id", "type", "name", "properties"],
+                        "required": [
+                            "record_id",
+                            "type",
+                            "name",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_replacerecord": {
@@ -3460,7 +4092,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "type", "name"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3473,9 +4109,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_resumeworkflow",
             "name": "resume-workflow",
-            "output": ["ActionOutput_ironclad_resumeworkflow"],
-            "scopes": ["public.workflows.pauseAndResume"],
-            "usedModels": ["ActionInput_ironclad_resumeworkflow", "ActionOutput_ironclad_resumeworkflow"],
+            "output": [
+                "ActionOutput_ironclad_resumeworkflow"
+            ],
+            "scopes": [
+                "public.workflows.pauseAndResume"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_resumeworkflow",
+                "ActionOutput_ironclad_resumeworkflow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3494,12 +4137,17 @@
                                         "description": "Comment message to include with the resume action."
                                     }
                                 },
-                                "required": ["message"],
+                                "required": [
+                                    "message"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Required comment for resuming the workflow."
                             }
                         },
-                        "required": ["workflowId", "comment"],
+                        "required": [
+                            "workflowId",
+                            "comment"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_resumeworkflow": {
@@ -3512,7 +4160,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["workflowId", "resumed"],
+                        "required": [
+                            "workflowId",
+                            "resumed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3525,9 +4176,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_reverttoreviewworkflow",
             "name": "revert-to-review-workflow",
-            "output": ["ActionOutput_ironclad_reverttoreviewworkflow"],
-            "scopes": ["public.workflows.revertToReview"],
-            "usedModels": ["ActionInput_ironclad_reverttoreviewworkflow", "ActionOutput_ironclad_reverttoreviewworkflow"],
+            "output": [
+                "ActionOutput_ironclad_reverttoreviewworkflow"
+            ],
+            "scopes": [
+                "public.workflows.revertToReview"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_reverttoreviewworkflow",
+                "ActionOutput_ironclad_reverttoreviewworkflow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3539,7 +4197,9 @@
                                 "description": "The unique identifier or Ironclad ID of the workflow to revert. Example: \"6013609108b8f070cee94fc1\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_reverttoreviewworkflow": {
@@ -3549,7 +4209,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3562,9 +4224,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_runrecordaction",
             "name": "run-record-action",
-            "output": ["ActionOutput_ironclad_runrecordaction"],
-            "scopes": ["public.records.applyContractAction"],
-            "usedModels": ["ActionInput_ironclad_runrecordaction", "ActionOutput_ironclad_runrecordaction"],
+            "output": [
+                "ActionOutput_ironclad_runrecordaction"
+            ],
+            "scopes": [
+                "public.records.applyContractAction"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_runrecordaction",
+                "ActionOutput_ironclad_runrecordaction"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3588,7 +4257,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["recordId", "type"],
+                        "required": [
+                            "recordId",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_runrecordaction": {
@@ -3606,9 +4278,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_sendsignaturerequest",
             "name": "send-signature-request",
-            "output": ["ActionOutput_ironclad_sendsignaturerequest"],
-            "scopes": ["public.workflows.sendSignatureRequests"],
-            "usedModels": ["ActionInput_ironclad_sendsignaturerequest", "ActionOutput_ironclad_sendsignaturerequest"],
+            "output": [
+                "ActionOutput_ironclad_sendsignaturerequest"
+            ],
+            "scopes": [
+                "public.workflows.sendSignatureRequests"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_sendsignaturerequest",
+                "ActionOutput_ironclad_sendsignaturerequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3620,7 +4299,9 @@
                                 "description": "The unique identifier or Ironclad ID of the workflow. Example: \"6a6b328004308879e7d439b6\""
                             }
                         },
-                        "required": ["workflowId"],
+                        "required": [
+                            "workflowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_sendsignaturerequest": {
@@ -3644,7 +4325,13 @@
                                                 },
                                                 "status": {
                                                     "type": "string",
-                                                    "enum": ["pending", "declined", "sent", "viewed", "signed"]
+                                                    "enum": [
+                                                        "pending",
+                                                        "declined",
+                                                        "sent",
+                                                        "viewed",
+                                                        "signed"
+                                                    ]
                                                 },
                                                 "isWetSigned": {
                                                     "type": "boolean"
@@ -3661,7 +4348,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name", "email"],
+                                                        "required": [
+                                                            "name",
+                                                            "email"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3676,7 +4366,13 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name", "email", "roleName", "status", "type"],
+                                            "required": [
+                                                "name",
+                                                "email",
+                                                "roleName",
+                                                "status",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -3693,7 +4389,13 @@
                                                 },
                                                 "status": {
                                                     "type": "string",
-                                                    "enum": ["pending", "declined", "sent", "viewed", "signed"]
+                                                    "enum": [
+                                                        "pending",
+                                                        "declined",
+                                                        "sent",
+                                                        "viewed",
+                                                        "signed"
+                                                    ]
                                                 },
                                                 "isWetSigned": {
                                                     "type": "boolean"
@@ -3710,7 +4412,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name", "email"],
+                                                        "required": [
+                                                            "name",
+                                                            "email"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3722,7 +4427,13 @@
                                                     "const": "external"
                                                 }
                                             },
-                                            "required": ["name", "email", "roleName", "status", "type"],
+                                            "required": [
+                                                "name",
+                                                "email",
+                                                "roleName",
+                                                "status",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -3730,11 +4441,19 @@
                             },
                             "routing": {
                                 "type": "string",
-                                "enum": ["sequential", "parallel"]
+                                "enum": [
+                                    "sequential",
+                                    "parallel"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["not_sent", "sent", "action_required", "complete"]
+                                "enum": [
+                                    "not_sent",
+                                    "sent",
+                                    "action_required",
+                                    "complete"
+                                ]
                             },
                             "requireSignedDocumentUpload": {
                                 "type": "boolean"
@@ -3758,11 +4477,16 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["daysBefore", "reminderDate"],
+                                        "required": [
+                                            "daysBefore",
+                                            "reminderDate"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["notifyAt"],
+                                "required": [
+                                    "notifyAt"
+                                ],
                                 "additionalProperties": false
                             }
                         },
@@ -3778,9 +4502,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_updateapprovalstatus",
             "name": "update-approval-status",
-            "output": ["ActionOutput_ironclad_updateapprovalstatus"],
-            "scopes": ["public.workflows.updateApprovals"],
-            "usedModels": ["ActionInput_ironclad_updateapprovalstatus", "ActionOutput_ironclad_updateapprovalstatus"],
+            "output": [
+                "ActionOutput_ironclad_updateapprovalstatus"
+            ],
+            "scopes": [
+                "public.workflows.updateApprovals"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_updateapprovalstatus",
+                "ActionOutput_ironclad_updateapprovalstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3797,11 +4528,18 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["approved", "pending"],
+                                "enum": [
+                                    "approved",
+                                    "pending"
+                                ],
                                 "description": "Approval status to set. Ironclad does not support a \"rejected\" status for this endpoint."
                             }
                         },
-                        "required": ["workflowId", "roleId", "status"],
+                        "required": [
+                            "workflowId",
+                            "roleId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_updateapprovalstatus": {
@@ -3815,10 +4553,17 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["approved", "pending"]
+                                "enum": [
+                                    "approved",
+                                    "pending"
+                                ]
                             }
                         },
-                        "required": ["workflowId", "roleId", "status"],
+                        "required": [
+                            "workflowId",
+                            "roleId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3831,9 +4576,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_updateentity",
             "name": "update-entity",
-            "output": ["ActionOutput_ironclad_updateentity"],
-            "scopes": ["public.entities.updateEntities"],
-            "usedModels": ["ActionInput_ironclad_updateentity", "ActionOutput_ironclad_updateentity"],
+            "output": [
+                "ActionOutput_ironclad_updateentity"
+            ],
+            "scopes": [
+                "public.entities.updateEntities"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_updateentity",
+                "ActionOutput_ironclad_updateentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3857,7 +4609,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["entityId"],
+                        "required": [
+                            "entityId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_updateentity": {
@@ -3892,10 +4646,19 @@
                                 }
                             },
                             "parentId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "ironcladId", "name", "status", "lastUpdated"],
+                        "required": [
+                            "id",
+                            "ironcladId",
+                            "name",
+                            "status",
+                            "lastUpdated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3908,9 +4671,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_updaterecordname",
             "name": "update-record-name",
-            "output": ["ActionOutput_ironclad_updaterecordname"],
-            "scopes": ["public.records.updateRecords"],
-            "usedModels": ["ActionInput_ironclad_updaterecordname", "ActionOutput_ironclad_updaterecordname"],
+            "output": [
+                "ActionOutput_ironclad_updaterecordname"
+            ],
+            "scopes": [
+                "public.records.updateRecords"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_updaterecordname",
+                "ActionOutput_ironclad_updaterecordname"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3926,7 +4696,10 @@
                                 "description": "New name for the record."
                             }
                         },
-                        "required": ["recordId", "name"],
+                        "required": [
+                            "recordId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_updaterecordname": {
@@ -3939,7 +4712,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3952,9 +4727,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_ironclad_updatewebhook"],
-            "scopes": ["public.webhooks.updateWebhooks"],
-            "usedModels": ["ActionInput_ironclad_updatewebhook", "ActionOutput_ironclad_updatewebhook"],
+            "output": [
+                "ActionOutput_ironclad_updatewebhook"
+            ],
+            "scopes": [
+                "public.webhooks.updateWebhooks"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_updatewebhook",
+                "ActionOutput_ironclad_updatewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3977,7 +4759,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhookId"],
+                        "required": [
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_updatewebhook": {
@@ -3999,7 +4783,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "targetURL", "events"],
+                        "required": [
+                            "id",
+                            "targetURL",
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4012,9 +4800,16 @@
             "endpoint": null,
             "input": "ActionInput_ironclad_updateworkflowattributes",
             "name": "update-workflow-attributes",
-            "output": ["ActionOutput_ironclad_updateworkflowattributes"],
-            "scopes": ["public.workflows.updateWorkflows"],
-            "usedModels": ["ActionInput_ironclad_updateworkflowattributes", "ActionOutput_ironclad_updateworkflowattributes"],
+            "output": [
+                "ActionOutput_ironclad_updateworkflowattributes"
+            ],
+            "scopes": [
+                "public.workflows.updateWorkflows"
+            ],
+            "usedModels": [
+                "ActionInput_ironclad_updateworkflowattributes",
+                "ActionOutput_ironclad_updateworkflowattributes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4045,7 +4840,11 @@
                                                     "description": "Value to set. Must match the attribute type format."
                                                 }
                                             },
-                                            "required": ["action", "path", "value"],
+                                            "required": [
+                                                "action",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -4061,14 +4860,20 @@
                                                     "description": "Attribute ID. Example: \"shortResponseText\""
                                                 }
                                             },
-                                            "required": ["action", "path"],
+                                            "required": [
+                                                "action",
+                                                "path"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
                                 }
                             }
                         },
-                        "required": ["workflowId", "updates"],
+                        "required": [
+                            "workflowId",
+                            "updates"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ironclad_updateworkflowattributes": {
@@ -4097,7 +4902,14 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "title", "step", "status", "ironcladId", "attributes"],
+                        "required": [
+                            "id",
+                            "title",
+                            "step",
+                            "status",
+                            "ironcladId",
+                            "attributes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4113,12 +4925,18 @@
             "endpoints": [],
             "input": null,
             "name": "entities",
-            "output": ["Entity"],
+            "output": [
+                "Entity"
+            ],
             "runs": "every hour",
-            "scopes": ["public.entities.readEntities"],
+            "scopes": [
+                "public.entities.readEntities"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Entity"],
+            "usedModels": [
+                "Entity"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4154,7 +4972,10 @@
                                         },
                                         "value": {}
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4165,12 +4986,18 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "lastUpdated"],
+                        "required": [
+                            "id",
+                            "name",
+                            "lastUpdated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4179,12 +5006,18 @@
             "endpoints": [],
             "input": null,
             "name": "records",
-            "output": ["Record"],
+            "output": [
+                "Record"
+            ],
             "runs": "every hour",
-            "scopes": ["public.records.readRecords"],
+            "scopes": [
+                "public.records.readRecords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Record"],
+            "usedModels": [
+                "Record"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4230,7 +5063,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["recordId"],
+                                    "required": [
+                                        "recordId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4265,7 +5100,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["status", "enhancedStatus"],
+                                "required": [
+                                    "status",
+                                    "enhancedStatus"
+                                ],
                                 "additionalProperties": false
                             },
                             "source": {},
@@ -4276,12 +5114,20 @@
                                 }
                             }
                         },
-                        "required": ["id", "ironcladId", "type", "name", "lastUpdated"],
+                        "required": [
+                            "id",
+                            "ironcladId",
+                            "type",
+                            "name",
+                            "lastUpdated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4290,12 +5136,18 @@
             "endpoints": [],
             "input": null,
             "name": "workflows",
-            "output": ["Workflow"],
+            "output": [
+                "Workflow"
+            ],
             "runs": "every hour",
-            "scopes": ["public.workflows.readWorkflows"],
+            "scopes": [
+                "public.workflows.readWorkflows"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workflow"],
+            "usedModels": [
+                "Workflow"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4349,12 +5201,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

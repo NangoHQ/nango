@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addallowlistentry",
             "name": "add-allowlist-entry",
-            "output": ["ActionOutput_mandrill_addallowlistentry"],
+            "output": [
+                "ActionOutput_mandrill_addallowlistentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addallowlistentry", "ActionOutput_mandrill_addallowlistentry"],
+            "usedModels": [
+                "ActionInput_mandrill_addallowlistentry",
+                "ActionOutput_mandrill_addallowlistentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -27,7 +32,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addallowlistentry": {
@@ -40,7 +47,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email", "added"],
+                        "required": [
+                            "email",
+                            "added"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -53,9 +63,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addinbounddomain",
             "name": "add-inbound-domain",
-            "output": ["ActionOutput_mandrill_addinbounddomain"],
+            "output": [
+                "ActionOutput_mandrill_addinbounddomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addinbounddomain", "ActionOutput_mandrill_addinbounddomain"],
+            "usedModels": [
+                "ActionInput_mandrill_addinbounddomain",
+                "ActionOutput_mandrill_addinbounddomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -67,7 +82,9 @@
                                 "description": "A domain name for inbound email delivery. Example: \"inbound.example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addinbounddomain": {
@@ -83,7 +100,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["domain", "created_at", "valid_mx"],
+                        "required": [
+                            "domain",
+                            "created_at",
+                            "valid_mx"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -96,9 +117,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addinboundroute",
             "name": "add-inbound-route",
-            "output": ["ActionOutput_mandrill_addinboundroute"],
+            "output": [
+                "ActionOutput_mandrill_addinboundroute"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addinboundroute", "ActionOutput_mandrill_addinboundroute"],
+            "usedModels": [
+                "ActionInput_mandrill_addinboundroute",
+                "ActionOutput_mandrill_addinboundroute"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -118,7 +144,11 @@
                                 "description": "The webhook URL where the inbound messages will be published. Example: \"https://example.com/webhook-url\""
                             }
                         },
-                        "required": ["domain", "pattern", "url"],
+                        "required": [
+                            "domain",
+                            "pattern",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addinboundroute": {
@@ -134,7 +164,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "pattern", "url"],
+                        "required": [
+                            "id",
+                            "pattern",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -147,9 +181,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addmetadatafield",
             "name": "add-metadata-field",
-            "output": ["ActionOutput_mandrill_addmetadatafield"],
+            "output": [
+                "ActionOutput_mandrill_addmetadatafield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addmetadatafield", "ActionOutput_mandrill_addmetadatafield"],
+            "usedModels": [
+                "ActionInput_mandrill_addmetadatafield",
+                "ActionOutput_mandrill_addmetadatafield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -168,7 +207,9 @@
                                 "maxLength": 1024
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addmetadatafield": {
@@ -179,13 +220,21 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["active", "delete", "index", "failed"]
+                                "enum": [
+                                    "active",
+                                    "delete",
+                                    "index",
+                                    "failed"
+                                ]
                             },
                             "view_template": {
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "state"],
+                        "required": [
+                            "name",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -198,9 +247,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addreject",
             "name": "add-reject",
-            "output": ["ActionOutput_mandrill_addreject"],
+            "output": [
+                "ActionOutput_mandrill_addreject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addreject", "ActionOutput_mandrill_addreject"],
+            "usedModels": [
+                "ActionInput_mandrill_addreject",
+                "ActionOutput_mandrill_addreject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -220,7 +274,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addreject": {
@@ -233,7 +289,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email", "added"],
+                        "required": [
+                            "email",
+                            "added"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -246,9 +305,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addsenderdomain",
             "name": "add-sender-domain",
-            "output": ["ActionOutput_mandrill_addsenderdomain"],
+            "output": [
+                "ActionOutput_mandrill_addsenderdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addsenderdomain", "ActionOutput_mandrill_addsenderdomain"],
+            "usedModels": [
+                "ActionInput_mandrill_addsenderdomain",
+                "ActionOutput_mandrill_addsenderdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -260,7 +324,9 @@
                                 "description": "The domain name to add for SPF/DKIM verification. Example: \"example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addsenderdomain": {
@@ -354,9 +420,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addsmsreject",
             "name": "add-sms-reject",
-            "output": ["ActionOutput_mandrill_addsmsreject"],
+            "output": [
+                "ActionOutput_mandrill_addsmsreject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addsmsreject", "ActionOutput_mandrill_addsmsreject"],
+            "usedModels": [
+                "ActionInput_mandrill_addsmsreject",
+                "ActionOutput_mandrill_addsmsreject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -373,7 +444,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["phone_number"],
+                        "required": [
+                            "phone_number"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addsmsreject": {
@@ -392,7 +465,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["phone"],
+                        "required": [
+                            "phone"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -405,9 +480,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_addtrackingdomain",
             "name": "add-tracking-domain",
-            "output": ["ActionOutput_mandrill_addtrackingdomain"],
+            "output": [
+                "ActionOutput_mandrill_addtrackingdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_addtrackingdomain", "ActionOutput_mandrill_addtrackingdomain"],
+            "usedModels": [
+                "ActionInput_mandrill_addtrackingdomain",
+                "ActionOutput_mandrill_addtrackingdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -419,7 +499,9 @@
                                 "description": "The tracking domain to add. Example: \"tracking.example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_addtrackingdomain": {
@@ -447,14 +529,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["valid"],
+                                "required": [
+                                    "valid"
+                                ],
                                 "additionalProperties": false
                             },
                             "valid_tracking": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -467,9 +553,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_cancelscheduledmessage",
             "name": "cancel-scheduled-message",
-            "output": ["ActionOutput_mandrill_cancelscheduledmessage"],
+            "output": [
+                "ActionOutput_mandrill_cancelscheduledmessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_cancelscheduledmessage", "ActionOutput_mandrill_cancelscheduledmessage"],
+            "usedModels": [
+                "ActionInput_mandrill_cancelscheduledmessage",
+                "ActionOutput_mandrill_cancelscheduledmessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -481,7 +572,9 @@
                                 "description": "The scheduled message ID to cancel. Example: \"5a1b2c3d4e5f678901234567\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_cancelscheduledmessage": {
@@ -511,12 +604,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["canceled"],
+                        "required": [
+                            "canceled"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -529,9 +626,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_checkinbounddomain",
             "name": "check-inbound-domain",
-            "output": ["ActionOutput_mandrill_checkinbounddomain"],
+            "output": [
+                "ActionOutput_mandrill_checkinbounddomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_checkinbounddomain", "ActionOutput_mandrill_checkinbounddomain"],
+            "usedModels": [
+                "ActionInput_mandrill_checkinbounddomain",
+                "ActionOutput_mandrill_checkinbounddomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -543,7 +645,9 @@
                                 "description": "The inbound domain to check. Example: \"example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_checkinbounddomain": {
@@ -559,7 +663,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -572,9 +678,16 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_checkipcustomdns",
             "name": "check-ip-custom-dns",
-            "output": ["ActionOutput_mandrill_checkipcustomdns"],
-            "scopes": ["ips/check-custom-dns"],
-            "usedModels": ["ActionInput_mandrill_checkipcustomdns", "ActionOutput_mandrill_checkipcustomdns"],
+            "output": [
+                "ActionOutput_mandrill_checkipcustomdns"
+            ],
+            "scopes": [
+                "ips/check-custom-dns"
+            ],
+            "usedModels": [
+                "ActionInput_mandrill_checkipcustomdns",
+                "ActionOutput_mandrill_checkipcustomdns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -590,7 +703,10 @@
                                 "description": "The domain name to test. Example: \"mail.example.com\""
                             }
                         },
-                        "required": ["ip", "domain"],
+                        "required": [
+                            "ip",
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_checkipcustomdns": {
@@ -603,7 +719,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["valid"],
+                        "required": [
+                            "valid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -616,9 +734,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_checksenderdomain",
             "name": "check-sender-domain",
-            "output": ["ActionOutput_mandrill_checksenderdomain"],
+            "output": [
+                "ActionOutput_mandrill_checksenderdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_checksenderdomain", "ActionOutput_mandrill_checksenderdomain"],
+            "usedModels": [
+                "ActionInput_mandrill_checksenderdomain",
+                "ActionOutput_mandrill_checksenderdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -630,7 +753,9 @@
                                 "description": "The sender domain to check. Example: \"example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_checksenderdomain": {
@@ -682,7 +807,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -695,9 +822,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_checktrackingdomain",
             "name": "check-tracking-domain",
-            "output": ["ActionOutput_mandrill_checktrackingdomain"],
+            "output": [
+                "ActionOutput_mandrill_checktrackingdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_checktrackingdomain", "ActionOutput_mandrill_checktrackingdomain"],
+            "usedModels": [
+                "ActionInput_mandrill_checktrackingdomain",
+                "ActionOutput_mandrill_checktrackingdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -709,7 +841,9 @@
                                 "description": "An existing tracking domain name. Example: \"track.example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_checktrackingdomain": {
@@ -737,14 +871,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["valid"],
+                                "required": [
+                                    "valid"
+                                ],
                                 "additionalProperties": false
                             },
                             "valid_tracking": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["domain", "cname"],
+                        "required": [
+                            "domain",
+                            "cname"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -757,9 +896,16 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_createippool",
             "name": "create-ip-pool",
-            "output": ["ActionOutput_mandrill_createippool"],
-            "scopes": ["ips"],
-            "usedModels": ["ActionInput_mandrill_createippool", "ActionOutput_mandrill_createippool"],
+            "output": [
+                "ActionOutput_mandrill_createippool"
+            ],
+            "scopes": [
+                "ips"
+            ],
+            "usedModels": [
+                "ActionInput_mandrill_createippool",
+                "ActionOutput_mandrill_createippool"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -771,7 +917,9 @@
                                 "description": "The name of the IP pool to create. Example: \"my-pool\""
                             }
                         },
-                        "required": ["pool"],
+                        "required": [
+                            "pool"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_createippool": {
@@ -810,10 +958,17 @@
                                                     "type": "boolean"
                                                 },
                                                 "error": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["enabled", "valid", "error"],
+                                            "required": [
+                                                "enabled",
+                                                "valid",
+                                                "error"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "warmup": {
@@ -823,22 +978,43 @@
                                                     "type": "boolean"
                                                 },
                                                 "start_at": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "end_at": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["warming_up", "start_at", "end_at"],
+                                            "required": [
+                                                "warming_up",
+                                                "start_at",
+                                                "end_at"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["ip", "created_at", "pool", "domain", "custom_dns", "warmup"],
+                                    "required": [
+                                        "ip",
+                                        "created_at",
+                                        "pool",
+                                        "domain",
+                                        "custom_dns",
+                                        "warmup"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name", "created_at", "ips"],
+                        "required": [
+                            "name",
+                            "created_at",
+                            "ips"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -851,9 +1027,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_createsubaccount",
             "name": "create-subaccount",
-            "output": ["ActionOutput_mandrill_createsubaccount"],
+            "output": [
+                "ActionOutput_mandrill_createsubaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_createsubaccount", "ActionOutput_mandrill_createsubaccount"],
+            "usedModels": [
+                "ActionInput_mandrill_createsubaccount",
+                "ActionOutput_mandrill_createsubaccount"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -881,7 +1062,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_createsubaccount": {
@@ -901,7 +1084,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "paused"]
+                                "enum": [
+                                    "active",
+                                    "paused"
+                                ]
                             },
                             "reputation": {
                                 "type": "integer",
@@ -929,7 +1115,15 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "created_at", "status", "reputation", "sent_weekly", "sent_monthly", "sent_total"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "status",
+                            "reputation",
+                            "sent_weekly",
+                            "sent_monthly",
+                            "sent_total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -942,9 +1136,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_createtemplate",
             "name": "create-template",
-            "output": ["ActionOutput_mandrill_createtemplate"],
+            "output": [
+                "ActionOutput_mandrill_createtemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_createtemplate", "ActionOutput_mandrill_createtemplate"],
+            "usedModels": [
+                "ActionInput_mandrill_createtemplate",
+                "ActionOutput_mandrill_createtemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -991,7 +1190,9 @@
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_createtemplate": {
@@ -1058,7 +1259,15 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["slug", "name", "labels", "publish_name", "created_at", "updated_at", "is_broken_template"],
+                        "required": [
+                            "slug",
+                            "name",
+                            "labels",
+                            "publish_name",
+                            "created_at",
+                            "updated_at",
+                            "is_broken_template"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1071,9 +1280,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_mandrill_createwebhook"],
+            "output": [
+                "ActionOutput_mandrill_createwebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_createwebhook", "ActionOutput_mandrill_createwebhook"],
+            "usedModels": [
+                "ActionInput_mandrill_createwebhook",
+                "ActionOutput_mandrill_createwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1096,7 +1310,9 @@
                                 }
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_createwebhook": {
@@ -1146,7 +1362,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "created_at", "batches_sent", "events_sent"],
+                        "required": [
+                            "id",
+                            "url",
+                            "created_at",
+                            "batches_sent",
+                            "events_sent"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1159,9 +1381,16 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deleteallowlistentry",
             "name": "delete-allowlist-entry",
-            "output": ["ActionOutput_mandrill_deleteallowlistentry"],
-            "scopes": ["transactional"],
-            "usedModels": ["ActionInput_mandrill_deleteallowlistentry", "ActionOutput_mandrill_deleteallowlistentry"],
+            "output": [
+                "ActionOutput_mandrill_deleteallowlistentry"
+            ],
+            "scopes": [
+                "transactional"
+            ],
+            "usedModels": [
+                "ActionInput_mandrill_deleteallowlistentry",
+                "ActionOutput_mandrill_deleteallowlistentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1173,7 +1402,9 @@
                                 "description": "The email address to remove from the allowlist. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deleteallowlistentry": {
@@ -1186,7 +1417,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email", "deleted"],
+                        "required": [
+                            "email",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1199,9 +1433,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletededicatedip",
             "name": "delete-dedicated-ip",
-            "output": ["ActionOutput_mandrill_deletededicatedip"],
+            "output": [
+                "ActionOutput_mandrill_deletededicatedip"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletededicatedip", "ActionOutput_mandrill_deletededicatedip"],
+            "usedModels": [
+                "ActionInput_mandrill_deletededicatedip",
+                "ActionOutput_mandrill_deletededicatedip"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1213,7 +1452,9 @@
                                 "description": "The dedicated IP to delete from the account. Example: \"127.0.0.1\""
                             }
                         },
-                        "required": ["ip"],
+                        "required": [
+                            "ip"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletededicatedip": {
@@ -1226,7 +1467,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["ip", "deleted"],
+                        "required": [
+                            "ip",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1239,9 +1483,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deleteinbounddomain",
             "name": "delete-inbound-domain",
-            "output": ["ActionOutput_mandrill_deleteinbounddomain"],
+            "output": [
+                "ActionOutput_mandrill_deleteinbounddomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deleteinbounddomain", "ActionOutput_mandrill_deleteinbounddomain"],
+            "usedModels": [
+                "ActionInput_mandrill_deleteinbounddomain",
+                "ActionOutput_mandrill_deleteinbounddomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1253,7 +1502,9 @@
                                 "description": "The inbound domain to delete. Example: \"inbound.example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deleteinbounddomain": {
@@ -1269,7 +1520,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1282,9 +1535,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deleteinboundroute",
             "name": "delete-inbound-route",
-            "output": ["ActionOutput_mandrill_deleteinboundroute"],
+            "output": [
+                "ActionOutput_mandrill_deleteinboundroute"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deleteinboundroute", "ActionOutput_mandrill_deleteinboundroute"],
+            "usedModels": [
+                "ActionInput_mandrill_deleteinboundroute",
+                "ActionOutput_mandrill_deleteinboundroute"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1296,7 +1554,9 @@
                                 "description": "The unique identifier of an existing route. Example: \"88.214614\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deleteinboundroute": {
@@ -1312,7 +1572,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "pattern", "url"],
+                        "required": [
+                            "id",
+                            "pattern",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1325,9 +1589,16 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deleteippool",
             "name": "delete-ip-pool",
-            "output": ["ActionOutput_mandrill_deleteippool"],
-            "scopes": ["ips"],
-            "usedModels": ["ActionInput_mandrill_deleteippool", "ActionOutput_mandrill_deleteippool"],
+            "output": [
+                "ActionOutput_mandrill_deleteippool"
+            ],
+            "scopes": [
+                "ips"
+            ],
+            "usedModels": [
+                "ActionInput_mandrill_deleteippool",
+                "ActionOutput_mandrill_deleteippool"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1339,7 +1610,9 @@
                                 "description": "The name of the dedicated IP pool to delete. Example: \"my-pool\""
                             }
                         },
-                        "required": ["pool"],
+                        "required": [
+                            "pool"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deleteippool": {
@@ -1352,7 +1625,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["deleted", "pool"],
+                        "required": [
+                            "deleted",
+                            "pool"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1365,9 +1641,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletemetadatafield",
             "name": "delete-metadata-field",
-            "output": ["ActionOutput_mandrill_deletemetadatafield"],
+            "output": [
+                "ActionOutput_mandrill_deletemetadatafield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletemetadatafield", "ActionOutput_mandrill_deletemetadatafield"],
+            "usedModels": [
+                "ActionInput_mandrill_deletemetadatafield",
+                "ActionOutput_mandrill_deletemetadatafield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1381,7 +1662,9 @@
                                 "description": "The unique identifier of the metadata field to delete. Example: \"group_id\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletemetadatafield": {
@@ -1392,13 +1675,21 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["active", "delete", "index", "failed"]
+                                "enum": [
+                                    "active",
+                                    "delete",
+                                    "index",
+                                    "failed"
+                                ]
                             },
                             "view_template": {
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "state"],
+                        "required": [
+                            "name",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1411,9 +1702,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletereject",
             "name": "delete-reject",
-            "output": ["ActionOutput_mandrill_deletereject"],
+            "output": [
+                "ActionOutput_mandrill_deletereject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletereject", "ActionOutput_mandrill_deletereject"],
+            "usedModels": [
+                "ActionInput_mandrill_deletereject",
+                "ActionOutput_mandrill_deletereject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1429,7 +1725,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletereject": {
@@ -1445,7 +1743,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email", "deleted"],
+                        "required": [
+                            "email",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1458,9 +1759,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletesenderdomain",
             "name": "delete-sender-domain",
-            "output": ["ActionOutput_mandrill_deletesenderdomain"],
+            "output": [
+                "ActionOutput_mandrill_deletesenderdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletesenderdomain", "ActionOutput_mandrill_deletesenderdomain"],
+            "usedModels": [
+                "ActionInput_mandrill_deletesenderdomain",
+                "ActionOutput_mandrill_deletesenderdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1472,7 +1778,9 @@
                                 "description": "The domain to delete. Example: \"example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletesenderdomain": {
@@ -1524,7 +1832,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1537,9 +1847,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletesmsreject",
             "name": "delete-sms-reject",
-            "output": ["ActionOutput_mandrill_deletesmsreject"],
+            "output": [
+                "ActionOutput_mandrill_deletesmsreject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletesmsreject", "ActionOutput_mandrill_deletesmsreject"],
+            "usedModels": [
+                "ActionInput_mandrill_deletesmsreject",
+                "ActionOutput_mandrill_deletesmsreject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1556,7 +1871,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["phone_number"],
+                        "required": [
+                            "phone_number"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletesmsreject": {
@@ -1572,7 +1889,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["phone"],
+                        "required": [
+                            "phone"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1585,9 +1904,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletesubaccount",
             "name": "delete-subaccount",
-            "output": ["ActionOutput_mandrill_deletesubaccount"],
+            "output": [
+                "ActionOutput_mandrill_deletesubaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletesubaccount", "ActionOutput_mandrill_deletesubaccount"],
+            "usedModels": [
+                "ActionInput_mandrill_deletesubaccount",
+                "ActionOutput_mandrill_deletesubaccount"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1599,7 +1923,9 @@
                                 "description": "The unique identifier of the subaccount to delete. Example: \"cust-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletesubaccount": {
@@ -1619,7 +1945,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "paused"]
+                                "enum": [
+                                    "active",
+                                    "paused"
+                                ]
                             },
                             "reputation": {
                                 "type": "number"
@@ -1637,7 +1966,15 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "created_at", "status", "reputation", "sent_weekly", "sent_monthly", "sent_total"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "status",
+                            "reputation",
+                            "sent_weekly",
+                            "sent_monthly",
+                            "sent_total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1650,9 +1987,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletetag",
             "name": "delete-tag",
-            "output": ["ActionOutput_mandrill_deletetag"],
+            "output": [
+                "ActionOutput_mandrill_deletetag"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletetag", "ActionOutput_mandrill_deletetag"],
+            "usedModels": [
+                "ActionInput_mandrill_deletetag",
+                "ActionOutput_mandrill_deletetag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1664,7 +2006,9 @@
                                 "description": "The tag name to delete. Example: \"newsletter\""
                             }
                         },
-                        "required": ["tag"],
+                        "required": [
+                            "tag"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletetag": {
@@ -1755,9 +2099,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletetemplate",
             "name": "delete-template",
-            "output": ["ActionOutput_mandrill_deletetemplate"],
+            "output": [
+                "ActionOutput_mandrill_deletetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletetemplate", "ActionOutput_mandrill_deletetemplate"],
+            "usedModels": [
+                "ActionInput_mandrill_deletetemplate",
+                "ActionOutput_mandrill_deletetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1769,7 +2118,9 @@
                                 "description": "The immutable slug of an existing template. Example: \"example-template\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletetemplate": {
@@ -1855,7 +2206,13 @@
                                 "description": "Whether the template has broken syntax or references."
                             }
                         },
-                        "required": ["slug", "name", "created_at", "updated_at", "is_broken_template"],
+                        "required": [
+                            "slug",
+                            "name",
+                            "created_at",
+                            "updated_at",
+                            "is_broken_template"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1868,9 +2225,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletetrackingdomain",
             "name": "delete-tracking-domain",
-            "output": ["ActionOutput_mandrill_deletetrackingdomain"],
+            "output": [
+                "ActionOutput_mandrill_deletetrackingdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletetrackingdomain", "ActionOutput_mandrill_deletetrackingdomain"],
+            "usedModels": [
+                "ActionInput_mandrill_deletetrackingdomain",
+                "ActionOutput_mandrill_deletetrackingdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1882,7 +2244,9 @@
                                 "description": "The tracking domain name to delete. Example: \"track.example.com\""
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletetrackingdomain": {
@@ -1910,14 +2274,22 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["valid"],
+                                "required": [
+                                    "valid"
+                                ],
                                 "additionalProperties": false
                             },
                             "valid_tracking": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["domain", "created_at", "last_tested_at", "cname", "valid_tracking"],
+                        "required": [
+                            "domain",
+                            "created_at",
+                            "last_tested_at",
+                            "cname",
+                            "valid_tracking"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1930,9 +2302,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_mandrill_deletewebhook"],
+            "output": [
+                "ActionOutput_mandrill_deletewebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_deletewebhook", "ActionOutput_mandrill_deletewebhook"],
+            "usedModels": [
+                "ActionInput_mandrill_deletewebhook",
+                "ActionOutput_mandrill_deletewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1944,7 +2321,9 @@
                                 "description": "The unique identifier of a webhook belonging to this account. Example: 12345"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_deletewebhook": {
@@ -1984,7 +2363,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "events", "created_at", "batches_sent", "events_sent"],
+                        "required": [
+                            "id",
+                            "url",
+                            "events",
+                            "created_at",
+                            "batches_sent",
+                            "events_sent"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1997,9 +2383,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getaccountinfo",
             "name": "get-account-info",
-            "output": ["ActionOutput_mandrill_getaccountinfo"],
+            "output": [
+                "ActionOutput_mandrill_getaccountinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getaccountinfo", "ActionOutput_mandrill_getaccountinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_getaccountinfo",
+                "ActionOutput_mandrill_getaccountinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2252,7 +2643,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["username", "reputation", "hourly_quota"],
+                        "required": [
+                            "username",
+                            "reputation",
+                            "hourly_quota"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2265,9 +2660,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getalltagstimeseries",
             "name": "get-all-tags-time-series",
-            "output": ["ActionOutput_mandrill_getalltagstimeseries"],
+            "output": [
+                "ActionOutput_mandrill_getalltagstimeseries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getalltagstimeseries", "ActionOutput_mandrill_getalltagstimeseries"],
+            "usedModels": [
+                "ActionInput_mandrill_getalltagstimeseries",
+                "ActionOutput_mandrill_getalltagstimeseries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2368,9 +2768,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getexportinfo",
             "name": "get-export-info",
-            "output": ["ActionOutput_mandrill_getexportinfo"],
+            "output": [
+                "ActionOutput_mandrill_getexportinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getexportinfo", "ActionOutput_mandrill_getexportinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_getexportinfo",
+                "ActionOutput_mandrill_getexportinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2382,7 +2787,9 @@
                                 "description": "The unique identifier of the export job. Example: \"2023-01-01 12:20:28.13842\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getexportinfo": {
@@ -2407,7 +2814,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2420,9 +2829,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getippoolinfo",
             "name": "get-ip-pool-info",
-            "output": ["ActionOutput_mandrill_getippoolinfo"],
+            "output": [
+                "ActionOutput_mandrill_getippoolinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getippoolinfo", "ActionOutput_mandrill_getippoolinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_getippoolinfo",
+                "ActionOutput_mandrill_getippoolinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2434,7 +2848,9 @@
                                 "description": "The name of the dedicated IP pool. Example: \"Main Pool\""
                             }
                         },
-                        "required": ["pool"],
+                        "required": [
+                            "pool"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getippoolinfo": {
@@ -2476,7 +2892,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["enabled", "valid"],
+                                            "required": [
+                                                "enabled",
+                                                "valid"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "warmup": {
@@ -2492,16 +2911,29 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["warming_up"],
+                                            "required": [
+                                                "warming_up"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["ip", "created_at", "pool", "domain", "custom_dns", "warmup"],
+                                    "required": [
+                                        "ip",
+                                        "created_at",
+                                        "pool",
+                                        "domain",
+                                        "custom_dns",
+                                        "warmup"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name", "created_at", "ips"],
+                        "required": [
+                            "name",
+                            "created_at",
+                            "ips"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2514,9 +2946,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getmessagecontent",
             "name": "get-message-content",
-            "output": ["ActionOutput_mandrill_getmessagecontent"],
+            "output": [
+                "ActionOutput_mandrill_getmessagecontent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getmessagecontent", "ActionOutput_mandrill_getmessagecontent"],
+            "usedModels": [
+                "ActionInput_mandrill_getmessagecontent",
+                "ActionOutput_mandrill_getmessagecontent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2528,7 +2965,9 @@
                                 "description": "The unique Mandrill message ID. Example: \"abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getmessagecontent": {
@@ -2552,7 +2991,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["content", "name", "type"],
+                                    "required": [
+                                        "content",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2596,14 +3039,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["email"],
+                                "required": [
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "ts": {
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2616,9 +3063,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getmessageinfo",
             "name": "get-message-info",
-            "output": ["ActionOutput_mandrill_getmessageinfo"],
+            "output": [
+                "ActionOutput_mandrill_getmessageinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getmessageinfo", "ActionOutput_mandrill_getmessageinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_getmessageinfo",
+                "ActionOutput_mandrill_getmessageinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2630,7 +3082,9 @@
                                 "description": "The unique Mandrill message ID returned from a send call. Example: \"abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getmessageinfo": {
@@ -2720,7 +3174,12 @@
                                     "type": "string"
                                 },
                                 "additionalProperties": {
-                                    "type": ["string", "number", "boolean", "null"]
+                                    "type": [
+                                        "string",
+                                        "number",
+                                        "boolean",
+                                        "null"
+                                    ]
                                 }
                             },
                             "smtp_events": {
@@ -2766,9 +3225,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getsenderinfo",
             "name": "get-sender-info",
-            "output": ["ActionOutput_mandrill_getsenderinfo"],
+            "output": [
+                "ActionOutput_mandrill_getsenderinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getsenderinfo", "ActionOutput_mandrill_getsenderinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_getsenderinfo",
+                "ActionOutput_mandrill_getsenderinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2780,7 +3244,9 @@
                                 "description": "The email address of the sender. Example: \"sender@example.com\""
                             }
                         },
-                        "required": ["address"],
+                        "required": [
+                            "address"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getsenderinfo": {
@@ -3024,9 +3490,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getsendertimeseries",
             "name": "get-sender-time-series",
-            "output": ["ActionOutput_mandrill_getsendertimeseries"],
+            "output": [
+                "ActionOutput_mandrill_getsendertimeseries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getsendertimeseries", "ActionOutput_mandrill_getsendertimeseries"],
+            "usedModels": [
+                "ActionInput_mandrill_getsendertimeseries",
+                "ActionOutput_mandrill_getsendertimeseries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3038,7 +3509,9 @@
                                 "description": "The email address of the sender. Example: \"sender@example.com\""
                             }
                         },
-                        "required": ["address"],
+                        "required": [
+                            "address"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getsendertimeseries": {
@@ -3085,7 +3558,9 @@
                                 }
                             }
                         },
-                        "required": ["stats"],
+                        "required": [
+                            "stats"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3098,9 +3573,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getsubaccountinfo",
             "name": "get-subaccount-info",
-            "output": ["ActionOutput_mandrill_getsubaccountinfo"],
+            "output": [
+                "ActionOutput_mandrill_getsubaccountinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getsubaccountinfo", "ActionOutput_mandrill_getsubaccountinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_getsubaccountinfo",
+                "ActionOutput_mandrill_getsubaccountinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3112,7 +3592,9 @@
                                 "description": "The unique identifier of the subaccount to query. Example: \"cust-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getsubaccountinfo": {
@@ -3132,7 +3614,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "paused"]
+                                "enum": [
+                                    "active",
+                                    "paused"
+                                ]
                             },
                             "reputation": {
                                 "type": "number"
@@ -3219,9 +3704,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_gettaginfo",
             "name": "get-tag-info",
-            "output": ["ActionOutput_mandrill_gettaginfo"],
+            "output": [
+                "ActionOutput_mandrill_gettaginfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_gettaginfo", "ActionOutput_mandrill_gettaginfo"],
+            "usedModels": [
+                "ActionInput_mandrill_gettaginfo",
+                "ActionOutput_mandrill_gettaginfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3233,7 +3723,9 @@
                                 "description": "The tag name to look up. Example: \"newsletter\""
                             }
                         },
-                        "required": ["tag"],
+                        "required": [
+                            "tag"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_gettaginfo": {
@@ -3459,7 +3951,13 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["today", "last_7_days", "last_30_days", "last_60_days", "last_90_days"],
+                                "required": [
+                                    "today",
+                                    "last_7_days",
+                                    "last_30_days",
+                                    "last_60_days",
+                                    "last_90_days"
+                                ],
                                 "additionalProperties": false
                             }
                         },
@@ -3490,9 +3988,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_gettagtimeseries",
             "name": "get-tag-time-series",
-            "output": ["ActionOutput_mandrill_gettagtimeseries"],
+            "output": [
+                "ActionOutput_mandrill_gettagtimeseries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_gettagtimeseries", "ActionOutput_mandrill_gettagtimeseries"],
+            "usedModels": [
+                "ActionInput_mandrill_gettagtimeseries",
+                "ActionOutput_mandrill_gettagtimeseries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3504,7 +4007,9 @@
                                 "description": "An existing tag name. Example: \"example-tag\""
                             }
                         },
-                        "required": ["tag"],
+                        "required": [
+                            "tag"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_gettagtimeseries": {
@@ -3590,7 +4095,10 @@
                                 }
                             }
                         },
-                        "required": ["tag", "stats"],
+                        "required": [
+                            "tag",
+                            "stats"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3603,9 +4111,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_gettemplateinfo",
             "name": "get-template-info",
-            "output": ["ActionOutput_mandrill_gettemplateinfo"],
+            "output": [
+                "ActionOutput_mandrill_gettemplateinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_gettemplateinfo", "ActionOutput_mandrill_gettemplateinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_gettemplateinfo",
+                "ActionOutput_mandrill_gettemplateinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3617,7 +4130,9 @@
                                 "description": "Immutable name of an existing template. Example: \"Example Template\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_gettemplateinfo": {
@@ -3684,7 +4199,15 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["slug", "name", "labels", "publish_name", "created_at", "updated_at", "is_broken_template"],
+                        "required": [
+                            "slug",
+                            "name",
+                            "labels",
+                            "publish_name",
+                            "created_at",
+                            "updated_at",
+                            "is_broken_template"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3697,9 +4220,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_gettemplatetimeseries",
             "name": "get-template-time-series",
-            "output": ["ActionOutput_mandrill_gettemplatetimeseries"],
+            "output": [
+                "ActionOutput_mandrill_gettemplatetimeseries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_gettemplatetimeseries", "ActionOutput_mandrill_gettemplatetimeseries"],
+            "usedModels": [
+                "ActionInput_mandrill_gettemplatetimeseries",
+                "ActionOutput_mandrill_gettemplatetimeseries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3711,7 +4239,9 @@
                                 "description": "The immutable name of an existing template. Example: \"Welcome Email\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_gettemplatetimeseries": {
@@ -3774,7 +4304,9 @@
                                 }
                             }
                         },
-                        "required": ["time_series"],
+                        "required": [
+                            "time_series"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3787,9 +4319,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_getwebhookinfo",
             "name": "get-webhook-info",
-            "output": ["ActionOutput_mandrill_getwebhookinfo"],
+            "output": [
+                "ActionOutput_mandrill_getwebhookinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_getwebhookinfo", "ActionOutput_mandrill_getwebhookinfo"],
+            "usedModels": [
+                "ActionInput_mandrill_getwebhookinfo",
+                "ActionOutput_mandrill_getwebhookinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3801,7 +4338,9 @@
                                 "description": "The unique identifier of a webhook belonging to this account. Example: 12345"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_getwebhookinfo": {
@@ -3814,10 +4353,16 @@
                                 "type": "string"
                             },
                             "auth_key": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "events": {
                                 "type": "array",
@@ -3829,7 +4374,10 @@
                                 "type": "string"
                             },
                             "last_sent_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "batches_sent": {
                                 "type": "number"
@@ -3838,10 +4386,20 @@
                                 "type": "number"
                             },
                             "last_error": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "url", "events", "created_at", "batches_sent", "events_sent"],
+                        "required": [
+                            "id",
+                            "url",
+                            "events",
+                            "created_at",
+                            "batches_sent",
+                            "events_sent"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3854,9 +4412,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_listaccountsenders",
             "name": "list-account-senders",
-            "output": ["ActionOutput_mandrill_listaccountsenders"],
+            "output": [
+                "ActionOutput_mandrill_listaccountsenders"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_listaccountsenders", "ActionOutput_mandrill_listaccountsenders"],
+            "usedModels": [
+                "ActionInput_mandrill_listaccountsenders",
+                "ActionOutput_mandrill_listaccountsenders"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3926,12 +4489,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["address"],
+                                    "required": [
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["senders"],
+                        "required": [
+                            "senders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3944,9 +4511,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_listexports",
             "name": "list-exports",
-            "output": ["ActionOutput_mandrill_listexports"],
+            "output": [
+                "ActionOutput_mandrill_listexports"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_listexports", "ActionOutput_mandrill_listexports"],
+            "usedModels": [
+                "ActionInput_mandrill_listexports",
+                "ActionOutput_mandrill_listexports"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3971,25 +4543,43 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["reject", "whitelist", "allowlist", "activity"]
+                                            "enum": [
+                                                "reject",
+                                                "whitelist",
+                                                "allowlist",
+                                                "activity"
+                                            ]
                                         },
                                         "finished_at": {
                                             "type": "string"
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["waiting", "working", "complete", "error", "expired"]
+                                            "enum": [
+                                                "waiting",
+                                                "working",
+                                                "complete",
+                                                "error",
+                                                "expired"
+                                            ]
                                         },
                                         "result_url": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "created_at", "type", "state"],
+                                    "required": [
+                                        "id",
+                                        "created_at",
+                                        "type",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4002,9 +4592,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_listscheduledmessages",
             "name": "list-scheduled-messages",
-            "output": ["ActionOutput_mandrill_listscheduledmessages"],
+            "output": [
+                "ActionOutput_mandrill_listscheduledmessages"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_listscheduledmessages", "ActionOutput_mandrill_listscheduledmessages"],
+            "usedModels": [
+                "ActionInput_mandrill_listscheduledmessages",
+                "ActionOutput_mandrill_listscheduledmessages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4045,12 +4640,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["_id"],
+                                    "required": [
+                                        "_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4063,9 +4662,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_parsemimemessage",
             "name": "parse-mime-message",
-            "output": ["ActionOutput_mandrill_parsemimemessage"],
+            "output": [
+                "ActionOutput_mandrill_parsemimemessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_parsemimemessage", "ActionOutput_mandrill_parsemimemessage"],
+            "usedModels": [
+                "ActionInput_mandrill_parsemimemessage",
+                "ActionOutput_mandrill_parsemimemessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4077,7 +4681,9 @@
                                 "description": "The full MIME document of the message to parse."
                             }
                         },
-                        "required": ["raw_message"],
+                        "required": [
+                            "raw_message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_parsemimemessage": {
@@ -4172,9 +4778,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_pausesubaccount",
             "name": "pause-subaccount",
-            "output": ["ActionOutput_mandrill_pausesubaccount"],
+            "output": [
+                "ActionOutput_mandrill_pausesubaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_pausesubaccount", "ActionOutput_mandrill_pausesubaccount"],
+            "usedModels": [
+                "ActionInput_mandrill_pausesubaccount",
+                "ActionOutput_mandrill_pausesubaccount"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4186,7 +4797,9 @@
                                 "description": "The unique identifier of the subaccount to pause. Example: \"cust-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_pausesubaccount": {
@@ -4206,7 +4819,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "paused"]
+                                "enum": [
+                                    "active",
+                                    "paused"
+                                ]
                             },
                             "reputation": {
                                 "type": "number"
@@ -4224,7 +4840,15 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "created_at", "status", "reputation", "sent_weekly", "sent_monthly", "sent_total"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "status",
+                            "reputation",
+                            "sent_weekly",
+                            "sent_monthly",
+                            "sent_total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4237,9 +4861,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_pingapiv2",
             "name": "ping-api-v2",
-            "output": ["ActionOutput_mandrill_pingapiv2"],
+            "output": [
+                "ActionOutput_mandrill_pingapiv2"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_pingapiv2", "ActionOutput_mandrill_pingapiv2"],
+            "usedModels": [
+                "ActionInput_mandrill_pingapiv2",
+                "ActionOutput_mandrill_pingapiv2"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4255,7 +4884,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["PING"],
+                        "required": [
+                            "PING"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4268,9 +4899,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_pingapi",
             "name": "ping-api",
-            "output": ["ActionOutput_mandrill_pingapi"],
+            "output": [
+                "ActionOutput_mandrill_pingapi"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_pingapi", "ActionOutput_mandrill_pingapi"],
+            "usedModels": [
+                "ActionInput_mandrill_pingapi",
+                "ActionOutput_mandrill_pingapi"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4286,7 +4922,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["result"],
+                        "required": [
+                            "result"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4299,9 +4937,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_publishtemplate",
             "name": "publish-template",
-            "output": ["ActionOutput_mandrill_publishtemplate"],
+            "output": [
+                "ActionOutput_mandrill_publishtemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_publishtemplate", "ActionOutput_mandrill_publishtemplate"],
+            "usedModels": [
+                "ActionInput_mandrill_publishtemplate",
+                "ActionOutput_mandrill_publishtemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4313,7 +4956,9 @@
                                 "description": "The name of the template to publish. Example: \"my-template\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_publishtemplate": {
@@ -4374,7 +5019,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["slug"],
+                        "required": [
+                            "slug"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4387,9 +5034,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_rendertemplate",
             "name": "render-template",
-            "output": ["ActionOutput_mandrill_rendertemplate"],
+            "output": [
+                "ActionOutput_mandrill_rendertemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_rendertemplate", "ActionOutput_mandrill_rendertemplate"],
+            "usedModels": [
+                "ActionInput_mandrill_rendertemplate",
+                "ActionOutput_mandrill_rendertemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4414,7 +5066,10 @@
                                             "description": "Content to inject into the editable region. Example: \"content\""
                                         }
                                     },
-                                    "required": ["name", "content"],
+                                    "required": [
+                                        "name",
+                                        "content"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of template content to render for editable regions."
@@ -4436,7 +5091,10 @@
                                                     "description": "Content value for the merge variable. Example: \"merge1 content\""
                                                 }
                                             },
-                                            "required": ["name", "content"],
+                                            "required": [
+                                                "name",
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -4446,7 +5104,10 @@
                                 ]
                             }
                         },
-                        "required": ["template_name", "template_content"],
+                        "required": [
+                            "template_name",
+                            "template_content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_rendertemplate": {
@@ -4457,7 +5118,9 @@
                                 "description": "Rendered HTML as a string with content and merge variables injected."
                             }
                         },
-                        "required": ["html"],
+                        "required": [
+                            "html"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4470,9 +5133,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_reschedulemessage",
             "name": "reschedule-message",
-            "output": ["ActionOutput_mandrill_reschedulemessage"],
+            "output": [
+                "ActionOutput_mandrill_reschedulemessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_reschedulemessage", "ActionOutput_mandrill_reschedulemessage"],
+            "usedModels": [
+                "ActionInput_mandrill_reschedulemessage",
+                "ActionOutput_mandrill_reschedulemessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4488,7 +5156,10 @@
                                 "description": "The new UTC timestamp when the message should be sent. Example: \"2026-07-21 14:30:00\""
                             }
                         },
-                        "required": ["id", "send_at"],
+                        "required": [
+                            "id",
+                            "send_at"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_reschedulemessage": {
@@ -4513,7 +5184,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["_id"],
+                        "required": [
+                            "_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4526,9 +5199,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_resumesubaccount",
             "name": "resume-subaccount",
-            "output": ["ActionOutput_mandrill_resumesubaccount"],
+            "output": [
+                "ActionOutput_mandrill_resumesubaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_resumesubaccount", "ActionOutput_mandrill_resumesubaccount"],
+            "usedModels": [
+                "ActionInput_mandrill_resumesubaccount",
+                "ActionOutput_mandrill_resumesubaccount"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4540,7 +5218,9 @@
                                 "description": "The unique identifier of the subaccount to resume. Example: \"cust-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_resumesubaccount": {
@@ -4560,7 +5240,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "paused"]
+                                "enum": [
+                                    "active",
+                                    "paused"
+                                ]
                             },
                             "reputation": {
                                 "type": "number"
@@ -4578,7 +5261,15 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "created_at", "status", "reputation", "sent_weekly", "sent_monthly", "sent_total"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "status",
+                            "reputation",
+                            "sent_weekly",
+                            "sent_monthly",
+                            "sent_total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4591,9 +5282,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_searchmessagestimeseries",
             "name": "search-messages-time-series",
-            "output": ["ActionOutput_mandrill_searchmessagestimeseries"],
+            "output": [
+                "ActionOutput_mandrill_searchmessagestimeseries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_searchmessagestimeseries", "ActionOutput_mandrill_searchmessagestimeseries"],
+            "usedModels": [
+                "ActionInput_mandrill_searchmessagestimeseries",
+                "ActionOutput_mandrill_searchmessagestimeseries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4700,7 +5396,9 @@
                                 "description": "Aggregated hourly stats for matching messages"
                             }
                         },
-                        "required": ["stats"],
+                        "required": [
+                            "stats"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4713,9 +5411,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_searchmessages",
             "name": "search-messages",
-            "output": ["ActionOutput_mandrill_searchmessages"],
+            "output": [
+                "ActionOutput_mandrill_searchmessages"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_searchmessages", "ActionOutput_mandrill_searchmessages"],
+            "usedModels": [
+                "ActionInput_mandrill_searchmessages",
+                "ActionOutput_mandrill_searchmessages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4853,7 +5556,12 @@
                                         "type": "string"
                                     },
                                     "additionalProperties": {
-                                        "type": ["string", "number", "boolean", "null"]
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "boolean",
+                                            "null"
+                                        ]
                                     }
                                 }
                             },
@@ -4870,9 +5578,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_sendmessagetemplate",
             "name": "send-message-template",
-            "output": ["ActionOutput_mandrill_sendmessagetemplate"],
+            "output": [
+                "ActionOutput_mandrill_sendmessagetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_sendmessagetemplate", "ActionOutput_mandrill_sendmessagetemplate"],
+            "usedModels": [
+                "ActionInput_mandrill_sendmessagetemplate",
+                "ActionOutput_mandrill_sendmessagetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4895,7 +5608,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "content"],
+                                    "required": [
+                                        "name",
+                                        "content"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "An array of template content to send. Each item should have name and content keys."
@@ -4904,19 +5620,34 @@
                                 "type": "object",
                                 "properties": {
                                     "html": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "text": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "subject": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "from_email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "from_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "to": {
                                         "type": "array",
@@ -4927,13 +5658,20 @@
                                                     "type": "string"
                                                 },
                                                 "name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "type": {
                                                     "anyOf": [
                                                         {
                                                             "type": "string",
-                                                            "enum": ["to", "cc", "bcc"]
+                                                            "enum": [
+                                                                "to",
+                                                                "cc",
+                                                                "bcc"
+                                                            ]
                                                         },
                                                         {
                                                             "type": "null"
@@ -4941,7 +5679,9 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["email"],
+                                            "required": [
+                                                "email"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -4955,52 +5695,97 @@
                                         }
                                     },
                                     "important": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "track_opens": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "track_clicks": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "auto_text": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "auto_html": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "inline_css": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "url_strip_qs": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "preserve_recipients": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "view_content_link": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "bcc_address": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "tracking_domain": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "signing_domain": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "return_path_domain": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "merge": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "merge_language": {
                                         "anyOf": [
                                             {
                                                 "type": "string",
-                                                "enum": ["mailchimp", "handlebars"]
+                                                "enum": [
+                                                    "mailchimp",
+                                                    "handlebars"
+                                                ]
                                             },
                                             {
                                                 "type": "null"
@@ -5019,7 +5804,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name", "content"],
+                                            "required": [
+                                                "name",
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -5043,12 +5831,18 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name", "content"],
+                                                        "required": [
+                                                            "name",
+                                                            "content"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["rcpt", "vars"],
+                                            "required": [
+                                                "rcpt",
+                                                "vars"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -5059,7 +5853,10 @@
                                         }
                                     },
                                     "subaccount": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "google_analytics_domains": {
                                         "type": "array",
@@ -5068,7 +5865,10 @@
                                         }
                                     },
                                     "google_analytics_campaign": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "metadata": {
                                         "type": "object",
@@ -5093,7 +5893,10 @@
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["rcpt", "values"],
+                                            "required": [
+                                                "rcpt",
+                                                "values"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -5112,7 +5915,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "name", "content"],
+                                            "required": [
+                                                "type",
+                                                "name",
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -5131,29 +5938,48 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "name", "content"],
+                                            "required": [
+                                                "type",
+                                                "name",
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["to"],
+                                "required": [
+                                    "to"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The message payload to send, same shape as messages/send but without the html content."
                             },
                             "async": {
                                 "description": "Enable a background sending mode optimized for bulk sending.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "ip_pool": {
                                 "description": "Name of a dedicated IP pool to send from.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "send_at": {
                                 "description": "UTC timestamp in YYYY-MM-DD HH:MM:SS format for scheduled sending.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["template_name", "template_content", "message"],
+                        "required": [
+                            "template_name",
+                            "template_content",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_sendmessagetemplate": {
@@ -5166,19 +5992,35 @@
                                 },
                                 "status": {
                                     "type": "string",
-                                    "enum": ["sent", "queued", "scheduled", "rejected", "invalid"]
+                                    "enum": [
+                                        "sent",
+                                        "queued",
+                                        "scheduled",
+                                        "rejected",
+                                        "invalid"
+                                    ]
                                 },
                                 "reject_reason": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "queued_reason": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "_id": {
                                     "type": "string"
                                 }
                             },
-                            "required": ["email", "status", "_id"],
+                            "required": [
+                                "email",
+                                "status",
+                                "_id"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -5192,9 +6034,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_sendmessage",
             "name": "send-message",
-            "output": ["ActionOutput_mandrill_sendmessage"],
+            "output": [
+                "ActionOutput_mandrill_sendmessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_sendmessage", "ActionOutput_mandrill_sendmessage"],
+            "usedModels": [
+                "ActionInput_mandrill_sendmessage",
+                "ActionOutput_mandrill_sendmessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5240,10 +6087,16 @@
                                                 "type": {
                                                     "description": "The recipient type. Defaults to \"to\".",
                                                     "type": "string",
-                                                    "enum": ["to", "cc", "bcc"]
+                                                    "enum": [
+                                                        "to",
+                                                        "cc",
+                                                        "bcc"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["email"],
+                                            "required": [
+                                                "email"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": "An array of recipient objects."
@@ -5329,7 +6182,11 @@
                                                     "description": "Base64-encoded content of the attachment."
                                                 }
                                             },
-                                            "required": ["type", "name", "content"],
+                                            "required": [
+                                                "type",
+                                                "name",
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -5352,12 +6209,20 @@
                                                     "description": "Base64-encoded content of the image."
                                                 }
                                             },
-                                            "required": ["type", "name", "content"],
+                                            "required": [
+                                                "type",
+                                                "name",
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["subject", "from_email", "to"],
+                                "required": [
+                                    "subject",
+                                    "from_email",
+                                    "to"
+                                ],
                                 "additionalProperties": false
                             },
                             "async": {
@@ -5373,7 +6238,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_sendmessage": {
@@ -5387,23 +6254,39 @@
                                 },
                                 "status": {
                                     "type": "string",
-                                    "enum": ["sent", "queued", "scheduled", "rejected", "invalid"],
+                                    "enum": [
+                                        "sent",
+                                        "queued",
+                                        "scheduled",
+                                        "rejected",
+                                        "invalid"
+                                    ],
                                     "description": "The sending status for this recipient."
                                 },
                                 "reject_reason": {
                                     "description": "The reason the message was rejected, if applicable.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "queued_reason": {
                                     "description": "The reason the message was queued instead of sent immediately.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "_id": {
                                     "type": "string",
                                     "description": "The unique message ID for this recipient's message."
                                 }
                             },
-                            "required": ["email", "status", "_id"],
+                            "required": [
+                                "email",
+                                "status",
+                                "_id"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -5417,9 +6300,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_sendrawinboundmessage",
             "name": "send-raw-inbound-message",
-            "output": ["ActionOutput_mandrill_sendrawinboundmessage"],
+            "output": [
+                "ActionOutput_mandrill_sendrawinboundmessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_sendrawinboundmessage", "ActionOutput_mandrill_sendrawinboundmessage"],
+            "usedModels": [
+                "ActionInput_mandrill_sendrawinboundmessage",
+                "ActionOutput_mandrill_sendrawinboundmessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5450,7 +6338,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["raw_message"],
+                        "required": [
+                            "raw_message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_sendrawinboundmessage": {
@@ -5471,12 +6361,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email", "pattern", "url"],
+                                    "required": [
+                                        "email",
+                                        "pattern",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["matches"],
+                        "required": [
+                            "matches"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5489,9 +6385,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_sendrawmessage",
             "name": "send-raw-message",
-            "output": ["ActionOutput_mandrill_sendrawmessage"],
+            "output": [
+                "ActionOutput_mandrill_sendrawmessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_sendrawmessage", "ActionOutput_mandrill_sendrawmessage"],
+            "usedModels": [
+                "ActionInput_mandrill_sendrawmessage",
+                "ActionOutput_mandrill_sendrawmessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5534,7 +6435,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["raw_message"],
+                        "required": [
+                            "raw_message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_sendrawmessage": {
@@ -5558,12 +6461,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email", "status", "id"],
+                                    "required": [
+                                        "email",
+                                        "status",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5576,9 +6485,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_startactivityexport",
             "name": "start-activity-export",
-            "output": ["ActionOutput_mandrill_startactivityexport"],
+            "output": [
+                "ActionOutput_mandrill_startactivityexport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_startactivityexport", "ActionOutput_mandrill_startactivityexport"],
+            "usedModels": [
+                "ActionInput_mandrill_startactivityexport",
+                "ActionOutput_mandrill_startactivityexport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5650,7 +6564,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "created_at", "type", "state"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "type",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5663,9 +6582,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_startallowlistexport",
             "name": "start-allowlist-export",
-            "output": ["ActionOutput_mandrill_startallowlistexport"],
+            "output": [
+                "ActionOutput_mandrill_startallowlistexport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_startallowlistexport", "ActionOutput_mandrill_startallowlistexport"],
+            "usedModels": [
+                "ActionInput_mandrill_startallowlistexport",
+                "ActionOutput_mandrill_startallowlistexport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5703,7 +6627,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "created_at", "type", "state"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "type",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5716,9 +6645,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_startrejectsexport",
             "name": "start-rejects-export",
-            "output": ["ActionOutput_mandrill_startrejectsexport"],
+            "output": [
+                "ActionOutput_mandrill_startrejectsexport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_startrejectsexport", "ActionOutput_mandrill_startrejectsexport"],
+            "usedModels": [
+                "ActionInput_mandrill_startrejectsexport",
+                "ActionOutput_mandrill_startrejectsexport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5754,7 +6688,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "created_at", "type", "state"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "type",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5767,9 +6706,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_updateinboundroute",
             "name": "update-inbound-route",
-            "output": ["ActionOutput_mandrill_updateinboundroute"],
+            "output": [
+                "ActionOutput_mandrill_updateinboundroute"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_updateinboundroute", "ActionOutput_mandrill_updateinboundroute"],
+            "usedModels": [
+                "ActionInput_mandrill_updateinboundroute",
+                "ActionOutput_mandrill_updateinboundroute"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5782,14 +6726,22 @@
                             },
                             "pattern": {
                                 "description": "The search pattern that the mailbox name should match. Pass null to leave unchanged.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "url": {
                                 "description": "The webhook URL where inbound messages will be published. Pass null to leave unchanged.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_updateinboundroute": {
@@ -5805,7 +6757,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5818,9 +6772,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_updatemetadatafield",
             "name": "update-metadata-field",
-            "output": ["ActionOutput_mandrill_updatemetadatafield"],
+            "output": [
+                "ActionOutput_mandrill_updatemetadatafield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_updatemetadatafield", "ActionOutput_mandrill_updatemetadatafield"],
+            "usedModels": [
+                "ActionInput_mandrill_updatemetadatafield",
+                "ActionOutput_mandrill_updatemetadatafield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5837,7 +6796,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_updatemetadatafield": {
@@ -5853,7 +6814,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "state"],
+                        "required": [
+                            "name",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5866,9 +6830,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_updatesubaccount",
             "name": "update-subaccount",
-            "output": ["ActionOutput_mandrill_updatesubaccount"],
+            "output": [
+                "ActionOutput_mandrill_updatesubaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_updatesubaccount", "ActionOutput_mandrill_updatesubaccount"],
+            "usedModels": [
+                "ActionInput_mandrill_updatesubaccount",
+                "ActionOutput_mandrill_updatesubaccount"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5894,7 +6863,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_updatesubaccount": {
@@ -5913,7 +6884,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "paused"]
+                                "enum": [
+                                    "active",
+                                    "paused"
+                                ]
                             },
                             "reputation": {
                                 "type": "integer",
@@ -5942,7 +6916,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "status", "reputation"],
+                        "required": [
+                            "id",
+                            "status",
+                            "reputation"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5955,9 +6933,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_updatetemplate",
             "name": "update-template",
-            "output": ["ActionOutput_mandrill_updatetemplate"],
+            "output": [
+                "ActionOutput_mandrill_updatetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_updatetemplate", "ActionOutput_mandrill_updatetemplate"],
+            "usedModels": [
+                "ActionInput_mandrill_updatetemplate",
+                "ActionOutput_mandrill_updatetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5983,19 +6966,31 @@
                             },
                             "from_name": {
                                 "description": "New default from name",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "subject": {
                                 "description": "New default subject line",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "code": {
                                 "description": "New code for the template",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "text": {
                                 "description": "New default text part to be used",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "publish": {
                                 "description": "Set to false to update the draft version without publishing",
@@ -6018,7 +7013,9 @@
                                 ]
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_updatetemplate": {
@@ -6085,7 +7082,15 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["slug", "name", "labels", "publish_name", "created_at", "updated_at", "is_broken_template"],
+                        "required": [
+                            "slug",
+                            "name",
+                            "labels",
+                            "publish_name",
+                            "created_at",
+                            "updated_at",
+                            "is_broken_template"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6098,9 +7103,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_mandrill_updatewebhook"],
+            "output": [
+                "ActionOutput_mandrill_updatewebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_updatewebhook", "ActionOutput_mandrill_updatewebhook"],
+            "usedModels": [
+                "ActionInput_mandrill_updatewebhook",
+                "ActionOutput_mandrill_updatewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6117,7 +7127,10 @@
                             },
                             "description": {
                                 "description": "An optional description of the webhook",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "events": {
                                 "description": "Optional list of event types that will trigger the webhook",
@@ -6127,7 +7140,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "url"],
+                        "required": [
+                            "id",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_updatewebhook": {
@@ -6167,7 +7183,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "created_at", "batches_sent", "events_sent"],
+                        "required": [
+                            "id",
+                            "url",
+                            "created_at",
+                            "batches_sent",
+                            "events_sent"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6180,9 +7202,14 @@
             "endpoint": null,
             "input": "ActionInput_mandrill_verifysenderdomain",
             "name": "verify-sender-domain",
-            "output": ["ActionOutput_mandrill_verifysenderdomain"],
+            "output": [
+                "ActionOutput_mandrill_verifysenderdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mandrill_verifysenderdomain", "ActionOutput_mandrill_verifysenderdomain"],
+            "usedModels": [
+                "ActionInput_mandrill_verifysenderdomain",
+                "ActionOutput_mandrill_verifysenderdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6198,7 +7225,10 @@
                                 "description": "A mailbox at the domain where the verification email should be sent. Example: \"postmaster\""
                             }
                         },
-                        "required": ["domain", "mailbox"],
+                        "required": [
+                            "domain",
+                            "mailbox"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mandrill_verifysenderdomain": {
@@ -6206,7 +7236,10 @@
                         "properties": {
                             "status": {
                                 "type": "string",
-                                "enum": ["sent", "already_verified"]
+                                "enum": [
+                                    "sent",
+                                    "already_verified"
+                                ]
                             },
                             "domain": {
                                 "type": "string"
@@ -6215,7 +7248,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status", "domain", "email"],
+                        "required": [
+                            "status",
+                            "domain",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6231,12 +7268,16 @@
             "endpoints": [],
             "input": null,
             "name": "allowlist",
-            "output": ["AllowlistEntry"],
+            "output": [
+                "AllowlistEntry"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AllowlistEntry"],
+            "usedModels": [
+                "AllowlistEntry"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6257,7 +7298,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6271,12 +7315,16 @@
             "endpoints": [],
             "input": null,
             "name": "dedicated-ips",
-            "output": ["DedicatedIp"],
+            "output": [
+                "DedicatedIp"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DedicatedIp"],
+            "usedModels": [
+                "DedicatedIp"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6309,10 +7357,16 @@
                                         "type": "boolean"
                                     },
                                     "error": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["enabled", "valid"],
+                                "required": [
+                                    "enabled",
+                                    "valid"
+                                ],
                                 "additionalProperties": false
                             },
                             "warmup": {
@@ -6322,17 +7376,33 @@
                                         "type": "boolean"
                                     },
                                     "start_at": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "end_at": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["warming_up"],
+                                "required": [
+                                    "warming_up"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "ip", "created_at", "pool", "domain", "custom_dns", "warmup"],
+                        "required": [
+                            "id",
+                            "ip",
+                            "created_at",
+                            "pool",
+                            "domain",
+                            "custom_dns",
+                            "warmup"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6346,12 +7416,16 @@
             "endpoints": [],
             "input": null,
             "name": "inbound-domains",
-            "output": ["InboundDomain"],
+            "output": [
+                "InboundDomain"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["InboundDomain"],
+            "usedModels": [
+                "InboundDomain"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6372,7 +7446,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "domain"],
+                        "required": [
+                            "id",
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6386,12 +7463,16 @@
             "endpoints": [],
             "input": null,
             "name": "inbound-routes",
-            "output": ["InboundRoute"],
+            "output": [
+                "InboundRoute"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["InboundRoute"],
+            "usedModels": [
+                "InboundRoute"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6415,12 +7496,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "domain", "route_id", "pattern", "url"],
+                        "required": [
+                            "id",
+                            "domain",
+                            "route_id",
+                            "pattern",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6429,12 +7518,16 @@
             "endpoints": [],
             "input": null,
             "name": "ip-pools",
-            "output": ["IpPool"],
+            "output": [
+                "IpPool"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["IpPool"],
+            "usedModels": [
+                "IpPool"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6481,7 +7574,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["enabled", "valid"],
+                                            "required": [
+                                                "enabled",
+                                                "valid"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "warmup": {
@@ -6497,16 +7593,29 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["warming_up"],
+                                            "required": [
+                                                "warming_up"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["ip", "created_at", "pool", "domain", "custom_dns", "warmup"],
+                                    "required": [
+                                        "ip",
+                                        "created_at",
+                                        "pool",
+                                        "domain",
+                                        "custom_dns",
+                                        "warmup"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "created_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6520,12 +7629,16 @@
             "endpoints": [],
             "input": null,
             "name": "mc-templates",
-            "output": ["McTemplate"],
+            "output": [
+                "McTemplate"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["McTemplate"],
+            "usedModels": [
+                "McTemplate"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6552,7 +7665,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6566,12 +7682,16 @@
             "endpoints": [],
             "input": null,
             "name": "messages",
-            "output": ["Message"],
+            "output": [
+                "Message"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Message"],
+            "usedModels": [
+                "Message"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6614,12 +7734,20 @@
                             },
                             "metadata": {}
                         },
-                        "required": ["id", "ts", "sender", "subject", "email"],
+                        "required": [
+                            "id",
+                            "ts",
+                            "sender",
+                            "subject",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6628,12 +7756,16 @@
             "endpoints": [],
             "input": null,
             "name": "metadata-fields",
-            "output": ["MetadataField"],
+            "output": [
+                "MetadataField"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MetadataField"],
+            "usedModels": [
+                "MetadataField"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6649,13 +7781,21 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["active", "delete", "index"]
+                                "enum": [
+                                    "active",
+                                    "delete",
+                                    "index"
+                                ]
                             },
                             "view_template": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "state"],
+                        "required": [
+                            "id",
+                            "name",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6669,12 +7809,16 @@
             "endpoints": [],
             "input": null,
             "name": "rejects-sms",
-            "output": ["SmsReject"],
+            "output": [
+                "SmsReject"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SmsReject"],
+            "usedModels": [
+                "SmsReject"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6701,7 +7845,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "phone", "created_at", "expired"],
+                        "required": [
+                            "id",
+                            "phone",
+                            "created_at",
+                            "expired"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6715,12 +7864,16 @@
             "endpoints": [],
             "input": null,
             "name": "rejects",
-            "output": ["Reject"],
+            "output": [
+                "Reject"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Reject"],
+            "usedModels": [
+                "Reject"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6759,7 +7912,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "reason", "detail", "created_at", "last_event_at", "expired"],
+                        "required": [
+                            "id",
+                            "email",
+                            "reason",
+                            "detail",
+                            "created_at",
+                            "last_event_at",
+                            "expired"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6773,12 +7934,16 @@
             "endpoints": [],
             "input": null,
             "name": "sender-domains",
-            "output": ["SenderDomain"],
+            "output": [
+                "SenderDomain"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SenderDomain"],
+            "usedModels": [
+                "SenderDomain"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6835,7 +8000,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "domain"],
+                        "required": [
+                            "id",
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6849,12 +8017,16 @@
             "endpoints": [],
             "input": null,
             "name": "senders",
-            "output": ["Sender"],
+            "output": [
+                "Sender"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Sender"],
+            "usedModels": [
+                "Sender"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6922,7 +8094,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "address"],
+                        "required": [
+                            "id",
+                            "address"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6936,12 +8111,16 @@
             "endpoints": [],
             "input": null,
             "name": "subaccounts",
-            "output": ["Subaccount"],
+            "output": [
+                "Subaccount"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subaccount"],
+            "usedModels": [
+                "Subaccount"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6988,7 +8167,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7002,12 +8183,16 @@
             "endpoints": [],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7103,12 +8288,16 @@
             "endpoints": [],
             "input": null,
             "name": "templates",
-            "output": ["Template"],
+            "output": [
+                "Template"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Template"],
+            "usedModels": [
+                "Template"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7177,7 +8366,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "slug"],
+                        "required": [
+                            "id",
+                            "slug"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7191,12 +8383,16 @@
             "endpoints": [],
             "input": null,
             "name": "tracking-domains",
-            "output": ["TrackingDomain"],
+            "output": [
+                "TrackingDomain"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TrackingDomain"],
+            "usedModels": [
+                "TrackingDomain"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7229,7 +8425,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "domain"],
+                        "required": [
+                            "id",
+                            "domain"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -7243,12 +8442,16 @@
             "endpoints": [],
             "input": null,
             "name": "webhooks",
-            "output": ["Webhook"],
+            "output": [
+                "Webhook"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webhook"],
+            "usedModels": [
+                "Webhook"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7290,7 +8493,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "events", "created_at", "batches_sent", "events_sent"],
+                        "required": [
+                            "id",
+                            "url",
+                            "events",
+                            "created_at",
+                            "batches_sent",
+                            "events_sent"
+                        ],
                         "additionalProperties": false
                     }
                 }

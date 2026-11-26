@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_batchcopyfilesorfolders",
             "name": "batch-copy-files-or-folders",
-            "output": ["ActionOutput_dropbox_batchcopyfilesorfolders"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_batchcopyfilesorfolders", "ActionOutput_dropbox_batchcopyfilesorfolders"],
+            "output": [
+                "ActionOutput_dropbox_batchcopyfilesorfolders"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_batchcopyfilesorfolders",
+                "ActionOutput_dropbox_batchcopyfilesorfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -31,7 +38,10 @@
                                             "description": "Destination path in Dropbox. Example: \"/folder/destination.txt\""
                                         }
                                     },
-                                    "required": ["from_path", "to_path"],
+                                    "required": [
+                                        "from_path",
+                                        "to_path"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of source and destination path pairs to copy"
@@ -41,7 +51,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["entries"],
+                        "required": [
+                            "entries"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_batchcopyfilesorfolders": {
@@ -77,11 +89,17 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["name", "path_lower", "id"],
+                                                    "required": [
+                                                        "name",
+                                                        "path_lower",
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["metadata"],
+                                            "required": [
+                                                "metadata"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "failure": {
@@ -97,7 +115,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": [".tag"],
+                                                    "required": [
+                                                        ".tag"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 ".tag": {
@@ -132,9 +152,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_batchcreatefolders",
             "name": "batch-create-folders",
-            "output": ["ActionOutput_dropbox_batchcreatefolders"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_batchcreatefolders", "ActionOutput_dropbox_batchcreatefolders"],
+            "output": [
+                "ActionOutput_dropbox_batchcreatefolders"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_batchcreatefolders",
+                "ActionOutput_dropbox_batchcreatefolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -172,7 +199,9 @@
                                 "maximum": 60
                             }
                         },
-                        "required": ["paths"],
+                        "required": [
+                            "paths"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_batchcreatefolders": {
@@ -208,7 +237,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["path", "success"],
+                                    "required": [
+                                        "path",
+                                        "success"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -231,7 +263,12 @@
                                 "description": "Number of folders that failed to create"
                             }
                         },
-                        "required": ["completed", "total_count", "success_count", "failure_count"],
+                        "required": [
+                            "completed",
+                            "total_count",
+                            "success_count",
+                            "failure_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -244,9 +281,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_batchdeletefilesorfolders",
             "name": "batch-delete-files-or-folders",
-            "output": ["ActionOutput_dropbox_batchdeletefilesorfolders"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_batchdeletefilesorfolders", "ActionOutput_dropbox_batchdeletefilesorfolders"],
+            "output": [
+                "ActionOutput_dropbox_batchdeletefilesorfolders"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_batchdeletefilesorfolders",
+                "ActionOutput_dropbox_batchdeletefilesorfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -264,13 +308,17 @@
                                             "description": "Path in the user's Dropbox to delete. Example: \"/Homework/math/Prime_Numbers.txt\""
                                         }
                                     },
-                                    "required": ["path"],
+                                    "required": [
+                                        "path"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of files/folders to delete. Each entry has a path field."
                             }
                         },
-                        "required": ["entries"],
+                        "required": [
+                            "entries"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_batchdeletefilesorfolders": {
@@ -278,7 +326,11 @@
                         "properties": {
                             "status": {
                                 "type": "string",
-                                "enum": ["complete", "in_progress", "failed"],
+                                "enum": [
+                                    "complete",
+                                    "in_progress",
+                                    "failed"
+                                ],
                                 "description": "Status of the batch deletion operation"
                             },
                             "async_job_id": {
@@ -316,7 +368,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": [".tag"],
+                                            "required": [
+                                                ".tag"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "success": {
@@ -330,12 +384,16 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": [".tag"],
+                                    "required": [
+                                        ".tag"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -348,9 +406,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_batchmovefilesorfolders",
             "name": "batch-move-files-or-folders",
-            "output": ["ActionOutput_dropbox_batchmovefilesorfolders"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_batchmovefilesorfolders", "ActionOutput_dropbox_batchmovefilesorfolders"],
+            "output": [
+                "ActionOutput_dropbox_batchmovefilesorfolders"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_batchmovefilesorfolders",
+                "ActionOutput_dropbox_batchmovefilesorfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -373,13 +438,18 @@
                                             "description": "Destination path for the file or folder. Example: \"/newfolder/file.txt\""
                                         }
                                     },
-                                    "required": ["from_path", "to_path"],
+                                    "required": [
+                                        "from_path",
+                                        "to_path"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of up to 1000 entries to move, each with from_path and to_path."
                             }
                         },
-                        "required": ["entries"],
+                        "required": [
+                            "entries"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_batchmovefilesorfolders": {
@@ -441,7 +511,11 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["status", "id", "tag"],
+                                            "required": [
+                                                "status",
+                                                "id",
+                                                "tag"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -464,14 +538,21 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["status", "error_tag", "error_message"],
+                                            "required": [
+                                                "status",
+                                                "error_tag",
+                                                "error_message"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
                                 }
                             }
                         },
-                        "required": ["job_status", "entries"],
+                        "required": [
+                            "job_status",
+                            "entries"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -484,9 +565,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_checkbatchcopyfilesorfolders",
             "name": "check-batch-copy-files-or-folders",
-            "output": ["ActionOutput_dropbox_checkbatchcopyfilesorfolders"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_checkbatchcopyfilesorfolders", "ActionOutput_dropbox_checkbatchcopyfilesorfolders"],
+            "output": [
+                "ActionOutput_dropbox_checkbatchcopyfilesorfolders"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_checkbatchcopyfilesorfolders",
+                "ActionOutput_dropbox_checkbatchcopyfilesorfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -498,7 +586,9 @@
                                 "description": "The async job ID returned by batch-copy-files-or-folders. Example: \"dbjid:AAAcrHLQ...\""
                             }
                         },
-                        "required": ["async_job_id"],
+                        "required": [
+                            "async_job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_checkbatchcopyfilesorfolders": {
@@ -506,7 +596,11 @@
                         "properties": {
                             ".tag": {
                                 "type": "string",
-                                "enum": ["in_progress", "complete", "failed"]
+                                "enum": [
+                                    "in_progress",
+                                    "complete",
+                                    "failed"
+                                ]
                             },
                             "entries": {
                                 "type": "array",
@@ -538,7 +632,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name", "path_lower", "id"],
+                                            "required": [
+                                                "name",
+                                                "path_lower",
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "failure": {
@@ -551,16 +649,22 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": [".tag"],
+                                            "required": [
+                                                ".tag"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": [".tag"],
+                                    "required": [
+                                        ".tag"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": [".tag"],
+                        "required": [
+                            ".tag"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -573,9 +677,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_checkbatchdeletefilesorfolders",
             "name": "check-batch-delete-files-or-folders",
-            "output": ["ActionOutput_dropbox_checkbatchdeletefilesorfolders"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_checkbatchdeletefilesorfolders", "ActionOutput_dropbox_checkbatchdeletefilesorfolders"],
+            "output": [
+                "ActionOutput_dropbox_checkbatchdeletefilesorfolders"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_checkbatchdeletefilesorfolders",
+                "ActionOutput_dropbox_checkbatchdeletefilesorfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -587,7 +698,9 @@
                                 "description": "The async job ID returned by batch-delete-files-or-folders. Example: \"dbjid:AAAcrHLQ...\""
                             }
                         },
-                        "required": ["async_job_id"],
+                        "required": [
+                            "async_job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_checkbatchdeletefilesorfolders": {
@@ -595,7 +708,11 @@
                         "properties": {
                             "status": {
                                 "type": "string",
-                                "enum": ["complete", "in_progress", "failed"],
+                                "enum": [
+                                    "complete",
+                                    "in_progress",
+                                    "failed"
+                                ],
                                 "description": "Status of the batch deletion check"
                             },
                             "entries": {
@@ -626,7 +743,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": [".tag"],
+                                            "required": [
+                                                ".tag"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "failure": {
@@ -635,12 +754,16 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": [".tag"],
+                                    "required": [
+                                        ".tag"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -653,9 +776,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_checkbatchmovefilesorfolders",
             "name": "check-batch-move-files-or-folders",
-            "output": ["ActionOutput_dropbox_checkbatchmovefilesorfolders"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_checkbatchmovefilesorfolders", "ActionOutput_dropbox_checkbatchmovefilesorfolders"],
+            "output": [
+                "ActionOutput_dropbox_checkbatchmovefilesorfolders"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_checkbatchmovefilesorfolders",
+                "ActionOutput_dropbox_checkbatchmovefilesorfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -667,7 +797,9 @@
                                 "description": "The async job ID returned by batch-move-files-or-folders. Example: \"dbjid:AAAcrHLQ...\""
                             }
                         },
-                        "required": ["async_job_id"],
+                        "required": [
+                            "async_job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_checkbatchmovefilesorfolders": {
@@ -725,7 +857,11 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["status", "id", "tag"],
+                                            "required": [
+                                                "status",
+                                                "id",
+                                                "tag"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -748,14 +884,21 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["status", "error_tag", "error_message"],
+                                            "required": [
+                                                "status",
+                                                "error_tag",
+                                                "error_message"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
                                 }
                             }
                         },
-                        "required": ["job_status", "entries"],
+                        "required": [
+                            "job_status",
+                            "entries"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -768,9 +911,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_checkunsharefolder",
             "name": "check-unshare-folder",
-            "output": ["ActionOutput_dropbox_checkunsharefolder"],
-            "scopes": ["sharing.write"],
-            "usedModels": ["ActionInput_dropbox_checkunsharefolder", "ActionOutput_dropbox_checkunsharefolder"],
+            "output": [
+                "ActionOutput_dropbox_checkunsharefolder"
+            ],
+            "scopes": [
+                "sharing.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_checkunsharefolder",
+                "ActionOutput_dropbox_checkunsharefolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -782,7 +932,9 @@
                                 "description": "The async job ID returned by unshare-folder. Example: \"dbjid:AAAcrHLQ...\""
                             }
                         },
-                        "required": ["async_job_id"],
+                        "required": [
+                            "async_job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_checkunsharefolder": {
@@ -793,13 +945,20 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["complete", "in_progress", "failed"]
+                                "enum": [
+                                    "complete",
+                                    "in_progress",
+                                    "failed"
+                                ]
                             },
                             "message": {
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "status"],
+                        "required": [
+                            "success",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -812,9 +971,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_copyfileorfolder",
             "name": "copy-file-or-folder",
-            "output": ["ActionOutput_dropbox_copyfileorfolder"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_copyfileorfolder", "ActionOutput_dropbox_copyfileorfolder"],
+            "output": [
+                "ActionOutput_dropbox_copyfileorfolder"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_copyfileorfolder",
+                "ActionOutput_dropbox_copyfileorfolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -842,7 +1008,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["from_path", "to_path"],
+                        "required": [
+                            "from_path",
+                            "to_path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_copyfileorfolder": {
@@ -885,7 +1054,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -898,9 +1070,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_dropbox_createfolder"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_createfolder", "ActionOutput_dropbox_createfolder"],
+            "output": [
+                "ActionOutput_dropbox_createfolder"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_createfolder",
+                "ActionOutput_dropbox_createfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -916,7 +1095,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_createfolder": {
@@ -935,7 +1116,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "id"],
+                        "required": [
+                            "name",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -948,9 +1132,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_createsharedlink",
             "name": "create-shared-link",
-            "output": ["ActionOutput_dropbox_createsharedlink"],
-            "scopes": ["sharing.write"],
-            "usedModels": ["ActionInput_dropbox_createsharedlink", "ActionOutput_dropbox_createsharedlink"],
+            "output": [
+                "ActionOutput_dropbox_createsharedlink"
+            ],
+            "scopes": [
+                "sharing.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_createsharedlink",
+                "ActionOutput_dropbox_createsharedlink"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -968,17 +1159,31 @@
                                     "requested_visibility": {
                                         "description": "The requested visibility for the shared link. Can be public, password (link is publicly visible, but only accessible with the password), or team_only (only members of the same team can access).",
                                         "type": "string",
-                                        "enum": ["public", "password", "team_only"]
+                                        "enum": [
+                                            "public",
+                                            "password",
+                                            "team_only"
+                                        ]
                                     },
                                     "audience": {
                                         "description": "The audience of the shared link. Can be public (anyone with the link can access), team (only members of the same team can access), no_one (link is disabled), or members (only specific members can access).",
                                         "type": "string",
-                                        "enum": ["public", "team", "no_one", "members"]
+                                        "enum": [
+                                            "public",
+                                            "team",
+                                            "no_one",
+                                            "members"
+                                        ]
                                     },
                                     "access": {
                                         "description": "The access level on the link. Can be viewer, viewer_no_comment (can view but not comment), editor, or owner.",
                                         "type": "string",
-                                        "enum": ["viewer", "viewer_no_comment", "editor", "owner"]
+                                        "enum": [
+                                            "viewer",
+                                            "viewer_no_comment",
+                                            "editor",
+                                            "owner"
+                                        ]
                                     },
                                     "allow_download": {
                                         "description": "Whether to allow downloads via the shared link.",
@@ -996,7 +1201,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_createsharedlink": {
@@ -1029,7 +1236,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["url", "name", "path"],
+                        "required": [
+                            "url",
+                            "name",
+                            "path"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1042,9 +1253,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_dropbox_createuser"],
-            "scopes": ["members.write"],
-            "usedModels": ["ActionInput_dropbox_createuser", "ActionOutput_dropbox_createuser"],
+            "output": [
+                "ActionOutput_dropbox_createuser"
+            ],
+            "scopes": [
+                "members.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_createuser",
+                "ActionOutput_dropbox_createuser"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1064,7 +1282,11 @@
                                 "description": "Last name of the new user. Example: \"Doe\""
                             }
                         },
-                        "required": ["email", "firstName", "lastName"],
+                        "required": [
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_createuser": {
@@ -1083,7 +1305,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1096,9 +1323,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_deletefileorfolder",
             "name": "delete-file-or-folder",
-            "output": ["ActionOutput_dropbox_deletefileorfolder"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_deletefileorfolder", "ActionOutput_dropbox_deletefileorfolder"],
+            "output": [
+                "ActionOutput_dropbox_deletefileorfolder"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_deletefileorfolder",
+                "ActionOutput_dropbox_deletefileorfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1110,7 +1344,9 @@
                                 "description": "Path to the file or folder to delete. Example: \"/path/to/file.txt\" or \"/path/to/folder\""
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_deletefileorfolder": {
@@ -1147,7 +1383,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "id"],
+                        "required": [
+                            "name",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1160,9 +1399,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_dropbox_deleteuser"],
-            "scopes": ["members.delete"],
-            "usedModels": ["ActionInput_dropbox_deleteuser", "ActionOutput_dropbox_deleteuser"],
+            "output": [
+                "ActionOutput_dropbox_deleteuser"
+            ],
+            "scopes": [
+                "members.delete"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_deleteuser",
+                "ActionOutput_dropbox_deleteuser"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1175,7 +1421,9 @@
                                 "description": "The team member ID of the user to delete. Example: \"dbmid:abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_deleteuser": {
@@ -1185,7 +1433,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1198,9 +1448,17 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_downloadfile",
             "name": "download-file",
-            "output": ["ActionOutput_dropbox_downloadfile"],
-            "scopes": ["files.content.read", "files.metadata.read"],
-            "usedModels": ["ActionInput_dropbox_downloadfile", "ActionOutput_dropbox_downloadfile"],
+            "output": [
+                "ActionOutput_dropbox_downloadfile"
+            ],
+            "scopes": [
+                "files.content.read",
+                "files.metadata.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_downloadfile",
+                "ActionOutput_dropbox_downloadfile"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1212,7 +1470,9 @@
                                 "description": "The path of the file to download. Example: \"/Homework/math/Prime_Numbers.txt\" or \"id:a4ayc_80_OEAAAAAAAAAYa\""
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_downloadfile": {
@@ -1252,7 +1512,10 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["name", "id"],
+                                "required": [
+                                    "name",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "bytes": {
@@ -1260,7 +1523,10 @@
                                 "description": "Base64-encoded file content"
                             }
                         },
-                        "required": ["metadata", "bytes"],
+                        "required": [
+                            "metadata",
+                            "bytes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1273,9 +1539,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_downloadfolderaszip",
             "name": "download-folder-as-zip",
-            "output": ["ActionOutput_dropbox_downloadfolderaszip"],
-            "scopes": ["files.content.read"],
-            "usedModels": ["ActionInput_dropbox_downloadfolderaszip", "ActionOutput_dropbox_downloadfolderaszip"],
+            "output": [
+                "ActionOutput_dropbox_downloadfolderaszip"
+            ],
+            "scopes": [
+                "files.content.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_downloadfolderaszip",
+                "ActionOutput_dropbox_downloadfolderaszip"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1287,7 +1560,9 @@
                                 "description": "The path of the folder to download. Example: \"/my-folder\". Note: The root folder \"/\" is not supported."
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_downloadfolderaszip": {
@@ -1309,7 +1584,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "zip_content": {
@@ -1317,7 +1595,10 @@
                                 "description": "Base64-encoded zip file content"
                             }
                         },
-                        "required": ["metadata", "zip_content"],
+                        "required": [
+                            "metadata",
+                            "zip_content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1330,9 +1611,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_getcurrentaccount",
             "name": "get-current-account",
-            "output": ["ActionOutput_dropbox_getcurrentaccount"],
-            "scopes": ["account_info.read"],
-            "usedModels": ["ActionInput_dropbox_getcurrentaccount", "ActionOutput_dropbox_getcurrentaccount"],
+            "output": [
+                "ActionOutput_dropbox_getcurrentaccount"
+            ],
+            "scopes": [
+                "account_info.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_getcurrentaccount",
+                "ActionOutput_dropbox_getcurrentaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1363,7 +1651,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["given_name", "surname", "familiar_name", "display_name"],
+                                "required": [
+                                    "given_name",
+                                    "surname",
+                                    "familiar_name",
+                                    "display_name"
+                                ],
                                 "additionalProperties": false
                             },
                             "email": {
@@ -1403,14 +1696,22 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "id"],
+                                "required": [
+                                    "name",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "team_member_id": {
                                 "type": "string"
                             }
                         },
-                        "required": ["account_id", "name", "email", "account_type"],
+                        "required": [
+                            "account_id",
+                            "name",
+                            "email",
+                            "account_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1423,9 +1724,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_getfileorfoldermetadata",
             "name": "get-file-or-folder-metadata",
-            "output": ["ActionOutput_dropbox_getfileorfoldermetadata"],
-            "scopes": ["files.metadata.read"],
-            "usedModels": ["ActionInput_dropbox_getfileorfoldermetadata", "ActionOutput_dropbox_getfileorfoldermetadata"],
+            "output": [
+                "ActionOutput_dropbox_getfileorfoldermetadata"
+            ],
+            "scopes": [
+                "files.metadata.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_getfileorfoldermetadata",
+                "ActionOutput_dropbox_getfileorfoldermetadata"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1507,7 +1815,15 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["type", "name", "id", "client_modified", "server_modified", "rev", "size"],
+                                "required": [
+                                    "type",
+                                    "name",
+                                    "id",
+                                    "client_modified",
+                                    "server_modified",
+                                    "rev",
+                                    "size"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1551,7 +1867,11 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["type", "name", "id"],
+                                "required": [
+                                    "type",
+                                    "name",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1574,7 +1894,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "name"],
+                                "required": [
+                                    "type",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -1589,9 +1912,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_getfiletemporarylink",
             "name": "get-file-temporary-link",
-            "output": ["ActionOutput_dropbox_getfiletemporarylink"],
-            "scopes": ["files.content.read"],
-            "usedModels": ["ActionInput_dropbox_getfiletemporarylink", "ActionOutput_dropbox_getfiletemporarylink"],
+            "output": [
+                "ActionOutput_dropbox_getfiletemporarylink"
+            ],
+            "scopes": [
+                "files.content.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_getfiletemporarylink",
+                "ActionOutput_dropbox_getfiletemporarylink"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1603,7 +1933,9 @@
                                 "description": "The path to the file you want a temporary link to. Example: \"/folder/file.txt\""
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_getfiletemporarylink": {
@@ -1643,7 +1975,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "id"],
+                                "required": [
+                                    "name",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "link": {
@@ -1651,7 +1986,10 @@
                                 "description": "Temporary link to stream content of the file. Expires after four hours."
                             }
                         },
-                        "required": ["metadata", "link"],
+                        "required": [
+                            "metadata",
+                            "link"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1664,9 +2002,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_listfilerevisions",
             "name": "list-file-revisions",
-            "output": ["ActionOutput_dropbox_listfilerevisions"],
-            "scopes": ["files.metadata.read"],
-            "usedModels": ["ActionInput_dropbox_listfilerevisions", "ActionOutput_dropbox_listfilerevisions"],
+            "output": [
+                "ActionOutput_dropbox_listfilerevisions"
+            ],
+            "scopes": [
+                "files.metadata.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_listfilerevisions",
+                "ActionOutput_dropbox_listfilerevisions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1680,7 +2025,10 @@
                             "mode": {
                                 "description": "Specify how to interpret the path argument. \"path\" (default): revisions at the same file path are returned. \"id\": revisions for the file ID (survives moves and renames).",
                                 "type": "string",
-                                "enum": ["path", "id"]
+                                "enum": [
+                                    "path",
+                                    "id"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of revisions to return. Defaults to 10.",
@@ -1689,7 +2037,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_listfilerevisions": {
@@ -1749,7 +2099,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["name", "id", "server_modified", "rev", "size"],
+                                    "required": [
+                                        "name",
+                                        "id",
+                                        "server_modified",
+                                        "rev",
+                                        "size"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The revisions for the file."
@@ -1759,7 +2115,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["entries"],
+                        "required": [
+                            "entries"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1772,9 +2130,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_listfolder",
             "name": "list-folder",
-            "output": ["ActionOutput_dropbox_listfolder"],
-            "scopes": ["files.metadata.read"],
-            "usedModels": ["ActionInput_dropbox_listfolder", "ActionOutput_dropbox_listfolder"],
+            "output": [
+                "ActionOutput_dropbox_listfolder"
+            ],
+            "scopes": [
+                "files.metadata.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_listfolder",
+                "ActionOutput_dropbox_listfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1823,7 +2188,10 @@
                                 "description": "True if more entries are available."
                             }
                         },
-                        "required": ["entries", "has_more"],
+                        "required": [
+                            "entries",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1836,9 +2204,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_listsharedfolders",
             "name": "list-shared-folders",
-            "output": ["ActionOutput_dropbox_listsharedfolders"],
-            "scopes": ["sharing.read"],
-            "usedModels": ["ActionInput_dropbox_listsharedfolders", "ActionOutput_dropbox_listsharedfolders"],
+            "output": [
+                "ActionOutput_dropbox_listsharedfolders"
+            ],
+            "scopes": [
+                "sharing.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_listsharedfolders",
+                "ActionOutput_dropbox_listsharedfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1907,7 +2282,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1920,9 +2297,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_listsharedlinks",
             "name": "list-shared-links",
-            "output": ["ActionOutput_dropbox_listsharedlinks"],
-            "scopes": ["sharing.read"],
-            "usedModels": ["ActionInput_dropbox_listsharedlinks", "ActionOutput_dropbox_listsharedlinks"],
+            "output": [
+                "ActionOutput_dropbox_listsharedlinks"
+            ],
+            "scopes": [
+                "sharing.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_listsharedlinks",
+                "ActionOutput_dropbox_listsharedlinks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1954,7 +2338,10 @@
                                     "properties": {
                                         ".tag": {
                                             "type": "string",
-                                            "enum": ["file", "folder"]
+                                            "enum": [
+                                                "file",
+                                                "folder"
+                                            ]
                                         },
                                         "url": {
                                             "type": "string"
@@ -1981,7 +2368,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": [".tag"],
+                                                    "required": [
+                                                        ".tag"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "requested_visibility": {
@@ -1991,7 +2380,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": [".tag"],
+                                                    "required": [
+                                                        ".tag"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "revoke_failure_reason": {
@@ -2001,7 +2392,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": [".tag"],
+                                                    "required": [
+                                                        ".tag"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -2020,7 +2413,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "display_name": {
@@ -2033,7 +2429,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["team_info", "display_name", "member_id"],
+                                            "required": [
+                                                "team_info",
+                                                "display_name",
+                                                "member_id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "expires": {
@@ -2049,11 +2449,20 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": [".tag", "url", "id", "name", "path_lower"],
+                                    "required": [
+                                        ".tag",
+                                        "url",
+                                        "id",
+                                        "name",
+                                        "path_lower"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2064,7 +2473,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["links", "has_more"],
+                        "required": [
+                            "links",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2077,9 +2489,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_modifysharedlinksettings",
             "name": "modify-shared-link-settings",
-            "output": ["ActionOutput_dropbox_modifysharedlinksettings"],
-            "scopes": ["sharing.write"],
-            "usedModels": ["ActionInput_dropbox_modifysharedlinksettings", "ActionOutput_dropbox_modifysharedlinksettings"],
+            "output": [
+                "ActionOutput_dropbox_modifysharedlinksettings"
+            ],
+            "scopes": [
+                "sharing.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_modifysharedlinksettings",
+                "ActionOutput_dropbox_modifysharedlinksettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2097,17 +2516,30 @@
                                     "requested_visibility": {
                                         "description": "Use `audience` instead. The requested access for this shared link.",
                                         "type": "string",
-                                        "enum": ["public", "team_only", "password"]
+                                        "enum": [
+                                            "public",
+                                            "team_only",
+                                            "password"
+                                        ]
                                     },
                                     "audience": {
                                         "description": "The new audience who can benefit from the access level.",
                                         "type": "string",
-                                        "enum": ["public", "team", "no_one", "members"]
+                                        "enum": [
+                                            "public",
+                                            "team",
+                                            "no_one",
+                                            "members"
+                                        ]
                                     },
                                     "access": {
                                         "description": "Requested access level. Note: modifying access level for an existing link is not supported.",
                                         "type": "string",
-                                        "enum": ["viewer", "editor", "max"]
+                                        "enum": [
+                                            "viewer",
+                                            "editor",
+                                            "max"
+                                        ]
                                     },
                                     "expires": {
                                         "description": "Expiration time of the shared link in ISO 8601 format. By default the link won't expire.",
@@ -2133,7 +2565,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_modifysharedlinksettings": {
@@ -2153,19 +2587,39 @@
                                     },
                                     "resolved_visibility": {
                                         "type": "string",
-                                        "enum": ["public", "team_only", "password", "team_and_password", "shared_folder_only", "no_one"]
+                                        "enum": [
+                                            "public",
+                                            "team_only",
+                                            "password",
+                                            "team_and_password",
+                                            "shared_folder_only",
+                                            "no_one"
+                                        ]
                                     },
                                     "requested_visibility": {
                                         "type": "string",
-                                        "enum": ["public", "team_only", "password"]
+                                        "enum": [
+                                            "public",
+                                            "team_only",
+                                            "password"
+                                        ]
                                     },
                                     "effective_audience": {
                                         "type": "string",
-                                        "enum": ["public", "team", "no_one", "members"]
+                                        "enum": [
+                                            "public",
+                                            "team",
+                                            "no_one",
+                                            "members"
+                                        ]
                                     },
                                     "link_access_level": {
                                         "type": "string",
-                                        "enum": ["viewer", "editor", "max"]
+                                        "enum": [
+                                            "viewer",
+                                            "editor",
+                                            "max"
+                                        ]
                                     },
                                     "can_set_expiration": {
                                         "type": "boolean"
@@ -2219,7 +2673,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2232,9 +2688,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_movefileorfolder",
             "name": "move-file-or-folder",
-            "output": ["ActionOutput_dropbox_movefileorfolder"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_movefileorfolder", "ActionOutput_dropbox_movefileorfolder"],
+            "output": [
+                "ActionOutput_dropbox_movefileorfolder"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_movefileorfolder",
+                "ActionOutput_dropbox_movefileorfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2258,7 +2721,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["from_path", "to_path"],
+                        "required": [
+                            "from_path",
+                            "to_path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_movefileorfolder": {
@@ -2307,7 +2773,10 @@
                                 ]
                             }
                         },
-                        "required": ["name", "id"],
+                        "required": [
+                            "name",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2320,9 +2789,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_restorefilerevision",
             "name": "restore-file-revision",
-            "output": ["ActionOutput_dropbox_restorefilerevision"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_restorefilerevision", "ActionOutput_dropbox_restorefilerevision"],
+            "output": [
+                "ActionOutput_dropbox_restorefilerevision"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_restorefilerevision",
+                "ActionOutput_dropbox_restorefilerevision"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2338,7 +2814,10 @@
                                 "description": "The revision ID to restore to. Example: \"015a01044acb99900000001aa8954d0\""
                             }
                         },
-                        "required": ["path", "rev"],
+                        "required": [
+                            "path",
+                            "rev"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_restorefilerevision": {
@@ -2372,7 +2851,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "id", "rev", "size"],
+                        "required": [
+                            "name",
+                            "id",
+                            "rev",
+                            "size"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2385,9 +2869,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_revokesharedlink",
             "name": "revoke-shared-link",
-            "output": ["ActionOutput_dropbox_revokesharedlink"],
-            "scopes": ["sharing.write"],
-            "usedModels": ["ActionInput_dropbox_revokesharedlink", "ActionOutput_dropbox_revokesharedlink"],
+            "output": [
+                "ActionOutput_dropbox_revokesharedlink"
+            ],
+            "scopes": [
+                "sharing.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_revokesharedlink",
+                "ActionOutput_dropbox_revokesharedlink"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2399,7 +2890,9 @@
                                 "description": "The URL of the shared link to revoke. Example: \"https://www.dropbox.com/s/...\""
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_revokesharedlink": {
@@ -2410,7 +2903,9 @@
                                 "description": "Whether the shared link was successfully revoked."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2423,9 +2918,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_searchfilesandfolders",
             "name": "search-files-and-folders",
-            "output": ["ActionOutput_dropbox_searchfilesandfolders"],
-            "scopes": ["files.metadata.read"],
-            "usedModels": ["ActionInput_dropbox_searchfilesandfolders", "ActionOutput_dropbox_searchfilesandfolders"],
+            "output": [
+                "ActionOutput_dropbox_searchfilesandfolders"
+            ],
+            "scopes": [
+                "files.metadata.read"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_searchfilesandfolders",
+                "ActionOutput_dropbox_searchfilesandfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2449,12 +2951,18 @@
                             "order_by": {
                                 "description": "Order of results. Default: relevance.",
                                 "type": "string",
-                                "enum": ["relevance", "last_modified_time"]
+                                "enum": [
+                                    "relevance",
+                                    "last_modified_time"
+                                ]
                             },
                             "file_status": {
                                 "description": "Filter by file status. Default: active.",
                                 "type": "string",
-                                "enum": ["active", "deleted"]
+                                "enum": [
+                                    "active",
+                                    "deleted"
+                                ]
                             },
                             "filename_only": {
                                 "description": "If true, restricts search to file names only. Default: false.",
@@ -2472,7 +2980,18 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["image", "document", "pdf", "spreadsheet", "presentation", "audio", "video", "folder", "paper", "other"]
+                                    "enum": [
+                                        "image",
+                                        "document",
+                                        "pdf",
+                                        "spreadsheet",
+                                        "presentation",
+                                        "audio",
+                                        "video",
+                                        "folder",
+                                        "paper",
+                                        "other"
+                                    ]
                                 }
                             },
                             "cursor": {
@@ -2480,7 +2999,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_searchfilesandfolders": {
@@ -2498,7 +3019,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": [".tag"],
+                                            "required": [
+                                                ".tag"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "metadata": {
@@ -2506,11 +3029,17 @@
                                             "properties": {
                                                 ".tag": {
                                                     "type": "string",
-                                                    "enum": ["metadata", "unmounted", "not_found"]
+                                                    "enum": [
+                                                        "metadata",
+                                                        "unmounted",
+                                                        "not_found"
+                                                    ]
                                                 },
                                                 "metadata": {}
                                             },
-                                            "required": [".tag"],
+                                            "required": [
+                                                ".tag"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2527,7 +3056,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["matches", "has_more"],
+                        "required": [
+                            "matches",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2540,9 +3072,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_sharefolder",
             "name": "share-folder",
-            "output": ["ActionOutput_dropbox_sharefolder"],
-            "scopes": ["sharing.write"],
-            "usedModels": ["ActionInput_dropbox_sharefolder", "ActionOutput_dropbox_sharefolder"],
+            "output": [
+                "ActionOutput_dropbox_sharefolder"
+            ],
+            "scopes": [
+                "sharing.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_sharefolder",
+                "ActionOutput_dropbox_sharefolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2560,25 +3099,39 @@
                             "member_policy": {
                                 "description": "Who can be a member of this shared folder",
                                 "type": "string",
-                                "enum": ["anyone", "team"]
+                                "enum": [
+                                    "anyone",
+                                    "team"
+                                ]
                             },
                             "shared_link_policy": {
                                 "description": "Who can access shared links for the folder",
                                 "type": "string",
-                                "enum": ["anyone", "members"]
+                                "enum": [
+                                    "anyone",
+                                    "members"
+                                ]
                             },
                             "viewer_info_policy": {
                                 "description": "Whether to enable viewer info for this folder",
                                 "type": "string",
-                                "enum": ["disabled", "enabled"]
+                                "enum": [
+                                    "disabled",
+                                    "enabled"
+                                ]
                             },
                             "access_inheritance": {
                                 "description": "How access levels are inherited",
                                 "type": "string",
-                                "enum": ["inherit", "no_inherit"]
+                                "enum": [
+                                    "inherit",
+                                    "no_inherit"
+                                ]
                             }
                         },
-                        "required": ["path"],
+                        "required": [
+                            "path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_sharefolder": {
@@ -2615,11 +3168,16 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["shared_folder_id", "name"],
+                                "required": [
+                                    "shared_folder_id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2632,9 +3190,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_unsharefolder",
             "name": "unshare-folder",
-            "output": ["ActionOutput_dropbox_unsharefolder"],
-            "scopes": ["sharing.write"],
-            "usedModels": ["ActionInput_dropbox_unsharefolder", "ActionOutput_dropbox_unsharefolder"],
+            "output": [
+                "ActionOutput_dropbox_unsharefolder"
+            ],
+            "scopes": [
+                "sharing.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_unsharefolder",
+                "ActionOutput_dropbox_unsharefolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2650,7 +3215,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["sharedFolderId"],
+                        "required": [
+                            "sharedFolderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_unsharefolder": {
@@ -2663,7 +3230,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2676,9 +3245,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_uploadfile",
             "name": "upload-file",
-            "output": ["ActionOutput_dropbox_uploadfile"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_uploadfile", "ActionOutput_dropbox_uploadfile"],
+            "output": [
+                "ActionOutput_dropbox_uploadfile"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_uploadfile",
+                "ActionOutput_dropbox_uploadfile"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2696,12 +3272,19 @@
                             "encoding": {
                                 "description": "The encoding of the content. Defaults to \"utf8\".",
                                 "type": "string",
-                                "enum": ["base64", "utf8"]
+                                "enum": [
+                                    "base64",
+                                    "utf8"
+                                ]
                             },
                             "mode": {
                                 "description": "Selects what to do if the file already exists. \"add\" will add a new file, \"overwrite\" will overwrite, \"update\" will update only if the revision matches (requires rev). Defaults to \"add\".",
                                 "type": "string",
-                                "enum": ["add", "overwrite", "update"]
+                                "enum": [
+                                    "add",
+                                    "overwrite",
+                                    "update"
+                                ]
                             },
                             "rev": {
                                 "description": "The revision of the file to update. Required when mode is \"update\".",
@@ -2720,7 +3303,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["path", "content"],
+                        "required": [
+                            "path",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_uploadfile": {
@@ -2755,7 +3341,15 @@
                                 "description": "The file size in bytes."
                             }
                         },
-                        "required": ["name", "path_lower", "id", "client_modified", "server_modified", "rev", "size"],
+                        "required": [
+                            "name",
+                            "path_lower",
+                            "id",
+                            "client_modified",
+                            "server_modified",
+                            "rev",
+                            "size"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2768,9 +3362,16 @@
             "endpoint": null,
             "input": "ActionInput_dropbox_uploadlargefile",
             "name": "upload-large-file",
-            "output": ["ActionOutput_dropbox_uploadlargefile"],
-            "scopes": ["files.content.write"],
-            "usedModels": ["ActionInput_dropbox_uploadlargefile", "ActionOutput_dropbox_uploadlargefile"],
+            "output": [
+                "ActionOutput_dropbox_uploadlargefile"
+            ],
+            "scopes": [
+                "files.content.write"
+            ],
+            "usedModels": [
+                "ActionInput_dropbox_uploadlargefile",
+                "ActionOutput_dropbox_uploadlargefile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2788,7 +3389,10 @@
                             "mode": {
                                 "description": "What to do if the file already exists. Default: \"add\"",
                                 "type": "string",
-                                "enum": ["add", "overwrite"]
+                                "enum": [
+                                    "add",
+                                    "overwrite"
+                                ]
                             },
                             "chunk_size": {
                                 "description": "Size of each chunk in bytes. Default: 4194304 (4MB). Max: 150MB",
@@ -2803,7 +3407,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["file_content_base64", "dropbox_path"],
+                        "required": [
+                            "file_content_base64",
+                            "dropbox_path"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dropbox_uploadlargefile": {
@@ -2825,7 +3432,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "path"],
+                        "required": [
+                            "success",
+                            "path"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2846,12 +3456,19 @@
             ],
             "input": "SyncMetadata_dropbox_files",
             "name": "files",
-            "output": ["File"],
+            "output": [
+                "File"
+            ],
             "runs": "every hour",
-            "scopes": ["files.metadata.read"],
+            "scopes": [
+                "files.metadata.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["File", "SyncMetadata_dropbox_files"],
+            "usedModels": [
+                "File",
+                "SyncMetadata_dropbox_files"
+            ],
             "version": "3.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2896,7 +3513,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "dropbox_id", "name", "path_lower", "path_display", "server_modified", "client_modified", "rev", "size"],
+                        "required": [
+                            "id",
+                            "dropbox_id",
+                            "name",
+                            "path_lower",
+                            "path_display",
+                            "server_modified",
+                            "client_modified",
+                            "rev",
+                            "size"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_dropbox_files": {
@@ -2927,12 +3554,19 @@
             ],
             "input": "SyncMetadata_dropbox_folders",
             "name": "folders",
-            "output": ["Folder"],
+            "output": [
+                "Folder"
+            ],
             "runs": "every hour",
-            "scopes": ["files.metadata.read"],
+            "scopes": [
+                "files.metadata.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Folder", "SyncMetadata_dropbox_folders"],
+            "usedModels": [
+                "Folder",
+                "SyncMetadata_dropbox_folders"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2959,7 +3593,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "dropbox_id", "name", "path_lower", "path_display"],
+                        "required": [
+                            "id",
+                            "dropbox_id",
+                            "name",
+                            "path_lower",
+                            "path_display"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_dropbox_folders": {
@@ -2985,12 +3625,18 @@
             "endpoints": [],
             "input": null,
             "name": "shared-folders",
-            "output": ["SharedFolder"],
+            "output": [
+                "SharedFolder"
+            ],
             "runs": "every hour",
-            "scopes": ["sharing.read"],
+            "scopes": [
+                "sharing.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SharedFolder"],
+            "usedModels": [
+                "SharedFolder"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3032,12 +3678,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "sharedFolderId"],
+                        "required": [
+                            "id",
+                            "sharedFolderId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3051,12 +3702,18 @@
             ],
             "input": null,
             "name": "shared-links",
-            "output": ["SharedLink"],
+            "output": [
+                "SharedLink"
+            ],
             "runs": "every hour",
-            "scopes": ["sharing.read"],
+            "scopes": [
+                "sharing.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SharedLink"],
+            "usedModels": [
+                "SharedLink"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3098,12 +3755,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "url", "name"],
+                        "required": [
+                            "id",
+                            "url",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

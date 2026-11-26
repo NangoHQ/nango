@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_addcampaignlead",
             "name": "add-campaign-lead",
-            "output": ["ActionOutput_lemlist_addcampaignlead"],
+            "output": [
+                "ActionOutput_lemlist_addcampaignlead"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_addcampaignlead", "ActionOutput_lemlist_addcampaignlead"],
+            "usedModels": [
+                "ActionInput_lemlist_addcampaignlead",
+                "ActionOutput_lemlist_addcampaignlead"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -79,7 +84,10 @@
                                 }
                             }
                         },
-                        "required": ["campaignId", "email"],
+                        "required": [
+                            "campaignId",
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for adding a lead to a lemlist campaign."
                     },
@@ -177,12 +185,19 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "campaignId", "email", "isPaused"],
+                        "required": [
+                            "id",
+                            "campaignId",
+                            "email",
+                            "isPaused"
+                        ],
                         "additionalProperties": false,
                         "description": "The lead as stored in the campaign after it was added."
                     }
@@ -196,9 +211,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_createcampaign",
             "name": "create-campaign",
-            "output": ["ActionOutput_lemlist_createcampaign"],
+            "output": [
+                "ActionOutput_lemlist_createcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_createcampaign", "ActionOutput_lemlist_createcampaign"],
+            "usedModels": [
+                "ActionInput_lemlist_createcampaign",
+                "ActionOutput_lemlist_createcampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -223,11 +243,18 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["deliverable", "risky", "undeliverable", "unverified"]
+                                    "enum": [
+                                        "deliverable",
+                                        "risky",
+                                        "undeliverable",
+                                        "unverified"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new lemlist campaign. An empty sequence and default schedule are auto-generated; add leads and configure steps afterward."
                     },
@@ -274,7 +301,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["_id", "name", "state", "sequenceId", "scheduleIds", "teamId", "createdAt"],
+                        "required": [
+                            "_id",
+                            "name",
+                            "state",
+                            "sequenceId",
+                            "scheduleIds",
+                            "teamId",
+                            "createdAt"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created lemlist campaign, including its auto-generated sequence and schedule IDs."
                     }
@@ -288,9 +323,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_enrollleadincampaigns",
             "name": "enroll-lead-in-campaigns",
-            "output": ["ActionOutput_lemlist_enrollleadincampaigns"],
+            "output": [
+                "ActionOutput_lemlist_enrollleadincampaigns"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_enrollleadincampaigns", "ActionOutput_lemlist_enrollleadincampaigns"],
+            "usedModels": [
+                "ActionInput_lemlist_enrollleadincampaigns",
+                "ActionOutput_lemlist_enrollleadincampaigns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -333,7 +373,10 @@
                                 }
                             }
                         },
-                        "required": ["email", "campaignIds"],
+                        "required": [
+                            "email",
+                            "campaignIds"
+                        ],
                         "additionalProperties": false,
                         "description": "Everything needed to enroll one lead into multiple lemlist campaigns at once: the lead email, the target campaign IDs, and optional lead fields applied to every campaign"
                     },
@@ -405,13 +448,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["campaignId", "success"],
+                                    "required": [
+                                        "campaignId",
+                                        "success"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "One entry per requested campaign ID, in request order, each with its own success flag and lead record or error"
                             }
                         },
-                        "required": ["email", "results"],
+                        "required": [
+                            "email",
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "Consolidated outcome of the multi-campaign enrollment: the lead email plus a per-campaign success/failure result for every requested campaign"
                     }
@@ -425,9 +474,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_getcampaignstats",
             "name": "get-campaign-stats",
-            "output": ["ActionOutput_lemlist_getcampaignstats"],
+            "output": [
+                "ActionOutput_lemlist_getcampaignstats"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_getcampaignstats", "ActionOutput_lemlist_getcampaignstats"],
+            "usedModels": [
+                "ActionInput_lemlist_getcampaignstats",
+                "ActionOutput_lemlist_getcampaignstats"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -447,7 +501,11 @@
                                 "description": "End of the reporting window in ISO 8601 format (date or date-time). Example: \"2026-10-01\""
                             }
                         },
-                        "required": ["campaignId", "startDate", "endDate"],
+                        "required": [
+                            "campaignId",
+                            "startDate",
+                            "endDate"
+                        ],
                         "additionalProperties": false,
                         "description": "Campaign and date range to retrieve aggregate statistics for"
                     },
@@ -525,9 +583,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_getleadfullstatus",
             "name": "get-lead-full-status",
-            "output": ["ActionOutput_lemlist_getleadfullstatus"],
+            "output": [
+                "ActionOutput_lemlist_getleadfullstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_getleadfullstatus", "ActionOutput_lemlist_getleadfullstatus"],
+            "usedModels": [
+                "ActionInput_lemlist_getleadfullstatus",
+                "ActionOutput_lemlist_getleadfullstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -539,7 +602,9 @@
                                 "description": "Email address of the lead to look up. Example: \"john.doe@domain.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Lookup criteria for the lead whose consolidated cross-campaign status is requested"
                     },
@@ -625,19 +690,30 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["_id", "type", "createdAt"],
+                                                "required": [
+                                                    "_id",
+                                                    "type",
+                                                    "createdAt"
+                                                ],
                                                 "additionalProperties": {}
                                             },
                                             "description": "Most recent engagement activities recorded for the lead in this campaign (sends, opens, clicks, replies, bounces, etc.); up to 50, empty when none have been recorded yet"
                                         }
                                     },
-                                    "required": ["campaignId", "activities"],
+                                    "required": [
+                                        "campaignId",
+                                        "activities"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "One entry per campaign the lead is currently enrolled in; empty when found is false"
                             }
                         },
-                        "required": ["email", "found", "enrollments"],
+                        "required": [
+                            "email",
+                            "found",
+                            "enrollments"
+                        ],
                         "additionalProperties": false,
                         "description": "Consolidated 'where does this lead stand' view across every campaign the lead is enrolled in"
                     }
@@ -651,9 +727,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_getlead",
             "name": "get-lead",
-            "output": ["ActionOutput_lemlist_getlead"],
+            "output": [
+                "ActionOutput_lemlist_getlead"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_getlead", "ActionOutput_lemlist_getlead"],
+            "usedModels": [
+                "ActionInput_lemlist_getlead",
+                "ActionOutput_lemlist_getlead"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -665,7 +746,9 @@
                                 "description": "Email address of the lead to retrieve. The lookup is account-wide, so no campaign ID is required. Example: \"john.doe@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for retrieving a single lemlist lead by email address."
                     },
@@ -717,7 +800,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "A single lemlist lead with its profile fields, identifiers, and campaign association."
                     }
@@ -731,9 +817,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_getteamcredits",
             "name": "get-team-credits",
-            "output": ["ActionOutput_lemlist_getteamcredits"],
+            "output": [
+                "ActionOutput_lemlist_getteamcredits"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_getteamcredits", "ActionOutput_lemlist_getteamcredits"],
+            "usedModels": [
+                "ActionInput_lemlist_getteamcredits",
+                "ActionOutput_lemlist_getteamcredits"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -777,17 +868,28 @@
                                                 "description": "Remaining credits that were purchased separately."
                                             }
                                         },
-                                        "required": ["total", "freemium", "subscription", "gifted", "paid"],
+                                        "required": [
+                                            "total",
+                                            "freemium",
+                                            "subscription",
+                                            "gifted",
+                                            "paid"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Breakdown of the remaining credit balance by source."
                                     }
                                 },
-                                "required": ["remaining"],
+                                "required": [
+                                    "remaining"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Detailed credit balance information."
                             }
                         },
-                        "required": ["credits", "details"],
+                        "required": [
+                            "credits",
+                            "details"
+                        ],
                         "additionalProperties": false,
                         "description": "The team's remaining enrichment/email-finding credit balance."
                     }
@@ -801,9 +903,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_getteam",
             "name": "get-team",
-            "output": ["ActionOutput_lemlist_getteam"],
+            "output": [
+                "ActionOutput_lemlist_getteam"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_getteam", "ActionOutput_lemlist_getteam"],
+            "usedModels": [
+                "ActionInput_lemlist_getteam",
+                "ActionOutput_lemlist_getteam"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -864,9 +971,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_lemlist_getuser"],
+            "output": [
+                "ActionOutput_lemlist_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_getuser", "ActionOutput_lemlist_getuser"],
+            "usedModels": [
+                "ActionInput_lemlist_getuser",
+                "ActionOutput_lemlist_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -878,7 +990,9 @@
                                 "description": "The unique identifier of the user, e.g. a `usr_...` id from the team's `userIds` array or a campaign's `createdBy`. Example: \"usr_eSrHPSoL9QVPUOsho\"."
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for fetching a single lemlist team member by user ID."
                     },
@@ -978,7 +1092,12 @@
                                 "description": "Email mailboxes connected to this user. Empty when the user has no connected mailboxes."
                             }
                         },
-                        "required": ["_id", "email", "role", "mailboxes"],
+                        "required": [
+                            "_id",
+                            "email",
+                            "role",
+                            "mailboxes"
+                        ],
                         "additionalProperties": false,
                         "description": "A lemlist user (team member) with their connected sending channels."
                     }
@@ -992,9 +1111,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_listcampaignactivities",
             "name": "list-campaign-activities",
-            "output": ["ActionOutput_lemlist_listcampaignactivities"],
+            "output": [
+                "ActionOutput_lemlist_listcampaignactivities"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_listcampaignactivities", "ActionOutput_lemlist_listcampaignactivities"],
+            "usedModels": [
+                "ActionInput_lemlist_listcampaignactivities",
+                "ActionOutput_lemlist_listcampaignactivities"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1221,7 +1345,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["_id", "type", "createdAt"],
+                                    "required": [
+                                        "_id",
+                                        "type",
+                                        "createdAt"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Activity events matching the requested filters."
@@ -1233,7 +1361,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["activities"],
+                        "required": [
+                            "activities"
+                        ],
                         "additionalProperties": false,
                         "description": "The matching activity events plus the offset to fetch the next page when more results may exist."
                     }
@@ -1247,9 +1377,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_listcampaigns",
             "name": "list-campaigns",
-            "output": ["ActionOutput_lemlist_listcampaigns"],
+            "output": [
+                "ActionOutput_lemlist_listcampaigns"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_listcampaigns", "ActionOutput_lemlist_listcampaigns"],
+            "usedModels": [
+                "ActionInput_lemlist_listcampaigns",
+                "ActionOutput_lemlist_listcampaigns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1337,7 +1472,11 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "status"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "status"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A lemlist campaign."
                                 },
@@ -1348,7 +1487,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaigns"],
+                        "required": [
+                            "campaigns"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of lemlist campaigns."
                     }
@@ -1362,9 +1503,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_listunsubscribes",
             "name": "list-unsubscribes",
-            "output": ["ActionOutput_lemlist_listunsubscribes"],
+            "output": [
+                "ActionOutput_lemlist_listunsubscribes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_listunsubscribes", "ActionOutput_lemlist_listunsubscribes"],
+            "usedModels": [
+                "ActionInput_lemlist_listunsubscribes",
+                "ActionOutput_lemlist_listunsubscribes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1399,13 +1545,20 @@
                                             "description": "How the suppression was created, e.g. \"api\" or \"user\"."
                                         }
                                     },
-                                    "required": ["_id", "createdAt", "value", "source"],
+                                    "required": [
+                                        "_id",
+                                        "createdAt",
+                                        "value",
+                                        "source"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Every account-wide unsubscribed/suppressed value on the lemlist account."
                             }
                         },
-                        "required": ["unsubscribes"],
+                        "required": [
+                            "unsubscribes"
+                        ],
                         "additionalProperties": false,
                         "description": "The full account-wide unsubscribe list."
                     }
@@ -1419,9 +1572,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_pausecampaign",
             "name": "pause-campaign",
-            "output": ["ActionOutput_lemlist_pausecampaign"],
+            "output": [
+                "ActionOutput_lemlist_pausecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_pausecampaign", "ActionOutput_lemlist_pausecampaign"],
+            "usedModels": [
+                "ActionInput_lemlist_pausecampaign",
+                "ActionOutput_lemlist_pausecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1433,7 +1591,9 @@
                                 "description": "Unique identifier of the campaign to pause. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
                             }
                         },
-                        "required": ["campaignId"],
+                        "required": [
+                            "campaignId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for pausing a lemlist campaign."
                     },
@@ -1449,7 +1609,10 @@
                                 "description": "Campaign state after this call, as reported by lemlist. Expected to be \"paused\" when the campaign was running."
                             }
                         },
-                        "required": ["_id", "state"],
+                        "required": [
+                            "_id",
+                            "state"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of pausing a lemlist campaign."
                     }
@@ -1463,9 +1626,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_removecampaignlead",
             "name": "remove-campaign-lead",
-            "output": ["ActionOutput_lemlist_removecampaignlead"],
+            "output": [
+                "ActionOutput_lemlist_removecampaignlead"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_removecampaignlead", "ActionOutput_lemlist_removecampaignlead"],
+            "usedModels": [
+                "ActionInput_lemlist_removecampaignlead",
+                "ActionOutput_lemlist_removecampaignlead"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1481,7 +1649,10 @@
                                 "description": "The email address of the lead to remove from the campaign. Example: \"alex.doe@example.com\""
                             }
                         },
-                        "required": ["campaignId", "email"],
+                        "required": [
+                            "campaignId",
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for removing a lead from a lemlist campaign"
                     },
@@ -1538,9 +1709,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_removeleadeverywhere",
             "name": "remove-lead-everywhere",
-            "output": ["ActionOutput_lemlist_removeleadeverywhere"],
+            "output": [
+                "ActionOutput_lemlist_removeleadeverywhere"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_removeleadeverywhere", "ActionOutput_lemlist_removeleadeverywhere"],
+            "usedModels": [
+                "ActionInput_lemlist_removeleadeverywhere",
+                "ActionOutput_lemlist_removeleadeverywhere"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1552,7 +1728,9 @@
                                 "description": "Email address of the lead to remove from every campaign and suppress account-wide. Example: \"jane.doe@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Compliance request: remove a lead from all of its current campaign enrollments and unsubscribe it account-wide, e.g. a 'this person asked to be fully removed' request."
                     },
@@ -1578,11 +1756,17 @@
                                         },
                                         "outcome": {
                                             "type": "string",
-                                            "enum": ["unsubscribed", "already_suppressed"],
+                                            "enum": [
+                                                "unsubscribed",
+                                                "already_suppressed"
+                                            ],
                                             "description": "'unsubscribed' when this call performed the removal; 'already_suppressed' when lemlist reported the email as already unsubscribed (expected once the first removal succeeds, since the suppression is account-wide). Both mean the lead is fully removed."
                                         }
                                     },
-                                    "required": ["campaignId", "outcome"],
+                                    "required": [
+                                        "campaignId",
+                                        "outcome"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "One entry per campaign enrollment discovered for the lead, with the outcome of its removal. Empty when the lead had no active enrollments."
@@ -1596,7 +1780,12 @@
                                 "description": "Human-readable summary of the outcome."
                             }
                         },
-                        "required": ["email", "removedFromCampaigns", "suppressedAccountWide", "message"],
+                        "required": [
+                            "email",
+                            "removedFromCampaigns",
+                            "suppressedAccountWide",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of removing the lead from every campaign it was enrolled in and suppressing it account-wide."
                     }
@@ -1610,9 +1799,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_resubscribecontact",
             "name": "resubscribe-contact",
-            "output": ["ActionOutput_lemlist_resubscribecontact"],
+            "output": [
+                "ActionOutput_lemlist_resubscribecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_resubscribecontact", "ActionOutput_lemlist_resubscribecontact"],
+            "usedModels": [
+                "ActionInput_lemlist_resubscribecontact",
+                "ActionOutput_lemlist_resubscribecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1624,7 +1818,9 @@
                                 "description": "The value to remove from the account-wide unsubscribe list: an email address, domain, phone number, or LinkedIn URL. Example: \"john.doe@example.com\""
                             }
                         },
-                        "required": ["value"],
+                        "required": [
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for resubscribing a value to the account."
                     },
@@ -1640,7 +1836,10 @@
                                 "description": "The value that was removed from the unsubscribe list. Example: \"john.doe@example.com\""
                             }
                         },
-                        "required": ["_id", "value"],
+                        "required": [
+                            "_id",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "The unsubscribe entry that was removed."
                     }
@@ -1654,9 +1853,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_resumecampaign",
             "name": "resume-campaign",
-            "output": ["ActionOutput_lemlist_resumecampaign"],
+            "output": [
+                "ActionOutput_lemlist_resumecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_resumecampaign", "ActionOutput_lemlist_resumecampaign"],
+            "usedModels": [
+                "ActionInput_lemlist_resumecampaign",
+                "ActionOutput_lemlist_resumecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1668,7 +1872,9 @@
                                 "description": "The unique identifier of the campaign to resume. Example: \"cam_A1B2C3D4E5F6G7H8I9\""
                             }
                         },
-                        "required": ["campaignId"],
+                        "required": [
+                            "campaignId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for resuming a lemlist campaign"
                     },
@@ -1684,7 +1890,10 @@
                                 "description": "The campaign state after this call. Example: \"running\""
                             }
                         },
-                        "required": ["id", "state"],
+                        "required": [
+                            "id",
+                            "state"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of resuming a lemlist campaign"
                     }
@@ -1698,9 +1907,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_unsubscribecontact",
             "name": "unsubscribe-contact",
-            "output": ["ActionOutput_lemlist_unsubscribecontact"],
+            "output": [
+                "ActionOutput_lemlist_unsubscribecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_unsubscribecontact", "ActionOutput_lemlist_unsubscribecontact"],
+            "usedModels": [
+                "ActionInput_lemlist_unsubscribecontact",
+                "ActionOutput_lemlist_unsubscribecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1713,7 +1927,9 @@
                                 "description": "Value to suppress account-wide: an email address, domain, phone number, or LinkedIn URL. Example: \"john.doe@example.com\""
                             }
                         },
-                        "required": ["value"],
+                        "required": [
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for unsubscribing a value from all outreach"
                     },
@@ -1737,7 +1953,12 @@
                                 "description": "Origin of the unsubscription. Known values: \"api\", \"bounced\", \"lead\", \"user\", \"abuse\""
                             }
                         },
-                        "required": ["_id", "value", "variable", "source"],
+                        "required": [
+                            "_id",
+                            "value",
+                            "variable",
+                            "source"
+                        ],
                         "additionalProperties": false,
                         "description": "The created (or existing) account-wide unsubscribe record"
                     }
@@ -1751,9 +1972,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_updatecampaignlead",
             "name": "update-campaign-lead",
-            "output": ["ActionOutput_lemlist_updatecampaignlead"],
+            "output": [
+                "ActionOutput_lemlist_updatecampaignlead"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_updatecampaignlead", "ActionOutput_lemlist_updatecampaignlead"],
+            "usedModels": [
+                "ActionInput_lemlist_updatecampaignlead",
+                "ActionOutput_lemlist_updatecampaignlead"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1791,10 +2017,17 @@
                             "updateStrategy": {
                                 "description": "How sent values are applied to the lead, its contact and its company. \"overwrite\" (default) replaces stored values and an empty string clears a field; \"overwriteIgnoreEmpty\" ignores empty values; \"fillEmptyOnly\" only fills fields that are currently empty.",
                                 "type": "string",
-                                "enum": ["overwrite", "overwriteIgnoreEmpty", "fillEmptyOnly"]
+                                "enum": [
+                                    "overwrite",
+                                    "overwriteIgnoreEmpty",
+                                    "fillEmptyOnly"
+                                ]
                             }
                         },
-                        "required": ["campaignId", "email"],
+                        "required": [
+                            "campaignId",
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating a lead in a lemlist campaign."
                     },
@@ -1880,12 +2113,21 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["code"],
+                                    "required": [
+                                        "code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["_id", "campaignId", "campaignName", "leadUrl", "email", "isPaused"],
+                        "required": [
+                            "_id",
+                            "campaignId",
+                            "campaignName",
+                            "leadUrl",
+                            "email",
+                            "isPaused"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated campaign lead."
                     }
@@ -1899,9 +2141,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_updatecampaign",
             "name": "update-campaign",
-            "output": ["ActionOutput_lemlist_updatecampaign"],
+            "output": [
+                "ActionOutput_lemlist_updatecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_updatecampaign", "ActionOutput_lemlist_updatecampaign"],
+            "usedModels": [
+                "ActionInput_lemlist_updatecampaign",
+                "ActionOutput_lemlist_updatecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1984,7 +2231,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["deliverable", "risky", "undeliverable", "unverified"]
+                                    "enum": [
+                                        "deliverable",
+                                        "risky",
+                                        "undeliverable",
+                                        "unverified"
+                                    ]
                                 }
                             },
                             "aiFeatures": {
@@ -2074,7 +2326,11 @@
                                     "campaignProgress": {
                                         "description": "What happens to the lead on reply. One of: continue, pause, stop.",
                                         "type": "string",
-                                        "enum": ["continue", "pause", "stop"]
+                                        "enum": [
+                                            "continue",
+                                            "pause",
+                                            "stop"
+                                        ]
                                     },
                                     "propagateProgressToCompany": {
                                         "description": "Apply the same action to other leads in the same company.",
@@ -2098,7 +2354,11 @@
                                     "campaignProgress": {
                                         "description": "What happens to the lead on link click. One of: continue, pause, stop.",
                                         "type": "string",
-                                        "enum": ["continue", "pause", "stop"]
+                                        "enum": [
+                                            "continue",
+                                            "pause",
+                                            "stop"
+                                        ]
                                     },
                                     "propagateProgressToCompany": {
                                         "description": "Apply the same action to other leads in the same company.",
@@ -2121,7 +2381,11 @@
                                     "campaignProgress": {
                                         "description": "What happens to the lead when a meeting is booked. One of: continue, pause, stop.",
                                         "type": "string",
-                                        "enum": ["continue", "pause", "stop"]
+                                        "enum": [
+                                            "continue",
+                                            "pause",
+                                            "stop"
+                                        ]
                                     },
                                     "propagateProgressToCompany": {
                                         "description": "Apply the same action to other leads in the same company.",
@@ -2131,7 +2395,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["campaignId"],
+                        "required": [
+                            "campaignId"
+                        ],
                         "additionalProperties": false,
                         "description": "Campaign fields to update. Partial merge: only the provided fields are changed. Provide at least one field besides 'campaignId'."
                     },
@@ -2210,7 +2476,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["deliverable", "risky", "undeliverable", "unverified"]
+                                    "enum": [
+                                        "deliverable",
+                                        "risky",
+                                        "undeliverable",
+                                        "unverified"
+                                    ]
                                 }
                             },
                             "aiFeatures": {
@@ -2300,7 +2571,11 @@
                                     "campaignProgress": {
                                         "description": "What happens to the lead on reply. One of: continue, pause, stop.",
                                         "type": "string",
-                                        "enum": ["continue", "pause", "stop"]
+                                        "enum": [
+                                            "continue",
+                                            "pause",
+                                            "stop"
+                                        ]
                                     },
                                     "propagateProgressToCompany": {
                                         "description": "Apply the same action to other leads in the same company.",
@@ -2324,7 +2599,11 @@
                                     "campaignProgress": {
                                         "description": "What happens to the lead on link click. One of: continue, pause, stop.",
                                         "type": "string",
-                                        "enum": ["continue", "pause", "stop"]
+                                        "enum": [
+                                            "continue",
+                                            "pause",
+                                            "stop"
+                                        ]
                                     },
                                     "propagateProgressToCompany": {
                                         "description": "Apply the same action to other leads in the same company.",
@@ -2347,7 +2626,11 @@
                                     "campaignProgress": {
                                         "description": "What happens to the lead when a meeting is booked. One of: continue, pause, stop.",
                                         "type": "string",
-                                        "enum": ["continue", "pause", "stop"]
+                                        "enum": [
+                                            "continue",
+                                            "pause",
+                                            "stop"
+                                        ]
                                     },
                                     "propagateProgressToCompany": {
                                         "description": "Apply the same action to other leads in the same company.",
@@ -2418,9 +2701,14 @@
             "endpoint": null,
             "input": "ActionInput_lemlist_verifyemail",
             "name": "verify-email",
-            "output": ["ActionOutput_lemlist_verifyemail"],
+            "output": [
+                "ActionOutput_lemlist_verifyemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lemlist_verifyemail", "ActionOutput_lemlist_verifyemail"],
+            "usedModels": [
+                "ActionInput_lemlist_verifyemail",
+                "ActionOutput_lemlist_verifyemail"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2432,7 +2720,9 @@
                                 "description": "Email address to verify for deliverability. Sent to lemlist as a query parameter, not in a request body. Example: \"jane.doe@example.com\"."
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for starting an asynchronous email-address verification."
                     },
@@ -2456,7 +2746,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["started"],
+                        "required": [
+                            "started"
+                        ],
                         "additionalProperties": false,
                         "description": "Outcome of requesting an asynchronous email-address verification. The verification result itself is retrieved separately with the returned job ID."
                     }
@@ -2473,12 +2765,16 @@
             "endpoints": [],
             "input": null,
             "name": "campaign-leads",
-            "output": ["CampaignLead"],
+            "output": [
+                "CampaignLead"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CampaignLead"],
+            "usedModels": [
+                "CampaignLead"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2507,13 +2803,21 @@
                                 "description": "Last reported state of the lead within this campaign, e.g. scanned, contacted, interested. Note: lemlist does not update this value when a lead is later removed or unsubscribed, so it reflects the state at the last reported activity rather than live membership."
                             }
                         },
-                        "required": ["id", "campaignId", "leadId", "contactId", "state"],
+                        "required": [
+                            "id",
+                            "campaignId",
+                            "leadId",
+                            "contactId",
+                            "state"
+                        ],
                         "additionalProperties": false,
                         "description": "A lead enrolled in a lemlist campaign, as listed by the campaign leads endpoint."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2522,12 +2826,16 @@
             "endpoints": [],
             "input": null,
             "name": "campaigns",
-            "output": ["Campaign"],
+            "output": [
+                "Campaign"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Campaign"],
+            "usedModels": [
+                "Campaign"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2564,13 +2872,22 @@
                                 "description": "Lemlist user id of the campaign's creator. Example: 'usr_22HzEMYb8ZvdNstrC'"
                             }
                         },
-                        "required": ["id", "name", "status", "sequenceId", "createdAt", "createdBy"],
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "sequenceId",
+                            "createdAt",
+                            "createdBy"
+                        ],
                         "additionalProperties": false,
                         "description": "A lemlist campaign with its core metadata as returned by GET /api/campaigns"
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

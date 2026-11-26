@@ -7,9 +7,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_bookmarktweet",
             "name": "bookmark-tweet",
-            "output": ["ActionOutput_twitter_v2_bookmarktweet"],
-            "scopes": ["tweet.read", "users.read", "bookmark.write"],
-            "usedModels": ["ActionInput_twitter_v2_bookmarktweet", "ActionOutput_twitter_v2_bookmarktweet"],
+            "output": [
+                "ActionOutput_twitter_v2_bookmarktweet"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read",
+                "bookmark.write"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_bookmarktweet",
+                "ActionOutput_twitter_v2_bookmarktweet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -25,7 +34,10 @@
                                 "description": "The ID of the Tweet to bookmark. Example: \"1460323737035677698\""
                             }
                         },
-                        "required": ["userId", "tweetId"],
+                        "required": [
+                            "userId",
+                            "tweetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_bookmarktweet": {
@@ -35,7 +47,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["bookmarked"],
+                        "required": [
+                            "bookmarked"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -48,9 +62,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_createlikedtweet",
             "name": "create-liked-tweet",
-            "output": ["ActionOutput_twitter_v2_createlikedtweet"],
-            "scopes": ["like.write", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_createlikedtweet", "ActionOutput_twitter_v2_createlikedtweet"],
+            "output": [
+                "ActionOutput_twitter_v2_createlikedtweet"
+            ],
+            "scopes": [
+                "like.write",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_createlikedtweet",
+                "ActionOutput_twitter_v2_createlikedtweet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -66,7 +89,10 @@
                                 "description": "The ID of the Post to like. Example: \"1228393702244134912\""
                             }
                         },
-                        "required": ["userId", "tweetId"],
+                        "required": [
+                            "userId",
+                            "tweetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_createlikedtweet": {
@@ -76,7 +102,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["liked"],
+                        "required": [
+                            "liked"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -89,9 +117,19 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_createlist",
             "name": "create-list",
-            "output": ["ActionOutput_twitter_v2_createlist"],
-            "scopes": ["list.read", "list.write", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_createlist", "ActionOutput_twitter_v2_createlist"],
+            "output": [
+                "ActionOutput_twitter_v2_createlist"
+            ],
+            "scopes": [
+                "list.read",
+                "list.write",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_createlist",
+                "ActionOutput_twitter_v2_createlist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -111,7 +149,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_createlist": {
@@ -126,7 +166,10 @@
                                 "description": "Name of the created list."
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -139,9 +182,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_createtweet",
             "name": "create-tweet",
-            "output": ["ActionOutput_twitter_v2_createtweet"],
-            "scopes": ["tweet.read", "tweet.write", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_createtweet", "ActionOutput_twitter_v2_createtweet"],
+            "output": [
+                "ActionOutput_twitter_v2_createtweet"
+            ],
+            "scopes": [
+                "tweet.read",
+                "tweet.write",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_createtweet",
+                "ActionOutput_twitter_v2_createtweet"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -169,7 +221,9 @@
                                 }
                             }
                         },
-                        "required": ["text"],
+                        "required": [
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_createtweet": {
@@ -184,7 +238,10 @@
                                 "description": "The text content of the created tweet."
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -197,9 +254,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_deletelikedtweet",
             "name": "delete-liked-tweet",
-            "output": ["ActionOutput_twitter_v2_deletelikedtweet"],
-            "scopes": ["tweet.read", "users.read", "like.write"],
-            "usedModels": ["ActionInput_twitter_v2_deletelikedtweet", "ActionOutput_twitter_v2_deletelikedtweet"],
+            "output": [
+                "ActionOutput_twitter_v2_deletelikedtweet"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read",
+                "like.write"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_deletelikedtweet",
+                "ActionOutput_twitter_v2_deletelikedtweet"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -211,7 +277,9 @@
                                 "description": "The ID of the liked tweet to remove. Example: \"1346889436626259968\""
                             }
                         },
-                        "required": ["tweet_id"],
+                        "required": [
+                            "tweet_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_deletelikedtweet": {
@@ -224,7 +292,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -237,9 +307,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_deletelist",
             "name": "delete-list",
-            "output": ["ActionOutput_twitter_v2_deletelist"],
-            "scopes": ["list.write", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_deletelist", "ActionOutput_twitter_v2_deletelist"],
+            "output": [
+                "ActionOutput_twitter_v2_deletelist"
+            ],
+            "scopes": [
+                "list.write",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_deletelist",
+                "ActionOutput_twitter_v2_deletelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -251,7 +330,9 @@
                                 "description": "The ID of the List to delete. Example: \"1234567890\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_deletelist": {
@@ -261,7 +342,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["deleted"],
+                        "required": [
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -274,9 +357,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_deletetweet",
             "name": "delete-tweet",
-            "output": ["ActionOutput_twitter_v2_deletetweet"],
-            "scopes": ["tweet.read", "tweet.write", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_deletetweet", "ActionOutput_twitter_v2_deletetweet"],
+            "output": [
+                "ActionOutput_twitter_v2_deletetweet"
+            ],
+            "scopes": [
+                "tweet.read",
+                "tweet.write",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_deletetweet",
+                "ActionOutput_twitter_v2_deletetweet"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -288,7 +380,9 @@
                                 "description": "The ID of the tweet to be deleted. Example: \"1346889436626259968\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_deletetweet": {
@@ -304,7 +398,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -317,9 +413,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_followuser",
             "name": "follow-user",
-            "output": ["ActionOutput_twitter_v2_followuser"],
-            "scopes": ["follows.write", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_followuser", "ActionOutput_twitter_v2_followuser"],
+            "output": [
+                "ActionOutput_twitter_v2_followuser"
+            ],
+            "scopes": [
+                "follows.write",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_followuser",
+                "ActionOutput_twitter_v2_followuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -331,7 +436,9 @@
                                 "description": "The user ID of the user to follow. Example: \"2244994945\""
                             }
                         },
-                        "required": ["target_user_id"],
+                        "required": [
+                            "target_user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_followuser": {
@@ -346,7 +453,10 @@
                                 "description": "Whether the follow is pending (target user has protected account and must accept the request)"
                             }
                         },
-                        "required": ["following", "pending_follow"],
+                        "required": [
+                            "following",
+                            "pending_follow"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -359,9 +469,17 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_getlikedtweet",
             "name": "get-liked-tweet",
-            "output": ["ActionOutput_twitter_v2_getlikedtweet"],
-            "scopes": ["tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_getlikedtweet", "ActionOutput_twitter_v2_getlikedtweet"],
+            "output": [
+                "ActionOutput_twitter_v2_getlikedtweet"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_getlikedtweet",
+                "ActionOutput_twitter_v2_getlikedtweet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -373,7 +491,9 @@
                                 "description": "The unique identifier of the tweet to retrieve. Example: \"1346889436626259968\""
                             }
                         },
-                        "required": ["tweet_id"],
+                        "required": [
+                            "tweet_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_getlikedtweet": {
@@ -455,15 +575,25 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["retweeted", "quoted", "replied_to"]
+                                            "enum": [
+                                                "retweeted",
+                                                "quoted",
+                                                "replied_to"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -476,9 +606,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_twitter_v2_getlist"],
-            "scopes": ["list.read", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_getlist", "ActionOutput_twitter_v2_getlist"],
+            "output": [
+                "ActionOutput_twitter_v2_getlist"
+            ],
+            "scopes": [
+                "list.read",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_getlist",
+                "ActionOutput_twitter_v2_getlist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -490,7 +629,9 @@
                                 "description": "The ID of the List to lookup. Example: \"1355797419175383040\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_getlist": {
@@ -521,7 +662,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -534,9 +678,17 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_getmention",
             "name": "get-mention",
-            "output": ["ActionOutput_twitter_v2_getmention"],
-            "scopes": ["tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_getmention", "ActionOutput_twitter_v2_getmention"],
+            "output": [
+                "ActionOutput_twitter_v2_getmention"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_getmention",
+                "ActionOutput_twitter_v2_getmention"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -548,7 +700,9 @@
                                 "description": "The unique identifier of the Tweet to retrieve. Example: \"1234567890\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_getmention": {
@@ -614,7 +768,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "id"],
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -631,7 +788,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "text", "edit_history_tweet_ids"],
+                        "required": [
+                            "id",
+                            "text",
+                            "edit_history_tweet_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -644,9 +805,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_getspace",
             "name": "get-space",
-            "output": ["ActionOutput_twitter_v2_getspace"],
-            "scopes": ["space.read", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_getspace", "ActionOutput_twitter_v2_getspace"],
+            "output": [
+                "ActionOutput_twitter_v2_getspace"
+            ],
+            "scopes": [
+                "space.read",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_getspace",
+                "ActionOutput_twitter_v2_getspace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -658,7 +828,9 @@
                                 "description": "The unique identifier of the Space to retrieve. Example: \"1zqKVXPQhvZJB\""
                             }
                         },
-                        "required": ["space_id"],
+                        "required": [
+                            "space_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_getspace": {
@@ -669,7 +841,11 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["live", "scheduled", "ended"]
+                                "enum": [
+                                    "live",
+                                    "scheduled",
+                                    "ended"
+                                ]
                             },
                             "created_at": {
                                 "type": "string",
@@ -743,7 +919,10 @@
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                             }
                         },
-                        "required": ["id", "state"],
+                        "required": [
+                            "id",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -756,9 +935,17 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_gettweet",
             "name": "get-tweet",
-            "output": ["ActionOutput_twitter_v2_gettweet"],
-            "scopes": ["tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_gettweet", "ActionOutput_twitter_v2_gettweet"],
+            "output": [
+                "ActionOutput_twitter_v2_gettweet"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_gettweet",
+                "ActionOutput_twitter_v2_gettweet"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -770,7 +957,9 @@
                                 "description": "The unique identifier of the Tweet to retrieve. Example: \"1050118621198921728\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_gettweet": {
@@ -842,7 +1031,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "id"],
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -874,7 +1066,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -887,9 +1082,17 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_twitter_v2_getuser"],
-            "scopes": ["tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_getuser", "ActionOutput_twitter_v2_getuser"],
+            "output": [
+                "ActionOutput_twitter_v2_getuser"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_getuser",
+                "ActionOutput_twitter_v2_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -901,7 +1104,9 @@
                                 "description": "The ID of the User to lookup. Example: \"2244994945\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_getuser": {
@@ -971,7 +1176,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "username"],
+                        "required": [
+                            "id",
+                            "name",
+                            "username"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -984,9 +1193,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_liketweet",
             "name": "like-tweet",
-            "output": ["ActionOutput_twitter_v2_liketweet"],
-            "scopes": ["like.write", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_liketweet", "ActionOutput_twitter_v2_liketweet"],
+            "output": [
+                "ActionOutput_twitter_v2_liketweet"
+            ],
+            "scopes": [
+                "like.write",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_liketweet",
+                "ActionOutput_twitter_v2_liketweet"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -998,7 +1216,9 @@
                                 "description": "The ID of the tweet to like. Example: \"1346889436626259968\""
                             }
                         },
-                        "required": ["tweetId"],
+                        "required": [
+                            "tweetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_liketweet": {
@@ -1009,7 +1229,9 @@
                                 "description": "Whether the tweet was successfully liked"
                             }
                         },
-                        "required": ["liked"],
+                        "required": [
+                            "liked"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1022,9 +1244,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_listlikedtweets",
             "name": "list-liked-tweets",
-            "output": ["ActionOutput_twitter_v2_listlikedtweets"],
-            "scopes": ["like.read", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_listlikedtweets", "ActionOutput_twitter_v2_listlikedtweets"],
+            "output": [
+                "ActionOutput_twitter_v2_listlikedtweets"
+            ],
+            "scopes": [
+                "like.read",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_listlikedtweets",
+                "ActionOutput_twitter_v2_listlikedtweets"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1046,7 +1277,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_listlikedtweets": {
@@ -1100,7 +1333,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of liked tweets"
@@ -1118,7 +1353,10 @@
                                 "description": "Number of results returned in this response."
                             }
                         },
-                        "required": ["tweets", "resultCount"],
+                        "required": [
+                            "tweets",
+                            "resultCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1131,9 +1369,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_twitter_v2_listlists"],
-            "scopes": ["list.read", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_listlists", "ActionOutput_twitter_v2_listlists"],
+            "output": [
+                "ActionOutput_twitter_v2_listlists"
+            ],
+            "scopes": [
+                "list.read",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_listlists",
+                "ActionOutput_twitter_v2_listlists"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1155,7 +1402,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_listlists": {
@@ -1191,7 +1440,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1205,7 +1457,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["lists", "resultCount"],
+                        "required": [
+                            "lists",
+                            "resultCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1218,9 +1473,17 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_listmentions",
             "name": "list-mentions",
-            "output": ["ActionOutput_twitter_v2_listmentions"],
-            "scopes": ["tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_listmentions", "ActionOutput_twitter_v2_listmentions"],
+            "output": [
+                "ActionOutput_twitter_v2_listmentions"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_listmentions",
+                "ActionOutput_twitter_v2_listmentions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1262,7 +1525,10 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["replies", "retweets"]
+                                    "enum": [
+                                        "replies",
+                                        "retweets"
+                                    ]
                                 }
                             },
                             "tweet_fields": {
@@ -1290,7 +1556,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_listmentions": {
@@ -1335,10 +1603,17 @@
                                                     },
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["retweeted", "quoted", "replied_to"]
+                                                        "enum": [
+                                                            "retweeted",
+                                                            "quoted",
+                                                            "replied_to"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["id", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1409,7 +1684,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "text"],
+                                    "required": [
+                                        "id",
+                                        "text"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1478,7 +1756,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "username", "name"],
+                                            "required": [
+                                                "id",
+                                                "username",
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1521,10 +1803,17 @@
                                                             },
                                                             "type": {
                                                                 "type": "string",
-                                                                "enum": ["retweeted", "quoted", "replied_to"]
+                                                                "enum": [
+                                                                    "retweeted",
+                                                                    "quoted",
+                                                                    "replied_to"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["id", "type"],
+                                                        "required": [
+                                                            "id",
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 },
@@ -1595,7 +1884,10 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["id", "text"],
+                                            "required": [
+                                                "id",
+                                                "text"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1636,12 +1928,18 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["content_type", "url"],
+                                                        "required": [
+                                                            "content_type",
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["media_key", "type"],
+                                            "required": [
+                                                "media_key",
+                                                "type"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1654,7 +1952,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1667,7 +1967,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
@@ -1692,7 +1994,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["items", "result_count"],
+                        "required": [
+                            "items",
+                            "result_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1705,9 +2010,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_listspaces",
             "name": "list-spaces",
-            "output": ["ActionOutput_twitter_v2_listspaces"],
-            "scopes": ["space.read", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_listspaces", "ActionOutput_twitter_v2_listspaces"],
+            "output": [
+                "ActionOutput_twitter_v2_listspaces"
+            ],
+            "scopes": [
+                "space.read",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_listspaces",
+                "ActionOutput_twitter_v2_listspaces"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1722,7 +2036,11 @@
                             "state": {
                                 "description": "Filter by Space state: live, scheduled, or all. Default: all",
                                 "type": "string",
-                                "enum": ["live", "scheduled", "all"]
+                                "enum": [
+                                    "live",
+                                    "scheduled",
+                                    "all"
+                                ]
                             },
                             "max_results": {
                                 "description": "Maximum number of results to return (1-100). Default: 100",
@@ -1735,7 +2053,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_listspaces": {
@@ -1751,7 +2071,10 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["live", "scheduled"]
+                                            "enum": [
+                                                "live",
+                                                "scheduled"
+                                            ]
                                         },
                                         "title": {
                                             "type": "string"
@@ -1811,7 +2134,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "state"],
+                                    "required": [
+                                        "id",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1819,7 +2145,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["spaces"],
+                        "required": [
+                            "spaces"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1832,9 +2160,17 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_listtweets",
             "name": "list-tweets",
-            "output": ["ActionOutput_twitter_v2_listtweets"],
-            "scopes": ["tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_listtweets", "ActionOutput_twitter_v2_listtweets"],
+            "output": [
+                "ActionOutput_twitter_v2_listtweets"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_listtweets",
+                "ActionOutput_twitter_v2_listtweets"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1876,11 +2212,16 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["replies", "retweets"]
+                                    "enum": [
+                                        "replies",
+                                        "retweets"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_listtweets": {
@@ -1922,13 +2263,20 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["retweeted", "quoted", "replied_to"]
+                                                        "enum": [
+                                                            "retweeted",
+                                                            "quoted",
+                                                            "replied_to"
+                                                        ]
                                                     },
                                                     "id": {
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["type", "id"],
+                                                "required": [
+                                                    "type",
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1964,13 +2312,20 @@
                                         },
                                         "reply_settings": {
                                             "type": "string",
-                                            "enum": ["everyone", "mentionedUsers", "following"]
+                                            "enum": [
+                                                "everyone",
+                                                "mentionedUsers",
+                                                "following"
+                                            ]
                                         },
                                         "source": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "text"],
+                                    "required": [
+                                        "id",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1993,11 +2348,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["result_count"],
+                                "required": [
+                                    "result_count"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["tweets", "meta"],
+                        "required": [
+                            "tweets",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2010,9 +2370,17 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_twitter_v2_listusers"],
-            "scopes": ["tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_listusers", "ActionOutput_twitter_v2_listusers"],
+            "output": [
+                "ActionOutput_twitter_v2_listusers"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_listusers",
+                "ActionOutput_twitter_v2_listusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2110,7 +2478,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name", "username"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "username"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2138,12 +2510,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2156,9 +2532,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_removebookmark",
             "name": "remove-bookmark",
-            "output": ["ActionOutput_twitter_v2_removebookmark"],
-            "scopes": ["bookmark.write", "users.read", "tweet.read"],
-            "usedModels": ["ActionInput_twitter_v2_removebookmark", "ActionOutput_twitter_v2_removebookmark"],
+            "output": [
+                "ActionOutput_twitter_v2_removebookmark"
+            ],
+            "scopes": [
+                "bookmark.write",
+                "users.read",
+                "tweet.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_removebookmark",
+                "ActionOutput_twitter_v2_removebookmark"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2170,7 +2555,9 @@
                                 "description": "The ID of the tweet to remove from bookmarks. Example: \"1234567890\""
                             }
                         },
-                        "required": ["tweet_id"],
+                        "required": [
+                            "tweet_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_removebookmark": {
@@ -2185,7 +2572,10 @@
                                 "description": "The ID of the tweet that was removed from bookmarks"
                             }
                         },
-                        "required": ["bookmark_removed", "tweet_id"],
+                        "required": [
+                            "bookmark_removed",
+                            "tweet_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2198,9 +2588,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_unfollowuser",
             "name": "unfollow-user",
-            "output": ["ActionOutput_twitter_v2_unfollowuser"],
-            "scopes": ["tweet.read", "users.read", "follows.write"],
-            "usedModels": ["ActionInput_twitter_v2_unfollowuser", "ActionOutput_twitter_v2_unfollowuser"],
+            "output": [
+                "ActionOutput_twitter_v2_unfollowuser"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read",
+                "follows.write"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_unfollowuser",
+                "ActionOutput_twitter_v2_unfollowuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2212,7 +2611,9 @@
                                 "description": "The user ID of the user to unfollow. Example: \"123456789\""
                             }
                         },
-                        "required": ["target_user_id"],
+                        "required": [
+                            "target_user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_unfollowuser": {
@@ -2225,7 +2626,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2238,9 +2641,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_unliketweet",
             "name": "unlike-tweet",
-            "output": ["ActionOutput_twitter_v2_unliketweet"],
-            "scopes": ["tweet.read", "users.read", "like.write"],
-            "usedModels": ["ActionInput_twitter_v2_unliketweet", "ActionOutput_twitter_v2_unliketweet"],
+            "output": [
+                "ActionOutput_twitter_v2_unliketweet"
+            ],
+            "scopes": [
+                "tweet.read",
+                "users.read",
+                "like.write"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_unliketweet",
+                "ActionOutput_twitter_v2_unliketweet"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2252,7 +2664,9 @@
                                 "description": "The unique identifier of the Tweet to unlike. Example: \"1234567890123456789\""
                             }
                         },
-                        "required": ["tweet_id"],
+                        "required": [
+                            "tweet_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_unliketweet": {
@@ -2265,7 +2679,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2278,9 +2694,18 @@
             "endpoint": null,
             "input": "ActionInput_twitter_v2_updatelist",
             "name": "update-list",
-            "output": ["ActionOutput_twitter_v2_updatelist"],
-            "scopes": ["list.write", "tweet.read", "users.read"],
-            "usedModels": ["ActionInput_twitter_v2_updatelist", "ActionOutput_twitter_v2_updatelist"],
+            "output": [
+                "ActionOutput_twitter_v2_updatelist"
+            ],
+            "scopes": [
+                "list.write",
+                "tweet.read",
+                "users.read"
+            ],
+            "usedModels": [
+                "ActionInput_twitter_v2_updatelist",
+                "ActionOutput_twitter_v2_updatelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2307,7 +2732,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_twitter_v2_updatelist": {
@@ -2317,7 +2744,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["updated"],
+                        "required": [
+                            "updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2338,12 +2767,20 @@
             ],
             "input": null,
             "name": "liked-tweets",
-            "output": ["LikedTweet"],
+            "output": [
+                "LikedTweet"
+            ],
             "runs": "every hour",
-            "scopes": ["like.read", "tweet.read", "users.read"],
+            "scopes": [
+                "like.read",
+                "tweet.read",
+                "users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LikedTweet"],
+            "usedModels": [
+                "LikedTweet"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2394,12 +2831,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2413,12 +2855,20 @@
             ],
             "input": null,
             "name": "lists",
-            "output": ["List"],
+            "output": [
+                "List"
+            ],
             "runs": "every hour",
-            "scopes": ["list.read", "tweet.read", "users.read"],
+            "scopes": [
+                "list.read",
+                "tweet.read",
+                "users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["List"],
+            "usedModels": [
+                "List"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2455,12 +2905,17 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2474,12 +2929,19 @@
             ],
             "input": null,
             "name": "mentions",
-            "output": ["Mention"],
+            "output": [
+                "Mention"
+            ],
             "runs": "every hour",
-            "scopes": ["tweet.read", "users.read"],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Mention"],
+            "usedModels": [
+                "Mention"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2542,12 +3004,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2561,12 +3027,20 @@
             ],
             "input": null,
             "name": "spaces",
-            "output": ["Space"],
+            "output": [
+                "Space"
+            ],
             "runs": "every hour",
-            "scopes": ["space.read", "tweet.read", "users.read"],
+            "scopes": [
+                "space.read",
+                "tweet.read",
+                "users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Space"],
+            "usedModels": [
+                "Space"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2579,7 +3053,11 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["live", "scheduled", "ended"]
+                                "enum": [
+                                    "live",
+                                    "scheduled",
+                                    "ended"
+                                ]
                             },
                             "title": {
                                 "type": "string"
@@ -2633,7 +3111,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "state"],
+                        "required": [
+                            "id",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2652,12 +3133,19 @@
             ],
             "input": null,
             "name": "tweets",
-            "output": ["Tweet"],
+            "output": [
+                "Tweet"
+            ],
             "runs": "every hour",
-            "scopes": ["tweet.read", "users.read"],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tweet"],
+            "usedModels": [
+                "Tweet"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2690,13 +3178,20 @@
                                     "properties": {
                                         "type": {
                                             "type": "string",
-                                            "enum": ["retweeted", "quoted", "replied_to"]
+                                            "enum": [
+                                                "retweeted",
+                                                "quoted",
+                                                "replied_to"
+                                            ]
                                         },
                                         "id": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "id"],
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2725,12 +3220,17 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2744,12 +3244,19 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["tweet.read", "users.read"],
+            "scopes": [
+                "tweet.read",
+                "users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2815,7 +3322,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "username"],
+                        "required": [
+                            "id",
+                            "name",
+                            "username"
+                        ],
                         "additionalProperties": false
                     }
                 }

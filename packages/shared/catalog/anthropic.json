@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_cancelmessagebatch",
             "name": "cancel-message-batch",
-            "output": ["ActionOutput_anthropic_cancelmessagebatch"],
+            "output": [
+                "ActionOutput_anthropic_cancelmessagebatch"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_cancelmessagebatch", "ActionOutput_anthropic_cancelmessagebatch"],
+            "usedModels": [
+                "ActionInput_anthropic_cancelmessagebatch",
+                "ActionOutput_anthropic_cancelmessagebatch"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -21,7 +26,9 @@
                                 "description": "ID of the Message Batch to cancel. Example: \"msgbatch_013Zva2CMHLNnXjNJJKqJ2EF\""
                             }
                         },
-                        "required": ["message_batch_id"],
+                        "required": [
+                            "message_batch_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_cancelmessagebatch": {
@@ -47,7 +54,11 @@
                             },
                             "processing_status": {
                                 "type": "string",
-                                "enum": ["in_progress", "canceling", "ended"]
+                                "enum": [
+                                    "in_progress",
+                                    "canceling",
+                                    "ended"
+                                ]
                             },
                             "request_counts": {
                                 "type": "object",
@@ -68,7 +79,13 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                "required": [
+                                    "canceled",
+                                    "errored",
+                                    "expired",
+                                    "processing",
+                                    "succeeded"
+                                ],
                                 "additionalProperties": false
                             },
                             "results_url": {
@@ -79,7 +96,14 @@
                                 "const": "message_batch"
                             }
                         },
-                        "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "expires_at",
+                            "processing_status",
+                            "request_counts",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -92,9 +116,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_countmessagetokens",
             "name": "count-message-tokens",
-            "output": ["ActionOutput_anthropic_countmessagetokens"],
+            "output": [
+                "ActionOutput_anthropic_countmessagetokens"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_countmessagetokens", "ActionOutput_anthropic_countmessagetokens"],
+            "usedModels": [
+                "ActionInput_anthropic_countmessagetokens",
+                "ActionOutput_anthropic_countmessagetokens"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -112,7 +141,10 @@
                                     "properties": {
                                         "role": {
                                             "type": "string",
-                                            "enum": ["user", "assistant"]
+                                            "enum": [
+                                                "user",
+                                                "assistant"
+                                            ]
                                         },
                                         "content": {
                                             "anyOf": [
@@ -132,7 +164,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["role", "content"],
+                                    "required": [
+                                        "role",
+                                        "content"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Input messages to count tokens for."
@@ -173,7 +208,10 @@
                                 "description": "Output format configuration."
                             }
                         },
-                        "required": ["model", "messages"],
+                        "required": [
+                            "model",
+                            "messages"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_countmessagetokens": {
@@ -184,7 +222,9 @@
                                 "description": "The total number of tokens across the provided list of messages, system prompt, and tools."
                             }
                         },
-                        "required": ["input_tokens"],
+                        "required": [
+                            "input_tokens"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -197,9 +237,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_createmessagebatch",
             "name": "create-message-batch",
-            "output": ["ActionOutput_anthropic_createmessagebatch"],
+            "output": [
+                "ActionOutput_anthropic_createmessagebatch"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_createmessagebatch", "ActionOutput_anthropic_createmessagebatch"],
+            "usedModels": [
+                "ActionInput_anthropic_createmessagebatch",
+                "ActionOutput_anthropic_createmessagebatch"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -222,13 +267,18 @@
                                             "description": "Messages API creation parameters for the individual request. See https://docs.anthropic.com/en/api/messages"
                                         }
                                     },
-                                    "required": ["custom_id", "params"],
+                                    "required": [
+                                        "custom_id",
+                                        "params"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of requests for prompt completion. Each is an individual request to create a Message."
                             }
                         },
-                        "required": ["requests"],
+                        "required": [
+                            "requests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_createmessagebatch": {
@@ -262,7 +312,13 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["processing", "succeeded", "errored", "canceled", "expired"],
+                                "required": [
+                                    "processing",
+                                    "succeeded",
+                                    "errored",
+                                    "canceled",
+                                    "expired"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -281,7 +337,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "processing_status", "request_counts", "created_at", "expires_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "processing_status",
+                            "request_counts",
+                            "created_at",
+                            "expires_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -294,9 +357,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_createmessage",
             "name": "create-message",
-            "output": ["ActionOutput_anthropic_createmessage"],
+            "output": [
+                "ActionOutput_anthropic_createmessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_createmessage", "ActionOutput_anthropic_createmessage"],
+            "usedModels": [
+                "ActionInput_anthropic_createmessage",
+                "ActionOutput_anthropic_createmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -320,7 +388,10 @@
                                     "properties": {
                                         "role": {
                                             "type": "string",
-                                            "enum": ["user", "assistant"]
+                                            "enum": [
+                                                "user",
+                                                "assistant"
+                                            ]
                                         },
                                         "content": {
                                             "anyOf": [
@@ -342,7 +413,10 @@
                                                                         "type": "string"
                                                                     }
                                                                 },
-                                                                "required": ["type", "text"],
+                                                                "required": [
+                                                                    "type",
+                                                                    "text"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -365,11 +439,18 @@
                                                                                 "type": "string"
                                                                             }
                                                                         },
-                                                                        "required": ["type", "media_type", "data"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "media_type",
+                                                                            "data"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 },
-                                                                "required": ["type", "source"],
+                                                                "required": [
+                                                                    "type",
+                                                                    "source"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -393,7 +474,12 @@
                                                                         "additionalProperties": {}
                                                                     }
                                                                 },
-                                                                "required": ["type", "id", "name", "input"],
+                                                                "required": [
+                                                                    "type",
+                                                                    "id",
+                                                                    "name",
+                                                                    "input"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -426,7 +512,10 @@
                                                                                                     "type": "string"
                                                                                                 }
                                                                                             },
-                                                                                            "required": ["type", "text"],
+                                                                                            "required": [
+                                                                                                "type",
+                                                                                                "text"
+                                                                                            ],
                                                                                             "additionalProperties": false
                                                                                         },
                                                                                         {
@@ -449,11 +538,18 @@
                                                                                                             "type": "string"
                                                                                                         }
                                                                                                     },
-                                                                                                    "required": ["type", "media_type", "data"],
+                                                                                                    "required": [
+                                                                                                        "type",
+                                                                                                        "media_type",
+                                                                                                        "data"
+                                                                                                    ],
                                                                                                     "additionalProperties": false
                                                                                                 }
                                                                                             },
-                                                                                            "required": ["type", "source"],
+                                                                                            "required": [
+                                                                                                "type",
+                                                                                                "source"
+                                                                                            ],
                                                                                             "additionalProperties": false
                                                                                         }
                                                                                     ]
@@ -465,7 +561,10 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["type", "tool_use_id"],
+                                                                "required": [
+                                                                    "type",
+                                                                    "tool_use_id"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         ]
@@ -474,7 +573,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["role", "content"],
+                                    "required": [
+                                        "role",
+                                        "content"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Conversation messages"
@@ -498,7 +600,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "text"],
+                                            "required": [
+                                                "type",
+                                                "text"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -537,11 +642,17 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["name", "description", "input_schema"],
+                                    "required": [
+                                        "name",
+                                        "description",
+                                        "input_schema"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -558,7 +669,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "thinking": {
@@ -576,7 +689,10 @@
                                         "description": "Token budget for thinking. Example: 1024"
                                     }
                                 },
-                                "required": ["type", "budget_tokens"],
+                                "required": [
+                                    "type",
+                                    "budget_tokens"
+                                ],
                                 "additionalProperties": false
                             },
                             "temperature": {
@@ -611,7 +727,11 @@
                                 }
                             }
                         },
-                        "required": ["model", "max_tokens", "messages"],
+                        "required": [
+                            "model",
+                            "max_tokens",
+                            "messages"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_createmessage": {
@@ -643,7 +763,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "text"],
+                                            "required": [
+                                                "type",
+                                                "text"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -667,7 +790,12 @@
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["type", "id", "name", "input"],
+                                            "required": [
+                                                "type",
+                                                "id",
+                                                "name",
+                                                "input"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -684,7 +812,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "thinking"],
+                                            "required": [
+                                                "type",
+                                                "thinking"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -698,7 +829,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "data"],
+                                            "required": [
+                                                "type",
+                                                "data"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -708,10 +842,16 @@
                                 "type": "string"
                             },
                             "stop_reason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "stop_sequence": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "usage": {
                                 "type": "object",
@@ -737,11 +877,21 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["input_tokens", "output_tokens"],
+                                "required": [
+                                    "input_tokens",
+                                    "output_tokens"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "role", "content", "model", "usage"],
+                        "required": [
+                            "id",
+                            "type",
+                            "role",
+                            "content",
+                            "model",
+                            "usage"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -754,9 +904,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_deletefile",
             "name": "delete-file",
-            "output": ["ActionOutput_anthropic_deletefile"],
+            "output": [
+                "ActionOutput_anthropic_deletefile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_deletefile", "ActionOutput_anthropic_deletefile"],
+            "usedModels": [
+                "ActionInput_anthropic_deletefile",
+                "ActionOutput_anthropic_deletefile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -768,7 +923,9 @@
                                 "description": "ID of the File to delete. Example: \"file_011CNha8iCJcU1wXNR6q4V8w\""
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_deletefile": {
@@ -782,7 +939,9 @@
                                 "const": "file_deleted"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -795,9 +954,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_getfile",
             "name": "get-file",
-            "output": ["ActionOutput_anthropic_getfile"],
+            "output": [
+                "ActionOutput_anthropic_getfile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_getfile", "ActionOutput_anthropic_getfile"],
+            "usedModels": [
+                "ActionInput_anthropic_getfile",
+                "ActionOutput_anthropic_getfile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -809,7 +973,9 @@
                                 "description": "The ID of the file to retrieve. Example: \"file_01HqW8Kq0Z2Q2W8Kq0Z2Q2W8\""
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_getfile": {
@@ -850,7 +1016,10 @@
                                                 "const": "session"
                                             }
                                         },
-                                        "required": ["id", "type"],
+                                        "required": [
+                                            "id",
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -859,7 +1028,14 @@
                                 ]
                             }
                         },
-                        "required": ["id", "created_at", "filename", "mime_type", "size_bytes", "type"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "filename",
+                            "mime_type",
+                            "size_bytes",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -872,9 +1048,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_getmessagebatch",
             "name": "get-message-batch",
-            "output": ["ActionOutput_anthropic_getmessagebatch"],
+            "output": [
+                "ActionOutput_anthropic_getmessagebatch"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_getmessagebatch", "ActionOutput_anthropic_getmessagebatch"],
+            "usedModels": [
+                "ActionInput_anthropic_getmessagebatch",
+                "ActionOutput_anthropic_getmessagebatch"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -886,7 +1067,9 @@
                                 "description": "The ID of the message batch to retrieve. Example: \"msgbatch_01Ab2cDe3Fg4hIj5Kl6mNo7Pq8r\""
                             }
                         },
-                        "required": ["message_batch_id"],
+                        "required": [
+                            "message_batch_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_getmessagebatch": {
@@ -896,23 +1079,36 @@
                                 "type": "string"
                             },
                             "archived_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "cancel_initiated_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
                             },
                             "ended_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "expires_at": {
                                 "type": "string"
                             },
                             "processing_status": {
                                 "type": "string",
-                                "enum": ["in_progress", "canceling", "ended"]
+                                "enum": [
+                                    "in_progress",
+                                    "canceling",
+                                    "ended"
+                                ]
                             },
                             "request_counts": {
                                 "type": "object",
@@ -943,18 +1139,34 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                "required": [
+                                    "canceled",
+                                    "errored",
+                                    "expired",
+                                    "processing",
+                                    "succeeded"
+                                ],
                                 "additionalProperties": false
                             },
                             "results_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
                                 "type": "string",
                                 "const": "message_batch"
                             }
                         },
-                        "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "expires_at",
+                            "processing_status",
+                            "request_counts",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -967,9 +1179,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_getmodel",
             "name": "get-model",
-            "output": ["ActionOutput_anthropic_getmodel"],
+            "output": [
+                "ActionOutput_anthropic_getmodel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_getmodel", "ActionOutput_anthropic_getmodel"],
+            "usedModels": [
+                "ActionInput_anthropic_getmodel",
+                "ActionOutput_anthropic_getmodel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -982,7 +1199,9 @@
                                 "description": "Model identifier or alias. Example: \"claude-opus-4-6\""
                             }
                         },
-                        "required": ["model_id"],
+                        "required": [
+                            "model_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_getmodel": {
@@ -1001,7 +1220,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["supported"],
+                                        "required": [
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "citations": {
@@ -1011,7 +1232,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["supported"],
+                                        "required": [
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "code_execution": {
@@ -1021,7 +1244,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["supported"],
+                                        "required": [
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "context_management": {
@@ -1034,7 +1259,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "clear_tool_uses_20250919": {
@@ -1044,7 +1271,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "compact_20260112": {
@@ -1054,14 +1283,21 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "supported": {
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["clear_thinking_20251015", "clear_tool_uses_20250919", "compact_20260112", "supported"],
+                                        "required": [
+                                            "clear_thinking_20251015",
+                                            "clear_tool_uses_20250919",
+                                            "compact_20260112",
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "effort": {
@@ -1074,7 +1310,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "low": {
@@ -1084,7 +1322,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "max": {
@@ -1094,7 +1334,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "medium": {
@@ -1104,7 +1346,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "supported": {
@@ -1117,11 +1361,19 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["high", "low", "max", "medium", "supported"],
+                                        "required": [
+                                            "high",
+                                            "low",
+                                            "max",
+                                            "medium",
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "image_input": {
@@ -1131,7 +1383,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["supported"],
+                                        "required": [
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "pdf_input": {
@@ -1141,7 +1395,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["supported"],
+                                        "required": [
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "structured_outputs": {
@@ -1151,7 +1407,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["supported"],
+                                        "required": [
+                                            "supported"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "thinking": {
@@ -1170,7 +1428,9 @@
                                                                 "type": "boolean"
                                                             }
                                                         },
-                                                        "required": ["supported"],
+                                                        "required": [
+                                                            "supported"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "enabled": {
@@ -1180,15 +1440,23 @@
                                                                 "type": "boolean"
                                                             }
                                                         },
-                                                        "required": ["supported"],
+                                                        "required": [
+                                                            "supported"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["adaptive", "enabled"],
+                                                "required": [
+                                                    "adaptive",
+                                                    "enabled"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["supported", "types"],
+                                        "required": [
+                                            "supported",
+                                            "types"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -1221,7 +1489,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "capabilities", "created_at", "display_name", "max_input_tokens", "max_tokens", "type"],
+                        "required": [
+                            "id",
+                            "capabilities",
+                            "created_at",
+                            "display_name",
+                            "max_input_tokens",
+                            "max_tokens",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1234,9 +1510,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_listfiles",
             "name": "list-files",
-            "output": ["ActionOutput_anthropic_listfiles"],
+            "output": [
+                "ActionOutput_anthropic_listfiles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_listfiles", "ActionOutput_anthropic_listfiles"],
+            "usedModels": [
+                "ActionInput_anthropic_listfiles",
+                "ActionOutput_anthropic_listfiles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1301,7 +1582,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "type"],
+                                                    "required": [
+                                                        "id",
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1310,7 +1594,14 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "created_at", "filename", "mime_type", "size_bytes", "type"],
+                                    "required": [
+                                        "id",
+                                        "created_at",
+                                        "filename",
+                                        "mime_type",
+                                        "size_bytes",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1318,7 +1609,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["files"],
+                        "required": [
+                            "files"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1331,9 +1624,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_listmessagebatchresults",
             "name": "list-message-batch-results",
-            "output": ["ActionOutput_anthropic_listmessagebatchresults"],
+            "output": [
+                "ActionOutput_anthropic_listmessagebatchresults"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_listmessagebatchresults", "ActionOutput_anthropic_listmessagebatchresults"],
+            "usedModels": [
+                "ActionInput_anthropic_listmessagebatchresults",
+                "ActionOutput_anthropic_listmessagebatchresults"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1345,7 +1643,9 @@
                                 "description": "The ID of the Message Batch to retrieve results for. Example: \"msgbatch_01AbCdEfGhIjKlMnOpQrStUv\""
                             }
                         },
-                        "required": ["message_batch_id"],
+                        "required": [
+                            "message_batch_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anthropic_listmessagebatchresults": {
@@ -1367,12 +1667,17 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["custom_id", "result"],
+                                    "required": [
+                                        "custom_id",
+                                        "result"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1385,9 +1690,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_listmessagebatches",
             "name": "list-message-batches",
-            "output": ["ActionOutput_anthropic_listmessagebatches"],
+            "output": [
+                "ActionOutput_anthropic_listmessagebatches"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_listmessagebatches", "ActionOutput_anthropic_listmessagebatches"],
+            "usedModels": [
+                "ActionInput_anthropic_listmessagebatches",
+                "ActionOutput_anthropic_listmessagebatches"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1439,7 +1749,11 @@
                                         },
                                         "processing_status": {
                                             "type": "string",
-                                            "enum": ["in_progress", "canceling", "ended"]
+                                            "enum": [
+                                                "in_progress",
+                                                "canceling",
+                                                "ended"
+                                            ]
                                         },
                                         "request_counts": {
                                             "type": "object",
@@ -1460,7 +1774,13 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                            "required": [
+                                                "canceled",
+                                                "errored",
+                                                "expired",
+                                                "processing",
+                                                "succeeded"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "results_url": {
@@ -1471,7 +1791,14 @@
                                             "const": "message_batch"
                                         }
                                     },
-                                    "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                                    "required": [
+                                        "id",
+                                        "created_at",
+                                        "expires_at",
+                                        "processing_status",
+                                        "request_counts",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1479,7 +1806,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1492,9 +1821,14 @@
             "endpoint": null,
             "input": "ActionInput_anthropic_listmodels",
             "name": "list-models",
-            "output": ["ActionOutput_anthropic_listmodels"],
+            "output": [
+                "ActionOutput_anthropic_listmodels"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anthropic_listmodels", "ActionOutput_anthropic_listmodels"],
+            "usedModels": [
+                "ActionInput_anthropic_listmodels",
+                "ActionOutput_anthropic_listmodels"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1547,7 +1881,15 @@
                                             "const": "model"
                                         }
                                     },
-                                    "required": ["id", "capabilities", "created_at", "display_name", "max_input_tokens", "max_tokens", "type"],
+                                    "required": [
+                                        "id",
+                                        "capabilities",
+                                        "created_at",
+                                        "display_name",
+                                        "max_input_tokens",
+                                        "max_tokens",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1555,7 +1897,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1576,12 +1920,16 @@
             ],
             "input": null,
             "name": "files",
-            "output": ["File"],
+            "output": [
+                "File"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["File"],
+            "usedModels": [
+                "File"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1617,12 +1965,21 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "created_at", "filename", "mime_type", "size_bytes", "type"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "filename",
+                            "mime_type",
+                            "size_bytes",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1636,12 +1993,16 @@
             ],
             "input": null,
             "name": "message-batches",
-            "output": ["MessageBatch"],
+            "output": [
+                "MessageBatch"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MessageBatch"],
+            "usedModels": [
+                "MessageBatch"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1653,23 +2014,36 @@
                                 "type": "string"
                             },
                             "archived_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "cancel_initiated_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
                             },
                             "ended_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "expires_at": {
                                 "type": "string"
                             },
                             "processing_status": {
                                 "type": "string",
-                                "enum": ["in_progress", "canceling", "ended"]
+                                "enum": [
+                                    "in_progress",
+                                    "canceling",
+                                    "ended"
+                                ]
                             },
                             "request_counts": {
                                 "type": "object",
@@ -1700,23 +2074,41 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["canceled", "errored", "expired", "processing", "succeeded"],
+                                "required": [
+                                    "canceled",
+                                    "errored",
+                                    "expired",
+                                    "processing",
+                                    "succeeded"
+                                ],
                                 "additionalProperties": false
                             },
                             "results_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
                                 "type": "string",
                                 "const": "message_batch"
                             }
                         },
-                        "required": ["id", "created_at", "expires_at", "processing_status", "request_counts", "type"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "expires_at",
+                            "processing_status",
+                            "request_counts",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1730,12 +2122,16 @@
             ],
             "input": null,
             "name": "models",
-            "output": ["Model"],
+            "output": [
+                "Model"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Model"],
+            "usedModels": [
+                "Model"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1773,7 +2169,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -1790,7 +2188,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -1807,7 +2207,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -1832,7 +2234,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1849,7 +2253,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1866,7 +2272,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1875,7 +2283,9 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": {}
                                             },
                                             {
@@ -1900,7 +2310,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1917,7 +2329,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1934,7 +2348,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1951,7 +2367,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1968,7 +2386,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["supported"],
+                                                                "required": [
+                                                                    "supported"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1977,7 +2397,9 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": {}
                                             },
                                             {
@@ -1994,7 +2416,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -2011,7 +2435,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -2028,7 +2454,9 @@
                                                         "type": "boolean"
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -2058,7 +2486,9 @@
                                                                                         "type": "boolean"
                                                                                     }
                                                                                 },
-                                                                                "required": ["supported"],
+                                                                                "required": [
+                                                                                    "supported"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             },
                                                                             {
@@ -2075,7 +2505,9 @@
                                                                                         "type": "boolean"
                                                                                     }
                                                                                 },
-                                                                                "required": ["supported"],
+                                                                                "required": [
+                                                                                    "supported"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             },
                                                                             {
@@ -2092,7 +2524,9 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["supported"],
+                                                "required": [
+                                                    "supported"
+                                                ],
                                                 "additionalProperties": {}
                                             },
                                             {
@@ -2104,12 +2538,21 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "display_name", "created_at", "max_input_tokens", "max_tokens", "type"],
+                        "required": [
+                            "id",
+                            "display_name",
+                            "created_at",
+                            "max_input_tokens",
+                            "max_tokens",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

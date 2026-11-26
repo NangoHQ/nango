@@ -15,12 +15,17 @@
             ],
             "input": "SyncMetadata_hibob_service_user_employees",
             "name": "employees",
-            "output": ["HibobEmployee"],
+            "output": [
+                "HibobEmployee"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["HibobEmployee", "SyncMetadata_hibob_service_user_employees"],
+            "usedModels": [
+                "HibobEmployee",
+                "SyncMetadata_hibob_service_user_employees"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -59,7 +64,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "employmentType": {
@@ -90,7 +98,12 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "firstName", "surname", "email"],
+                                        "required": [
+                                            "id",
+                                            "firstName",
+                                            "surname",
+                                            "email"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "site": {
@@ -118,7 +131,13 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["street", "city", "state", "country", "postalCode"],
+                                        "required": [
+                                            "street",
+                                            "city",
+                                            "state",
+                                            "country",
+                                            "postalCode"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "customFields": {
@@ -156,7 +175,14 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                            "required": [
+                                                "street",
+                                                "city",
+                                                "state",
+                                                "country",
+                                                "postalCode",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -188,7 +214,13 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "firstName", "surname", "email", "displayName"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "surname",
+                            "email",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_hibob_service_user_employees": {
@@ -213,12 +245,17 @@
             ],
             "input": "SyncMetadata_hibob_service_user_unifiedemployees",
             "name": "unified-employees",
-            "output": ["StandardEmployee"],
+            "output": [
+                "StandardEmployee"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StandardEmployee", "SyncMetadata_hibob_service_user_unifiedemployees"],
+            "usedModels": [
+                "StandardEmployee",
+                "SyncMetadata_hibob_service_user_unifiedemployees"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -257,7 +294,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "employmentType": {
@@ -334,7 +374,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "firstName", "lastName", "email"],
+                                "required": [
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "workLocation": {
@@ -390,11 +435,16 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["name", "type"],
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "addresses": {
@@ -430,7 +480,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["type"],
+                                    "required": [
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -459,7 +511,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "number"],
+                                    "required": [
+                                        "type",
+                                        "number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -484,7 +539,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "address"],
+                                    "required": [
+                                        "type",
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },

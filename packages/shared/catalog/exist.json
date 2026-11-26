@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_acquireattributes",
             "name": "acquire-attributes",
-            "output": ["ActionOutput_exist_acquireattributes"],
+            "output": [
+                "ActionOutput_exist_acquireattributes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_acquireattributes", "ActionOutput_exist_acquireattributes"],
+            "usedModels": [
+                "ActionInput_exist_acquireattributes",
+                "ActionOutput_exist_acquireattributes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -45,7 +50,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["attributes"],
+                        "required": [
+                            "attributes"
+                        ],
                         "additionalProperties": false,
                         "description": "Attributes to acquire on this connection and options controlling the response shape."
                     },
@@ -59,7 +66,10 @@
                                     "properties": {
                                         "template": {
                                             "description": "Source template name; null for custom attributes that were not created from a template",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "description": "Attribute machine name used when writing values",
@@ -193,11 +203,17 @@
                                     "properties": {
                                         "template": {
                                             "description": "Template name that was requested, when supplied",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "description": "Attribute name that was requested, when supplied",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "manual": {
                                             "description": "Manual flag that was requested, when supplied",
@@ -217,7 +233,10 @@
                                 "description": "Attributes that could not be acquired, with an error and error_code"
                             }
                         },
-                        "required": ["success", "failed"],
+                        "required": [
+                            "success",
+                            "failed"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the acquisition, split into successfully acquired attributes and failures."
                     }
@@ -231,9 +250,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_createattributes",
             "name": "create-attributes",
-            "output": ["ActionOutput_exist_createattributes"],
+            "output": [
+                "ActionOutput_exist_createattributes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_createattributes", "ActionOutput_exist_createattributes"],
+            "usedModels": [
+                "ActionInput_exist_createattributes",
+                "ActionOutput_exist_createattributes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -275,7 +299,9 @@
                                 "description": "Attributes to create and take ownership of, 1-35 per call. Each item is either a template reference or a full custom attribute definition."
                             }
                         },
-                        "required": ["attributes"],
+                        "required": [
+                            "attributes"
+                        ],
                         "additionalProperties": false,
                         "description": "Attributes to create for the connected Exist account."
                     },
@@ -315,7 +341,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["name", "label"],
+                                            "required": [
+                                                "name",
+                                                "label"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Group the attribute belongs to."
                                         },
@@ -332,7 +361,10 @@
                                                     "description": "Service display label."
                                                 }
                                             },
-                                            "required": ["name", "label"],
+                                            "required": [
+                                                "name",
+                                                "label"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "active": {
@@ -370,12 +402,20 @@
                                                         "description": "Service display label."
                                                     }
                                                 },
-                                                "required": ["name", "label"],
+                                                "required": [
+                                                    "name",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["name", "label", "group", "active"],
+                                    "required": [
+                                        "name",
+                                        "label",
+                                        "group",
+                                        "active"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attributes that were created and taken ownership of."
@@ -423,7 +463,10 @@
                                 "description": "Attributes that could not be created, each with error details."
                             }
                         },
-                        "required": ["success", "failed"],
+                        "required": [
+                            "success",
+                            "failed"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the create request, split into created and failed attributes."
                     }
@@ -437,9 +480,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_getattributevalues",
             "name": "get-attribute-values",
-            "output": ["ActionOutput_exist_getattributevalues"],
+            "output": [
+                "ActionOutput_exist_getattributevalues"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_getattributevalues", "ActionOutput_exist_getattributevalues"],
+            "usedModels": [
+                "ActionInput_exist_getattributevalues",
+                "ActionOutput_exist_getattributevalues"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -467,7 +515,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["attribute"],
+                        "required": [
+                            "attribute"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for fetching one attribute value history page."
                     },
@@ -480,11 +530,17 @@
                             },
                             "next": {
                                 "description": "URL of the next page of results, or null when this is the last page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
                                 "description": "URL of the previous page of results, or null when this is the first page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "results": {
                                 "type": "array",
@@ -497,16 +553,28 @@
                                         },
                                         "value": {
                                             "description": "Recorded value for the date; a number or string depending on the attribute type, or null when no value is recorded.",
-                                            "type": ["number", "string", "null"]
+                                            "type": [
+                                                "number",
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["date", "value"],
+                                    "required": [
+                                        "date",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Value history entries for the requested attribute, most recent first."
                             }
                         },
-                        "required": ["count", "next", "previous", "results"],
+                        "required": [
+                            "count",
+                            "next",
+                            "previous",
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "One page of an attribute value history, with links to adjacent pages."
                     }
@@ -520,9 +588,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_getcorrelation",
             "name": "get-correlation",
-            "output": ["ActionOutput_exist_getcorrelation"],
+            "output": [
+                "ActionOutput_exist_getcorrelation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_getcorrelation", "ActionOutput_exist_getcorrelation"],
+            "usedModels": [
+                "ActionInput_exist_getcorrelation",
+                "ActionOutput_exist_getcorrelation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -538,7 +611,10 @@
                                 "description": "Name of the second attribute to correlate, for example \"mood\"."
                             }
                         },
-                        "required": ["attribute", "attribute2"],
+                        "required": [
+                            "attribute",
+                            "attribute2"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for looking up the correlation between two attributes."
                     },
@@ -607,7 +683,10 @@
                                             },
                                             "attribute_category": {
                                                 "description": "Sub-correlation category, or null when the pair has none.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "strength_description": {
                                                 "type": "string",
@@ -619,11 +698,17 @@
                                             },
                                             "description": {
                                                 "description": "Extended explanation for understood relationships, or null.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "occurrence": {
                                                 "description": "How common the relationship is, or null when unavailable.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "rating": {
                                                 "description": "User-submitted rating of the correlation, or null when unrated.",
@@ -644,7 +729,11 @@
                                                                 "description": "Human-readable rating, for example \"Useful\"."
                                                             }
                                                         },
-                                                        "required": ["positive", "rating_type", "rating"],
+                                                        "required": [
+                                                            "positive",
+                                                            "rating_type",
+                                                            "rating"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     {
@@ -677,7 +766,11 @@
                                 "description": "The correlation for the pair, or null when Exist has not generated one."
                             }
                         },
-                        "required": ["attribute", "attribute2", "correlation"],
+                        "required": [
+                            "attribute",
+                            "attribute2",
+                            "correlation"
+                        ],
                         "additionalProperties": false,
                         "description": "The queried attribute pair and the correlation Exist found for it, if any."
                     }
@@ -691,9 +784,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_getmetricsnapshot",
             "name": "get-metric-snapshot",
-            "output": ["ActionOutput_exist_getmetricsnapshot"],
+            "output": [
+                "ActionOutput_exist_getmetricsnapshot"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_getmetricsnapshot", "ActionOutput_exist_getmetricsnapshot"],
+            "usedModels": [
+                "ActionInput_exist_getmetricsnapshot",
+                "ActionOutput_exist_getmetricsnapshot"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -711,7 +809,9 @@
                                 "maximum": 31
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for getting a consolidated snapshot of a single metric."
                     },
@@ -733,10 +833,18 @@
                                         },
                                         "value": {
                                             "description": "Recorded value; numeric, string, boolean, or null depending on the attribute value type.",
-                                            "type": ["number", "string", "boolean", "null"]
+                                            "type": [
+                                                "number",
+                                                "string",
+                                                "boolean",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["date", "value"],
+                                    "required": [
+                                        "date",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Recent daily values for the attribute, as returned by the provider."
@@ -795,7 +903,10 @@
                                         },
                                         "attribute_category": {
                                             "description": "Optional category label for the attribute, or null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "strength_description": {
                                             "type": "string",
@@ -807,11 +918,17 @@
                                         },
                                         "description": {
                                             "description": "Optional longer description of the correlation, or null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "occurrence": {
                                             "description": "Optional occurrence information, or null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "rating": {
                                             "description": "Optional usefulness rating for the correlation, or null when unset.",
@@ -832,7 +949,11 @@
                                                             "description": "Human-readable usefulness rating."
                                                         }
                                                     },
-                                                    "required": ["positive", "rating_type", "rating"],
+                                                    "required": [
+                                                        "positive",
+                                                        "rating_type",
+                                                        "rating"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -875,44 +996,84 @@
                                         },
                                         "overall": {
                                             "description": "Average value across the whole week.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "monday": {
                                             "description": "Average value for Monday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "tuesday": {
                                             "description": "Average value for Tuesday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "wednesday": {
                                             "description": "Average value for Wednesday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "thursday": {
                                             "description": "Average value for Thursday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "friday": {
                                             "description": "Average value for Friday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "saturday": {
                                             "description": "Average value for Saturday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "sunday": {
                                             "description": "Average value for Sunday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["attribute", "date", "overall", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+                                    "required": [
+                                        "attribute",
+                                        "date",
+                                        "overall",
+                                        "monday",
+                                        "tuesday",
+                                        "wednesday",
+                                        "thursday",
+                                        "friday",
+                                        "saturday",
+                                        "sunday"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Recent weekly averages for the attribute."
                             }
                         },
-                        "required": ["attribute", "recent_values", "correlations", "averages"],
+                        "required": [
+                            "attribute",
+                            "recent_values",
+                            "correlations",
+                            "averages"
+                        ],
                         "additionalProperties": false,
                         "description": "Consolidated snapshot of a single metric."
                     }
@@ -926,9 +1087,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_getprofile",
             "name": "get-profile",
-            "output": ["ActionOutput_exist_getprofile"],
+            "output": [
+                "ActionOutput_exist_getprofile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_getprofile", "ActionOutput_exist_getprofile"],
+            "usedModels": [
+                "ActionInput_exist_getprofile",
+                "ActionOutput_exist_getprofile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1032,9 +1198,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_incrementattributevalues",
             "name": "increment-attribute-values",
-            "output": ["ActionOutput_exist_incrementattributevalues"],
+            "output": [
+                "ActionOutput_exist_incrementattributevalues"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_incrementattributevalues", "ActionOutput_exist_incrementattributevalues"],
+            "usedModels": [
+                "ActionInput_exist_incrementattributevalues",
+                "ActionOutput_exist_incrementattributevalues"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1062,13 +1233,18 @@
                                             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                                         }
                                     },
-                                    "required": ["name", "value"],
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Up to 35 attribute increments to apply in a single request."
                             }
                         },
-                        "required": ["increments"],
+                        "required": [
+                            "increments"
+                        ],
                         "additionalProperties": false,
                         "description": "Attribute increments to apply to the authenticated user's owned numeric attributes."
                     },
@@ -1097,7 +1273,11 @@
                                             "description": "New running total for the attribute on that date."
                                         }
                                     },
-                                    "required": ["name", "value", "current"],
+                                    "required": [
+                                        "name",
+                                        "value",
+                                        "current"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attribute increments that were applied successfully."
@@ -1128,13 +1308,20 @@
                                             "description": "Human-readable explanation of the failure."
                                         }
                                     },
-                                    "required": ["name", "error_code", "error"],
+                                    "required": [
+                                        "name",
+                                        "error_code",
+                                        "error"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attribute increments that were rejected; each entry includes an error code and message."
                             }
                         },
-                        "required": ["success", "failed"],
+                        "required": [
+                            "success",
+                            "failed"
+                        ],
                         "additionalProperties": false,
                         "description": "Results of the requested attribute increments, split into applied and rejected entries."
                     }
@@ -1148,9 +1335,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_listattributetemplates",
             "name": "list-attribute-templates",
-            "output": ["ActionOutput_exist_listattributetemplates"],
+            "output": [
+                "ActionOutput_exist_listattributetemplates"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_listattributetemplates", "ActionOutput_exist_listattributetemplates"],
+            "usedModels": [
+                "ActionInput_exist_listattributetemplates",
+                "ActionOutput_exist_listattributetemplates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1218,7 +1410,11 @@
                                                             "description": "Sort priority of the group, ascending."
                                                         }
                                                     },
-                                                    "required": ["name", "label", "priority"],
+                                                    "required": [
+                                                        "name",
+                                                        "label",
+                                                        "priority"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1240,7 +1436,14 @@
                                             "description": "Human-readable description of the value type, e.g. \"Integer\"."
                                         }
                                     },
-                                    "required": ["name", "label", "group", "priority", "value_type", "value_type_description"],
+                                    "required": [
+                                        "name",
+                                        "label",
+                                        "group",
+                                        "priority",
+                                        "value_type",
+                                        "value_type_description"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attribute templates returned for the requested page."
@@ -1258,7 +1461,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["templates", "count"],
+                        "required": [
+                            "templates",
+                            "count"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of attribute templates Exist supports, plus paging metadata."
                     }
@@ -1272,9 +1478,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_listattributeswithvalues",
             "name": "list-attributes-with-values",
-            "output": ["ActionOutput_exist_listattributeswithvalues"],
+            "output": [
+                "ActionOutput_exist_listattributeswithvalues"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_listattributeswithvalues", "ActionOutput_exist_listattributeswithvalues"],
+            "usedModels": [
+                "ActionInput_exist_listattributeswithvalues",
+                "ActionOutput_exist_listattributeswithvalues"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1341,7 +1552,10 @@
                                         },
                                         "template": {
                                             "description": "Attribute template this attribute is based on, or null for custom attributes.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "group": {
                                             "type": "object",
@@ -1359,13 +1573,20 @@
                                                     "description": "Sort priority of the group."
                                                 }
                                             },
-                                            "required": ["name", "label", "priority"],
+                                            "required": [
+                                                "name",
+                                                "label",
+                                                "priority"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Group this attribute belongs to."
                                         },
                                         "subgroup": {
                                             "description": "Subgroup metadata for this attribute, or null when it has no subgroup.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "service": {
                                             "description": "Service currently providing data for this attribute, or null when unowned or manually tracked.",
@@ -1382,7 +1603,10 @@
                                                             "description": "Human-readable service label. Example: \"Google Fit\""
                                                         }
                                                     },
-                                                    "required": ["name", "label"],
+                                                    "required": [
+                                                        "name",
+                                                        "label"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1421,16 +1645,33 @@
                                                     },
                                                     "value": {
                                                         "description": "Value recorded for the date. Null when no data exists for that date; boolean tags are returned as 1 or 0.",
-                                                        "type": ["number", "string", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["date", "value"],
+                                                "required": [
+                                                    "date",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Recent values for this attribute, newest first, covering at most the requested number of days."
                                         }
                                     },
-                                    "required": ["name", "label", "group", "active", "priority", "manual", "value_type", "value_type_description", "values"],
+                                    "required": [
+                                        "name",
+                                        "label",
+                                        "group",
+                                        "active",
+                                        "priority",
+                                        "manual",
+                                        "value_type",
+                                        "value_type_description",
+                                        "values"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attributes matching the filters, each with its recent values."
@@ -1441,14 +1682,25 @@
                             },
                             "next": {
                                 "description": "Full URL of the next page of results, or null when there are no more pages.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
                                 "description": "Full URL of the previous page of results, or null on the first page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["attributes", "count", "next", "previous"],
+                        "required": [
+                            "attributes",
+                            "count",
+                            "next",
+                            "previous"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of the user's attributes, each with its recent values."
                     }
@@ -1462,9 +1714,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_listattributes",
             "name": "list-attributes",
-            "output": ["ActionOutput_exist_listattributes"],
+            "output": [
+                "ActionOutput_exist_listattributes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_listattributes", "ActionOutput_exist_listattributes"],
+            "usedModels": [
+                "ActionInput_exist_listattributes",
+                "ActionOutput_exist_listattributes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1524,11 +1781,17 @@
                             },
                             "next": {
                                 "description": "Full URL of the next page of results, or null when this is the last page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
                                 "description": "Full URL of the previous page of results, or null when this is the first page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "results": {
                                 "type": "array",
@@ -1537,7 +1800,10 @@
                                     "properties": {
                                         "template": {
                                             "description": "Name of the template this attribute is based on, or null for custom attributes.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string",
@@ -1549,7 +1815,10 @@
                                         },
                                         "subgroup": {
                                             "description": "Optional subgroup this attribute belongs to.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "group": {
                                             "description": "Group this attribute belongs to, when the provider reports one.",
@@ -1570,7 +1839,11 @@
                                                             "description": "Sort priority of the group; lower values sort first."
                                                         }
                                                     },
-                                                    "required": ["name", "label", "priority"],
+                                                    "required": [
+                                                        "name",
+                                                        "label",
+                                                        "priority"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1592,7 +1865,10 @@
                                                             "description": "Human-readable service name. Example: \"Google Fit\""
                                                         }
                                                     },
-                                                    "required": ["name", "label"],
+                                                    "required": [
+                                                        "name",
+                                                        "label"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1635,7 +1911,10 @@
                                                         "description": "Human-readable service name. Example: \"Google Fit\""
                                                     }
                                                 },
-                                                "required": ["name", "label"],
+                                                "required": [
+                                                    "name",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Services that could provide data for this attribute."
@@ -1658,7 +1937,12 @@
                                 "description": "Attributes matching the request filters, without their values."
                             }
                         },
-                        "required": ["count", "next", "previous", "results"],
+                        "required": [
+                            "count",
+                            "next",
+                            "previous",
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of the connected user's attributes without their values."
                     }
@@ -1672,9 +1956,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_listaverages",
             "name": "list-averages",
-            "output": ["ActionOutput_exist_listaverages"],
+            "output": [
+                "ActionOutput_exist_listaverages"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_listaverages", "ActionOutput_exist_listaverages"],
+            "usedModels": [
+                "ActionInput_exist_listaverages",
+                "ActionOutput_exist_listaverages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1734,11 +2023,17 @@
                             },
                             "next": {
                                 "description": "Full URL of the next page of results, or null when this is the last page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
                                 "description": "Full URL of the previous page of results, or null when this is the first page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "items": {
                                 "type": "array",
@@ -1755,44 +2050,84 @@
                                         },
                                         "overall": {
                                             "description": "Average value across the whole week.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "monday": {
                                             "description": "Average value for Monday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "tuesday": {
                                             "description": "Average value for Tuesday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "wednesday": {
                                             "description": "Average value for Wednesday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "thursday": {
                                             "description": "Average value for Thursday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "friday": {
                                             "description": "Average value for Friday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "saturday": {
                                             "description": "Average value for Saturday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "sunday": {
                                             "description": "Average value for Sunday.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["attribute", "date", "overall", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+                                    "required": [
+                                        "attribute",
+                                        "date",
+                                        "overall",
+                                        "monday",
+                                        "tuesday",
+                                        "wednesday",
+                                        "thursday",
+                                        "friday",
+                                        "saturday",
+                                        "sunday"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Weekly average records for the requested page."
                             }
                         },
-                        "required": ["count", "next", "previous", "items"],
+                        "required": [
+                            "count",
+                            "next",
+                            "previous",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of weekly average values, one record per attribute per week."
                     }
@@ -1806,9 +2141,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_listcorrelations",
             "name": "list-correlations",
-            "output": ["ActionOutput_exist_listcorrelations"],
+            "output": [
+                "ActionOutput_exist_listcorrelations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_listcorrelations", "ActionOutput_exist_listcorrelations"],
+            "usedModels": [
+                "ActionInput_exist_listcorrelations",
+                "ActionOutput_exist_listcorrelations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1852,11 +2192,17 @@
                             },
                             "next": {
                                 "description": "Full URL of the next page of results, or null when this is the last page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
                                 "description": "Full URL of the previous page of results, or null when this is the first page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "results": {
                                 "type": "array",
@@ -1912,7 +2258,10 @@
                                         },
                                         "attribute_category": {
                                             "description": "Sub-category of the attribute when the correlation covers a subset of its data, otherwise null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "strength_description": {
                                             "type": "string",
@@ -1924,11 +2273,17 @@
                                         },
                                         "description": {
                                             "description": "Additional explanation about the correlation when available, otherwise null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "occurrence": {
                                             "description": "How commonly the correlation occurs when available, otherwise null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "rating": {
                                             "description": "User-submitted rating for the correlation when present, otherwise null.",
@@ -1949,7 +2304,11 @@
                                                             "description": "Human-readable rating label. Example: \"Useful\"."
                                                         }
                                                     },
-                                                    "required": ["positive", "rating_type", "rating"],
+                                                    "required": [
+                                                        "positive",
+                                                        "rating_type",
+                                                        "rating"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1978,7 +2337,12 @@
                                 "description": "Correlations returned on this page."
                             }
                         },
-                        "required": ["count", "next", "previous", "results"],
+                        "required": [
+                            "count",
+                            "next",
+                            "previous",
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of correlations generated by Exist in the last week."
                     }
@@ -1992,9 +2356,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_listinsights",
             "name": "list-insights",
-            "output": ["ActionOutput_exist_listinsights"],
+            "output": [
+                "ActionOutput_exist_listinsights"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_listinsights", "ActionOutput_exist_listinsights"],
+            "usedModels": [
+                "ActionInput_exist_listinsights",
+                "ActionOutput_exist_listinsights"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2130,7 +2499,11 @@
                                                                     "description": "Sort priority of the attribute group."
                                                                 }
                                                             },
-                                                            "required": ["name", "label", "priority"],
+                                                            "required": [
+                                                                "name",
+                                                                "label",
+                                                                "priority"
+                                                            ],
                                                             "additionalProperties": false,
                                                             "description": "Group the attribute belongs to."
                                                         },
@@ -2151,11 +2524,22 @@
                                                             "description": "Human-readable description of the attribute value type."
                                                         }
                                                     },
-                                                    "required": ["name", "label", "group", "priority", "value_type", "value_type_description"],
+                                                    "required": [
+                                                        "name",
+                                                        "label",
+                                                        "group",
+                                                        "priority",
+                                                        "value_type",
+                                                        "value_type_description"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["name", "period", "priority"],
+                                            "required": [
+                                                "name",
+                                                "period",
+                                                "priority"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Type of the generated insight."
                                         },
@@ -2168,13 +2552,23 @@
                                             "description": "Plain-text insight content."
                                         }
                                     },
-                                    "required": ["created", "type", "html", "text"],
+                                    "required": [
+                                        "created",
+                                        "type",
+                                        "html",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Insights returned on the requested page."
                             }
                         },
-                        "required": ["count", "next_page", "previous_page", "results"],
+                        "required": [
+                            "count",
+                            "next_page",
+                            "previous_page",
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of personalized Exist insights with pagination information."
                     }
@@ -2188,9 +2582,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_listownedattributes",
             "name": "list-owned-attributes",
-            "output": ["ActionOutput_exist_listownedattributes"],
+            "output": [
+                "ActionOutput_exist_listownedattributes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_listownedattributes", "ActionOutput_exist_listownedattributes"],
+            "usedModels": [
+                "ActionInput_exist_listownedattributes",
+                "ActionOutput_exist_listownedattributes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2252,11 +2651,17 @@
                             },
                             "next": {
                                 "description": "URL of the next page of results, or null if this is the last page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "previous": {
                                 "description": "URL of the previous page of results, or null if this is the first page.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "results": {
                                 "type": "array",
@@ -2265,7 +2670,10 @@
                                     "properties": {
                                         "template": {
                                             "description": "Name of the template this attribute was created from, or null for custom attributes. Example: \"steps\"",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string",
@@ -2277,7 +2685,10 @@
                                         },
                                         "subgroup": {
                                             "description": "Machine-readable subgroup name, or null when the attribute has no subgroup.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "group": {
                                             "type": "object",
@@ -2295,7 +2706,11 @@
                                                     "description": "Display priority of the group, where lower numbers are shown first."
                                                 }
                                             },
-                                            "required": ["name", "label", "priority"],
+                                            "required": [
+                                                "name",
+                                                "label",
+                                                "priority"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Group this attribute belongs to."
                                         },
@@ -2311,7 +2726,10 @@
                                                     "description": "Human-readable service label. Example: \"Oura\""
                                                 }
                                             },
-                                            "required": ["name", "label"],
+                                            "required": [
+                                                "name",
+                                                "label"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Service that currently owns this attribute."
                                         },
@@ -2349,7 +2767,10 @@
                                                         "description": "Human-readable service label. Example: \"Oura\""
                                                     }
                                                 },
-                                                "required": ["name", "label"],
+                                                "required": [
+                                                    "name",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Services the user has connected that can provide data for this attribute."
@@ -2373,7 +2794,12 @@
                                 "description": "Owned attributes returned for this page."
                             }
                         },
-                        "required": ["count", "next", "previous", "results"],
+                        "required": [
+                            "count",
+                            "next",
+                            "previous",
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of attributes owned by this connection, matching the provider paginated envelope."
                     }
@@ -2387,9 +2813,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_releaseattributes",
             "name": "release-attributes",
-            "output": ["ActionOutput_exist_releaseattributes"],
+            "output": [
+                "ActionOutput_exist_releaseattributes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_releaseattributes", "ActionOutput_exist_releaseattributes"],
+            "usedModels": [
+                "ActionInput_exist_releaseattributes",
+                "ActionOutput_exist_releaseattributes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2408,13 +2839,17 @@
                                             "description": "The attribute name to release, e.g. \"mood_note\"."
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The attributes to give up ownership of. The provider accepts a maximum of 35 per request."
                             }
                         },
-                        "required": ["attributes"],
+                        "required": [
+                            "attributes"
+                        ],
                         "additionalProperties": false,
                         "description": "One or more attributes to release ownership of."
                     },
@@ -2432,14 +2867,19 @@
                                         },
                                         "service": {
                                             "description": "The service that now owns the attribute, or null when ownership became inactive.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "active": {
                                             "description": "Whether the attribute is still active after being released.",
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Attributes that were released successfully."
@@ -2467,7 +2907,10 @@
                                 "description": "Attributes that could not be released, each with error details."
                             }
                         },
-                        "required": ["success", "failed"],
+                        "required": [
+                            "success",
+                            "failed"
+                        ],
                         "additionalProperties": false,
                         "description": "The outcome of the release request, split into released and failed attributes."
                     }
@@ -2481,9 +2924,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_trackcustommetric",
             "name": "track-custom-metric",
-            "output": ["ActionOutput_exist_trackcustommetric"],
+            "output": [
+                "ActionOutput_exist_trackcustommetric"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_trackcustommetric", "ActionOutput_exist_trackcustommetric"],
+            "usedModels": [
+                "ActionInput_exist_trackcustommetric",
+                "ActionOutput_exist_trackcustommetric"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2496,7 +2944,11 @@
                             },
                             "value": {
                                 "description": "Value to record for the date. Must match the attribute value type (integer, float, string, or boolean).",
-                                "type": ["number", "string", "boolean"]
+                                "type": [
+                                    "number",
+                                    "string",
+                                    "boolean"
+                                ]
                             },
                             "date": {
                                 "description": "Date to record the value for, in YYYY-MM-DD format. Defaults to today (UTC).",
@@ -2526,7 +2978,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "value"],
+                        "required": [
+                            "name",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for recording a value against a named metric, creating or re-acquiring the attribute when needed."
                     },
@@ -2538,7 +2993,10 @@
                                 "properties": {
                                     "template": {
                                         "description": "Attribute template this attribute was created from, or null when it is fully custom.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "name": {
                                         "type": "string",
@@ -2564,7 +3022,10 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["name", "label"],
+                                        "required": [
+                                            "name",
+                                            "label"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Group the attribute belongs to."
                                     },
@@ -2583,7 +3044,10 @@
                                                         "description": "Human-readable label of the owning service."
                                                     }
                                                 },
-                                                "required": ["name", "label"],
+                                                "required": [
+                                                    "name",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -2612,16 +3076,29 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "label", "group", "active", "value_type"],
+                                "required": [
+                                    "name",
+                                    "label",
+                                    "group",
+                                    "active",
+                                    "value_type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Final state of the underlying attribute after any creation or re-acquisition."
                             },
                             "value_written": {
                                 "description": "The value stored for the date after this write; for accumulate writes this is the new running total.",
-                                "type": ["number", "string", "boolean"]
+                                "type": [
+                                    "number",
+                                    "string",
+                                    "boolean"
+                                ]
                             }
                         },
-                        "required": ["attribute", "value_written"],
+                        "required": [
+                            "attribute",
+                            "value_written"
+                        ],
                         "additionalProperties": false,
                         "description": "The final attribute state and the value stored for the date."
                     }
@@ -2635,9 +3112,14 @@
             "endpoint": null,
             "input": "ActionInput_exist_updateattributevalues",
             "name": "update-attribute-values",
-            "output": ["ActionOutput_exist_updateattributevalues"],
+            "output": [
+                "ActionOutput_exist_updateattributevalues"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_exist_updateattributevalues", "ActionOutput_exist_updateattributevalues"],
+            "usedModels": [
+                "ActionInput_exist_updateattributevalues",
+                "ActionOutput_exist_updateattributevalues"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2663,16 +3145,26 @@
                                         },
                                         "value": {
                                             "description": "New total value for that date; must match the attribute value type. Booleans are stored as 1/0.",
-                                            "type": ["number", "string", "boolean"]
+                                            "type": [
+                                                "number",
+                                                "string",
+                                                "boolean"
+                                            ]
                                         }
                                     },
-                                    "required": ["name", "date", "value"],
+                                    "required": [
+                                        "name",
+                                        "date",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Between 1 and 35 daily value updates to write in a single request."
                             }
                         },
-                        "required": ["updates"],
+                        "required": [
+                            "updates"
+                        ],
                         "additionalProperties": false,
                         "description": "Attribute value updates to write, sent as one batch."
                     },
@@ -2694,10 +3186,18 @@
                                         },
                                         "value": {
                                             "description": "Stored value as returned by the provider; booleans come back as 1/0.",
-                                            "type": ["number", "string", "boolean"]
+                                            "type": [
+                                                "number",
+                                                "string",
+                                                "boolean"
+                                            ]
                                         }
                                     },
-                                    "required": ["name", "date", "value"],
+                                    "required": [
+                                        "name",
+                                        "date",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Updates that were written successfully."
@@ -2717,7 +3217,11 @@
                                         },
                                         "value": {
                                             "description": "Rejected value, when the provider echoes it back.",
-                                            "type": ["number", "string", "boolean"]
+                                            "type": [
+                                                "number",
+                                                "string",
+                                                "boolean"
+                                            ]
                                         },
                                         "error_code": {
                                             "type": "string",
@@ -2728,13 +3232,20 @@
                                             "description": "Human-readable failure description."
                                         }
                                     },
-                                    "required": ["name", "error_code", "error"],
+                                    "required": [
+                                        "name",
+                                        "error_code",
+                                        "error"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Updates the provider rejected; inspect this even when the request returns HTTP 200."
                             }
                         },
-                        "required": ["success", "failed"],
+                        "required": [
+                            "success",
+                            "failed"
+                        ],
                         "additionalProperties": false,
                         "description": "Outcome of the batch, split into accepted and rejected updates."
                     }
@@ -2751,12 +3262,16 @@
             "endpoints": [],
             "input": null,
             "name": "attribute-values",
-            "output": ["AttributeValue"],
+            "output": [
+                "AttributeValue"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AttributeValue"],
+            "usedModels": [
+                "AttributeValue"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2778,16 +3293,28 @@
                             },
                             "value": {
                                 "description": "Value recorded for the date: number for Integer/Float/scale/period attributes, string for text attributes, 1/0 for boolean tags, or null when no value was recorded.",
-                                "type": ["number", "string", "boolean", "null"]
+                                "type": [
+                                    "number",
+                                    "string",
+                                    "boolean",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "attribute", "date", "value"],
+                        "required": [
+                            "id",
+                            "attribute",
+                            "date",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "A single daily value for one currently-owned Exist attribute."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2796,12 +3323,16 @@
             "endpoints": [],
             "input": null,
             "name": "attributes",
-            "output": ["Attribute"],
+            "output": [
+                "Attribute"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Attribute"],
+            "usedModels": [
+                "Attribute"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2842,7 +3373,11 @@
                                         "description": "Display priority of the group; lower values are shown first."
                                     }
                                 },
-                                "required": ["name", "label", "priority"],
+                                "required": [
+                                    "name",
+                                    "label",
+                                    "priority"
+                                ],
                                 "additionalProperties": false
                             },
                             "service": {
@@ -2858,7 +3393,10 @@
                                         "description": "Human-readable label of the connected service, e.g. \"Google Fit\"."
                                     }
                                 },
-                                "required": ["name", "label"],
+                                "required": [
+                                    "name",
+                                    "label"
+                                ],
                                 "additionalProperties": false
                             },
                             "active": {
@@ -2896,19 +3434,33 @@
                                             "description": "Human-readable label of the connected service, e.g. \"Google Fit\"."
                                         }
                                     },
-                                    "required": ["name", "label"],
+                                    "required": [
+                                        "name",
+                                        "label"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A connected service that can provide data for an attribute."
                                 }
                             }
                         },
-                        "required": ["id", "name", "label", "active", "priority", "manual", "value_type", "value_type_description"],
+                        "required": [
+                            "id",
+                            "name",
+                            "label",
+                            "active",
+                            "priority",
+                            "manual",
+                            "value_type",
+                            "value_type_description"
+                        ],
                         "additionalProperties": false,
                         "description": "An attribute definition tracked by the user, templated or custom, active or inactive."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2917,12 +3469,16 @@
             "endpoints": [],
             "input": null,
             "name": "averages",
-            "output": ["Average"],
+            "output": [
+                "Average"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Average"],
+            "usedModels": [
+                "Average"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2944,44 +3500,82 @@
                             },
                             "overall": {
                                 "description": "Average (median) value across the whole week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "monday": {
                                 "description": "Average value for Monday of the week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "tuesday": {
                                 "description": "Average value for Tuesday of the week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "wednesday": {
                                 "description": "Average value for Wednesday of the week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "thursday": {
                                 "description": "Average value for Thursday of the week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "friday": {
                                 "description": "Average value for Friday of the week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "saturday": {
                                 "description": "Average value for Saturday of the week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "sunday": {
                                 "description": "Average value for Sunday of the week.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "attribute", "date", "overall", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+                        "required": [
+                            "id",
+                            "attribute",
+                            "date",
+                            "overall",
+                            "monday",
+                            "tuesday",
+                            "wednesday",
+                            "thursday",
+                            "friday",
+                            "saturday",
+                            "sunday"
+                        ],
                         "additionalProperties": false,
                         "description": "A weekly average (median) snapshot for a single tracked attribute."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2990,12 +3584,16 @@
             "endpoints": [],
             "input": null,
             "name": "insights",
-            "output": ["Insight"],
+            "output": [
+                "Insight"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Insight"],
+            "usedModels": [
+                "Insight"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3058,7 +3656,11 @@
                                                         "description": "Sort priority of the attribute group in ascending order."
                                                     }
                                                 },
-                                                "required": ["name", "label", "priority"],
+                                                "required": [
+                                                    "name",
+                                                    "label",
+                                                    "priority"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "Group this attribute belongs to."
                                             },
@@ -3075,11 +3677,22 @@
                                                 "description": "Human-readable description of the attribute value type, e.g. \"Period (min)\"."
                                             }
                                         },
-                                        "required": ["name", "label", "group", "priority", "value_type", "value_type_description"],
+                                        "required": [
+                                            "name",
+                                            "label",
+                                            "group",
+                                            "priority",
+                                            "value_type",
+                                            "value_type_description"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["name", "period", "priority"],
+                                "required": [
+                                    "name",
+                                    "period",
+                                    "priority"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Type metadata for the insight."
                             },
@@ -3092,7 +3705,13 @@
                                 "description": "Plain-text insight message."
                             }
                         },
-                        "required": ["id", "created", "type", "html", "text"],
+                        "required": [
+                            "id",
+                            "created",
+                            "type",
+                            "html",
+                            "text"
+                        ],
                         "additionalProperties": false,
                         "description": "A personalized insight generated by Exist for the user."
                     }

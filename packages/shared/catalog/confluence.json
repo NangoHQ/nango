@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_createblogpost",
             "name": "create-blog-post",
-            "output": ["ActionOutput_confluence_createblogpost"],
-            "scopes": ["write:page:confluence"],
-            "usedModels": ["ActionInput_confluence_createblogpost", "ActionOutput_confluence_createblogpost"],
+            "output": [
+                "ActionOutput_confluence_createblogpost"
+            ],
+            "scopes": [
+                "write:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_createblogpost",
+                "ActionOutput_confluence_createblogpost"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -33,7 +40,12 @@
                                 "description": "Blog post body in storage format."
                             }
                         },
-                        "required": ["spaceId", "title", "status", "body"],
+                        "required": [
+                            "spaceId",
+                            "title",
+                            "status",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_createblogpost": {
@@ -67,7 +79,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "status", "title", "spaceId"],
+                        "required": [
+                            "id",
+                            "status",
+                            "title",
+                            "spaceId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -80,9 +97,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_createfootercomment",
             "name": "create-footer-comment",
-            "output": ["ActionOutput_confluence_createfootercomment"],
-            "scopes": ["write:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_createfootercomment", "ActionOutput_confluence_createfootercomment"],
+            "output": [
+                "ActionOutput_confluence_createfootercomment"
+            ],
+            "scopes": [
+                "write:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_createfootercomment",
+                "ActionOutput_confluence_createfootercomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -114,7 +138,9 @@
                                 "description": "Comment body in Confluence storage format. Example: \"<p>Hello world</p>\""
                             }
                         },
-                        "required": ["bodyValue"],
+                        "required": [
+                            "bodyValue"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_createfootercomment": {
@@ -163,7 +189,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["number"],
+                                "required": [
+                                    "number"
+                                ],
                                 "additionalProperties": false
                             },
                             "body": {
@@ -197,7 +225,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -210,9 +241,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_createinlinecomment",
             "name": "create-inline-comment",
-            "output": ["ActionOutput_confluence_createinlinecomment"],
-            "scopes": ["write:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_createinlinecomment", "ActionOutput_confluence_createinlinecomment"],
+            "output": [
+                "ActionOutput_confluence_createinlinecomment"
+            ],
+            "scopes": [
+                "write:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_createinlinecomment",
+                "ActionOutput_confluence_createinlinecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -236,7 +274,11 @@
                                 "properties": {
                                     "representation": {
                                         "type": "string",
-                                        "enum": ["storage", "atlas_doc_format", "wiki"],
+                                        "enum": [
+                                            "storage",
+                                            "atlas_doc_format",
+                                            "wiki"
+                                        ],
                                         "description": "Content representation type. Example: \"storage\""
                                     },
                                     "value": {
@@ -244,7 +286,10 @@
                                         "description": "Comment body in the chosen representation. Example: \"<p>Nice work!</p>\""
                                     }
                                 },
-                                "required": ["representation", "value"],
+                                "required": [
+                                    "representation",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "inlineCommentProperties": {
@@ -267,11 +312,17 @@
                                         "description": "The zero-based match index to highlight. Example: 0"
                                     }
                                 },
-                                "required": ["textSelection", "textSelectionMatchCount", "textSelectionMatchIndex"],
+                                "required": [
+                                    "textSelection",
+                                    "textSelectionMatchCount",
+                                    "textSelectionMatchIndex"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_createinlinecomment": {
@@ -357,7 +408,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -370,9 +423,17 @@
             "endpoint": null,
             "input": "ActionInput_confluence_createpageproperty",
             "name": "create-page-property",
-            "output": ["ActionOutput_confluence_createpageproperty"],
-            "scopes": ["read:page:confluence", "write:page:confluence"],
-            "usedModels": ["ActionInput_confluence_createpageproperty", "ActionOutput_confluence_createpageproperty"],
+            "output": [
+                "ActionOutput_confluence_createpageproperty"
+            ],
+            "scopes": [
+                "read:page:confluence",
+                "write:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_createpageproperty",
+                "ActionOutput_confluence_createpageproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -391,7 +452,11 @@
                                 "description": "The JSON value to store."
                             }
                         },
-                        "required": ["page_id", "key", "value"],
+                        "required": [
+                            "page_id",
+                            "key",
+                            "value"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_createpageproperty": {
@@ -426,7 +491,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["key"],
+                        "required": [
+                            "key"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -439,9 +506,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_createpage",
             "name": "create-page",
-            "output": ["ActionOutput_confluence_createpage"],
-            "scopes": ["write:page:confluence"],
-            "usedModels": ["ActionInput_confluence_createpage", "ActionOutput_confluence_createpage"],
+            "output": [
+                "ActionOutput_confluence_createpage"
+            ],
+            "scopes": [
+                "write:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_createpage",
+                "ActionOutput_confluence_createpage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -469,7 +543,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["spaceId", "title"],
+                        "required": [
+                            "spaceId",
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_createpage": {
@@ -575,7 +652,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -588,9 +667,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_deleteattachment",
             "name": "delete-attachment",
-            "output": ["ActionOutput_confluence_deleteattachment"],
-            "scopes": ["delete:attachment:confluence"],
-            "usedModels": ["ActionInput_confluence_deleteattachment", "ActionOutput_confluence_deleteattachment"],
+            "output": [
+                "ActionOutput_confluence_deleteattachment"
+            ],
+            "scopes": [
+                "delete:attachment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_deleteattachment",
+                "ActionOutput_confluence_deleteattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -606,7 +692,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_deleteattachment": {
@@ -619,7 +707,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -632,9 +723,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_deleteblogpost",
             "name": "delete-blog-post",
-            "output": ["ActionOutput_confluence_deleteblogpost"],
-            "scopes": ["delete:page:confluence"],
-            "usedModels": ["ActionInput_confluence_deleteblogpost", "ActionOutput_confluence_deleteblogpost"],
+            "output": [
+                "ActionOutput_confluence_deleteblogpost"
+            ],
+            "scopes": [
+                "delete:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_deleteblogpost",
+                "ActionOutput_confluence_deleteblogpost"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -654,7 +752,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_deleteblogpost": {
@@ -667,7 +767,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -680,9 +783,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_deletefootercomment",
             "name": "delete-footer-comment",
-            "output": ["ActionOutput_confluence_deletefootercomment"],
-            "scopes": ["delete:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_deletefootercomment", "ActionOutput_confluence_deletefootercomment"],
+            "output": [
+                "ActionOutput_confluence_deletefootercomment"
+            ],
+            "scopes": [
+                "delete:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_deletefootercomment",
+                "ActionOutput_confluence_deletefootercomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -694,7 +804,9 @@
                                 "description": "The ID of the footer comment to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_deletefootercomment": {
@@ -707,7 +819,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "comment_id"],
+                        "required": [
+                            "success",
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -720,9 +835,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_deleteinlinecomment",
             "name": "delete-inline-comment",
-            "output": ["ActionOutput_confluence_deleteinlinecomment"],
-            "scopes": ["delete:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_deleteinlinecomment", "ActionOutput_confluence_deleteinlinecomment"],
+            "output": [
+                "ActionOutput_confluence_deleteinlinecomment"
+            ],
+            "scopes": [
+                "delete:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_deleteinlinecomment",
+                "ActionOutput_confluence_deleteinlinecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -734,7 +856,9 @@
                                 "description": "The ID of the inline comment to delete. Example: \"123456789\""
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_deleteinlinecomment": {
@@ -750,9 +874,17 @@
             "endpoint": null,
             "input": "ActionInput_confluence_deletepageproperty",
             "name": "delete-page-property",
-            "output": ["ActionOutput_confluence_deletepageproperty"],
-            "scopes": ["read:page:confluence", "write:page:confluence"],
-            "usedModels": ["ActionInput_confluence_deletepageproperty", "ActionOutput_confluence_deletepageproperty"],
+            "output": [
+                "ActionOutput_confluence_deletepageproperty"
+            ],
+            "scopes": [
+                "read:page:confluence",
+                "write:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_deletepageproperty",
+                "ActionOutput_confluence_deletepageproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -768,7 +900,10 @@
                                 "description": "Property ID. Example: 456"
                             }
                         },
-                        "required": ["pageId", "propertyId"],
+                        "required": [
+                            "pageId",
+                            "propertyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_deletepageproperty": {
@@ -778,7 +913,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -791,9 +928,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_deletepage",
             "name": "delete-page",
-            "output": ["ActionOutput_confluence_deletepage"],
-            "scopes": ["delete:page:confluence"],
-            "usedModels": ["ActionInput_confluence_deletepage", "ActionOutput_confluence_deletepage"],
+            "output": [
+                "ActionOutput_confluence_deletepage"
+            ],
+            "scopes": [
+                "delete:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_deletepage",
+                "ActionOutput_confluence_deletepage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -813,7 +957,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_deletepage": {
@@ -823,7 +969,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -836,9 +984,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_getattachment",
             "name": "get-attachment",
-            "output": ["ActionOutput_confluence_getattachment"],
-            "scopes": ["read:attachment:confluence"],
-            "usedModels": ["ActionInput_confluence_getattachment", "ActionOutput_confluence_getattachment"],
+            "output": [
+                "ActionOutput_confluence_getattachment"
+            ],
+            "scopes": [
+                "read:attachment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_getattachment",
+                "ActionOutput_confluence_getattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -866,7 +1021,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_getattachment": {
@@ -897,7 +1054,10 @@
                                 "type": "string"
                             },
                             "mediaTypeDescription": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "comment": {
                                 "type": "string"
@@ -953,7 +1113,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -995,7 +1158,10 @@
                                                 },
                                                 "version": {}
                                             },
-                                            "required": ["id", "key"],
+                                            "required": [
+                                                "id",
+                                                "key"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1036,7 +1202,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["operation"],
+                                            "required": [
+                                                "operation"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1119,7 +1287,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1132,9 +1302,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_getblogpost",
             "name": "get-blog-post",
-            "output": ["ActionOutput_confluence_getblogpost"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_getblogpost", "ActionOutput_confluence_getblogpost"],
+            "output": [
+                "ActionOutput_confluence_getblogpost"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_getblogpost",
+                "ActionOutput_confluence_getblogpost"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1166,7 +1343,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_getblogpost": {
@@ -1218,7 +1397,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "body": {
@@ -1260,7 +1441,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1273,9 +1456,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_getfootercomment",
             "name": "get-footer-comment",
-            "output": ["ActionOutput_confluence_getfootercomment"],
-            "scopes": ["read:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_getfootercomment", "ActionOutput_confluence_getfootercomment"],
+            "output": [
+                "ActionOutput_confluence_getfootercomment"
+            ],
+            "scopes": [
+                "read:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_getfootercomment",
+                "ActionOutput_confluence_getfootercomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1299,7 +1489,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_getfootercomment": {
@@ -1646,7 +1838,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1659,9 +1853,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_getinlinecomment",
             "name": "get-inline-comment",
-            "output": ["ActionOutput_confluence_getinlinecomment"],
-            "scopes": ["read:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_getinlinecomment", "ActionOutput_confluence_getinlinecomment"],
+            "output": [
+                "ActionOutput_confluence_getinlinecomment"
+            ],
+            "scopes": [
+                "read:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_getinlinecomment",
+                "ActionOutput_confluence_getinlinecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1675,7 +1876,11 @@
                             "bodyFormat": {
                                 "description": "The format of the comment body to return. Defaults to storage.",
                                 "type": "string",
-                                "enum": ["storage", "atlas_doc_format", "view"]
+                                "enum": [
+                                    "storage",
+                                    "atlas_doc_format",
+                                    "view"
+                                ]
                             },
                             "version": {
                                 "description": "The version number of the comment to retrieve.",
@@ -1702,7 +1907,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_getinlinecomment": {
@@ -1916,7 +2123,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1929,9 +2138,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_getpageproperty",
             "name": "get-page-property",
-            "output": ["ActionOutput_confluence_getpageproperty"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_getpageproperty", "ActionOutput_confluence_getpageproperty"],
+            "output": [
+                "ActionOutput_confluence_getpageproperty"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_getpageproperty",
+                "ActionOutput_confluence_getpageproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1947,7 +2163,10 @@
                                 "description": "Property ID. Example: \"123456\""
                             }
                         },
-                        "required": ["pageId", "propertyId"],
+                        "required": [
+                            "pageId",
+                            "propertyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_getpageproperty": {
@@ -1982,7 +2201,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "key"],
+                        "required": [
+                            "id",
+                            "key"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1995,9 +2217,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_getpage",
             "name": "get-page",
-            "output": ["ActionOutput_confluence_getpage"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_getpage", "ActionOutput_confluence_getpage"],
+            "output": [
+                "ActionOutput_confluence_getpage"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_getpage",
+                "ActionOutput_confluence_getpage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2011,7 +2240,11 @@
                             "bodyFormat": {
                                 "description": "Body representation format. Defaults to storage.",
                                 "type": "string",
-                                "enum": ["storage", "atlas_doc_format", "view"]
+                                "enum": [
+                                    "storage",
+                                    "atlas_doc_format",
+                                    "view"
+                                ]
                             },
                             "includeLabels": {
                                 "description": "Include labels in the response",
@@ -2034,7 +2267,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_getpage": {
@@ -2139,7 +2374,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name", "prefix"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "prefix"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2204,7 +2443,10 @@
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["id", "key"],
+                                            "required": [
+                                                "id",
+                                                "key"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2262,7 +2504,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["operation", "targetType"],
+                                            "required": [
+                                                "operation",
+                                                "targetType"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2317,7 +2562,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["accountId"],
+                                            "required": [
+                                                "accountId"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2454,7 +2701,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2467,9 +2716,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_getspace",
             "name": "get-space",
-            "output": ["ActionOutput_confluence_getspace"],
-            "scopes": ["read:space:confluence"],
-            "usedModels": ["ActionInput_confluence_getspace", "ActionOutput_confluence_getspace"],
+            "output": [
+                "ActionOutput_confluence_getspace"
+            ],
+            "scopes": [
+                "read:space:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_getspace",
+                "ActionOutput_confluence_getspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2501,7 +2757,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_getspace": {
@@ -2569,7 +2827,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2636,7 +2897,10 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id", "key"],
+                                            "required": [
+                                                "id",
+                                                "key"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2679,7 +2943,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["operation", "targetType"],
+                                            "required": [
+                                                "operation",
+                                                "targetType"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2743,7 +3010,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2781,7 +3050,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "key", "name"],
+                        "required": [
+                            "id",
+                            "key",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2794,9 +3067,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listattachments",
             "name": "list-attachments",
-            "output": ["ActionOutput_confluence_listattachments"],
-            "scopes": ["read:attachment:confluence"],
-            "usedModels": ["ActionInput_confluence_listattachments", "ActionOutput_confluence_listattachments"],
+            "output": [
+                "ActionOutput_confluence_listattachments"
+            ],
+            "scopes": [
+                "read:attachment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listattachments",
+                "ActionOutput_confluence_listattachments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2894,7 +3174,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2902,7 +3184,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2915,9 +3199,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listblogpostsforlabel",
             "name": "list-blog-posts-for-label",
-            "output": ["ActionOutput_confluence_listblogpostsforlabel"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_listblogpostsforlabel", "ActionOutput_confluence_listblogpostsforlabel"],
+            "output": [
+                "ActionOutput_confluence_listblogpostsforlabel"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listblogpostsforlabel",
+                "ActionOutput_confluence_listblogpostsforlabel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2952,7 +3243,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["label_id"],
+                        "required": [
+                            "label_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listblogpostsforlabel": {
@@ -3026,7 +3319,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3034,7 +3329,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3047,9 +3344,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listblogposts",
             "name": "list-blog-posts",
-            "output": ["ActionOutput_confluence_listblogposts"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_listblogposts", "ActionOutput_confluence_listblogposts"],
+            "output": [
+                "ActionOutput_confluence_listblogposts"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listblogposts",
+                "ActionOutput_confluence_listblogposts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3161,7 +3465,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3169,7 +3475,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3182,9 +3490,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listpageattachments",
             "name": "list-page-attachments",
-            "output": ["ActionOutput_confluence_listpageattachments"],
-            "scopes": ["read:attachment:confluence"],
-            "usedModels": ["ActionInput_confluence_listpageattachments", "ActionOutput_confluence_listpageattachments"],
+            "output": [
+                "ActionOutput_confluence_listpageattachments"
+            ],
+            "scopes": [
+                "read:attachment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listpageattachments",
+                "ActionOutput_confluence_listpageattachments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3218,7 +3533,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listpageattachments": {
@@ -3302,7 +3619,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3310,7 +3629,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3323,9 +3644,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listpagefootercomments",
             "name": "list-page-footer-comments",
-            "output": ["ActionOutput_confluence_listpagefootercomments"],
-            "scopes": ["read:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_listpagefootercomments", "ActionOutput_confluence_listpagefootercomments"],
+            "output": [
+                "ActionOutput_confluence_listpagefootercomments"
+            ],
+            "scopes": [
+                "read:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listpagefootercomments",
+                "ActionOutput_confluence_listpagefootercomments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3360,7 +3688,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listpagefootercomments": {
@@ -3423,7 +3753,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3431,7 +3763,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3444,9 +3778,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listpageinlinecomments",
             "name": "list-page-inline-comments",
-            "output": ["ActionOutput_confluence_listpageinlinecomments"],
-            "scopes": ["read:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_listpageinlinecomments", "ActionOutput_confluence_listpageinlinecomments"],
+            "output": [
+                "ActionOutput_confluence_listpageinlinecomments"
+            ],
+            "scopes": [
+                "read:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listpageinlinecomments",
+                "ActionOutput_confluence_listpageinlinecomments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3488,7 +3829,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listpageinlinecomments": {
@@ -3584,7 +3927,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3592,7 +3937,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3605,9 +3952,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listpageproperties",
             "name": "list-page-properties",
-            "output": ["ActionOutput_confluence_listpageproperties"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_listpageproperties", "ActionOutput_confluence_listpageproperties"],
+            "output": [
+                "ActionOutput_confluence_listpageproperties"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listpageproperties",
+                "ActionOutput_confluence_listpageproperties"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3631,7 +3985,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listpageproperties": {
@@ -3671,7 +4027,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "key"],
+                                    "required": [
+                                        "id",
+                                        "key"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3679,7 +4038,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["properties"],
+                        "required": [
+                            "properties"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3692,9 +4053,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listpagesforlabel",
             "name": "list-pages-for-label",
-            "output": ["ActionOutput_confluence_listpagesforlabel"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_listpagesforlabel", "ActionOutput_confluence_listpagesforlabel"],
+            "output": [
+                "ActionOutput_confluence_listpagesforlabel"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listpagesforlabel",
+                "ActionOutput_confluence_listpagesforlabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3723,7 +4091,9 @@
                                 "maximum": 250
                             }
                         },
-                        "required": ["label_id"],
+                        "required": [
+                            "label_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listpagesforlabel": {
@@ -3815,7 +4185,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3823,7 +4195,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pages"],
+                        "required": [
+                            "pages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3836,9 +4210,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listpages",
             "name": "list-pages",
-            "output": ["ActionOutput_confluence_listpages"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_listpages", "ActionOutput_confluence_listpages"],
+            "output": [
+                "ActionOutput_confluence_listpages"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listpages",
+                "ActionOutput_confluence_listpages"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3852,7 +4233,12 @@
                             "status": {
                                 "description": "Page status filter",
                                 "type": "string",
-                                "enum": ["current", "archived", "trashed", "draft"]
+                                "enum": [
+                                    "current",
+                                    "archived",
+                                    "trashed",
+                                    "draft"
+                                ]
                             },
                             "title": {
                                 "description": "Title filter (case-insensitive prefix match)",
@@ -3861,7 +4247,10 @@
                             "subType": {
                                 "description": "Content subtype filter",
                                 "type": "string",
-                                "enum": ["page", "blogpost"]
+                                "enum": [
+                                    "page",
+                                    "blogpost"
+                                ]
                             },
                             "sort": {
                                 "description": "Sort order. Example: \"title asc\"",
@@ -3870,7 +4259,14 @@
                             "bodyFormat": {
                                 "description": "Body representation format. Prefer \"storage\" for reliable parsing.",
                                 "type": "string",
-                                "enum": ["storage", "atlas_doc_format", "view", "export_view", "styled_view", "anonymous_export_view"]
+                                "enum": [
+                                    "storage",
+                                    "atlas_doc_format",
+                                    "view",
+                                    "export_view",
+                                    "styled_view",
+                                    "anonymous_export_view"
+                                ]
                             },
                             "cursor": {
                                 "description": "Pagination cursor from previous response",
@@ -3948,7 +4344,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3956,7 +4354,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pages"],
+                        "required": [
+                            "pages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3969,9 +4369,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listspaceblogposts",
             "name": "list-space-blog-posts",
-            "output": ["ActionOutput_confluence_listspaceblogposts"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_listspaceblogposts", "ActionOutput_confluence_listspaceblogposts"],
+            "output": [
+                "ActionOutput_confluence_listspaceblogposts"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listspaceblogposts",
+                "ActionOutput_confluence_listspaceblogposts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4007,7 +4414,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["spaceId"],
+                        "required": [
+                            "spaceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listspaceblogposts": {
@@ -4080,7 +4489,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "status"],
+                                    "required": [
+                                        "id",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4088,7 +4500,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["blogPosts"],
+                        "required": [
+                            "blogPosts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4101,9 +4515,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listspacepages",
             "name": "list-space-pages",
-            "output": ["ActionOutput_confluence_listspacepages"],
-            "scopes": ["read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_listspacepages", "ActionOutput_confluence_listspacepages"],
+            "output": [
+                "ActionOutput_confluence_listspacepages"
+            ],
+            "scopes": [
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listspacepages",
+                "ActionOutput_confluence_listspacepages"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4127,7 +4548,10 @@
                             "depth": {
                                 "description": "Page tree depth filter. Example: \"root\" or \"all\"",
                                 "type": "string",
-                                "enum": ["root", "all"]
+                                "enum": [
+                                    "root",
+                                    "all"
+                                ]
                             },
                             "status": {
                                 "description": "Filter by page status. Example: [\"current\"]",
@@ -4143,14 +4567,25 @@
                             "sort": {
                                 "description": "Sort order for results.",
                                 "type": "string",
-                                "enum": ["id", "-id", "createdAt", "-createdAt", "position", "-position", "title", "-title"]
+                                "enum": [
+                                    "id",
+                                    "-id",
+                                    "createdAt",
+                                    "-createdAt",
+                                    "position",
+                                    "-position",
+                                    "title",
+                                    "-title"
+                                ]
                             },
                             "body_format": {
                                 "description": "Body format for page content. Defaults to \"storage\".",
                                 "type": "string"
                             }
                         },
-                        "required": ["space_id"],
+                        "required": [
+                            "space_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_listspacepages": {
@@ -4174,10 +4609,16 @@
                                             "type": "string"
                                         },
                                         "parentId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "parentType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "authorId": {
                                             "type": "string"
@@ -4186,7 +4627,10 @@
                                             "type": "string"
                                         },
                                         "lastOwnerId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdAt": {
                                             "type": "string"
@@ -4213,10 +4657,20 @@
                                                     "type": "string"
                                                 },
                                                 "ncsStepVersion": {
-                                                    "type": ["number", "string", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["number", "message", "minorEdit", "authorId", "createdAt"],
+                                            "required": [
+                                                "number",
+                                                "message",
+                                                "minorEdit",
+                                                "authorId",
+                                                "createdAt"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "body": {
@@ -4234,7 +4688,15 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "spaceId", "status", "title", "authorId", "ownerId", "createdAt"],
+                                    "required": [
+                                        "id",
+                                        "spaceId",
+                                        "status",
+                                        "title",
+                                        "authorId",
+                                        "ownerId",
+                                        "createdAt"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4242,7 +4704,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["pages"],
+                        "required": [
+                            "pages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4255,9 +4719,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_listspaces",
             "name": "list-spaces",
-            "output": ["ActionOutput_confluence_listspaces"],
-            "scopes": ["read:space:confluence"],
-            "usedModels": ["ActionInput_confluence_listspaces", "ActionOutput_confluence_listspaces"],
+            "output": [
+                "ActionOutput_confluence_listspaces"
+            ],
+            "scopes": [
+                "read:space:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_listspaces",
+                "ActionOutput_confluence_listspaces"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4353,7 +4824,13 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "key", "name", "type", "status"],
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "name",
+                                        "type",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4361,7 +4838,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4374,9 +4853,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_searchcontent",
             "name": "search-content",
-            "output": ["ActionOutput_confluence_searchcontent"],
-            "scopes": ["read:content-details:confluence"],
-            "usedModels": ["ActionInput_confluence_searchcontent", "ActionOutput_confluence_searchcontent"],
+            "output": [
+                "ActionOutput_confluence_searchcontent"
+            ],
+            "scopes": [
+                "read:content-details:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_searchcontent",
+                "ActionOutput_confluence_searchcontent"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -4405,7 +4891,9 @@
                                 }
                             }
                         },
-                        "required": ["cql"],
+                        "required": [
+                            "cql"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_searchcontent": {
@@ -4447,11 +4935,17 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "key"],
+                                                    "required": [
+                                                        "id",
+                                                        "key"
+                                                    ],
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["id", "type"],
+                                            "required": [
+                                                "id",
+                                                "type"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "url": {
@@ -4490,7 +4984,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4503,9 +4999,17 @@
             "endpoint": null,
             "input": "ActionInput_confluence_updateblogpost",
             "name": "update-blog-post",
-            "output": ["ActionOutput_confluence_updateblogpost"],
-            "scopes": ["write:page:confluence", "read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_updateblogpost", "ActionOutput_confluence_updateblogpost"],
+            "output": [
+                "ActionOutput_confluence_updateblogpost"
+            ],
+            "scopes": [
+                "write:page:confluence",
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_updateblogpost",
+                "ActionOutput_confluence_updateblogpost"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4523,14 +5027,19 @@
                             "status": {
                                 "description": "New status for the blog post",
                                 "type": "string",
-                                "enum": ["current", "draft"]
+                                "enum": [
+                                    "current",
+                                    "draft"
+                                ]
                             },
                             "body": {
                                 "description": "New body content in storage format",
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_updateblogpost": {
@@ -4555,7 +5064,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4568,9 +5079,16 @@
             "endpoint": null,
             "input": "ActionInput_confluence_updatefootercomment",
             "name": "update-footer-comment",
-            "output": ["ActionOutput_confluence_updatefootercomment"],
-            "scopes": ["write:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_updatefootercomment", "ActionOutput_confluence_updatefootercomment"],
+            "output": [
+                "ActionOutput_confluence_updatefootercomment"
+            ],
+            "scopes": [
+                "write:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_updatefootercomment",
+                "ActionOutput_confluence_updatefootercomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4596,7 +5114,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["comment_id", "version_number", "body"],
+                        "required": [
+                            "comment_id",
+                            "version_number",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_updatefootercomment": {
@@ -4657,7 +5179,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4670,9 +5194,17 @@
             "endpoint": null,
             "input": "ActionInput_confluence_updateinlinecomment",
             "name": "update-inline-comment",
-            "output": ["ActionOutput_confluence_updateinlinecomment"],
-            "scopes": ["read:comment:confluence", "write:comment:confluence"],
-            "usedModels": ["ActionInput_confluence_updateinlinecomment", "ActionOutput_confluence_updateinlinecomment"],
+            "output": [
+                "ActionOutput_confluence_updateinlinecomment"
+            ],
+            "scopes": [
+                "read:comment:confluence",
+                "write:comment:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_updateinlinecomment",
+                "ActionOutput_confluence_updateinlinecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4695,7 +5227,10 @@
                                         "description": "Body value in the given representation."
                                     }
                                 },
-                                "required": ["representation", "value"],
+                                "required": [
+                                    "representation",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "resolved": {
@@ -4707,7 +5242,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_updateinlinecomment": {
@@ -4750,7 +5287,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["number"],
+                                "required": [
+                                    "number"
+                                ],
                                 "additionalProperties": false
                             },
                             "body": {
@@ -4778,7 +5317,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4791,9 +5332,17 @@
             "endpoint": null,
             "input": "ActionInput_confluence_updatepageproperty",
             "name": "update-page-property",
-            "output": ["ActionOutput_confluence_updatepageproperty"],
-            "scopes": ["read:page:confluence", "write:page:confluence"],
-            "usedModels": ["ActionInput_confluence_updatepageproperty", "ActionOutput_confluence_updatepageproperty"],
+            "output": [
+                "ActionOutput_confluence_updatepageproperty"
+            ],
+            "scopes": [
+                "read:page:confluence",
+                "write:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_updatepageproperty",
+                "ActionOutput_confluence_updatepageproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4824,7 +5373,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["page_id", "property_id", "key", "value", "version_number"],
+                        "required": [
+                            "page_id",
+                            "property_id",
+                            "key",
+                            "value",
+                            "version_number"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_updatepageproperty": {
@@ -4855,11 +5410,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["number"],
+                                "required": [
+                                    "number"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "key", "version"],
+                        "required": [
+                            "id",
+                            "key",
+                            "version"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4872,9 +5433,17 @@
             "endpoint": null,
             "input": "ActionInput_confluence_updatepage",
             "name": "update-page",
-            "output": ["ActionOutput_confluence_updatepage"],
-            "scopes": ["write:page:confluence", "read:page:confluence"],
-            "usedModels": ["ActionInput_confluence_updatepage", "ActionOutput_confluence_updatepage"],
+            "output": [
+                "ActionOutput_confluence_updatepage"
+            ],
+            "scopes": [
+                "write:page:confluence",
+                "read:page:confluence"
+            ],
+            "usedModels": [
+                "ActionInput_confluence_updatepage",
+                "ActionOutput_confluence_updatepage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4902,7 +5471,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "status", "body"],
+                        "required": [
+                            "id",
+                            "title",
+                            "status",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_confluence_updatepage": {
@@ -4924,7 +5498,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "status", "title"],
+                        "required": [
+                            "id",
+                            "status",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4945,12 +5523,19 @@
             ],
             "input": "SyncMetadata_confluence_attachments",
             "name": "attachments",
-            "output": ["Attachment"],
+            "output": [
+                "Attachment"
+            ],
             "runs": "every hour",
-            "scopes": ["read:attachment:confluence"],
+            "scopes": [
+                "read:attachment:confluence"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Attachment", "SyncMetadata_confluence_attachments"],
+            "usedModels": [
+                "Attachment",
+                "SyncMetadata_confluence_attachments"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5001,7 +5586,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_confluence_attachments": {
@@ -5021,7 +5608,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5035,12 +5624,19 @@
             ],
             "input": "SyncMetadata_confluence_blogposts",
             "name": "blog-posts",
-            "output": ["BlogPost"],
+            "output": [
+                "BlogPost"
+            ],
             "runs": "every hour",
-            "scopes": ["read:page:confluence"],
+            "scopes": [
+                "read:page:confluence"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BlogPost", "SyncMetadata_confluence_blogposts"],
+            "usedModels": [
+                "BlogPost",
+                "SyncMetadata_confluence_blogposts"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5117,7 +5713,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_confluence_blogposts": {
@@ -5137,7 +5735,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5151,12 +5751,19 @@
             ],
             "input": "SyncMetadata_confluence_footercomments",
             "name": "footer-comments",
-            "output": ["FooterComment"],
+            "output": [
+                "FooterComment"
+            ],
             "runs": "every hour",
-            "scopes": ["read:comment:confluence"],
+            "scopes": [
+                "read:comment:confluence"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FooterComment", "SyncMetadata_confluence_footercomments"],
+            "usedModels": [
+                "FooterComment",
+                "SyncMetadata_confluence_footercomments"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5210,7 +5817,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_confluence_footercomments": {
@@ -5224,7 +5833,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5238,12 +5849,19 @@
             ],
             "input": "SyncMetadata_confluence_inlinecomments",
             "name": "inline-comments",
-            "output": ["InlineComment"],
+            "output": [
+                "InlineComment"
+            ],
             "runs": "every hour",
-            "scopes": ["read:comment:confluence"],
+            "scopes": [
+                "read:comment:confluence"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["InlineComment", "SyncMetadata_confluence_inlinecomments"],
+            "usedModels": [
+                "InlineComment",
+                "SyncMetadata_confluence_inlinecomments"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5282,7 +5900,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_confluence_inlinecomments": {
@@ -5296,7 +5916,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5310,12 +5932,19 @@
             ],
             "input": "SyncMetadata_confluence_pages",
             "name": "pages",
-            "output": ["Page"],
+            "output": [
+                "Page"
+            ],
             "runs": "every hour",
-            "scopes": ["read:page:confluence"],
+            "scopes": [
+                "read:page:confluence"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Page", "SyncMetadata_confluence_pages"],
+            "usedModels": [
+                "Page",
+                "SyncMetadata_confluence_pages"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5363,7 +5992,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_confluence_pages": {
@@ -5383,7 +6014,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5397,12 +6030,19 @@
             ],
             "input": "SyncMetadata_confluence_spaces",
             "name": "spaces",
-            "output": ["Space"],
+            "output": [
+                "Space"
+            ],
             "runs": "every hour",
-            "scopes": ["read:space:confluence"],
+            "scopes": [
+                "read:space:confluence"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Space", "SyncMetadata_confluence_spaces"],
+            "usedModels": [
+                "Space",
+                "SyncMetadata_confluence_spaces"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5438,7 +6078,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "key", "name"],
+                        "required": [
+                            "id",
+                            "key",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_confluence_spaces": {
@@ -5452,7 +6096,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

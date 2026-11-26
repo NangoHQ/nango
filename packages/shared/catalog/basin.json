@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_createformwebhook",
             "name": "create-form-webhook",
-            "output": ["ActionOutput_basin_createformwebhook"],
+            "output": [
+                "ActionOutput_basin_createformwebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_createformwebhook", "ActionOutput_basin_createformwebhook"],
+            "usedModels": [
+                "ActionInput_basin_createformwebhook",
+                "ActionOutput_basin_createformwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -32,7 +37,10 @@
                             },
                             "format": {
                                 "type": "string",
-                                "enum": ["json", "slack"],
+                                "enum": [
+                                    "json",
+                                    "slack"
+                                ],
                                 "description": "Webhook format. Use \"json\" or \"slack\". Example: \"json\""
                             },
                             "enabled": {
@@ -40,7 +48,13 @@
                                 "description": "Whether the webhook is enabled. Example: true"
                             }
                         },
-                        "required": ["form_id", "name", "url", "format", "enabled"],
+                        "required": [
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "enabled"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_createformwebhook": {
@@ -83,7 +97,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "form_id", "name", "url", "format", "enabled", "signing_secret"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "enabled",
+                            "signing_secret"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -96,9 +118,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_createform",
             "name": "create-form",
-            "output": ["ActionOutput_basin_createform"],
+            "output": [
+                "ActionOutput_basin_createform"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_createform", "ActionOutput_basin_createform"],
+            "usedModels": [
+                "ActionInput_basin_createform",
+                "ActionOutput_basin_createform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -116,7 +143,10 @@
                                 "description": "Project ID to associate the form with. Example: 59242"
                             }
                         },
-                        "required": ["name", "project_id"],
+                        "required": [
+                            "name",
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_createform": {
@@ -126,7 +156,10 @@
                                 "type": "number"
                             },
                             "uuid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -135,7 +168,10 @@
                                 "type": "string"
                             },
                             "redirect_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "use_ajax": {
                                 "type": "boolean"
@@ -147,10 +183,16 @@
                                 "type": "boolean"
                             },
                             "autoreply_body": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "whitelist_source_domains": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "force_recaptcha": {
                                 "type": "boolean"
@@ -162,49 +204,94 @@
                                 "type": "boolean"
                             },
                             "turnstile_site_key": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "turnstile_secret": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_cc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_bcc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_from_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_from_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_greeting": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "logo": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "button_background_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "button_text_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "data_receipt_email": {
                                 "type": "boolean"
@@ -219,37 +306,64 @@
                                 "type": "boolean"
                             },
                             "custom_template": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "use_custom_template": {
                                 "type": "boolean"
                             },
                             "autoreply_custom_template": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_use_custom_template": {
                                 "type": "boolean"
                             },
                             "notification_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "auto_response_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "confirmation_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "honeypot_field": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "recaptcha_failed_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "domain_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "domain_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "duplicate_filter": {
                                 "type": "boolean"
@@ -258,19 +372,34 @@
                                 "type": "number"
                             },
                             "redirect_heading": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_message": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_background_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_text_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "content_blacklist": {
                                 "anyOf": [
@@ -353,7 +482,10 @@
                                             "type": "number"
                                         },
                                         "last_failure_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -362,7 +494,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "form_id", "name", "url", "format", "enabled"],
+                                    "required": [
+                                        "id",
+                                        "form_id",
+                                        "name",
+                                        "url",
+                                        "format",
+                                        "enabled"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -416,9 +555,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_basin_createproject"],
+            "output": [
+                "ActionOutput_basin_createproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_createproject", "ActionOutput_basin_createproject"],
+            "usedModels": [
+                "ActionInput_basin_createproject",
+                "ActionOutput_basin_createproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -430,7 +574,9 @@
                                 "description": "Project name. Example: \"My Project\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_createproject": {
@@ -449,7 +595,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -462,9 +611,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_deleteformwebhook",
             "name": "delete-form-webhook",
-            "output": ["ActionOutput_basin_deleteformwebhook"],
+            "output": [
+                "ActionOutput_basin_deleteformwebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_deleteformwebhook", "ActionOutput_basin_deleteformwebhook"],
+            "usedModels": [
+                "ActionInput_basin_deleteformwebhook",
+                "ActionOutput_basin_deleteformwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -478,7 +632,9 @@
                                 "description": "ID of the form webhook to delete. Example: 10115"
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_deleteformwebhook": {
@@ -521,7 +677,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "form_id", "name", "url", "format", "trigger_when_spam", "enabled", "created_at", "updated_at", "failure_count"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "trigger_when_spam",
+                            "enabled",
+                            "created_at",
+                            "updated_at",
+                            "failure_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -534,9 +701,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_deleteform",
             "name": "delete-form",
-            "output": ["ActionOutput_basin_deleteform"],
+            "output": [
+                "ActionOutput_basin_deleteform"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_deleteform", "ActionOutput_basin_deleteform"],
+            "usedModels": [
+                "ActionInput_basin_deleteform",
+                "ActionOutput_basin_deleteform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -545,10 +717,15 @@
                         "properties": {
                             "form_id": {
                                 "description": "Form ID to delete. Example: \"72983\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_deleteform": {
@@ -558,7 +735,10 @@
                                 "type": "number"
                             },
                             "uuid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -567,7 +747,10 @@
                                 "type": "string"
                             },
                             "redirect_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "use_ajax": {
                                 "type": "boolean"
@@ -579,10 +762,16 @@
                                 "type": "boolean"
                             },
                             "autoreply_body": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "whitelist_source_domains": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "force_recaptcha": {
                                 "type": "boolean"
@@ -594,49 +783,94 @@
                                 "type": "boolean"
                             },
                             "turnstile_site_key": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "turnstile_secret": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_cc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_bcc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_from_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_from_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_greeting": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "logo": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "button_background_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "button_text_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "data_receipt_email": {
                                 "type": "boolean"
@@ -651,37 +885,64 @@
                                 "type": "boolean"
                             },
                             "custom_template": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "use_custom_template": {
                                 "type": "boolean"
                             },
                             "autoreply_custom_template": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_use_custom_template": {
                                 "type": "boolean"
                             },
                             "notification_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "auto_response_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "confirmation_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "honeypot_field": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "recaptcha_failed_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "domain_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "domain_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "duplicate_filter": {
                                 "type": "boolean"
@@ -690,19 +951,34 @@
                                 "type": "number"
                             },
                             "redirect_heading": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_message": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_background_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_text_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "content_blacklist": {
                                 "anyOf": [
@@ -750,7 +1026,10 @@
                                 "type": "string"
                             },
                             "project_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "form_webhooks": {
                                 "anyOf": [
@@ -831,9 +1110,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_deleteproject",
             "name": "delete-project",
-            "output": ["ActionOutput_basin_deleteproject"],
+            "output": [
+                "ActionOutput_basin_deleteproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_deleteproject", "ActionOutput_basin_deleteproject"],
+            "usedModels": [
+                "ActionInput_basin_deleteproject",
+                "ActionOutput_basin_deleteproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -847,7 +1131,9 @@
                                 "description": "Project ID. Example: 59615"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_deleteproject": {
@@ -866,7 +1152,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -879,9 +1168,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_deletesubmission",
             "name": "delete-submission",
-            "output": ["ActionOutput_basin_deletesubmission"],
+            "output": [
+                "ActionOutput_basin_deletesubmission"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_deletesubmission", "ActionOutput_basin_deletesubmission"],
+            "usedModels": [
+                "ActionInput_basin_deletesubmission",
+                "ActionOutput_basin_deletesubmission"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -895,7 +1189,9 @@
                                 "description": "Submission ID to delete. Example: 61110051"
                             }
                         },
-                        "required": ["submission_id"],
+                        "required": [
+                            "submission_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_deletesubmission": {
@@ -905,22 +1201,40 @@
                                 "type": "number"
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "source_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "source_host": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "source_path": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "source_query": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "source_fragment": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "payload_params": {
                                 "type": "object",
@@ -948,28 +1262,52 @@
                                 "type": "boolean"
                             },
                             "spam_reason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "webhook_sent_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "ip": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "referrer": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user_agent": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "geocoded_country": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "geocoded_region": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "geocoded_city": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "attachments": {
                                 "anyOf": [
@@ -994,7 +1332,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["name", "uuid"],
+                                        "required": [
+                                            "name",
+                                            "uuid"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1003,7 +1344,15 @@
                                 ]
                             }
                         },
-                        "required": ["id", "form_id", "spam", "created_at", "updated_at", "read", "trash"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "spam",
+                            "created_at",
+                            "updated_at",
+                            "read",
+                            "trash"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1016,9 +1365,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_getformwebhook",
             "name": "get-form-webhook",
-            "output": ["ActionOutput_basin_getformwebhook"],
+            "output": [
+                "ActionOutput_basin_getformwebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_getformwebhook", "ActionOutput_basin_getformwebhook"],
+            "usedModels": [
+                "ActionInput_basin_getformwebhook",
+                "ActionOutput_basin_getformwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1032,7 +1386,9 @@
                                 "description": "Form webhook ID. Example: 10113"
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_getformwebhook": {
@@ -1075,7 +1431,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "form_id", "name", "url", "format", "trigger_when_spam", "enabled", "failure_count"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "trigger_when_spam",
+                            "enabled",
+                            "failure_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1088,9 +1453,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_getform",
             "name": "get-form",
-            "output": ["ActionOutput_basin_getform"],
+            "output": [
+                "ActionOutput_basin_getform"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_getform", "ActionOutput_basin_getform"],
+            "usedModels": [
+                "ActionInput_basin_getform",
+                "ActionOutput_basin_getform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1104,7 +1474,9 @@
                                 "description": "Form ID. Example: 72983"
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_getform": {
@@ -1123,7 +1495,10 @@
                                 "type": "string"
                             },
                             "redirect_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "use_ajax": {
                                 "type": "boolean"
@@ -1132,22 +1507,37 @@
                                 "type": "string"
                             },
                             "notification_cc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_bcc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply": {
                                 "type": "boolean"
                             },
                             "autoreply_body": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_from_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "force_recaptcha": {
                                 "type": "boolean"
@@ -1159,13 +1549,22 @@
                                 "type": "boolean"
                             },
                             "retention_days": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "project_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "project_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "form_webhooks": {
                                 "type": "array",
@@ -1191,7 +1590,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uuid", "name"],
+                        "required": [
+                            "id",
+                            "uuid",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1204,9 +1607,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_basin_getproject"],
+            "output": [
+                "ActionOutput_basin_getproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_getproject", "ActionOutput_basin_getproject"],
+            "usedModels": [
+                "ActionInput_basin_getproject",
+                "ActionOutput_basin_getproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1220,7 +1628,9 @@
                                 "description": "Project ID. Example: 59611"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_getproject": {
@@ -1239,7 +1649,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "created_at", "updated_at", "name"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1252,9 +1667,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_getsubmission",
             "name": "get-submission",
-            "output": ["ActionOutput_basin_getsubmission"],
+            "output": [
+                "ActionOutput_basin_getsubmission"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_getsubmission", "ActionOutput_basin_getsubmission"],
+            "usedModels": [
+                "ActionInput_basin_getsubmission",
+                "ActionOutput_basin_getsubmission"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1268,7 +1688,9 @@
                                 "description": "Submission ID. Example: 60737785"
                             }
                         },
-                        "required": ["submission_id"],
+                        "required": [
+                            "submission_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_getsubmission": {
@@ -1374,7 +1796,15 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "created_at", "file_size", "content_type", "attachment_proxy_url", "public_url"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "created_at",
+                                        "file_size",
+                                        "content_type",
+                                        "attachment_proxy_url",
+                                        "public_url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1388,11 +1818,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "uuid"],
+                                "required": [
+                                    "name",
+                                    "uuid"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "form_id", "spam", "read", "trash"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "spam",
+                            "read",
+                            "trash"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1405,9 +1844,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_listdomains",
             "name": "list-domains",
-            "output": ["ActionOutput_basin_listdomains"],
+            "output": [
+                "ActionOutput_basin_listdomains"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_listdomains", "ActionOutput_basin_listdomains"],
+            "usedModels": [
+                "ActionInput_basin_listdomains",
+                "ActionOutput_basin_listdomains"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1438,7 +1882,9 @@
                                             "description": "Domain ID. Example: 123"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1446,7 +1892,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1459,9 +1907,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_listformviews",
             "name": "list-form-views",
-            "output": ["ActionOutput_basin_listformviews"],
+            "output": [
+                "ActionOutput_basin_listformviews"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_listformviews", "ActionOutput_basin_listformviews"],
+            "usedModels": [
+                "ActionInput_basin_listformviews",
+                "ActionOutput_basin_listformviews"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1501,14 +1954,22 @@
                                         },
                                         "schema": {},
                                         "custom_css": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "iframe": {},
                                         "embed_code": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "uuid", "form_id", "form_uuid"],
+                                    "required": [
+                                        "id",
+                                        "uuid",
+                                        "form_id",
+                                        "form_uuid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1525,14 +1986,21 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["count", "page", "per_page"],
+                                "required": [
+                                    "count",
+                                    "page",
+                                    "per_page"
+                                ],
                                 "additionalProperties": false
                             },
                             "next_page": {
                                 "type": "string"
                             }
                         },
-                        "required": ["form_views", "meta"],
+                        "required": [
+                            "form_views",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1545,9 +2013,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_listformwebhooks",
             "name": "list-form-webhooks",
-            "output": ["ActionOutput_basin_listformwebhooks"],
+            "output": [
+                "ActionOutput_basin_listformwebhooks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_listformwebhooks", "ActionOutput_basin_listformwebhooks"],
+            "usedModels": [
+                "ActionInput_basin_listformwebhooks",
+                "ActionOutput_basin_listformwebhooks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1604,7 +2077,10 @@
                                             "type": "number"
                                         },
                                         "last_failure_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "signing_secret": {
                                             "type": "string"
@@ -1629,7 +2105,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1642,9 +2120,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_listforms",
             "name": "list-forms",
-            "output": ["ActionOutput_basin_listforms"],
+            "output": [
+                "ActionOutput_basin_listforms"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_listforms", "ActionOutput_basin_listforms"],
+            "usedModels": [
+                "ActionInput_basin_listforms",
+                "ActionOutput_basin_listforms"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1682,13 +2165,22 @@
                                             "type": "string"
                                         },
                                         "project_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "redirect_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "redirect_enabled": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "webhooks": {
                                             "anyOf": [
@@ -1701,13 +2193,21 @@
                                                                 "type": "string"
                                                             },
                                                             "enabled": {
-                                                                "type": ["boolean", "null"]
+                                                                "type": [
+                                                                    "boolean",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "trigger_when_spam": {
-                                                                "type": ["boolean", "null"]
+                                                                "type": [
+                                                                    "boolean",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["url"],
+                                                        "required": [
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 },
@@ -1717,22 +2217,41 @@
                                             ]
                                         },
                                         "honeypot_enabled": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "spam_filter_enabled": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "send_as_json": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "uuid"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "uuid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1749,7 +2268,11 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["count", "page", "per_page"],
+                                "required": [
+                                    "count",
+                                    "page",
+                                    "per_page"
+                                ],
                                 "additionalProperties": false
                             },
                             "next_page": {
@@ -1757,7 +2280,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["forms", "meta"],
+                        "required": [
+                            "forms",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1770,9 +2296,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_basin_listprojects"],
+            "output": [
+                "ActionOutput_basin_listprojects"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_listprojects", "ActionOutput_basin_listprojects"],
+            "usedModels": [
+                "ActionInput_basin_listprojects",
+                "ActionOutput_basin_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1811,7 +2342,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1819,7 +2353,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1832,9 +2368,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_listsubmissions",
             "name": "list-submissions",
-            "output": ["ActionOutput_basin_listsubmissions"],
+            "output": [
+                "ActionOutput_basin_listsubmissions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_listsubmissions", "ActionOutput_basin_listsubmissions"],
+            "usedModels": [
+                "ActionInput_basin_listsubmissions",
+                "ActionOutput_basin_listsubmissions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1850,7 +2391,12 @@
                             "filter_by": {
                                 "description": "Filter submissions by status. Defaults to inbox-only if omitted. 'all' may not reliably include spam/trash items.",
                                 "type": "string",
-                                "enum": ["new", "spam", "trash", "all"]
+                                "enum": [
+                                    "new",
+                                    "spam",
+                                    "trash",
+                                    "all"
+                                ]
                             },
                             "query": {
                                 "description": "Search query string",
@@ -1859,7 +2405,12 @@
                             "order_by": {
                                 "description": "Sort order for results",
                                 "type": "string",
-                                "enum": ["date_asc", "date_desc", "email_asc", "email_desc"]
+                                "enum": [
+                                    "date_asc",
+                                    "date_desc",
+                                    "email_asc",
+                                    "email_desc"
+                                ]
                             },
                             "date_range": {
                                 "description": "Date range filter in YYYY-MM-DD+to+YYYY-MM-DD format",
@@ -1870,7 +2421,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_listsubmissions": {
@@ -1917,7 +2470,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1946,7 +2501,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["count", "inbox_count", "spam_count", "trash_count", "page", "per_page", "form_name"],
+                                "required": [
+                                    "count",
+                                    "inbox_count",
+                                    "spam_count",
+                                    "trash_count",
+                                    "page",
+                                    "per_page",
+                                    "form_name"
+                                ],
                                 "additionalProperties": false
                             },
                             "next_page": {
@@ -1954,7 +2517,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["submissions", "meta"],
+                        "required": [
+                            "submissions",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1967,9 +2533,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_refiresubmissionwebhooks",
             "name": "refire-submission-webhooks",
-            "output": ["ActionOutput_basin_refiresubmissionwebhooks"],
+            "output": [
+                "ActionOutput_basin_refiresubmissionwebhooks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_refiresubmissionwebhooks", "ActionOutput_basin_refiresubmissionwebhooks"],
+            "usedModels": [
+                "ActionInput_basin_refiresubmissionwebhooks",
+                "ActionOutput_basin_refiresubmissionwebhooks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1983,7 +2554,9 @@
                                 "description": "Submission ID. Example: 61109858"
                             }
                         },
-                        "required": ["submission_id"],
+                        "required": [
+                            "submission_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_refiresubmissionwebhooks": {
@@ -1996,7 +2569,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2009,9 +2585,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_updateformwebhook",
             "name": "update-form-webhook",
-            "output": ["ActionOutput_basin_updateformwebhook"],
+            "output": [
+                "ActionOutput_basin_updateformwebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_updateformwebhook", "ActionOutput_basin_updateformwebhook"],
+            "usedModels": [
+                "ActionInput_basin_updateformwebhook",
+                "ActionOutput_basin_updateformwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2041,7 +2622,10 @@
                             "format": {
                                 "description": "Webhook format (e.g., json, slack).",
                                 "type": "string",
-                                "enum": ["json", "slack"]
+                                "enum": [
+                                    "json",
+                                    "slack"
+                                ]
                             },
                             "trigger_when_spam": {
                                 "description": "Whether to trigger on spam submissions.",
@@ -2052,7 +2636,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_updateformwebhook": {
@@ -2095,7 +2681,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "form_id", "name", "url", "format", "trigger_when_spam", "enabled", "created_at", "updated_at", "failure_count"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "name",
+                            "url",
+                            "format",
+                            "trigger_when_spam",
+                            "enabled",
+                            "created_at",
+                            "updated_at",
+                            "failure_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2108,9 +2705,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_updateform",
             "name": "update-form",
-            "output": ["ActionOutput_basin_updateform"],
+            "output": [
+                "ActionOutput_basin_updateform"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_updateform", "ActionOutput_basin_updateform"],
+            "usedModels": [
+                "ActionInput_basin_updateform",
+                "ActionOutput_basin_updateform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2127,7 +2729,10 @@
                                 "type": "string"
                             },
                             "redirect_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "project_id": {
                                 "type": "number"
@@ -2139,10 +2744,16 @@
                                 "type": "boolean"
                             },
                             "honeypot_field": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "recaptcha_failed_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "force_recaptcha": {
                                 "type": "boolean"
@@ -2151,13 +2762,18 @@
                                 "type": "number"
                             },
                             "domain_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "duplicate_filter": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_updateform": {
@@ -2167,7 +2783,10 @@
                                 "type": "number"
                             },
                             "uuid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -2176,7 +2795,10 @@
                                 "type": "string"
                             },
                             "redirect_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "use_ajax": {
                                 "type": "boolean"
@@ -2188,7 +2810,10 @@
                                 "type": "boolean"
                             },
                             "autoreply_body": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "force_recaptcha": {
                                 "type": "boolean"
@@ -2200,43 +2825,82 @@
                                 "type": "boolean"
                             },
                             "notification_cc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_bcc_emails": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notification_from_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_subject": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_from_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_greeting": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "logo": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "button_background_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "button_text_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "data_receipt_email": {
                                 "type": "boolean"
@@ -2251,37 +2915,64 @@
                                 "type": "boolean"
                             },
                             "custom_template": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "use_custom_template": {
                                 "type": "boolean"
                             },
                             "autoreply_custom_template": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoreply_use_custom_template": {
                                 "type": "boolean"
                             },
                             "notification_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "auto_response_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "confirmation_mail_template_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "honeypot_field": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "recaptcha_failed_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "domain_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "domain_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "duplicate_filter": {
                                 "type": "boolean"
@@ -2290,19 +2981,34 @@
                                 "type": "number"
                             },
                             "redirect_heading": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_message": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_background_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "redirect_button_text_color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "smtp_email_validation": {
                                 "type": "boolean"
@@ -2333,7 +3039,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2346,9 +3054,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_basin_updateproject"],
+            "output": [
+                "ActionOutput_basin_updateproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_updateproject", "ActionOutput_basin_updateproject"],
+            "usedModels": [
+                "ActionInput_basin_updateproject",
+                "ActionOutput_basin_updateproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2366,7 +3079,10 @@
                                 "description": "New project name. Example: \"Updated Project Name\""
                             }
                         },
-                        "required": ["project_id", "name"],
+                        "required": [
+                            "project_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_updateproject": {
@@ -2385,7 +3101,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2398,9 +3117,14 @@
             "endpoint": null,
             "input": "ActionInput_basin_updatesubmission",
             "name": "update-submission",
-            "output": ["ActionOutput_basin_updatesubmission"],
+            "output": [
+                "ActionOutput_basin_updatesubmission"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_basin_updatesubmission", "ActionOutput_basin_updatesubmission"],
+            "usedModels": [
+                "ActionInput_basin_updatesubmission",
+                "ActionOutput_basin_updatesubmission"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2424,7 +3148,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["submission_id"],
+                        "required": [
+                            "submission_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_basin_updatesubmission": {
@@ -2443,7 +3169,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2459,12 +3187,16 @@
             "endpoints": [],
             "input": null,
             "name": "form_webhooks",
-            "output": ["FormWebhook"],
+            "output": [
+                "FormWebhook"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FormWebhook"],
+            "usedModels": [
+                "FormWebhook"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2509,12 +3241,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "form_id", "url"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2523,12 +3261,16 @@
             "endpoints": [],
             "input": null,
             "name": "forms",
-            "output": ["Form"],
+            "output": [
+                "Form"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Form"],
+            "usedModels": [
+                "Form"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2558,12 +3300,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2572,12 +3318,16 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2598,12 +3348,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2612,12 +3367,16 @@
             "endpoints": [],
             "input": null,
             "name": "submissions",
-            "output": ["Submission"],
+            "output": [
+                "Submission"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Submission"],
+            "usedModels": [
+                "Submission"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2706,12 +3465,22 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "form_id", "spam", "created_at", "updated_at", "read", "trash"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "spam",
+                            "created_at",
+                            "updated_at",
+                            "read",
+                            "trash"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

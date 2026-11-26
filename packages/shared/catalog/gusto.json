@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_gusto_createemployee",
             "name": "create-employee",
-            "output": ["ActionOutput_gusto_createemployee"],
-            "scopes": ["employees:write"],
-            "usedModels": ["ActionInput_gusto_createemployee", "ActionOutput_gusto_createemployee"],
+            "output": [
+                "ActionOutput_gusto_createemployee"
+            ],
+            "scopes": [
+                "employees:write"
+            ],
+            "usedModels": [
+                "ActionInput_gusto_createemployee",
+                "ActionOutput_gusto_createemployee"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -41,7 +48,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["firstName", "lastName", "email", "dateOfBirth"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "dateOfBirth"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_gusto_createemployee": {
@@ -60,7 +72,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -73,9 +90,16 @@
             "endpoint": null,
             "input": "ActionInput_gusto_terminateemployee",
             "name": "terminate-employee",
-            "output": ["ActionOutput_gusto_terminateemployee"],
-            "scopes": ["employments:write"],
-            "usedModels": ["ActionInput_gusto_terminateemployee", "ActionOutput_gusto_terminateemployee"],
+            "output": [
+                "ActionOutput_gusto_terminateemployee"
+            ],
+            "scopes": [
+                "employments:write"
+            ],
+            "usedModels": [
+                "ActionInput_gusto_terminateemployee",
+                "ActionOutput_gusto_terminateemployee"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -92,7 +116,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_gusto_terminateemployee": {
@@ -102,7 +128,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -115,9 +143,16 @@
             "endpoint": null,
             "input": "ActionInput_gusto_updateemployee",
             "name": "update-employee",
-            "output": ["ActionOutput_gusto_updateemployee"],
-            "scopes": ["employees:write"],
-            "usedModels": ["ActionInput_gusto_updateemployee", "ActionOutput_gusto_updateemployee"],
+            "output": [
+                "ActionOutput_gusto_updateemployee"
+            ],
+            "scopes": [
+                "employees:write"
+            ],
+            "usedModels": [
+                "ActionInput_gusto_updateemployee",
+                "ActionOutput_gusto_updateemployee"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -155,7 +190,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "version"],
+                        "required": [
+                            "id",
+                            "version"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_gusto_updateemployee": {
@@ -174,7 +212,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -196,12 +239,20 @@
             ],
             "input": "SyncMetadata_gusto_employees",
             "name": "employees",
-            "output": ["GustoEmployee"],
+            "output": [
+                "GustoEmployee"
+            ],
             "runs": "every hour",
-            "scopes": ["employees:read", "compensations:read"],
+            "scopes": [
+                "employees:read",
+                "compensations:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GustoEmployee", "SyncMetadata_gusto_employees"],
+            "usedModels": [
+                "GustoEmployee",
+                "SyncMetadata_gusto_employees"
+            ],
             "version": "1.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -287,7 +338,14 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "company_custom_field_id", "name", "description", "type", "value"],
+                                    "required": [
+                                        "id",
+                                        "company_custom_field_id",
+                                        "name",
+                                        "description",
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -312,7 +370,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "title", "hire_date", "payment_unit", "primary"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "hire_date",
+                                        "payment_unit",
+                                        "primary"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -361,12 +425,20 @@
             ],
             "input": "SyncMetadata_gusto_unifiedemployees",
             "name": "unified-employees",
-            "output": ["StandardEmployee"],
+            "output": [
+                "StandardEmployee"
+            ],
             "runs": "every hour",
-            "scopes": ["employees:read", "compensations:read"],
+            "scopes": [
+                "employees:read",
+                "compensations:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StandardEmployee", "SyncMetadata_gusto_unifiedemployees"],
+            "usedModels": [
+                "StandardEmployee",
+                "SyncMetadata_gusto_unifiedemployees"
+            ],
             "version": "1.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -405,7 +477,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "employmentType": {
@@ -537,11 +612,16 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["name", "type"],
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "addresses": {
@@ -577,7 +657,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["type"],
+                                    "required": [
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -606,7 +688,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "number"],
+                                    "required": [
+                                        "type",
+                                        "number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -631,7 +716,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "address"],
+                                    "required": [
+                                        "type",
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },

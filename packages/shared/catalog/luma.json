@@ -14,12 +14,17 @@
             ],
             "input": "SyncMetadata_luma_listevents",
             "name": "list-events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event", "SyncMetadata_luma_listevents"],
+            "usedModels": [
+                "Event",
+                "SyncMetadata_luma_listevents"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -52,16 +57,25 @@
                                 "type": "string"
                             },
                             "series_api_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "duration_interval_iso8601": {
                                 "type": "string"
                             },
                             "geo_latitude": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "geo_longitude": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "geo_address_json": {
                                 "anyOf": [
@@ -138,10 +152,16 @@
                                 "type": "string"
                             },
                             "meeting_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "zoom_meeting_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -175,7 +195,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -15,12 +15,17 @@
             ],
             "input": "SyncMetadata_sap_success_factors_employees",
             "name": "employees",
-            "output": ["Employee"],
+            "output": [
+                "Employee"
+            ],
             "runs": "every 6 hours",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Employee", "SyncMetadata_sap_success_factors_employees"],
+            "usedModels": [
+                "Employee",
+                "SyncMetadata_sap_success_factors_employees"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -50,13 +55,22 @@
                                 "type": "string"
                             },
                             "maritalStatus": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dateOfBirth": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "countryOfBirth": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdDateTime": {
                                 "type": "string"
@@ -88,7 +102,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -103,12 +119,17 @@
             ],
             "input": "SyncMetadata_sap_success_factors_groups",
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every 6 hours",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group", "SyncMetadata_sap_success_factors_groups"],
+            "usedModels": [
+                "Group",
+                "SyncMetadata_sap_success_factors_groups"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -132,7 +153,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "startDate": {
                                 "type": "string"
@@ -141,13 +165,22 @@
                                 "type": "string"
                             },
                             "parent": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "costCenter": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "headOfUnit": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -188,7 +221,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -203,12 +238,17 @@
             ],
             "input": "SyncMetadata_sap_success_factors_locations",
             "name": "locations",
-            "output": ["Location"],
+            "output": [
+                "Location"
+            ],
             "runs": "every 6 hours",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Location", "SyncMetadata_sap_success_factors_locations"],
+            "usedModels": [
+                "Location",
+                "SyncMetadata_sap_success_factors_locations"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -226,7 +266,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -250,19 +293,34 @@
                                 "type": "string"
                             },
                             "state": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "city": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "zipCode": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "addressLine1": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "addressLine2": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -292,7 +350,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -307,12 +367,17 @@
             ],
             "input": "SyncMetadata_sap_success_factors_unifiedemployees",
             "name": "unified-employees",
-            "output": ["StandardEmployee"],
+            "output": [
+                "StandardEmployee"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StandardEmployee", "SyncMetadata_sap_success_factors_unifiedemployees"],
+            "usedModels": [
+                "StandardEmployee",
+                "SyncMetadata_sap_success_factors_unifiedemployees"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -351,7 +416,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "employmentType": {
@@ -431,7 +499,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "firstName", "lastName", "email"],
+                                "required": [
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "workLocation": {
@@ -487,11 +560,22 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                        "required": [
+                                            "street",
+                                            "city",
+                                            "state",
+                                            "country",
+                                            "postalCode",
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["name", "type", "primaryAddress"],
+                                "required": [
+                                    "name",
+                                    "type",
+                                    "primaryAddress"
+                                ],
                                 "additionalProperties": false
                             },
                             "addresses": {
@@ -527,7 +611,14 @@
                                             ]
                                         }
                                     },
-                                    "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                    "required": [
+                                        "street",
+                                        "city",
+                                        "state",
+                                        "country",
+                                        "postalCode",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -556,7 +647,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "number"],
+                                    "required": [
+                                        "type",
+                                        "number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -581,7 +675,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "address"],
+                                    "required": [
+                                        "type",
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -627,7 +724,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

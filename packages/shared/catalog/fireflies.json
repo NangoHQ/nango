@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_addtolive",
             "name": "add-to-live",
-            "output": ["ActionOutput_fireflies_addtolive"],
+            "output": [
+                "ActionOutput_fireflies_addtolive"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_addtolive", "ActionOutput_fireflies_addtolive"],
+            "usedModels": [
+                "ActionInput_fireflies_addtolive",
+                "ActionOutput_fireflies_addtolive"
+            ],
             "version": "3.0.0",
             "json_schema": {
                 "definitions": {
@@ -48,7 +53,9 @@
                                 }
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_addtolive": {
@@ -61,7 +68,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -74,9 +83,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_continueaskfredthread",
             "name": "continue-askfred-thread",
-            "output": ["ActionOutput_fireflies_continueaskfredthread"],
+            "output": [
+                "ActionOutput_fireflies_continueaskfredthread"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_continueaskfredthread", "ActionOutput_fireflies_continueaskfredthread"],
+            "usedModels": [
+                "ActionInput_fireflies_continueaskfredthread",
+                "ActionOutput_fireflies_continueaskfredthread"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -95,14 +109,20 @@
                             "format_mode": {
                                 "description": "Response format: markdown or plaintext",
                                 "type": "string",
-                                "enum": ["markdown", "plaintext"]
+                                "enum": [
+                                    "markdown",
+                                    "plaintext"
+                                ]
                             },
                             "response_language": {
                                 "description": "Language code for the response (e.g., \"en\" for English).",
                                 "type": "string"
                             }
                         },
-                        "required": ["thread_id", "query"],
+                        "required": [
+                            "thread_id",
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_continueaskfredthread": {
@@ -136,11 +156,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "thread_id", "query", "answer", "status"],
+                                "required": [
+                                    "id",
+                                    "thread_id",
+                                    "query",
+                                    "answer",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -153,9 +181,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_createaskfredthread",
             "name": "create-askfred-thread",
-            "output": ["ActionOutput_fireflies_createaskfredthread"],
+            "output": [
+                "ActionOutput_fireflies_createaskfredthread"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_createaskfredthread", "ActionOutput_fireflies_createaskfredthread"],
+            "usedModels": [
+                "ActionInput_fireflies_createaskfredthread",
+                "ActionOutput_fireflies_createaskfredthread"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -223,7 +256,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_createaskfredthread": {
@@ -254,7 +289,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "thread_id"],
+                        "required": [
+                            "id",
+                            "thread_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -267,9 +305,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_createbite",
             "name": "create-bite",
-            "output": ["ActionOutput_fireflies_createbite"],
+            "output": [
+                "ActionOutput_fireflies_createbite"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_createbite", "ActionOutput_fireflies_createbite"],
+            "usedModels": [
+                "ActionInput_fireflies_createbite",
+                "ActionOutput_fireflies_createbite"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -296,14 +339,21 @@
                             "media_type": {
                                 "description": "Type of the bite, either \"video\" or \"audio\"",
                                 "type": "string",
-                                "enum": ["video", "audio"]
+                                "enum": [
+                                    "video",
+                                    "audio"
+                                ]
                             },
                             "privacies": {
                                 "description": "Array specifying the visibility of the Soundbite.",
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["public", "team", "participants"]
+                                    "enum": [
+                                        "public",
+                                        "team",
+                                        "participants"
+                                    ]
                                 }
                             },
                             "summary": {
@@ -312,7 +362,11 @@
                                 "maxLength": 500
                             }
                         },
-                        "required": ["transcript_id", "start_time", "end_time"],
+                        "required": [
+                            "transcript_id",
+                            "start_time",
+                            "end_time"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_createbite": {
@@ -376,9 +430,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_createliveactionitem",
             "name": "create-live-action-item",
-            "output": ["ActionOutput_fireflies_createliveactionitem"],
+            "output": [
+                "ActionOutput_fireflies_createliveactionitem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_createliveactionitem", "ActionOutput_fireflies_createliveactionitem"],
+            "usedModels": [
+                "ActionInput_fireflies_createliveactionitem",
+                "ActionOutput_fireflies_createliveactionitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -394,7 +453,10 @@
                                 "description": "Natural language description of the action item to create. Example: \"Follow up with the client about the proposal\""
                             }
                         },
-                        "required": ["meeting_id", "prompt"],
+                        "required": [
+                            "meeting_id",
+                            "prompt"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_createliveactionitem": {
@@ -404,7 +466,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -417,9 +481,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_createlivesoundbite",
             "name": "create-live-soundbite",
-            "output": ["ActionOutput_fireflies_createlivesoundbite"],
+            "output": [
+                "ActionOutput_fireflies_createlivesoundbite"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_createlivesoundbite", "ActionOutput_fireflies_createlivesoundbite"],
+            "usedModels": [
+                "ActionInput_fireflies_createlivesoundbite",
+                "ActionOutput_fireflies_createlivesoundbite"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -437,7 +506,10 @@
                                 "description": "Natural language description of the soundbite to create. Min 5, max 255 characters. Example: \"Create a soundbite from the last 2 minutes\""
                             }
                         },
-                        "required": ["meeting_id", "prompt"],
+                        "required": [
+                            "meeting_id",
+                            "prompt"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_createlivesoundbite": {
@@ -447,7 +519,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -460,9 +534,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_deleteaskfredthread",
             "name": "delete-askfred-thread",
-            "output": ["ActionOutput_fireflies_deleteaskfredthread"],
+            "output": [
+                "ActionOutput_fireflies_deleteaskfredthread"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_deleteaskfredthread", "ActionOutput_fireflies_deleteaskfredthread"],
+            "usedModels": [
+                "ActionInput_fireflies_deleteaskfredthread",
+                "ActionOutput_fireflies_deleteaskfredthread"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -474,7 +553,9 @@
                                 "description": "The unique identifier of the AskFred thread to delete. Example: \"thread_abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_deleteaskfredthread": {
@@ -496,7 +577,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "user_id", "created_at"],
+                        "required": [
+                            "id",
+                            "title",
+                            "user_id",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -509,9 +595,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_deletetranscript",
             "name": "delete-transcript",
-            "output": ["ActionOutput_fireflies_deletetranscript"],
+            "output": [
+                "ActionOutput_fireflies_deletetranscript"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_deletetranscript", "ActionOutput_fireflies_deletetranscript"],
+            "usedModels": [
+                "ActionInput_fireflies_deletetranscript",
+                "ActionOutput_fireflies_deletetranscript"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -523,7 +614,9 @@
                                 "description": "Transcript ID to delete. Example: \"abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_deletetranscript": {
@@ -533,7 +626,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["deleted"],
+                        "required": [
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -546,9 +641,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_getanalytics",
             "name": "get-analytics",
-            "output": ["ActionOutput_fireflies_getanalytics"],
+            "output": [
+                "ActionOutput_fireflies_getanalytics"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_getanalytics", "ActionOutput_fireflies_getanalytics"],
+            "usedModels": [
+                "ActionInput_fireflies_getanalytics",
+                "ActionOutput_fireflies_getanalytics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -564,7 +664,10 @@
                                 "description": "End date in ISO 8601 format. Example: \"2024-01-31T23:59:59Z\""
                             }
                         },
-                        "required": ["start_time", "end_time"],
+                        "required": [
+                            "start_time",
+                            "end_time"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_getanalytics": {
@@ -577,22 +680,40 @@
                                         "type": "object",
                                         "properties": {
                                             "average_filler_words": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_filler_words_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_monologues_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_monologues_count_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_questions": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_questions_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_sentiments": {
                                                 "anyOf": [
@@ -600,13 +721,22 @@
                                                         "type": "object",
                                                         "properties": {
                                                             "negative_pct": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "neutral_pct": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "positive_pct": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
                                                         "additionalProperties": false
@@ -617,55 +747,106 @@
                                                 ]
                                             },
                                             "average_silence_duration": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_silence_duration_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_talk_listen_ratio": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_words_per_minute": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "longest_monologue_duration_sec": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "longest_monologue_duration_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_filler_words": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_filler_words_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_meeting_notes_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_meetings_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_monologues_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_monologues_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "teammates_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_questions": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_questions_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_silence_duration": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "total_silence_duration_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -674,28 +855,52 @@
                                         "type": "object",
                                         "properties": {
                                             "count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "count_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "duration": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "duration_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_count": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_count_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_duration": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "average_duration_diff_pct": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -721,82 +926,160 @@
                                             "type": "object",
                                             "properties": {
                                                 "talk_listen_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "talk_listen_ratio": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "total_silence_duration": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "total_silence_duration_compare_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "total_silence_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "total_silence_ratio": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "total_speak_duration": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "total_speak_duration_with_user": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "total_word_count": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_filler_words": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_filler_words_compare_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_filler_words_diff_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_longest_monologue_sec": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_longest_monologue_compare_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_longest_monologue_diff_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_monologues_count": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_monologues_count_compare_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_monologues_count_diff_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_questions": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_questions_compare_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_questions_diff_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_speak_duration": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_word_count": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_words_per_minute": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_words_per_minute_compare_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "user_words_per_minute_diff_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -805,28 +1088,52 @@
                                             "type": "object",
                                             "properties": {
                                                 "count": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "count_diff": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "count_diff_compared_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "count_diff_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "duration": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "duration_diff": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "duration_diff_compared_to": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "duration_diff_pct": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -848,9 +1155,16 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_getaskfredthread",
             "name": "get-askfred-thread",
-            "output": ["ActionOutput_fireflies_getaskfredthread"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_fireflies_getaskfredthread", "ActionOutput_fireflies_getaskfredthread"],
+            "output": [
+                "ActionOutput_fireflies_getaskfredthread"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_fireflies_getaskfredthread",
+                "ActionOutput_fireflies_getaskfredthread"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -862,7 +1176,9 @@
                                 "description": "The unique identifier of the AskFred thread to retrieve. Example: \"thread_abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_getaskfredthread": {
@@ -932,9 +1248,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_getbite",
             "name": "get-bite",
-            "output": ["ActionOutput_fireflies_getbite"],
+            "output": [
+                "ActionOutput_fireflies_getbite"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_getbite", "ActionOutput_fireflies_getbite"],
+            "usedModels": [
+                "ActionInput_fireflies_getbite",
+                "ActionOutput_fireflies_getbite"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -946,7 +1267,9 @@
                                 "description": "Bite ID. Example: \"bite_abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_getbite": {
@@ -992,7 +1315,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1005,9 +1330,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_getchannel",
             "name": "get-channel",
-            "output": ["ActionOutput_fireflies_getchannel"],
+            "output": [
+                "ActionOutput_fireflies_getchannel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_getchannel", "ActionOutput_fireflies_getchannel"],
+            "usedModels": [
+                "ActionInput_fireflies_getchannel",
+                "ActionOutput_fireflies_getchannel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1019,7 +1349,9 @@
                                 "description": "The unique identifier of the channel to fetch. Example: \"channel-id-1\""
                             }
                         },
-                        "required": ["channel_id"],
+                        "required": [
+                            "channel_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_getchannel": {
@@ -1062,7 +1394,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1075,9 +1409,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_gettranscript",
             "name": "get-transcript",
-            "output": ["ActionOutput_fireflies_gettranscript"],
+            "output": [
+                "ActionOutput_fireflies_gettranscript"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_gettranscript", "ActionOutput_fireflies_gettranscript"],
+            "usedModels": [
+                "ActionInput_fireflies_gettranscript",
+                "ActionOutput_fireflies_gettranscript"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1089,7 +1428,9 @@
                                 "description": "Transcript ID. Example: \"abc123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_gettranscript": {
@@ -1107,25 +1448,46 @@
                                     "type": "object",
                                     "properties": {
                                         "index": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "speaker_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "speaker_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "raw_text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "start_time": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "end_time": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -1135,31 +1497,58 @@
                                 "type": "object",
                                 "properties": {
                                     "overview": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "action_items": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "keywords": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "outline": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "shorthand_bullet": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "bullet_gist": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "notes": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "gist": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "short_summary": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "topics_discussed": {
                                         "anyOf": [
@@ -1195,10 +1584,16 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "title": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "content": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1218,10 +1613,16 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -1231,13 +1632,22 @@
                                 "type": "object",
                                 "properties": {
                                     "fred_joined": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "silent_meeting": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "summary_status": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -1248,19 +1658,34 @@
                                     "type": "object",
                                     "properties": {
                                         "displayName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phoneNumber": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "location": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -1275,13 +1700,22 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "negative_pct": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "neutral_pct": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "positive_pct": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1297,16 +1731,28 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "questions": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "date_times": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "metrics": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "tasks": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1324,34 +1770,64 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "speaker_id": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "duration": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "word_count": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "longest_monologue": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "monologues_count": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "filler_words": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "questions": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "duration_pct": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "words_per_minute": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1378,9 +1854,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_fireflies_getuser"],
+            "output": [
+                "ActionOutput_fireflies_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_getuser", "ActionOutput_fireflies_getuser"],
+            "usedModels": [
+                "ActionInput_fireflies_getuser",
+                "ActionOutput_fireflies_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1439,10 +1920,16 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "handle": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "members": {
                                             "anyOf": [
@@ -1455,16 +1942,27 @@
                                                                 "type": "string"
                                                             },
                                                             "first_name": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "last_name": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "email": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["user_id"],
+                                                        "required": [
+                                                            "user_id"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -1474,12 +1972,16 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1492,9 +1994,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listactivemeetings",
             "name": "list-active-meetings",
-            "output": ["ActionOutput_fireflies_listactivemeetings"],
+            "output": [
+                "ActionOutput_fireflies_listactivemeetings"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listactivemeetings", "ActionOutput_fireflies_listactivemeetings"],
+            "usedModels": [
+                "ActionInput_fireflies_listactivemeetings",
+                "ActionOutput_fireflies_listactivemeetings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1510,7 +2017,10 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["active", "paused"]
+                                    "enum": [
+                                        "active",
+                                        "paused"
+                                    ]
                                 }
                             }
                         },
@@ -1551,21 +2061,36 @@
                                         "privacy": {
                                             "description": "Privacy setting for the meeting. Possible values: \"link\", \"owner\", \"participants\", \"teammates_and_participants\", \"participating_teammates\", \"teammates\"",
                                             "type": "string",
-                                            "enum": ["link", "owner", "participants", "teammates_and_participants", "participating_teammates", "teammates"]
+                                            "enum": [
+                                                "link",
+                                                "owner",
+                                                "participants",
+                                                "teammates_and_participants",
+                                                "participating_teammates",
+                                                "teammates"
+                                            ]
                                         },
                                         "state": {
                                             "description": "Current state of the meeting. Possible values: \"active\", \"paused\"",
                                             "type": "string",
-                                            "enum": ["active", "paused"]
+                                            "enum": [
+                                                "active",
+                                                "paused"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of currently active/live meetings"
                             }
                         },
-                        "required": ["meetings"],
+                        "required": [
+                            "meetings"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1578,9 +2103,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listaskfredthreads",
             "name": "list-askfred-threads",
-            "output": ["ActionOutput_fireflies_listaskfredthreads"],
+            "output": [
+                "ActionOutput_fireflies_listaskfredthreads"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listaskfredthreads", "ActionOutput_fireflies_listaskfredthreads"],
+            "usedModels": [
+                "ActionInput_fireflies_listaskfredthreads",
+                "ActionOutput_fireflies_listaskfredthreads"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1609,13 +2139,19 @@
                                     "type": "string"
                                 },
                                 "transcript_id": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "user_id": {
                                     "type": "string"
                                 }
                             },
-                            "required": ["id", "title"],
+                            "required": [
+                                "id",
+                                "title"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -1629,9 +2165,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listbites",
             "name": "list-bites",
-            "output": ["ActionOutput_fireflies_listbites"],
+            "output": [
+                "ActionOutput_fireflies_listbites"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listbites", "ActionOutput_fireflies_listbites"],
+            "usedModels": [
+                "ActionInput_fireflies_listbites",
+                "ActionOutput_fireflies_listbites"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1713,14 +2254,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "created_at": {
                                     "type": "string"
                                 }
                             },
-                            "required": ["id"],
+                            "required": [
+                                "id"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -1734,9 +2280,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listchannels",
             "name": "list-channels",
-            "output": ["ActionOutput_fireflies_listchannels"],
+            "output": [
+                "ActionOutput_fireflies_listchannels"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listchannels", "ActionOutput_fireflies_listchannels"],
+            "usedModels": [
+                "ActionInput_fireflies_listchannels",
+                "ActionOutput_fireflies_listchannels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1795,17 +2346,31 @@
                                                         "description": "User name. Example: \"John Doe\""
                                                     }
                                                 },
-                                                "required": ["user_id", "email", "name"],
+                                                "required": [
+                                                    "user_id",
+                                                    "email",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "title", "created_at", "updated_at", "created_by", "is_private", "members"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "created_at",
+                                        "updated_at",
+                                        "created_by",
+                                        "is_private",
+                                        "members"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["channels"],
+                        "required": [
+                            "channels"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1818,9 +2383,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_fireflies_listcontacts"],
+            "output": [
+                "ActionOutput_fireflies_listcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listcontacts", "ActionOutput_fireflies_listcontacts"],
+            "usedModels": [
+                "ActionInput_fireflies_listcontacts",
+                "ActionOutput_fireflies_listcontacts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1850,12 +2420,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1868,9 +2442,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listtranscripts",
             "name": "list-transcripts",
-            "output": ["ActionOutput_fireflies_listtranscripts"],
+            "output": [
+                "ActionOutput_fireflies_listtranscripts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listtranscripts", "ActionOutput_fireflies_listtranscripts"],
+            "usedModels": [
+                "ActionInput_fireflies_listtranscripts",
+                "ActionOutput_fireflies_listtranscripts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1910,7 +2489,11 @@
                             "scope": {
                                 "description": "Specify the scope for keyword search. If scope is provided, keyword becomes a required field. Defaults to TITLE if no value is provided.",
                                 "type": "string",
-                                "enum": ["title", "sentences", "all"]
+                                "enum": [
+                                    "title",
+                                    "sentences",
+                                    "all"
+                                ]
                             },
                             "user_id": {
                                 "description": "User id. Filter all meetings that have this user ID as the organizer or participant.",
@@ -2073,7 +2656,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2081,7 +2666,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["transcripts"],
+                        "required": [
+                            "transcripts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2094,9 +2681,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listusergroups",
             "name": "list-user-groups",
-            "output": ["ActionOutput_fireflies_listusergroups"],
+            "output": [
+                "ActionOutput_fireflies_listusergroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listusergroups", "ActionOutput_fireflies_listusergroups"],
+            "usedModels": [
+                "ActionInput_fireflies_listusergroups",
+                "ActionOutput_fireflies_listusergroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2145,17 +2737,24 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["user_id"],
+                                                "required": [
+                                                    "user_id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["user_groups"],
+                        "required": [
+                            "user_groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2168,9 +2767,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_fireflies_listusers"],
+            "output": [
+                "ActionOutput_fireflies_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_listusers", "ActionOutput_fireflies_listusers"],
+            "usedModels": [
+                "ActionInput_fireflies_listusers",
+                "ActionOutput_fireflies_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2215,12 +2819,16 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["user_id"],
+                                    "required": [
+                                        "user_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2233,9 +2841,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_revokesharedmeetingaccess",
             "name": "revoke-shared-meeting-access",
-            "output": ["ActionOutput_fireflies_revokesharedmeetingaccess"],
+            "output": [
+                "ActionOutput_fireflies_revokesharedmeetingaccess"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_revokesharedmeetingaccess", "ActionOutput_fireflies_revokesharedmeetingaccess"],
+            "usedModels": [
+                "ActionInput_fireflies_revokesharedmeetingaccess",
+                "ActionOutput_fireflies_revokesharedmeetingaccess"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2251,7 +2864,10 @@
                                 "description": "The email address of the user whose shared access should be revoked."
                             }
                         },
-                        "required": ["meeting_id", "email"],
+                        "required": [
+                            "meeting_id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_revokesharedmeetingaccess": {
@@ -2264,7 +2880,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2277,9 +2896,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_sharemeeting",
             "name": "share-meeting",
-            "output": ["ActionOutput_fireflies_sharemeeting"],
+            "output": [
+                "ActionOutput_fireflies_sharemeeting"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_sharemeeting", "ActionOutput_fireflies_sharemeeting"],
+            "usedModels": [
+                "ActionInput_fireflies_sharemeeting",
+                "ActionOutput_fireflies_sharemeeting"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2318,7 +2942,10 @@
                                 ]
                             }
                         },
-                        "required": ["meeting_id", "emails"],
+                        "required": [
+                            "meeting_id",
+                            "emails"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_sharemeeting": {
@@ -2331,7 +2958,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2344,9 +2973,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_updatemeetingchannel",
             "name": "update-meeting-channel",
-            "output": ["ActionOutput_fireflies_updatemeetingchannel"],
+            "output": [
+                "ActionOutput_fireflies_updatemeetingchannel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_updatemeetingchannel", "ActionOutput_fireflies_updatemeetingchannel"],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingchannel",
+                "ActionOutput_fireflies_updatemeetingchannel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2369,7 +3003,10 @@
                                 "description": "The target Channel ID. Example: \"channel_id\""
                             }
                         },
-                        "required": ["transcript_ids", "channel_id"],
+                        "required": [
+                            "transcript_ids",
+                            "channel_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_updatemeetingchannel": {
@@ -2385,9 +3022,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_updatemeetingprivacy",
             "name": "update-meeting-privacy",
-            "output": ["ActionOutput_fireflies_updatemeetingprivacy"],
+            "output": [
+                "ActionOutput_fireflies_updatemeetingprivacy"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_updatemeetingprivacy", "ActionOutput_fireflies_updatemeetingprivacy"],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingprivacy",
+                "ActionOutput_fireflies_updatemeetingprivacy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2400,11 +3042,21 @@
                             },
                             "privacy": {
                                 "type": "string",
-                                "enum": ["link", "owner", "participants", "participatingteammates", "teammatesandparticipants", "teammates"],
+                                "enum": [
+                                    "link",
+                                    "owner",
+                                    "participants",
+                                    "participatingteammates",
+                                    "teammatesandparticipants",
+                                    "teammates"
+                                ],
                                 "description": "Privacy setting. Example: \"teammates\""
                             }
                         },
-                        "required": ["id", "privacy"],
+                        "required": [
+                            "id",
+                            "privacy"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_updatemeetingprivacy": {
@@ -2420,9 +3072,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_updatemeetingstate",
             "name": "update-meeting-state",
-            "output": ["ActionOutput_fireflies_updatemeetingstate"],
+            "output": [
+                "ActionOutput_fireflies_updatemeetingstate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_updatemeetingstate", "ActionOutput_fireflies_updatemeetingstate"],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingstate",
+                "ActionOutput_fireflies_updatemeetingstate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2435,11 +3092,17 @@
                             },
                             "action": {
                                 "type": "string",
-                                "enum": ["pause_recording", "resume_recording"],
+                                "enum": [
+                                    "pause_recording",
+                                    "resume_recording"
+                                ],
                                 "description": "Action to perform. Example: \"pause_recording\""
                             }
                         },
-                        "required": ["meeting_id", "action"],
+                        "required": [
+                            "meeting_id",
+                            "action"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_updatemeetingstate": {
@@ -2452,7 +3115,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "action"],
+                        "required": [
+                            "success",
+                            "action"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2465,9 +3131,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_updatemeetingtitle",
             "name": "update-meeting-title",
-            "output": ["ActionOutput_fireflies_updatemeetingtitle"],
+            "output": [
+                "ActionOutput_fireflies_updatemeetingtitle"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_updatemeetingtitle", "ActionOutput_fireflies_updatemeetingtitle"],
+            "usedModels": [
+                "ActionInput_fireflies_updatemeetingtitle",
+                "ActionOutput_fireflies_updatemeetingtitle"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2483,7 +3154,10 @@
                                 "description": "New meeting title. Example: \"Weekly Sync\""
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_updatemeetingtitle": {
@@ -2499,9 +3173,14 @@
             "endpoint": null,
             "input": "ActionInput_fireflies_uploadaudio",
             "name": "upload-audio",
-            "output": ["ActionOutput_fireflies_uploadaudio"],
+            "output": [
+                "ActionOutput_fireflies_uploadaudio"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_fireflies_uploadaudio", "ActionOutput_fireflies_uploadaudio"],
+            "usedModels": [
+                "ActionInput_fireflies_uploadaudio",
+                "ActionOutput_fireflies_uploadaudio"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2531,7 +3210,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["displayName", "email", "phoneNumber"],
+                                    "required": [
+                                        "displayName",
+                                        "email",
+                                        "phoneNumber"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2566,11 +3249,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["token"],
+                                                "required": [
+                                                    "token"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["type", "bearer"],
+                                        "required": [
+                                            "type",
+                                            "bearer"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2590,17 +3278,24 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["password"],
+                                                "required": [
+                                                    "password"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["type", "basic"],
+                                        "required": [
+                                            "type",
+                                            "basic"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
                             }
                         },
-                        "required": ["url"],
+                        "required": [
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_fireflies_uploadaudio": {
@@ -2616,7 +3311,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2637,12 +3334,16 @@
             ],
             "input": null,
             "name": "analytics",
-            "output": ["Analytics"],
+            "output": [
+                "Analytics"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Analytics"],
+            "usedModels": [
+                "Analytics"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2677,12 +3378,18 @@
                                 }
                             }
                         },
-                        "required": ["id", "start_time", "end_time"],
+                        "required": [
+                            "id",
+                            "start_time",
+                            "end_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2696,12 +3403,16 @@
             ],
             "input": null,
             "name": "bites",
-            "output": ["Bite"],
+            "output": [
+                "Bite"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Bite"],
+            "usedModels": [
+                "Bite"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2740,12 +3451,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2759,12 +3474,16 @@
             ],
             "input": null,
             "name": "channels",
-            "output": ["Channel"],
+            "output": [
+                "Channel"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Channel"],
+            "usedModels": [
+                "Channel"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2791,7 +3510,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2810,12 +3531,16 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2839,7 +3564,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2853,12 +3581,16 @@
             "endpoints": [],
             "input": null,
             "name": "transcript-sentences",
-            "output": ["Sentence"],
+            "output": [
+                "Sentence"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Sentence"],
+            "usedModels": [
+                "Sentence"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2894,12 +3626,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "transcript_id", "index"],
+                        "required": [
+                            "id",
+                            "transcript_id",
+                            "index"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2908,12 +3646,16 @@
             "endpoints": [],
             "input": null,
             "name": "transcripts",
-            "output": ["Transcript"],
+            "output": [
+                "Transcript"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Transcript"],
+            "usedModels": [
+                "Transcript"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2967,12 +3709,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2981,12 +3727,16 @@
             "endpoints": [],
             "input": null,
             "name": "user-groups",
-            "output": ["UserGroup"],
+            "output": [
+                "UserGroup"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserGroup"],
+            "usedModels": [
+                "UserGroup"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3001,7 +3751,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3015,12 +3767,16 @@
             "endpoints": [],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3059,7 +3815,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "user_id"],
+                        "required": [
+                            "id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     }
                 }

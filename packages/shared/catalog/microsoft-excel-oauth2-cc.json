@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_addchart",
             "name": "add-chart",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addchart"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addchart", "ActionOutput_microsoft_excel_oauth2_cc_addchart"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_addchart"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_addchart",
+                "ActionOutput_microsoft_excel_oauth2_cc_addchart"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -41,7 +48,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId", "itemId", "worksheetIdOrName", "type", "sourceData"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName",
+                            "type",
+                            "sourceData"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_addchart": {
@@ -66,7 +79,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -79,9 +95,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_adddefinedname",
             "name": "add-defined-name",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_adddefinedname"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_adddefinedname", "ActionOutput_microsoft_excel_oauth2_cc_adddefinedname"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_adddefinedname"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_adddefinedname",
+                "ActionOutput_microsoft_excel_oauth2_cc_adddefinedname"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -109,7 +132,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId", "itemId", "name", "reference"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "name",
+                            "reference"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_adddefinedname": {
@@ -140,7 +168,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -153,9 +183,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_addtablerows",
             "name": "add-table-rows",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addtablerows"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addtablerows", "ActionOutput_microsoft_excel_oauth2_cc_addtablerows"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_addtablerows"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_addtablerows",
+                "ActionOutput_microsoft_excel_oauth2_cc_addtablerows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -183,7 +220,12 @@
                                 "description": "2-dimensional array of row values. Example: [[\"Alice\", 100], [\"Bob\", 200]]"
                             }
                         },
-                        "required": ["driveId", "itemId", "tableIdOrName", "values"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "tableIdOrName",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_addtablerows": {
@@ -212,9 +254,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_addtable",
             "name": "add-table",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addtable"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addtable", "ActionOutput_microsoft_excel_oauth2_cc_addtable"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_addtable"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_addtable",
+                "ActionOutput_microsoft_excel_oauth2_cc_addtable"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -238,7 +287,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["driveId", "itemId", "address"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "address"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_addtable": {
@@ -313,9 +366,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_addworksheet",
             "name": "add-worksheet",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_addworksheet"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_addworksheet", "ActionOutput_microsoft_excel_oauth2_cc_addworksheet"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_addworksheet"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_addworksheet",
+                "ActionOutput_microsoft_excel_oauth2_cc_addworksheet"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -335,7 +395,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_addworksheet": {
@@ -354,7 +417,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "position"],
+                        "required": [
+                            "id",
+                            "name",
+                            "position"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -367,9 +434,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_calculateworkbook",
             "name": "calculate-workbook",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_calculateworkbook", "ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_calculateworkbook",
+                "ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -387,10 +461,17 @@
                             "calculationType": {
                                 "description": "The calculation type. Defaults to \"Recalculate\".",
                                 "type": "string",
-                                "enum": ["Recalculate", "Full", "FullRebuild"]
+                                "enum": [
+                                    "Recalculate",
+                                    "Full",
+                                    "FullRebuild"
+                                ]
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_calculateworkbook": {
@@ -401,7 +482,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -414,9 +497,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_createworkbook",
             "name": "create-workbook",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_createworkbook"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_createworkbook", "ActionOutput_microsoft_excel_oauth2_cc_createworkbook"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_createworkbook"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_createworkbook",
+                "ActionOutput_microsoft_excel_oauth2_cc_createworkbook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -442,10 +532,18 @@
                             "conflictBehavior": {
                                 "description": "Behavior when a file with this name already exists at the destination. Defaults to \"fail\" to avoid silently overwriting an existing workbook.",
                                 "type": "string",
-                                "enum": ["fail", "replace", "rename"]
+                                "enum": [
+                                    "fail",
+                                    "replace",
+                                    "rename"
+                                ]
                             }
                         },
-                        "required": ["driveId", "filename", "contentBase64"],
+                        "required": [
+                            "driveId",
+                            "filename",
+                            "contentBase64"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_createworkbook": {
@@ -470,7 +568,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -483,9 +584,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_deletedefinedname",
             "name": "delete-defined-name",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deletedefinedname", "ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_deletedefinedname",
+                "ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -505,7 +613,11 @@
                                 "description": "Defined name to delete. Example: \"DryrunDeleteTestName\""
                             }
                         },
-                        "required": ["driveId", "itemId", "name"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_deletedefinedname": {
@@ -524,7 +636,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "driveId", "itemId", "name"],
+                        "required": [
+                            "success",
+                            "driveId",
+                            "itemId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -537,9 +654,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_deletetable",
             "name": "delete-table",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deletetable"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deletetable", "ActionOutput_microsoft_excel_oauth2_cc_deletetable"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_deletetable"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_deletetable",
+                "ActionOutput_microsoft_excel_oauth2_cc_deletetable"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -559,7 +683,11 @@
                                 "description": "Table ID or name. Example: \"Table1\""
                             }
                         },
-                        "required": ["driveId", "itemId", "tableIdOrName"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_deletetable": {
@@ -569,7 +697,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -582,9 +712,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_deleteworkbook",
             "name": "delete-workbook",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deleteworkbook", "ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_deleteworkbook",
+                "ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -600,7 +737,10 @@
                                 "description": "Workbook item ID to delete. Example: \"01RFYLAYBTFQ2CLBMYRNEJOWXIFFJQOYW2\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_deleteworkbook": {
@@ -610,7 +750,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -623,9 +765,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_deleteworksheet",
             "name": "delete-worksheet",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_deleteworksheet", "ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_deleteworksheet",
+                "ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -645,7 +794,11 @@
                                 "description": "Worksheet ID or name to delete. Example: \"Sheet1\" or \"RegistrySeedSheet2\""
                             }
                         },
-                        "required": ["driveId", "itemId", "worksheetIdOrName"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_deleteworksheet": {
@@ -664,7 +817,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "driveId", "itemId", "worksheetIdOrName"],
+                        "required": [
+                            "success",
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -677,9 +835,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_getchartimage",
             "name": "get-chart-image",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getchartimage"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getchartimage", "ActionOutput_microsoft_excel_oauth2_cc_getchartimage"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_getchartimage"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_getchartimage",
+                "ActionOutput_microsoft_excel_oauth2_cc_getchartimage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -703,7 +868,12 @@
                                 "description": "Chart ID (GUID). Use the chart's id, not its display name, to avoid URL encoding issues with names containing spaces."
                             }
                         },
-                        "required": ["driveId", "itemId", "worksheetIdOrName", "chartId"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName",
+                            "chartId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_getchartimage": {
@@ -714,7 +884,9 @@
                                 "description": "Base64-encoded PNG image of the chart."
                             }
                         },
-                        "required": ["imageBase64"],
+                        "required": [
+                            "imageBase64"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -727,9 +899,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_getrange",
             "name": "get-range",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getrange"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getrange", "ActionOutput_microsoft_excel_oauth2_cc_getrange"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_getrange"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_getrange",
+                "ActionOutput_microsoft_excel_oauth2_cc_getrange"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -753,7 +932,12 @@
                                 "description": "Range address. Example: \"A1:C2\""
                             }
                         },
-                        "required": ["driveId", "itemId", "worksheetIdOrName", "address"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName",
+                            "address"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_getrange": {
@@ -803,9 +987,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_getsitedrive",
             "name": "get-site-drive",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getsitedrive"],
-            "scopes": ["Sites.Read.All", "Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getsitedrive", "ActionOutput_microsoft_excel_oauth2_cc_getsitedrive"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_getsitedrive"
+            ],
+            "scopes": [
+                "Sites.Read.All",
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_getsitedrive",
+                "ActionOutput_microsoft_excel_oauth2_cc_getsitedrive"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -817,7 +1009,9 @@
                                 "description": "The unique identifier for the SharePoint site. Example: \"nangodevelopers.sharepoint.com,4c97403e-1663-4673-90fa-d2f8690b4510,29d15734-3d19-43f6-976b-43ece3ff81a8\""
                             }
                         },
-                        "required": ["siteId"],
+                        "required": [
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_getsitedrive": {
@@ -842,7 +1036,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -855,9 +1051,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_getusedrange",
             "name": "get-used-range",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getusedrange"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getusedrange", "ActionOutput_microsoft_excel_oauth2_cc_getusedrange"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_getusedrange"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_getusedrange",
+                "ActionOutput_microsoft_excel_oauth2_cc_getusedrange"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -877,7 +1080,11 @@
                                 "description": "Worksheet ID or name. Example: \"Sheet1\""
                             }
                         },
-                        "required": ["driveId", "itemId", "worksheetIdOrName"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_getusedrange": {
@@ -942,9 +1149,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_getuserdrive",
             "name": "get-user-drive",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getuserdrive"],
-            "scopes": ["Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getuserdrive", "ActionOutput_microsoft_excel_oauth2_cc_getuserdrive"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_getuserdrive"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_getuserdrive",
+                "ActionOutput_microsoft_excel_oauth2_cc_getuserdrive"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -956,7 +1170,9 @@
                                 "description": "User ID or user principal name. Example: \"api@nango.dev\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_getuserdrive": {
@@ -975,7 +1191,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -988,9 +1206,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_getworkbook",
             "name": "get-workbook",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_getworkbook"],
-            "scopes": ["Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_getworkbook", "ActionOutput_microsoft_excel_oauth2_cc_getworkbook"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_getworkbook"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_getworkbook",
+                "ActionOutput_microsoft_excel_oauth2_cc_getworkbook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1006,7 +1231,10 @@
                                 "description": "The unique identifier of the drive item (workbook). Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_getworkbook": {
@@ -1055,7 +1283,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1068,9 +1299,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listdefinednames",
             "name": "list-defined-names",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listdefinednames"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listdefinednames", "ActionOutput_microsoft_excel_oauth2_cc_listdefinednames"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listdefinednames"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listdefinednames",
+                "ActionOutput_microsoft_excel_oauth2_cc_listdefinednames"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1086,7 +1324,10 @@
                                 "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_listdefinednames": {
@@ -1104,13 +1345,22 @@
                                             "type": "string"
                                         },
                                         "comment": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "scope": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "value": {
                                             "anyOf": [
@@ -1121,15 +1371,22 @@
                                             ]
                                         },
                                         "visible": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["names"],
+                        "required": [
+                            "names"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1142,9 +1399,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listsites",
             "name": "list-sites",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listsites"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listsites", "ActionOutput_microsoft_excel_oauth2_cc_listsites"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listsites"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listsites",
+                "ActionOutput_microsoft_excel_oauth2_cc_listsites"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1189,7 +1453,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1197,7 +1463,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1210,9 +1478,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listtablecolumns",
             "name": "list-table-columns",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listtablecolumns", "ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listtablecolumns",
+                "ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1232,7 +1507,11 @@
                                 "description": "The table ID or name. Example: \"Table1\""
                             }
                         },
-                        "required": ["driveId", "itemId", "tableIdOrName"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_listtablecolumns": {
@@ -1257,12 +1536,16 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["columns"],
+                        "required": [
+                            "columns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1275,9 +1558,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listtablerows",
             "name": "list-table-rows",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listtablerows"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listtablerows", "ActionOutput_microsoft_excel_oauth2_cc_listtablerows"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listtablerows"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listtablerows",
+                "ActionOutput_microsoft_excel_oauth2_cc_listtablerows"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1297,7 +1587,11 @@
                                 "description": "Table ID or name. Example: \"Table1\""
                             }
                         },
-                        "required": ["driveId", "itemId", "tableIdOrName"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_listtablerows": {
@@ -1319,7 +1613,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["index", "values"],
+                                    "required": [
+                                        "index",
+                                        "values"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1327,7 +1624,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["rows"],
+                        "required": [
+                            "rows"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1340,9 +1639,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listtables",
             "name": "list-tables",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listtables"],
-            "scopes": ["Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listtables", "ActionOutput_microsoft_excel_oauth2_cc_listtables"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listtables"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listtables",
+                "ActionOutput_microsoft_excel_oauth2_cc_listtables"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1358,7 +1664,10 @@
                                 "description": "Workbook item ID. Example: \"01RFYLAYDQCQAOBGW2GVAYDEQMDDBL6JYU\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_listtables": {
@@ -1400,12 +1709,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["tables"],
+                        "required": [
+                            "tables"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1418,9 +1732,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listusers"],
-            "scopes": ["User.Read.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listusers", "ActionOutput_microsoft_excel_oauth2_cc_listusers"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listusers"
+            ],
+            "scopes": [
+                "User.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listusers",
+                "ActionOutput_microsoft_excel_oauth2_cc_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1461,7 +1782,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1469,7 +1792,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1482,9 +1807,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listworkbooks",
             "name": "list-workbooks",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listworkbooks"],
-            "scopes": ["Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listworkbooks", "ActionOutput_microsoft_excel_oauth2_cc_listworkbooks"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listworkbooks"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listworkbooks",
+                "ActionOutput_microsoft_excel_oauth2_cc_listworkbooks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1504,7 +1836,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId"],
+                        "required": [
+                            "driveId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_listworkbooks": {
@@ -1537,7 +1871,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1545,7 +1882,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workbooks"],
+                        "required": [
+                            "workbooks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1558,9 +1897,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_listworksheets",
             "name": "list-worksheets",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_listworksheets"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_listworksheets", "ActionOutput_microsoft_excel_oauth2_cc_listworksheets"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_listworksheets"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_listworksheets",
+                "ActionOutput_microsoft_excel_oauth2_cc_listworksheets"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1576,7 +1922,10 @@
                                 "description": "Item ID of the workbook file. Example: \"01RFYLAY...\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_listworksheets": {
@@ -1600,12 +1949,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["worksheets"],
+                        "required": [
+                            "worksheets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1618,9 +1972,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_updaterange",
             "name": "update-range",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_updaterange"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_updaterange", "ActionOutput_microsoft_excel_oauth2_cc_updaterange"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_updaterange"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_updaterange",
+                "ActionOutput_microsoft_excel_oauth2_cc_updaterange"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1652,7 +2013,13 @@
                                 "description": "2D array of cell values matching the range row/column count"
                             }
                         },
-                        "required": ["driveId", "itemId", "worksheetIdOrName", "address", "values"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName",
+                            "address",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_updaterange": {
@@ -1690,9 +2057,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_excel_oauth2_cc_updateworksheet",
             "name": "update-worksheet",
-            "output": ["ActionOutput_microsoft_excel_oauth2_cc_updateworksheet"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_excel_oauth2_cc_updateworksheet", "ActionOutput_microsoft_excel_oauth2_cc_updateworksheet"],
+            "output": [
+                "ActionOutput_microsoft_excel_oauth2_cc_updateworksheet"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_excel_oauth2_cc_updateworksheet",
+                "ActionOutput_microsoft_excel_oauth2_cc_updateworksheet"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1722,7 +2096,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["driveId", "itemId", "worksheetIdOrName"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "worksheetIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_excel_oauth2_cc_updateworksheet": {
@@ -1743,7 +2121,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "position"],
+                        "required": [
+                            "id",
+                            "name",
+                            "position"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1759,12 +2141,19 @@
             "endpoints": [],
             "input": "SyncMetadata_microsoft_excel_oauth2_cc_workbooks",
             "name": "workbooks",
-            "output": ["Workbook"],
+            "output": [
+                "Workbook"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read.All"],
+            "scopes": [
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workbook", "SyncMetadata_microsoft_excel_oauth2_cc_workbooks"],
+            "usedModels": [
+                "Workbook",
+                "SyncMetadata_microsoft_excel_oauth2_cc_workbooks"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1797,7 +2186,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_microsoft_excel_oauth2_cc_workbooks": {
@@ -1807,12 +2198,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId"],
+                        "required": [
+                            "driveId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1821,12 +2216,19 @@
             "endpoints": [],
             "input": "SyncMetadata_microsoft_excel_oauth2_cc_worksheets",
             "name": "worksheets",
-            "output": ["Worksheet"],
+            "output": [
+                "Worksheet"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.ReadWrite.All"],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Worksheet", "SyncMetadata_microsoft_excel_oauth2_cc_worksheets"],
+            "usedModels": [
+                "Worksheet",
+                "SyncMetadata_microsoft_excel_oauth2_cc_worksheets"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1847,7 +2249,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_microsoft_excel_oauth2_cc_worksheets": {
@@ -1860,12 +2264,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

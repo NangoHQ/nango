@@ -7,7 +7,9 @@
             "endpoint": null,
             "input": "ActionInput_avalara_committransaction",
             "name": "commit-transaction",
-            "output": ["ActionOutput_avalara_committransaction"],
+            "output": [
+                "ActionOutput_avalara_committransaction"
+            ],
             "scopes": [
                 "AccountAdmin",
                 " AccountOperator",
@@ -20,7 +22,10 @@
                 " SSTAdmin",
                 " TechnicalSupportAdmin"
             ],
-            "usedModels": ["ActionInput_avalara_committransaction", "ActionOutput_avalara_committransaction"],
+            "usedModels": [
+                "ActionInput_avalara_committransaction",
+                "ActionOutput_avalara_committransaction"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -31,7 +36,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["transactionCode"],
+                        "required": [
+                            "transactionCode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_avalara_committransaction": {
@@ -41,7 +48,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -54,7 +63,9 @@
             "endpoint": null,
             "input": "ActionInput_avalara_createtransaction",
             "name": "create-transaction",
-            "output": ["ActionOutput_avalara_createtransaction"],
+            "output": [
+                "ActionOutput_avalara_createtransaction"
+            ],
             "scopes": [
                 "AccountAdmin",
                 " AccountOperator",
@@ -67,7 +78,10 @@
                 " TechnicalSupportAdmin",
                 " TechnicalSupportUser"
             ],
-            "usedModels": ["ActionInput_avalara_createtransaction", "ActionOutput_avalara_createtransaction"],
+            "usedModels": [
+                "ActionInput_avalara_createtransaction",
+                "ActionOutput_avalara_createtransaction"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -136,13 +150,19 @@
                                                     "type": "string"
                                                 },
                                                 "billingItemId": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "name": {
                                                     "type": "string"
                                                 },
                                                 "description": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "unitsCount": {
                                                     "type": "number"
@@ -163,10 +183,16 @@
                                                     "type": "number"
                                                 },
                                                 "periodStart": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "periodEnd": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "invoiceLineItemTiers": {
                                                     "type": "array",
@@ -183,7 +209,11 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["unitCount", "unitAmount", "totalAmount"],
+                                                        "required": [
+                                                            "unitCount",
+                                                            "unitAmount",
+                                                            "totalAmount"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
@@ -215,7 +245,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["name", "discountAmount"],
+                                            "required": [
+                                                "name",
+                                                "discountAmount"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -441,7 +474,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["invoice", "externalCustomerId", "addresses"],
+                        "required": [
+                            "invoice",
+                            "externalCustomerId",
+                            "addresses"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_avalara_createtransaction": {
@@ -451,7 +488,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -464,7 +503,9 @@
             "endpoint": null,
             "input": "ActionInput_avalara_voidtransaction",
             "name": "void-transaction",
-            "output": ["ActionOutput_avalara_voidtransaction"],
+            "output": [
+                "ActionOutput_avalara_voidtransaction"
+            ],
             "scopes": [
                 "AccountAdmin",
                 " AccountOperator",
@@ -475,7 +516,10 @@
                 " SSTAdmin",
                 " TechnicalSupportAdmin"
             ],
-            "usedModels": ["ActionInput_avalara_voidtransaction", "ActionOutput_avalara_voidtransaction"],
+            "usedModels": [
+                "ActionInput_avalara_voidtransaction",
+                "ActionOutput_avalara_voidtransaction"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -486,7 +530,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["transactionCode"],
+                        "required": [
+                            "transactionCode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_avalara_voidtransaction": {
@@ -496,7 +542,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -518,12 +566,17 @@
             ],
             "input": "SyncMetadata_avalara_transactions",
             "name": "transactions",
-            "output": ["Transaction"],
+            "output": [
+                "Transaction"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Transaction", "SyncMetadata_avalara_transactions"],
+            "usedModels": [
+                "Transaction",
+                "SyncMetadata_avalara_transactions"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1071,7 +1124,17 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "transactionId", "boundaryLevel", "line1", "city", "region", "postalCode", "country", "taxRegionId"],
+                                    "required": [
+                                        "id",
+                                        "transactionId",
+                                        "boundaryLevel",
+                                        "line1",
+                                        "city",
+                                        "region",
+                                        "postalCode",
+                                        "country",
+                                        "taxRegionId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1096,7 +1159,13 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["taxType", "totalTaxable", "totalExempt", "totalNonTaxable", "totalTax"],
+                                    "required": [
+                                        "taxType",
+                                        "totalTaxable",
+                                        "totalExempt",
+                                        "totalNonTaxable",
+                                        "totalTax"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -1169,12 +1238,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["company"],
+                        "required": [
+                            "company"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

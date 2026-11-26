@@ -14,12 +14,19 @@
             ],
             "input": "SyncMetadata_checkr_partner_staging_account",
             "name": "account",
-            "output": ["CheckrPartnerStagingAccount"],
+            "output": [
+                "CheckrPartnerStagingAccount"
+            ],
             "runs": "every hour",
-            "scopes": ["read_write"],
+            "scopes": [
+                "read_write"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CheckrPartnerStagingAccount", "SyncMetadata_checkr_partner_staging_account"],
+            "usedModels": [
+                "CheckrPartnerStagingAccount",
+                "SyncMetadata_checkr_partner_staging_account"
+            ],
             "version": "2.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -67,10 +74,16 @@
                                 "format": "date-time"
                             },
                             "default_compliance_city": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "default_compliance_state": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "geos_required": {
                                 "type": "boolean"
@@ -85,10 +98,16 @@
                                 "type": "boolean"
                             },
                             "support_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "support_phone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "technical_contact_email": {
                                 "type": "string"

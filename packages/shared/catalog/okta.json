@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_activateapplication",
             "name": "activate-application",
-            "output": ["ActionOutput_okta_activateapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_activateapplication", "ActionOutput_okta_activateapplication"],
+            "output": [
+                "ActionOutput_okta_activateapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_activateapplication",
+                "ActionOutput_okta_activateapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -21,7 +28,9 @@
                                 "description": "Application ID. Example: \"0oa14y5pvdukQRBPv698\""
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_activateapplication": {
@@ -40,7 +49,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "label", "status"],
+                        "required": [
+                            "id",
+                            "name",
+                            "label",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -53,9 +67,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_activategrouprule",
             "name": "activate-group-rule",
-            "output": ["ActionOutput_okta_activategrouprule"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_activategrouprule", "ActionOutput_okta_activategrouprule"],
+            "output": [
+                "ActionOutput_okta_activategrouprule"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_activategrouprule",
+                "ActionOutput_okta_activategrouprule"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -66,7 +87,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["ruleId"],
+                        "required": [
+                            "ruleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_activategrouprule": {
@@ -82,9 +105,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_activateuser",
             "name": "activate-user",
-            "output": ["ActionOutput_okta_activateuser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_activateuser", "ActionOutput_okta_activateuser"],
+            "output": [
+                "ActionOutput_okta_activateuser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_activateuser",
+                "ActionOutput_okta_activateuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -100,7 +130,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_activateuser": {
@@ -137,7 +169,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "profile": {
@@ -168,7 +202,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -181,9 +218,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_addgroup",
             "name": "add-group",
-            "output": ["ActionOutput_okta_addgroup"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_addgroup", "ActionOutput_okta_addgroup"],
+            "output": [
+                "ActionOutput_okta_addgroup"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_addgroup",
+                "ActionOutput_okta_addgroup"
+            ],
             "version": "2.0.0",
             "json_schema": {
                 "definitions": {
@@ -199,7 +243,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_addgroup": {
@@ -224,7 +270,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -237,9 +286,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_addusergroup",
             "name": "add-user-group",
-            "output": ["ActionOutput_okta_addusergroup"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_addusergroup", "ActionOutput_okta_addusergroup"],
+            "output": [
+                "ActionOutput_okta_addusergroup"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_addusergroup",
+                "ActionOutput_okta_addusergroup"
+            ],
             "version": "2.0.0",
             "json_schema": {
                 "definitions": {
@@ -255,7 +311,10 @@
                                 "description": "User ID. Example: \"00u14y5o7tvvw1qA0698\""
                             }
                         },
-                        "required": ["groupId", "userId"],
+                        "required": [
+                            "groupId",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_addusergroup": {
@@ -268,7 +327,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userId", "groupId"],
+                        "required": [
+                            "userId",
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -281,9 +343,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_assigngrouptoapplication",
             "name": "assign-group-to-application",
-            "output": ["ActionOutput_okta_assigngrouptoapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_assigngrouptoapplication", "ActionOutput_okta_assigngrouptoapplication"],
+            "output": [
+                "ActionOutput_okta_assigngrouptoapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_assigngrouptoapplication",
+                "ActionOutput_okta_assigngrouptoapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -303,7 +372,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["appId", "groupId"],
+                        "required": [
+                            "appId",
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_assigngrouptoapplication": {
@@ -333,7 +405,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -346,9 +420,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_assignroletouser",
             "name": "assign-role-to-user",
-            "output": ["ActionOutput_okta_assignroletouser"],
-            "scopes": ["okta.roles.manage"],
-            "usedModels": ["ActionInput_okta_assignroletouser", "ActionOutput_okta_assignroletouser"],
+            "output": [
+                "ActionOutput_okta_assignroletouser"
+            ],
+            "scopes": [
+                "okta.roles.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_assignroletouser",
+                "ActionOutput_okta_assignroletouser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -376,7 +457,10 @@
                                 "description": "Standard Okta admin role type enum value"
                             }
                         },
-                        "required": ["userId", "type"],
+                        "required": [
+                            "userId",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_assignroletouser": {
@@ -398,7 +482,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -411,9 +498,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_assignusertoapplication",
             "name": "assign-user-to-application",
-            "output": ["ActionOutput_okta_assignusertoapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_assignusertoapplication", "ActionOutput_okta_assignusertoapplication"],
+            "output": [
+                "ActionOutput_okta_assignusertoapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_assignusertoapplication",
+                "ActionOutput_okta_assignusertoapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -433,7 +527,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["appId", "userId"],
+                        "required": [
+                            "appId",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_assignusertoapplication": {
@@ -458,7 +555,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "scope", "status"],
+                        "required": [
+                            "id",
+                            "scope",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -471,9 +572,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_createapplication",
             "name": "create-application",
-            "output": ["ActionOutput_okta_createapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_createapplication", "ActionOutput_okta_createapplication"],
+            "output": [
+                "ActionOutput_okta_createapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_createapplication",
+                "ActionOutput_okta_createapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -501,7 +609,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["label", "url"],
+                        "required": [
+                            "label",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_createapplication": {
@@ -532,7 +643,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "label", "status", "signOnMode"],
+                        "required": [
+                            "id",
+                            "name",
+                            "label",
+                            "status",
+                            "signOnMode"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -545,9 +662,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_createauthorizationserverscope",
             "name": "create-authorization-server-scope",
-            "output": ["ActionOutput_okta_createauthorizationserverscope"],
-            "scopes": ["okta.authorizationServers.manage"],
-            "usedModels": ["ActionInput_okta_createauthorizationserverscope", "ActionOutput_okta_createauthorizationserverscope"],
+            "output": [
+                "ActionOutput_okta_createauthorizationserverscope"
+            ],
+            "scopes": [
+                "okta.authorizationServers.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_createauthorizationserverscope",
+                "ActionOutput_okta_createauthorizationserverscope"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -571,7 +695,12 @@
                                 "description": "Scope description. Example: \"Allows creating test resources\""
                             }
                         },
-                        "required": ["authServerId", "name", "displayName", "description"],
+                        "required": [
+                            "authServerId",
+                            "name",
+                            "displayName",
+                            "description"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_createauthorizationserverscope": {
@@ -602,7 +731,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -615,9 +747,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_creategrouprule",
             "name": "create-group-rule",
-            "output": ["ActionOutput_okta_creategrouprule"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_creategrouprule", "ActionOutput_okta_creategrouprule"],
+            "output": [
+                "ActionOutput_okta_creategrouprule"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_creategrouprule",
+                "ActionOutput_okta_creategrouprule"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -640,7 +779,11 @@
                                 "description": "List of group IDs to assign matching users to."
                             }
                         },
-                        "required": ["name", "expression_value", "group_ids"],
+                        "required": [
+                            "name",
+                            "expression_value",
+                            "group_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_creategrouprule": {
@@ -665,7 +808,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "status"],
+                        "required": [
+                            "id",
+                            "name",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -678,9 +825,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_createpolicyrule",
             "name": "create-policy-rule",
-            "output": ["ActionOutput_okta_createpolicyrule"],
-            "scopes": ["okta.policies.manage"],
-            "usedModels": ["ActionInput_okta_createpolicyrule", "ActionOutput_okta_createpolicyrule"],
+            "output": [
+                "ActionOutput_okta_createpolicyrule"
+            ],
+            "scopes": [
+                "okta.policies.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_createpolicyrule",
+                "ActionOutput_okta_createpolicyrule"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -712,7 +866,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["policyId", "name", "type"],
+                        "required": [
+                            "policyId",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_createpolicyrule": {
@@ -754,7 +912,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type", "name"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -767,9 +929,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_createpolicy",
             "name": "create-policy",
-            "output": ["ActionOutput_okta_createpolicy"],
-            "scopes": ["okta.policies.manage"],
-            "usedModels": ["ActionInput_okta_createpolicy", "ActionOutput_okta_createpolicy"],
+            "output": [
+                "ActionOutput_okta_createpolicy"
+            ],
+            "scopes": [
+                "okta.policies.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_createpolicy",
+                "ActionOutput_okta_createpolicy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -796,7 +965,11 @@
                                 "description": "Group IDs to include in the policy conditions."
                             }
                         },
-                        "required": ["type", "name", "groupIds"],
+                        "required": [
+                            "type",
+                            "name",
+                            "groupIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_createpolicy": {
@@ -840,7 +1013,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type", "name", "status"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -853,9 +1031,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_okta_createuser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_createuser", "ActionOutput_okta_createuser"],
+            "output": [
+                "ActionOutput_okta_createuser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_createuser",
+                "ActionOutput_okta_createuser"
+            ],
             "version": "3.0.0",
             "json_schema": {
                 "definitions": {
@@ -892,7 +1077,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_createuser": {
@@ -920,7 +1109,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -933,9 +1124,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deactivateapplication",
             "name": "deactivate-application",
-            "output": ["ActionOutput_okta_deactivateapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_deactivateapplication", "ActionOutput_okta_deactivateapplication"],
+            "output": [
+                "ActionOutput_okta_deactivateapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deactivateapplication",
+                "ActionOutput_okta_deactivateapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -947,7 +1145,9 @@
                                 "description": "The unique identifier of the application to deactivate. Example: \"0oa1a2b3c4d5e6f7g8h9\""
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deactivateapplication": {
@@ -981,7 +1181,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -994,9 +1196,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deactivateuser",
             "name": "deactivate-user",
-            "output": ["ActionOutput_okta_deactivateuser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_deactivateuser", "ActionOutput_okta_deactivateuser"],
+            "output": [
+                "ActionOutput_okta_deactivateuser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deactivateuser",
+                "ActionOutput_okta_deactivateuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1012,7 +1221,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deactivateuser": {
@@ -1053,7 +1264,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1066,9 +1280,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deleteapplication",
             "name": "delete-application",
-            "output": ["ActionOutput_okta_deleteapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_deleteapplication", "ActionOutput_okta_deleteapplication"],
+            "output": [
+                "ActionOutput_okta_deleteapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deleteapplication",
+                "ActionOutput_okta_deleteapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1080,7 +1301,9 @@
                                 "description": "Application ID to delete. Example: \"0oa1a2b3c4d5e6f7g8h9\""
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deleteapplication": {
@@ -1094,7 +1317,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1107,9 +1333,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deleteauthorizationserverscope",
             "name": "delete-authorization-server-scope",
-            "output": ["ActionOutput_okta_deleteauthorizationserverscope"],
-            "scopes": ["okta.authorizationServers.manage"],
-            "usedModels": ["ActionInput_okta_deleteauthorizationserverscope", "ActionOutput_okta_deleteauthorizationserverscope"],
+            "output": [
+                "ActionOutput_okta_deleteauthorizationserverscope"
+            ],
+            "scopes": [
+                "okta.authorizationServers.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deleteauthorizationserverscope",
+                "ActionOutput_okta_deleteauthorizationserverscope"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1125,7 +1358,10 @@
                                 "description": "Scope ID to delete. Example: \"scp14y5t17kyZD0Pq698\""
                             }
                         },
-                        "required": ["authServerId", "scopeId"],
+                        "required": [
+                            "authServerId",
+                            "scopeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deleteauthorizationserverscope": {
@@ -1141,7 +1377,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "authServerId", "scopeId"],
+                        "required": [
+                            "success",
+                            "authServerId",
+                            "scopeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1154,9 +1394,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deletefactor",
             "name": "delete-factor",
-            "output": ["ActionOutput_okta_deletefactor"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_deletefactor", "ActionOutput_okta_deletefactor"],
+            "output": [
+                "ActionOutput_okta_deletefactor"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deletefactor",
+                "ActionOutput_okta_deletefactor"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1172,7 +1419,10 @@
                                 "description": "Factor ID. Example: \"ost14u7gbraSXvpXE698\""
                             }
                         },
-                        "required": ["userId", "factorId"],
+                        "required": [
+                            "userId",
+                            "factorId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deletefactor": {
@@ -1182,7 +1432,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1195,9 +1447,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deletegrouprule",
             "name": "delete-group-rule",
-            "output": ["ActionOutput_okta_deletegrouprule"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_deletegrouprule", "ActionOutput_okta_deletegrouprule"],
+            "output": [
+                "ActionOutput_okta_deletegrouprule"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deletegrouprule",
+                "ActionOutput_okta_deletegrouprule"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1209,7 +1468,9 @@
                                 "description": "The unique identifier of the group rule. Example: \"0pr14y9xo353ycfX8698\""
                             }
                         },
-                        "required": ["ruleId"],
+                        "required": [
+                            "ruleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deletegrouprule": {
@@ -1222,7 +1483,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1235,9 +1499,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deletegroup",
             "name": "delete-group",
-            "output": ["ActionOutput_okta_deletegroup"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_deletegroup", "ActionOutput_okta_deletegroup"],
+            "output": [
+                "ActionOutput_okta_deletegroup"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deletegroup",
+                "ActionOutput_okta_deletegroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1249,7 +1520,9 @@
                                 "description": "The unique ID of the Okta group to delete. Example: \"00g14y5puecllOL1v698\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deletegroup": {
@@ -1262,7 +1535,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1275,9 +1551,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deletepolicy",
             "name": "delete-policy",
-            "output": ["ActionOutput_okta_deletepolicy"],
-            "scopes": ["okta.policies.manage"],
-            "usedModels": ["ActionInput_okta_deletepolicy", "ActionOutput_okta_deletepolicy"],
+            "output": [
+                "ActionOutput_okta_deletepolicy"
+            ],
+            "scopes": [
+                "okta.policies.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deletepolicy",
+                "ActionOutput_okta_deletepolicy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1289,7 +1572,9 @@
                                 "description": "The unique ID of the policy to delete. Example: \"00p14y5whkhX2J7ek698\""
                             }
                         },
-                        "required": ["policyId"],
+                        "required": [
+                            "policyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deletepolicy": {
@@ -1302,7 +1587,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "policyId"],
+                        "required": [
+                            "success",
+                            "policyId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1315,9 +1603,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_okta_deleteuser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_deleteuser", "ActionOutput_okta_deleteuser"],
+            "output": [
+                "ActionOutput_okta_deleteuser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_deleteuser",
+                "ActionOutput_okta_deleteuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1329,7 +1624,9 @@
                                 "description": "Okta user ID. Example: \"00u14y5ppk7oVbg7r698\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_deleteuser": {
@@ -1342,7 +1639,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1355,9 +1655,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_enrollfactor",
             "name": "enroll-factor",
-            "output": ["ActionOutput_okta_enrollfactor"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_enrollfactor", "ActionOutput_okta_enrollfactor"],
+            "output": [
+                "ActionOutput_okta_enrollfactor"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_enrollfactor",
+                "ActionOutput_okta_enrollfactor"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1389,7 +1696,11 @@
                                 "description": "Activate the factor immediately after enrollment"
                             }
                         },
-                        "required": ["userId", "factorType", "provider"],
+                        "required": [
+                            "userId",
+                            "factorType",
+                            "provider"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_enrollfactor": {
@@ -1415,7 +1726,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "factorType", "provider", "status"],
+                        "required": [
+                            "id",
+                            "factorType",
+                            "provider",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1428,9 +1744,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_expirepassword",
             "name": "expire-password",
-            "output": ["ActionOutput_okta_expirepassword"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_expirepassword", "ActionOutput_okta_expirepassword"],
+            "output": [
+                "ActionOutput_okta_expirepassword"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_expirepassword",
+                "ActionOutput_okta_expirepassword"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1446,7 +1769,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_expirepassword": {
@@ -1477,9 +1802,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_getapplication",
             "name": "get-application",
-            "output": ["ActionOutput_okta_getapplication"],
-            "scopes": ["okta.apps.read"],
-            "usedModels": ["ActionInput_okta_getapplication", "ActionOutput_okta_getapplication"],
+            "output": [
+                "ActionOutput_okta_getapplication"
+            ],
+            "scopes": [
+                "okta.apps.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_getapplication",
+                "ActionOutput_okta_getapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1491,7 +1823,9 @@
                                 "description": "Application ID. Example: \"0oa14y5qldjOIAGrc698\""
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_getapplication": {
@@ -1574,7 +1908,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "label", "status"],
+                        "required": [
+                            "id",
+                            "name",
+                            "label",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1587,9 +1926,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_getauthorizationserver",
             "name": "get-authorization-server",
-            "output": ["ActionOutput_okta_getauthorizationserver"],
-            "scopes": ["okta.authorizationServers.read"],
-            "usedModels": ["ActionInput_okta_getauthorizationserver", "ActionOutput_okta_getauthorizationserver"],
+            "output": [
+                "ActionOutput_okta_getauthorizationserver"
+            ],
+            "scopes": [
+                "okta.authorizationServers.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_getauthorizationserver",
+                "ActionOutput_okta_getauthorizationserver"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1601,7 +1947,9 @@
                                 "description": "Authorization server ID. Use \"default\" for the org's default server. Example: \"default\""
                             }
                         },
-                        "required": ["authServerId"],
+                        "required": [
+                            "authServerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_getauthorizationserver": {
@@ -1695,7 +2043,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     "claims": {
@@ -1726,7 +2076,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     "deactivate": {
@@ -1757,7 +2109,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     "metadata": {
@@ -1790,7 +2144,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["href"],
+                                            "required": [
+                                                "href"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1822,7 +2178,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     "rotateKey": {
@@ -1853,7 +2211,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     "scopes": {
@@ -1884,14 +2244,19 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": {}
                                     }
                                 },
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1904,9 +2269,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_getfactor",
             "name": "get-factor",
-            "output": ["ActionOutput_okta_getfactor"],
-            "scopes": ["okta.users.read"],
-            "usedModels": ["ActionInput_okta_getfactor", "ActionOutput_okta_getfactor"],
+            "output": [
+                "ActionOutput_okta_getfactor"
+            ],
+            "scopes": [
+                "okta.users.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_getfactor",
+                "ActionOutput_okta_getfactor"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1922,7 +2294,10 @@
                                 "description": "Enrolled factor ID. Example: \"ost14u7gbraSXvpXE698\""
                             }
                         },
-                        "required": ["userId", "factorId"],
+                        "required": [
+                            "userId",
+                            "factorId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_getfactor": {
@@ -1961,7 +2336,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "factorType", "provider", "status"],
+                        "required": [
+                            "id",
+                            "factorType",
+                            "provider",
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1974,9 +2354,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_getgroup",
             "name": "get-group",
-            "output": ["ActionOutput_okta_getgroup"],
-            "scopes": ["okta.groups.read"],
-            "usedModels": ["ActionInput_okta_getgroup", "ActionOutput_okta_getgroup"],
+            "output": [
+                "ActionOutput_okta_getgroup"
+            ],
+            "scopes": [
+                "okta.groups.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_getgroup",
+                "ActionOutput_okta_getgroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1988,7 +2375,9 @@
                                 "description": "Group ID. Example: \"00g14y5qi7zRLgyzT698\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_getgroup": {
@@ -1998,13 +2387,22 @@
                                 "type": "string"
                             },
                             "created": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastUpdated": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastMembershipUpdated": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "objectClass": {
                                 "anyOf": [
@@ -2020,7 +2418,10 @@
                                 ]
                             },
                             "type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "profile": {
                                 "anyOf": [
@@ -2028,10 +2429,16 @@
                                         "type": "object",
                                         "properties": {
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "description": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -2056,7 +2463,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2069,9 +2478,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_getpolicy",
             "name": "get-policy",
-            "output": ["ActionOutput_okta_getpolicy"],
-            "scopes": ["okta.policies.read"],
-            "usedModels": ["ActionInput_okta_getpolicy", "ActionOutput_okta_getpolicy"],
+            "output": [
+                "ActionOutput_okta_getpolicy"
+            ],
+            "scopes": [
+                "okta.policies.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_getpolicy",
+                "ActionOutput_okta_getpolicy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2083,7 +2499,9 @@
                                 "description": "The unique identifier of the policy. Example: \"00p14u78ldpLmNhTB698\""
                             }
                         },
-                        "required": ["policyId"],
+                        "required": [
+                            "policyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_getpolicy": {
@@ -2099,7 +2517,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -2169,7 +2590,9 @@
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
@@ -2177,7 +2600,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2190,9 +2616,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_getuserschema",
             "name": "get-user-schema",
-            "output": ["ActionOutput_okta_getuserschema"],
-            "scopes": ["okta.schemas.read"],
-            "usedModels": ["ActionInput_okta_getuserschema", "ActionOutput_okta_getuserschema"],
+            "output": [
+                "ActionOutput_okta_getuserschema"
+            ],
+            "scopes": [
+                "okta.schemas.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_getuserschema",
+                "ActionOutput_okta_getuserschema"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2204,7 +2637,9 @@
                                 "description": "Schema ID. Example: \"osc14u78ldxtbv6BP698\""
                             }
                         },
-                        "required": ["schemaId"],
+                        "required": [
+                            "schemaId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_getuserschema": {
@@ -2246,7 +2681,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2259,9 +2696,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_okta_getuser"],
-            "scopes": ["okta.users.read"],
-            "usedModels": ["ActionInput_okta_getuser", "ActionOutput_okta_getuser"],
+            "output": [
+                "ActionOutput_okta_getuser"
+            ],
+            "scopes": [
+                "okta.users.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_getuser",
+                "ActionOutput_okta_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2273,7 +2717,9 @@
                                 "description": "Okta user ID or login/email. Example: \"00u14u78lfuUpDWf0698\" or \"api+dev@nango.dev\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_getuser": {
@@ -2289,22 +2735,37 @@
                                 "type": "string"
                             },
                             "activated": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "statusChanged": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastLogin": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastUpdated": {
                                 "type": "string"
                             },
                             "passwordChanged": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "transitioningToStatus": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
                                 "type": "object",
@@ -2313,7 +2774,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "profile": {
@@ -2332,7 +2795,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2345,9 +2811,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listapplicationgroups",
             "name": "list-application-groups",
-            "output": ["ActionOutput_okta_listapplicationgroups"],
-            "scopes": ["okta.apps.read"],
-            "usedModels": ["ActionInput_okta_listapplicationgroups", "ActionOutput_okta_listapplicationgroups"],
+            "output": [
+                "ActionOutput_okta_listapplicationgroups"
+            ],
+            "scopes": [
+                "okta.apps.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listapplicationgroups",
+                "ActionOutput_okta_listapplicationgroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2369,7 +2842,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listapplicationgroups": {
@@ -2384,10 +2859,16 @@
                                             "type": "string"
                                         },
                                         "lastUpdated": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "priority": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "profile": {
                                             "anyOf": [
@@ -2404,7 +2885,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2412,7 +2895,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2425,9 +2910,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listapplicationusers",
             "name": "list-application-users",
-            "output": ["ActionOutput_okta_listapplicationusers"],
-            "scopes": ["okta.apps.read"],
-            "usedModels": ["ActionInput_okta_listapplicationusers", "ActionOutput_okta_listapplicationusers"],
+            "output": [
+                "ActionOutput_okta_listapplicationusers"
+            ],
+            "scopes": [
+                "okta.apps.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listapplicationusers",
+                "ActionOutput_okta_listapplicationusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2449,7 +2941,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listapplicationusers": {
@@ -2464,7 +2958,10 @@
                                             "type": "string"
                                         },
                                         "externalId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created": {
                                             "type": "string"
@@ -2479,16 +2976,28 @@
                                             "type": "string"
                                         },
                                         "statusChanged": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "passwordChanged": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "syncState": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastSync": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "credentials": {
                                             "anyOf": [
@@ -2521,7 +3030,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2529,7 +3040,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2542,9 +3055,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listapplications",
             "name": "list-applications",
-            "output": ["ActionOutput_okta_listapplications"],
-            "scopes": ["okta.apps.read"],
-            "usedModels": ["ActionInput_okta_listapplications", "ActionOutput_okta_listapplications"],
+            "output": [
+                "ActionOutput_okta_listapplications"
+            ],
+            "scopes": [
+                "okta.apps.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listapplications",
+                "ActionOutput_okta_listapplications"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2600,7 +3120,12 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "label", "status"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "label",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2608,7 +3133,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2621,9 +3148,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listauthenticators",
             "name": "list-authenticators",
-            "output": ["ActionOutput_okta_listauthenticators"],
-            "scopes": ["okta.authenticators.read"],
-            "usedModels": ["ActionInput_okta_listauthenticators", "ActionOutput_okta_listauthenticators"],
+            "output": [
+                "ActionOutput_okta_listauthenticators"
+            ],
+            "scopes": [
+                "okta.authenticators.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listauthenticators",
+                "ActionOutput_okta_listauthenticators"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2662,12 +3196,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type", "status"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["authenticators"],
+                        "required": [
+                            "authenticators"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2680,9 +3221,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listauthorizationserverclaims",
             "name": "list-authorization-server-claims",
-            "output": ["ActionOutput_okta_listauthorizationserverclaims"],
-            "scopes": ["okta.authorizationServers.read"],
-            "usedModels": ["ActionInput_okta_listauthorizationserverclaims", "ActionOutput_okta_listauthorizationserverclaims"],
+            "output": [
+                "ActionOutput_okta_listauthorizationserverclaims"
+            ],
+            "scopes": [
+                "okta.authorizationServers.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listauthorizationserverclaims",
+                "ActionOutput_okta_listauthorizationserverclaims"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2694,7 +3242,9 @@
                                 "description": "Authorization server ID. Example: \"aus14u78liihuiepy698\""
                             }
                         },
-                        "required": ["authServerId"],
+                        "required": [
+                            "authServerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listauthorizationserverclaims": {
@@ -2754,12 +3304,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "status"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["claims"],
+                        "required": [
+                            "claims"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2772,9 +3328,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listauthorizationserverscopes",
             "name": "list-authorization-server-scopes",
-            "output": ["ActionOutput_okta_listauthorizationserverscopes"],
-            "scopes": ["okta.authorizationServers.read"],
-            "usedModels": ["ActionInput_okta_listauthorizationserverscopes", "ActionOutput_okta_listauthorizationserverscopes"],
+            "output": [
+                "ActionOutput_okta_listauthorizationserverscopes"
+            ],
+            "scopes": [
+                "okta.authorizationServers.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listauthorizationserverscopes",
+                "ActionOutput_okta_listauthorizationserverscopes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2796,7 +3359,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["authServerId"],
+                        "required": [
+                            "authServerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listauthorizationserverscopes": {
@@ -2835,7 +3400,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2843,7 +3411,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2856,9 +3426,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listauthorizationservers",
             "name": "list-authorization-servers",
-            "output": ["ActionOutput_okta_listauthorizationservers"],
-            "scopes": ["okta.authorizationServers.read"],
-            "usedModels": ["ActionInput_okta_listauthorizationservers", "ActionOutput_okta_listauthorizationservers"],
+            "output": [
+                "ActionOutput_okta_listauthorizationservers"
+            ],
+            "scopes": [
+                "okta.authorizationServers.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listauthorizationservers",
+                "ActionOutput_okta_listauthorizationservers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2887,7 +3464,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "audiences": {
                                             "type": "array",
@@ -2899,16 +3479,25 @@
                                             "type": "string"
                                         },
                                         "issuerMode": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string"
                                         },
                                         "created": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastUpdated": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "credentials": {
                                             "anyOf": [
@@ -2921,19 +3510,34 @@
                                                                     "type": "object",
                                                                     "properties": {
                                                                         "rotationMode": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "lastRotated": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "nextRotation": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "kid": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "use": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         }
                                                                     },
                                                                     "additionalProperties": false
@@ -2952,13 +3556,25 @@
                                             ]
                                         },
                                         "jwks_uri": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "accessTokenEncryptedResponseAlgorithm": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "audiences", "issuer", "status"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "audiences",
+                                        "issuer",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2966,7 +3582,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2979,9 +3597,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listfactorcatalog",
             "name": "list-factor-catalog",
-            "output": ["ActionOutput_okta_listfactorcatalog"],
-            "scopes": ["okta.users.read"],
-            "usedModels": ["ActionInput_okta_listfactorcatalog", "ActionOutput_okta_listfactorcatalog"],
+            "output": [
+                "ActionOutput_okta_listfactorcatalog"
+            ],
+            "scopes": [
+                "okta.users.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listfactorcatalog",
+                "ActionOutput_okta_listfactorcatalog"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2993,7 +3618,9 @@
                                 "description": "User ID. Example: \"00u14u78lfuUpDWf0698\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listfactorcatalog": {
@@ -3038,7 +3665,9 @@
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["href"],
+                                                    "required": [
+                                                        "href"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "self": {
@@ -3060,19 +3689,26 @@
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["href"],
+                                                    "required": [
+                                                        "href"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["factorType", "provider"],
+                                    "required": [
+                                        "factorType",
+                                        "provider"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3085,9 +3721,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listfactors",
             "name": "list-factors",
-            "output": ["ActionOutput_okta_listfactors"],
-            "scopes": ["okta.users.read"],
-            "usedModels": ["ActionInput_okta_listfactors", "ActionOutput_okta_listfactors"],
+            "output": [
+                "ActionOutput_okta_listfactors"
+            ],
+            "scopes": [
+                "okta.users.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listfactors",
+                "ActionOutput_okta_listfactors"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3099,7 +3742,9 @@
                                 "description": "User ID. Example: \"00u14u78lfuUpDWf0698\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listfactors": {
@@ -3165,12 +3810,19 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "factorType", "provider", "status"],
+                                    "required": [
+                                        "id",
+                                        "factorType",
+                                        "provider",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["factors"],
+                        "required": [
+                            "factors"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3183,9 +3835,17 @@
             "endpoint": null,
             "input": "ActionInput_okta_listgroupapplications",
             "name": "list-group-applications",
-            "output": ["ActionOutput_okta_listgroupapplications"],
-            "scopes": ["okta.groups.read", "okta.apps.read"],
-            "usedModels": ["ActionInput_okta_listgroupapplications", "ActionOutput_okta_listgroupapplications"],
+            "output": [
+                "ActionOutput_okta_listgroupapplications"
+            ],
+            "scopes": [
+                "okta.groups.read",
+                "okta.apps.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listgroupapplications",
+                "ActionOutput_okta_listgroupapplications"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3201,7 +3861,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listgroupapplications": {
@@ -3349,7 +4011,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3357,7 +4022,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3370,9 +4037,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listgrouproles",
             "name": "list-group-roles",
-            "output": ["ActionOutput_okta_listgrouproles"],
-            "scopes": ["okta.roles.read"],
-            "usedModels": ["ActionInput_okta_listgrouproles", "ActionOutput_okta_listgrouproles"],
+            "output": [
+                "ActionOutput_okta_listgrouproles"
+            ],
+            "scopes": [
+                "okta.roles.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listgrouproles",
+                "ActionOutput_okta_listgrouproles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3384,7 +4058,9 @@
                                 "description": "The unique identifier of the group. Example: \"00g14y5qi7zRLgyzT698\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listgrouproles": {
@@ -3417,18 +4093,28 @@
                                             "type": "string"
                                         },
                                         "resourceSet": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "roleType": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "label", "type", "status"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "type",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["roles"],
+                        "required": [
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3441,9 +4127,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listgrouprules",
             "name": "list-group-rules",
-            "output": ["ActionOutput_okta_listgrouprules"],
-            "scopes": ["okta.groups.read"],
-            "usedModels": ["ActionInput_okta_listgrouprules", "ActionOutput_okta_listgrouprules"],
+            "output": [
+                "ActionOutput_okta_listgrouprules"
+            ],
+            "scopes": [
+                "okta.groups.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listgrouprules",
+                "ActionOutput_okta_listgrouprules"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3489,7 +4182,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3497,7 +4192,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3510,9 +4207,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listgroupusers",
             "name": "list-group-users",
-            "output": ["ActionOutput_okta_listgroupusers"],
-            "scopes": ["okta.groups.read"],
-            "usedModels": ["ActionInput_okta_listgroupusers", "ActionOutput_okta_listgroupusers"],
+            "output": [
+                "ActionOutput_okta_listgroupusers"
+            ],
+            "scopes": [
+                "okta.groups.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listgroupusers",
+                "ActionOutput_okta_listgroupusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3528,7 +4232,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listgroupusers": {
@@ -3549,19 +4255,31 @@
                                             "type": "string"
                                         },
                                         "activated": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "statusChanged": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastLogin": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastUpdated": {
                                             "type": "string"
                                         },
                                         "passwordChanged": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "profile": {
                                             "type": "object",
@@ -3579,16 +4297,25 @@
                                                     "type": "string"
                                                 },
                                                 "mobilePhone": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "secondEmail": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "status"],
+                                    "required": [
+                                        "id",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3596,7 +4323,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3609,9 +4338,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_okta_listgroups"],
-            "scopes": ["okta.groups.read"],
-            "usedModels": ["ActionInput_okta_listgroups", "ActionOutput_okta_listgroups"],
+            "output": [
+                "ActionOutput_okta_listgroups"
+            ],
+            "scopes": [
+                "okta.groups.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listgroups",
+                "ActionOutput_okta_listgroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3684,11 +4420,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name"],
+                                            "required": [
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3697,7 +4437,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3710,9 +4452,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listpolicies",
             "name": "list-policies",
-            "output": ["ActionOutput_okta_listpolicies"],
-            "scopes": ["okta.policies.read"],
-            "usedModels": ["ActionInput_okta_listpolicies", "ActionOutput_okta_listpolicies"],
+            "output": [
+                "ActionOutput_okta_listpolicies"
+            ],
+            "scopes": [
+                "okta.policies.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listpolicies",
+                "ActionOutput_okta_listpolicies"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3740,14 +4489,19 @@
                             "status": {
                                 "description": "Filter by policy status. Example: \"ACTIVE\"",
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ]
                             },
                             "cursor": {
                                 "description": "Pagination cursor from the previous response. Omit for the first page.",
                                 "type": "string"
                             }
                         },
-                        "required": ["type"],
+                        "required": [
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listpolicies": {
@@ -3771,7 +4525,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "priority": {
                                             "type": "number"
@@ -3791,7 +4548,12 @@
                                         "conditions": {},
                                         "settings": {}
                                     },
-                                    "required": ["id", "type", "name", "status"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3800,7 +4562,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3813,9 +4577,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listpolicyrules",
             "name": "list-policy-rules",
-            "output": ["ActionOutput_okta_listpolicyrules"],
-            "scopes": ["okta.policies.read"],
-            "usedModels": ["ActionInput_okta_listpolicyrules", "ActionOutput_okta_listpolicyrules"],
+            "output": [
+                "ActionOutput_okta_listpolicyrules"
+            ],
+            "scopes": [
+                "okta.policies.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listpolicyrules",
+                "ActionOutput_okta_listpolicyrules"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3831,7 +4602,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["policyId"],
+                        "required": [
+                            "policyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listpolicyrules": {
@@ -3869,7 +4642,12 @@
                                         "conditions": {},
                                         "actions": {}
                                     },
-                                    "required": ["id", "type", "status", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "status",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3877,7 +4655,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3890,9 +4670,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listsystemlog",
             "name": "list-system-log",
-            "output": ["ActionOutput_okta_listsystemlog"],
-            "scopes": ["okta.logs.read"],
-            "usedModels": ["ActionInput_okta_listsystemlog", "ActionOutput_okta_listsystemlog"],
+            "output": [
+                "ActionOutput_okta_listsystemlog"
+            ],
+            "scopes": [
+                "okta.logs.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listsystemlog",
+                "ActionOutput_okta_listsystemlog"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3918,7 +4705,10 @@
                             "sortOrder": {
                                 "description": "Sort order. Defaults to ASCENDING.",
                                 "type": "string",
-                                "enum": ["ASCENDING", "DESCENDING"]
+                                "enum": [
+                                    "ASCENDING",
+                                    "DESCENDING"
+                                ]
                             },
                             "limit": {
                                 "description": "Max number of events to return per page. Default 100, max 1000.",
@@ -3949,10 +4739,16 @@
                                             "type": "string"
                                         },
                                         "version": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "severity": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "actor": {
                                             "anyOf": [
@@ -3960,16 +4756,28 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "id": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "type": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "alternateId": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "displayName": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "detailEntry": {
                                                             "anyOf": [
@@ -3998,13 +4806,22 @@
                                                                     "type": "object",
                                                                     "properties": {
                                                                         "rawUserAgent": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "os": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         },
                                                                         "browser": {
-                                                                            "type": ["string", "null"]
+                                                                            "type": [
+                                                                                "string",
+                                                                                "null"
+                                                                            ]
                                                                         }
                                                                     },
                                                                     "additionalProperties": {}
@@ -4023,16 +4840,28 @@
                                                             ]
                                                         },
                                                         "zone": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "ipAddress": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "device": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "id": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": {}
@@ -4048,10 +4877,16 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "result": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "reason": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": {}
@@ -4069,16 +4904,28 @@
                                                         "type": "object",
                                                         "properties": {
                                                             "id": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "type": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "alternateId": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "displayName": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "detailEntry": {
                                                                 "anyOf": [
@@ -4103,10 +4950,16 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "type": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "id": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "detail": {
                                                             "anyOf": [
@@ -4154,13 +5007,23 @@
                                             ]
                                         },
                                         "displayMessage": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "legacyEventType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["uuid", "published", "eventType"],
+                                    "required": [
+                                        "uuid",
+                                        "published",
+                                        "eventType"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4168,7 +5031,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4181,9 +5046,17 @@
             "endpoint": null,
             "input": "ActionInput_okta_listusergroups",
             "name": "list-user-groups",
-            "output": ["ActionOutput_okta_listusergroups"],
-            "scopes": ["okta.users.read", "okta.groups.read"],
-            "usedModels": ["ActionInput_okta_listusergroups", "ActionOutput_okta_listusergroups"],
+            "output": [
+                "ActionOutput_okta_listusergroups"
+            ],
+            "scopes": [
+                "okta.users.read",
+                "okta.groups.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listusergroups",
+                "ActionOutput_okta_listusergroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4205,7 +5078,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listusergroups": {
@@ -4244,7 +5119,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4252,7 +5129,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4265,9 +5144,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listuserroles",
             "name": "list-user-roles",
-            "output": ["ActionOutput_okta_listuserroles"],
-            "scopes": ["okta.roles.read"],
-            "usedModels": ["ActionInput_okta_listuserroles", "ActionOutput_okta_listuserroles"],
+            "output": [
+                "ActionOutput_okta_listuserroles"
+            ],
+            "scopes": [
+                "okta.roles.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listuserroles",
+                "ActionOutput_okta_listuserroles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4279,7 +5165,9 @@
                                 "description": "The unique ID of the Okta user. Example: \"00u14y5plo5MraBIf698\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_listuserroles": {
@@ -4313,12 +5201,19 @@
                                         },
                                         "_links": {}
                                     },
-                                    "required": ["id", "label", "type", "status"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "type",
+                                        "status"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["roles"],
+                        "required": [
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4331,9 +5226,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listusertypes",
             "name": "list-user-types",
-            "output": ["ActionOutput_okta_listusertypes"],
-            "scopes": ["okta.userTypes.read"],
-            "usedModels": ["ActionInput_okta_listusertypes", "ActionOutput_okta_listusertypes"],
+            "output": [
+                "ActionOutput_okta_listusertypes"
+            ],
+            "scopes": [
+                "okta.userTypes.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listusertypes",
+                "ActionOutput_okta_listusertypes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4360,7 +5262,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created": {
                                             "type": "string"
@@ -4375,7 +5280,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "displayName"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "displayName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4383,7 +5292,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4396,9 +5307,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_okta_listusers"],
-            "scopes": ["okta.users.read"],
-            "usedModels": ["ActionInput_okta_listusers", "ActionOutput_okta_listusers"],
+            "output": [
+                "ActionOutput_okta_listusers"
+            ],
+            "scopes": [
+                "okta.users.read"
+            ],
+            "usedModels": [
+                "ActionInput_okta_listusers",
+                "ActionOutput_okta_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4446,19 +5364,31 @@
                                             "type": "string"
                                         },
                                         "activated": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "statusChanged": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastLogin": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastUpdated": {
                                             "type": "string"
                                         },
                                         "passwordChanged": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "type": "object",
@@ -4491,7 +5421,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4499,7 +5431,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4512,9 +5446,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_removegroupfromapplication",
             "name": "remove-group-from-application",
-            "output": ["ActionOutput_okta_removegroupfromapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_removegroupfromapplication", "ActionOutput_okta_removegroupfromapplication"],
+            "output": [
+                "ActionOutput_okta_removegroupfromapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_removegroupfromapplication",
+                "ActionOutput_okta_removegroupfromapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4530,7 +5471,10 @@
                                 "description": "Group ID. Example: \"00g14y5qi7zRLgyzT698\""
                             }
                         },
-                        "required": ["appId", "groupId"],
+                        "required": [
+                            "appId",
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_removegroupfromapplication": {
@@ -4546,7 +5490,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "appId", "groupId"],
+                        "required": [
+                            "success",
+                            "appId",
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4559,9 +5507,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_removerolefromuser",
             "name": "remove-role-from-user",
-            "output": ["ActionOutput_okta_removerolefromuser"],
-            "scopes": ["okta.roles.manage"],
-            "usedModels": ["ActionInput_okta_removerolefromuser", "ActionOutput_okta_removerolefromuser"],
+            "output": [
+                "ActionOutput_okta_removerolefromuser"
+            ],
+            "scopes": [
+                "okta.roles.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_removerolefromuser",
+                "ActionOutput_okta_removerolefromuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4577,7 +5532,10 @@
                                 "description": "Role assignment ID. Example: \"KVJUKUS7IFCE2SKO\""
                             }
                         },
-                        "required": ["userId", "roleAssignmentId"],
+                        "required": [
+                            "userId",
+                            "roleAssignmentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_removerolefromuser": {
@@ -4587,7 +5545,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4600,9 +5560,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_removeuserfromapplication",
             "name": "remove-user-from-application",
-            "output": ["ActionOutput_okta_removeuserfromapplication"],
-            "scopes": ["okta.apps.manage"],
-            "usedModels": ["ActionInput_okta_removeuserfromapplication", "ActionOutput_okta_removeuserfromapplication"],
+            "output": [
+                "ActionOutput_okta_removeuserfromapplication"
+            ],
+            "scopes": [
+                "okta.apps.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_removeuserfromapplication",
+                "ActionOutput_okta_removeuserfromapplication"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4622,7 +5589,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["appId", "userId"],
+                        "required": [
+                            "appId",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_removeuserfromapplication": {
@@ -4632,7 +5602,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4645,9 +5617,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_removeusergroup",
             "name": "remove-user-group",
-            "output": ["ActionOutput_okta_removeusergroup"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_removeusergroup", "ActionOutput_okta_removeusergroup"],
+            "output": [
+                "ActionOutput_okta_removeusergroup"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_removeusergroup",
+                "ActionOutput_okta_removeusergroup"
+            ],
             "version": "2.0.0",
             "json_schema": {
                 "definitions": {
@@ -4663,7 +5642,10 @@
                                 "description": "The unique identifier of the Okta user. Example: \"00u14y5oijeYKVDn0698\""
                             }
                         },
-                        "required": ["groupId", "userId"],
+                        "required": [
+                            "groupId",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_removeusergroup": {
@@ -4673,7 +5655,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4686,9 +5670,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_resetpassword",
             "name": "reset-password",
-            "output": ["ActionOutput_okta_resetpassword"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_resetpassword", "ActionOutput_okta_resetpassword"],
+            "output": [
+                "ActionOutput_okta_resetpassword"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_resetpassword",
+                "ActionOutput_okta_resetpassword"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4704,7 +5695,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_resetpassword": {
@@ -4726,9 +5719,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_suspenduser",
             "name": "suspend-user",
-            "output": ["ActionOutput_okta_suspenduser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_suspenduser", "ActionOutput_okta_suspenduser"],
+            "output": [
+                "ActionOutput_okta_suspenduser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_suspenduser",
+                "ActionOutput_okta_suspenduser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4740,7 +5740,9 @@
                                 "description": "The unique ID of the user to suspend. Example: \"00u14y5n6uhI2lpQ3698\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_suspenduser": {
@@ -4777,7 +5779,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4790,9 +5795,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_unlockuser",
             "name": "unlock-user",
-            "output": ["ActionOutput_okta_unlockuser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_unlockuser", "ActionOutput_okta_unlockuser"],
+            "output": [
+                "ActionOutput_okta_unlockuser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_unlockuser",
+                "ActionOutput_okta_unlockuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4804,7 +5816,9 @@
                                 "description": "The unique ID of the user to unlock. Example: \"00u14y9f9k4hf71lc698\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_unlockuser": {
@@ -4822,9 +5836,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_unsuspenduser",
             "name": "unsuspend-user",
-            "output": ["ActionOutput_okta_unsuspenduser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_unsuspenduser", "ActionOutput_okta_unsuspenduser"],
+            "output": [
+                "ActionOutput_okta_unsuspenduser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_unsuspenduser",
+                "ActionOutput_okta_unsuspenduser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4836,7 +5857,9 @@
                                 "description": "Okta user ID. Example: \"00u14y5oijeYKVDn0698\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_unsuspenduser": {
@@ -4861,7 +5884,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4874,9 +5899,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_updategroup",
             "name": "update-group",
-            "output": ["ActionOutput_okta_updategroup"],
-            "scopes": ["okta.groups.manage"],
-            "usedModels": ["ActionInput_okta_updategroup", "ActionOutput_okta_updategroup"],
+            "output": [
+                "ActionOutput_okta_updategroup"
+            ],
+            "scopes": [
+                "okta.groups.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_updategroup",
+                "ActionOutput_okta_updategroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4896,7 +5928,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId", "name"],
+                        "required": [
+                            "groupId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_updategroup": {
@@ -4921,7 +5956,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4934,9 +5972,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_updateuserschema",
             "name": "update-user-schema",
-            "output": ["ActionOutput_okta_updateuserschema"],
-            "scopes": ["okta.schemas.manage"],
-            "usedModels": ["ActionInput_okta_updateuserschema", "ActionOutput_okta_updateuserschema"],
+            "output": [
+                "ActionOutput_okta_updateuserschema"
+            ],
+            "scopes": [
+                "okta.schemas.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_updateuserschema",
+                "ActionOutput_okta_updateuserschema"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4972,7 +6017,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["schemaId", "attributeName", "title", "type"],
+                        "required": [
+                            "schemaId",
+                            "attributeName",
+                            "title",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_updateuserschema": {
@@ -5006,7 +6056,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["schemaId", "attributeName", "attribute"],
+                        "required": [
+                            "schemaId",
+                            "attributeName",
+                            "attribute"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5019,9 +6073,16 @@
             "endpoint": null,
             "input": "ActionInput_okta_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_okta_updateuser"],
-            "scopes": ["okta.users.manage"],
-            "usedModels": ["ActionInput_okta_updateuser", "ActionOutput_okta_updateuser"],
+            "output": [
+                "ActionOutput_okta_updateuser"
+            ],
+            "scopes": [
+                "okta.users.manage"
+            ],
+            "usedModels": [
+                "ActionInput_okta_updateuser",
+                "ActionOutput_okta_updateuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5051,14 +6112,18 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["value"],
+                                        "required": [
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_okta_updateuser": {
@@ -5107,7 +6172,10 @@
                             },
                             "_links": {}
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5123,12 +6191,18 @@
             "endpoints": [],
             "input": null,
             "name": "application-users",
-            "output": ["ApplicationUser"],
+            "output": [
+                "ApplicationUser"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.apps.read"],
+            "scopes": [
+                "okta.apps.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ApplicationUser"],
+            "usedModels": [
+                "ApplicationUser"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5173,7 +6247,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "app_id", "user_id"],
+                        "required": [
+                            "id",
+                            "app_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5187,12 +6265,18 @@
             "endpoints": [],
             "input": null,
             "name": "applications",
-            "output": ["Application"],
+            "output": [
+                "Application"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.apps.read"],
+            "scopes": [
+                "okta.apps.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Application"],
+            "usedModels": [
+                "Application"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5228,7 +6312,14 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "label", "status", "lastUpdated", "created"],
+                        "required": [
+                            "id",
+                            "name",
+                            "label",
+                            "status",
+                            "lastUpdated",
+                            "created"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5242,12 +6333,18 @@
             "endpoints": [],
             "input": null,
             "name": "authorization-servers",
-            "output": ["AuthorizationServer"],
+            "output": [
+                "AuthorizationServer"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.authorizationServers.read"],
+            "scopes": [
+                "okta.authorizationServers.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AuthorizationServer"],
+            "usedModels": [
+                "AuthorizationServer"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5283,7 +6380,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5297,12 +6397,18 @@
             "endpoints": [],
             "input": null,
             "name": "factors",
-            "output": ["Factor"],
+            "output": [
+                "Factor"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.users.read"],
+            "scopes": [
+                "okta.users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Factor"],
+            "usedModels": [
+                "Factor"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5326,7 +6432,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "userId", "factorType", "provider", "status"],
+                        "required": [
+                            "id",
+                            "userId",
+                            "factorType",
+                            "provider",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5340,12 +6452,18 @@
             "endpoints": [],
             "input": null,
             "name": "group-memberships",
-            "output": ["GroupMembership"],
+            "output": [
+                "GroupMembership"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.groups.read"],
+            "scopes": [
+                "okta.groups.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GroupMembership"],
+            "usedModels": [
+                "GroupMembership"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5369,7 +6487,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "groupId", "userId"],
+                        "required": [
+                            "id",
+                            "groupId",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5383,12 +6505,18 @@
             "endpoints": [],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.groups.read"],
+            "scopes": [
+                "okta.groups.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5430,12 +6558,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5444,12 +6576,18 @@
             "endpoints": [],
             "input": null,
             "name": "policies",
-            "output": ["Policy"],
+            "output": [
+                "Policy"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.policies.read"],
+            "scopes": [
+                "okta.policies.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Policy"],
+            "usedModels": [
+                "Policy"
+            ],
             "version": "1.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5482,7 +6620,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5496,12 +6637,20 @@
             "endpoints": [],
             "input": null,
             "name": "role-assignments",
-            "output": ["RoleAssignment"],
+            "output": [
+                "RoleAssignment"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.users.read", "okta.groups.read", "okta.roles.read"],
+            "scopes": [
+                "okta.users.read",
+                "okta.groups.read",
+                "okta.roles.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RoleAssignment"],
+            "usedModels": [
+                "RoleAssignment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5514,7 +6663,10 @@
                             },
                             "principalType": {
                                 "type": "string",
-                                "enum": ["user", "group"]
+                                "enum": [
+                                    "user",
+                                    "group"
+                                ]
                             },
                             "principalId": {
                                 "type": "string"
@@ -5535,7 +6687,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "principalType", "principalId", "type"],
+                        "required": [
+                            "id",
+                            "principalType",
+                            "principalId",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5549,12 +6706,19 @@
             "endpoints": [],
             "input": null,
             "name": "schemas",
-            "output": ["Schema"],
+            "output": [
+                "Schema"
+            ],
             "runs": "every day",
-            "scopes": ["okta.schemas.read", "okta.userTypes.read"],
+            "scopes": [
+                "okta.schemas.read",
+                "okta.userTypes.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Schema"],
+            "usedModels": [
+                "Schema"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5597,7 +6761,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "displayName"],
+                        "required": [
+                            "id",
+                            "name",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5611,12 +6779,18 @@
             "endpoints": [],
             "input": null,
             "name": "system-log-events",
-            "output": ["SystemLogEvent"],
+            "output": [
+                "SystemLogEvent"
+            ],
             "runs": "every hour",
-            "scopes": ["okta.logs.read"],
+            "scopes": [
+                "okta.logs.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SystemLogEvent"],
+            "usedModels": [
+                "SystemLogEvent"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5715,12 +6889,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uuid", "published", "id"],
+                        "required": [
+                            "uuid",
+                            "published",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5729,12 +6909,18 @@
             "endpoints": [],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
-            "scopes": ["okta.users.read"],
+            "scopes": [
+                "okta.users.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5773,7 +6959,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "profile": {
@@ -5798,16 +6986,28 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["login", "email"],
+                                "required": [
+                                    "login",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "status", "created", "lastUpdated", "type", "profile"],
+                        "required": [
+                            "id",
+                            "status",
+                            "created",
+                            "lastUpdated",
+                            "type",
+                            "profile"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

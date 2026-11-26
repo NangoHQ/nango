@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_createchangerequest",
             "name": "create-change-request",
-            "output": ["ActionOutput_servicenow_createchangerequest"],
+            "output": [
+                "ActionOutput_servicenow_createchangerequest"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_createchangerequest", "ActionOutput_servicenow_createchangerequest"],
+            "usedModels": [
+                "ActionInput_servicenow_createchangerequest",
+                "ActionOutput_servicenow_createchangerequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -22,7 +27,11 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["standard", "normal", "emergency"],
+                                "enum": [
+                                    "standard",
+                                    "normal",
+                                    "emergency"
+                                ],
                                 "description": "Type of change request. Must be standard, normal, or emergency."
                             },
                             "description": {
@@ -74,7 +83,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["short_description", "type"],
+                        "required": [
+                            "short_description",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_createchangerequest": {
@@ -135,7 +147,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "number"],
+                        "required": [
+                            "sys_id",
+                            "number"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -148,9 +163,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_createchangetask",
             "name": "create-change-task",
-            "output": ["ActionOutput_servicenow_createchangetask"],
+            "output": [
+                "ActionOutput_servicenow_createchangetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_createchangetask", "ActionOutput_servicenow_createchangetask"],
+            "usedModels": [
+                "ActionInput_servicenow_createchangetask",
+                "ActionOutput_servicenow_createchangetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -190,7 +210,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["change_request"],
+                        "required": [
+                            "change_request"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_createchangetask": {
@@ -236,7 +258,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -249,9 +273,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_creategroup",
             "name": "create-group",
-            "output": ["ActionOutput_servicenow_creategroup"],
+            "output": [
+                "ActionOutput_servicenow_creategroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_creategroup", "ActionOutput_servicenow_creategroup"],
+            "usedModels": [
+                "ActionInput_servicenow_creategroup",
+                "ActionOutput_servicenow_creategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -287,7 +316,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_creategroup": {
@@ -300,7 +331,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -313,9 +346,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_createincident",
             "name": "create-incident",
-            "output": ["ActionOutput_servicenow_createincident"],
+            "output": [
+                "ActionOutput_servicenow_createincident"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_createincident", "ActionOutput_servicenow_createincident"],
+            "usedModels": [
+                "ActionInput_servicenow_createincident",
+                "ActionOutput_servicenow_createincident"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -363,7 +401,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["short_description"],
+                        "required": [
+                            "short_description"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_createincident": {
@@ -400,7 +440,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "number", "short_description"],
+                        "required": [
+                            "sys_id",
+                            "number",
+                            "short_description"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -413,9 +457,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_createproblem",
             "name": "create-problem",
-            "output": ["ActionOutput_servicenow_createproblem"],
+            "output": [
+                "ActionOutput_servicenow_createproblem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_createproblem", "ActionOutput_servicenow_createproblem"],
+            "usedModels": [
+                "ActionInput_servicenow_createproblem",
+                "ActionOutput_servicenow_createproblem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -459,7 +508,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["short_description"],
+                        "required": [
+                            "short_description"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_createproblem": {
@@ -508,7 +559,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "number"],
+                        "required": [
+                            "sys_id",
+                            "number"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -521,9 +575,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_servicenow_createuser"],
+            "output": [
+                "ActionOutput_servicenow_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_createuser", "ActionOutput_servicenow_createuser"],
+            "usedModels": [
+                "ActionInput_servicenow_createuser",
+                "ActionOutput_servicenow_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -559,7 +618,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_name"],
+                        "required": [
+                            "user_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_createuser": {
@@ -601,7 +662,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "user_name"],
+                        "required": [
+                            "sys_id",
+                            "user_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -614,9 +678,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_deletechangerequest",
             "name": "delete-change-request",
-            "output": ["ActionOutput_servicenow_deletechangerequest"],
+            "output": [
+                "ActionOutput_servicenow_deletechangerequest"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_deletechangerequest", "ActionOutput_servicenow_deletechangerequest"],
+            "usedModels": [
+                "ActionInput_servicenow_deletechangerequest",
+                "ActionOutput_servicenow_deletechangerequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -628,7 +697,9 @@
                                 "description": "The sys_id of the change request to delete. Example: \"ff3687b9c3ca0310c5a8fc0d05013101\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_deletechangerequest": {
@@ -641,7 +712,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "sys_id"],
+                        "required": [
+                            "success",
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -654,9 +728,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_deletegroup",
             "name": "delete-group",
-            "output": ["ActionOutput_servicenow_deletegroup"],
+            "output": [
+                "ActionOutput_servicenow_deletegroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_deletegroup", "ActionOutput_servicenow_deletegroup"],
+            "usedModels": [
+                "ActionInput_servicenow_deletegroup",
+                "ActionOutput_servicenow_deletegroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -668,7 +747,9 @@
                                 "description": "The sys_id of the group to delete. Example: \"284687b9c3ca0310c5a8fc0d05013151\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_deletegroup": {
@@ -681,7 +762,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["sys_id", "deleted"],
+                        "required": [
+                            "sys_id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -694,9 +778,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_deleteincident",
             "name": "delete-incident",
-            "output": ["ActionOutput_servicenow_deleteincident"],
+            "output": [
+                "ActionOutput_servicenow_deleteincident"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_deleteincident", "ActionOutput_servicenow_deleteincident"],
+            "usedModels": [
+                "ActionInput_servicenow_deleteincident",
+                "ActionOutput_servicenow_deleteincident"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -708,7 +797,9 @@
                                 "description": "System ID of the incident to delete. Example: \"78058ff5c3ca0310c5a8fc0d0501317d\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_deleteincident": {
@@ -718,7 +809,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -731,9 +824,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_deleteproblem",
             "name": "delete-problem",
-            "output": ["ActionOutput_servicenow_deleteproblem"],
+            "output": [
+                "ActionOutput_servicenow_deleteproblem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_deleteproblem", "ActionOutput_servicenow_deleteproblem"],
+            "usedModels": [
+                "ActionInput_servicenow_deleteproblem",
+                "ActionOutput_servicenow_deleteproblem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -745,7 +843,9 @@
                                 "description": "The sys_id of the problem to delete. Example: \"8f3647b9c3ca0310c5a8fc0d05013176\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_deleteproblem": {
@@ -758,7 +858,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -771,9 +873,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getcatalogitem",
             "name": "get-catalog-item",
-            "output": ["ActionOutput_servicenow_getcatalogitem"],
+            "output": [
+                "ActionOutput_servicenow_getcatalogitem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getcatalogitem", "ActionOutput_servicenow_getcatalogitem"],
+            "usedModels": [
+                "ActionInput_servicenow_getcatalogitem",
+                "ActionOutput_servicenow_getcatalogitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -785,7 +892,9 @@
                                 "description": "Service catalog item sys_id. Example: \"04b7e94b4f7b4200086eeed18110c7fd\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getcatalogitem": {
@@ -795,19 +904,34 @@
                                 "type": "string"
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "short_description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "picture": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "price": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "category": {
                                 "anyOf": [
@@ -841,13 +965,21 @@
                                 ]
                             },
                             "availability": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "request_method": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -860,9 +992,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getcatalogrequest",
             "name": "get-catalog-request",
-            "output": ["ActionOutput_servicenow_getcatalogrequest"],
+            "output": [
+                "ActionOutput_servicenow_getcatalogrequest"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getcatalogrequest", "ActionOutput_servicenow_getcatalogrequest"],
+            "usedModels": [
+                "ActionInput_servicenow_getcatalogrequest",
+                "ActionOutput_servicenow_getcatalogrequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -874,7 +1011,9 @@
                                 "description": "The sys_id of the catalog request to retrieve. Example: \"a8d6cbf9c3ca0310c5a8fc0d050131f5\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getcatalogrequest": {
@@ -905,7 +1044,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -918,9 +1059,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getchangerequest",
             "name": "get-change-request",
-            "output": ["ActionOutput_servicenow_getchangerequest"],
+            "output": [
+                "ActionOutput_servicenow_getchangerequest"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getchangerequest", "ActionOutput_servicenow_getchangerequest"],
+            "usedModels": [
+                "ActionInput_servicenow_getchangerequest",
+                "ActionOutput_servicenow_getchangerequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -932,7 +1078,9 @@
                                 "description": "Change request sys_id. Example: \"ff3687b9c3ca0310c5a8fc0d05013101\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getchangerequest": {
@@ -995,7 +1143,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1008,9 +1158,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getchangetask",
             "name": "get-change-task",
-            "output": ["ActionOutput_servicenow_getchangetask"],
+            "output": [
+                "ActionOutput_servicenow_getchangetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getchangetask", "ActionOutput_servicenow_getchangetask"],
+            "usedModels": [
+                "ActionInput_servicenow_getchangetask",
+                "ActionOutput_servicenow_getchangetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1022,7 +1177,9 @@
                                 "description": "The sys_id of the change task to retrieve. Example: \"74668bb9c3ca0310c5a8fc0d050131a2\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getchangetask": {
@@ -1032,7 +1189,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1045,9 +1204,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getgroup",
             "name": "get-group",
-            "output": ["ActionOutput_servicenow_getgroup"],
+            "output": [
+                "ActionOutput_servicenow_getgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getgroup", "ActionOutput_servicenow_getgroup"],
+            "usedModels": [
+                "ActionInput_servicenow_getgroup",
+                "ActionOutput_servicenow_getgroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1059,7 +1223,9 @@
                                 "description": "Group sys_id. Example: \"284687b9c3ca0310c5a8fc0d05013151\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getgroup": {
@@ -1090,7 +1256,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1103,9 +1271,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getincident",
             "name": "get-incident",
-            "output": ["ActionOutput_servicenow_getincident"],
+            "output": [
+                "ActionOutput_servicenow_getincident"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getincident", "ActionOutput_servicenow_getincident"],
+            "usedModels": [
+                "ActionInput_servicenow_getincident",
+                "ActionOutput_servicenow_getincident"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1117,7 +1290,9 @@
                                 "description": "ServiceNow sys_id of the incident. Example: \"1c741bd70b2322007518478d83673af3\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getincident": {
@@ -1133,7 +1308,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "anyOf": [
@@ -1259,7 +1437,10 @@
                                 "type": "string"
                             },
                             "active": {
-                                "type": ["string", "boolean"]
+                                "type": [
+                                    "string",
+                                    "boolean"
+                                ]
                             },
                             "category": {
                                 "type": "string"
@@ -1306,10 +1487,16 @@
                                 ]
                             },
                             "close_code": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "close_notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "comments": {
                                 "type": "string"
@@ -1318,7 +1505,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "number", "short_description"],
+                        "required": [
+                            "sys_id",
+                            "number",
+                            "short_description"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1331,9 +1522,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getknowledgearticle",
             "name": "get-knowledge-article",
-            "output": ["ActionOutput_servicenow_getknowledgearticle"],
+            "output": [
+                "ActionOutput_servicenow_getknowledgearticle"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getknowledgearticle", "ActionOutput_servicenow_getknowledgearticle"],
+            "usedModels": [
+                "ActionInput_servicenow_getknowledgearticle",
+                "ActionOutput_servicenow_getknowledgearticle"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1345,7 +1541,9 @@
                                 "description": "The sys_id of the knowledge article. Example: \"13bbf73987110300b66b5cdac5cb0bc5\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getknowledgearticle": {
@@ -1385,7 +1583,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "number"],
+                        "required": [
+                            "sys_id",
+                            "number"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1398,9 +1599,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getproblem",
             "name": "get-problem",
-            "output": ["ActionOutput_servicenow_getproblem"],
+            "output": [
+                "ActionOutput_servicenow_getproblem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getproblem", "ActionOutput_servicenow_getproblem"],
+            "usedModels": [
+                "ActionInput_servicenow_getproblem",
+                "ActionOutput_servicenow_getproblem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1412,7 +1618,9 @@
                                 "description": "Problem sys_id. Example: \"8f3647b9c3ca0310c5a8fc0d05013176\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getproblem": {
@@ -1422,58 +1630,111 @@
                                 "type": "string"
                             },
                             "number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "short_description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "impact": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "urgency": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "priority": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "opened_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sys_updated_on": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sys_created_on": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sys_updated_by": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sys_created_by": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "close_notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "resolution_code": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "root_cause": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "comments": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "work_notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1486,9 +1747,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_gettablerecord",
             "name": "get-table-record",
-            "output": ["ActionOutput_servicenow_gettablerecord"],
+            "output": [
+                "ActionOutput_servicenow_gettablerecord"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_gettablerecord", "ActionOutput_servicenow_gettablerecord"],
+            "usedModels": [
+                "ActionInput_servicenow_gettablerecord",
+                "ActionOutput_servicenow_gettablerecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1520,7 +1786,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["table_name", "sys_id"],
+                        "required": [
+                            "table_name",
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_gettablerecord": {
@@ -1540,9 +1809,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_servicenow_getuser"],
+            "output": [
+                "ActionOutput_servicenow_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_getuser", "ActionOutput_servicenow_getuser"],
+            "usedModels": [
+                "ActionInput_servicenow_getuser",
+                "ActionOutput_servicenow_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1554,7 +1828,9 @@
                                 "description": "The sys_id of the user record to retrieve. Example: \"4896c3f9c3ca0310c5a8fc0d05013151\""
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_getuser": {
@@ -1585,7 +1861,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1598,9 +1876,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listapprovals",
             "name": "list-approvals",
-            "output": ["ActionOutput_servicenow_listapprovals"],
+            "output": [
+                "ActionOutput_servicenow_listapprovals"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listapprovals", "ActionOutput_servicenow_listapprovals"],
+            "usedModels": [
+                "ActionInput_servicenow_listapprovals",
+                "ActionOutput_servicenow_listapprovals"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1654,7 +1937,10 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["value", "link"],
+                                                            "required": [
+                                                                "value",
+                                                                "link"
+                                                            ],
                                                             "additionalProperties": {}
                                                         }
                                                     ]
@@ -1665,7 +1951,10 @@
                                             ]
                                         },
                                         "state": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "approver": {
                                             "anyOf": [
@@ -1684,7 +1973,10 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["value", "link"],
+                                                            "required": [
+                                                                "value",
+                                                                "link"
+                                                            ],
                                                             "additionalProperties": {}
                                                         }
                                                     ]
@@ -1695,16 +1987,27 @@
                                             ]
                                         },
                                         "comments": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sys_updated_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sys_created_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1712,7 +2015,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["approvals"],
+                        "required": [
+                            "approvals"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1725,9 +2030,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listattachments",
             "name": "list-attachments",
-            "output": ["ActionOutput_servicenow_listattachments"],
+            "output": [
+                "ActionOutput_servicenow_listattachments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listattachments", "ActionOutput_servicenow_listattachments"],
+            "usedModels": [
+                "ActionInput_servicenow_listattachments",
+                "ActionOutput_servicenow_listattachments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1753,7 +2063,10 @@
                                 "maximum": 1000
                             }
                         },
-                        "required": ["table_name", "table_sys_id"],
+                        "required": [
+                            "table_name",
+                            "table_sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_listattachments": {
@@ -1798,7 +2111,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1806,7 +2121,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["attachments"],
+                        "required": [
+                            "attachments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1819,9 +2136,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listcatalogitems",
             "name": "list-catalog-items",
-            "output": ["ActionOutput_servicenow_listcatalogitems"],
+            "output": [
+                "ActionOutput_servicenow_listcatalogitems"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listcatalogitems", "ActionOutput_servicenow_listcatalogitems"],
+            "usedModels": [
+                "ActionInput_servicenow_listcatalogitems",
+                "ActionOutput_servicenow_listcatalogitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1876,7 +2198,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["sys_id", "name"],
+                                    "required": [
+                                        "sys_id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1884,7 +2209,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1897,9 +2224,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listcatalogrequestitems",
             "name": "list-catalog-request-items",
-            "output": ["ActionOutput_servicenow_listcatalogrequestitems"],
+            "output": [
+                "ActionOutput_servicenow_listcatalogrequestitems"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listcatalogrequestitems", "ActionOutput_servicenow_listcatalogrequestitems"],
+            "usedModels": [
+                "ActionInput_servicenow_listcatalogrequestitems",
+                "ActionOutput_servicenow_listcatalogrequestitems"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1915,7 +2247,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["request_sys_id"],
+                        "required": [
+                            "request_sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_listcatalogrequestitems": {
@@ -1975,7 +2309,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1983,7 +2319,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1996,9 +2334,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listchangerequests",
             "name": "list-change-requests",
-            "output": ["ActionOutput_servicenow_listchangerequests"],
+            "output": [
+                "ActionOutput_servicenow_listchangerequests"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listchangerequests", "ActionOutput_servicenow_listchangerequests"],
+            "usedModels": [
+                "ActionInput_servicenow_listchangerequests",
+                "ActionOutput_servicenow_listchangerequests"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2090,7 +2433,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2098,7 +2443,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2111,9 +2458,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listchangetasks",
             "name": "list-change-tasks",
-            "output": ["ActionOutput_servicenow_listchangetasks"],
+            "output": [
+                "ActionOutput_servicenow_listchangetasks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listchangetasks", "ActionOutput_servicenow_listchangetasks"],
+            "usedModels": [
+                "ActionInput_servicenow_listchangetasks",
+                "ActionOutput_servicenow_listchangetasks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2170,7 +2522,9 @@
                                         "assigned_to": {},
                                         "assignment_group": {}
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2178,7 +2532,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2191,9 +2547,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_servicenow_listgroups"],
+            "output": [
+                "ActionOutput_servicenow_listgroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listgroups", "ActionOutput_servicenow_listgroups"],
+            "usedModels": [
+                "ActionInput_servicenow_listgroups",
+                "ActionOutput_servicenow_listgroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2246,7 +2607,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2254,7 +2617,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2267,9 +2632,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listincidents",
             "name": "list-incidents",
-            "output": ["ActionOutput_servicenow_listincidents"],
+            "output": [
+                "ActionOutput_servicenow_listincidents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listincidents", "ActionOutput_servicenow_listincidents"],
+            "usedModels": [
+                "ActionInput_servicenow_listincidents",
+                "ActionOutput_servicenow_listincidents"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2307,7 +2677,11 @@
                                     },
                                     {
                                         "type": "string",
-                                        "enum": ["all", "true", "false"]
+                                        "enum": [
+                                            "all",
+                                            "true",
+                                            "false"
+                                        ]
                                     }
                                 ]
                             }
@@ -2332,7 +2706,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["incidents"],
+                        "required": [
+                            "incidents"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2345,9 +2721,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listknowledgearticles",
             "name": "list-knowledge-articles",
-            "output": ["ActionOutput_servicenow_listknowledgearticles"],
+            "output": [
+                "ActionOutput_servicenow_listknowledgearticles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listknowledgearticles", "ActionOutput_servicenow_listknowledgearticles"],
+            "usedModels": [
+                "ActionInput_servicenow_listknowledgearticles",
+                "ActionOutput_servicenow_listknowledgearticles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2421,7 +2802,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2430,7 +2813,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["articles"],
+                        "required": [
+                            "articles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2443,9 +2828,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listproblems",
             "name": "list-problems",
-            "output": ["ActionOutput_servicenow_listproblems"],
+            "output": [
+                "ActionOutput_servicenow_listproblems"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listproblems", "ActionOutput_servicenow_listproblems"],
+            "usedModels": [
+                "ActionInput_servicenow_listproblems",
+                "ActionOutput_servicenow_listproblems"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2491,50 +2881,92 @@
                                             "type": "string"
                                         },
                                         "short_description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "state": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "impact": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "urgency": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "priority": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "assigned_to": {},
                                         "assignment_group": {},
                                         "opened_by": {},
                                         "opened_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sys_created_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sys_updated_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "resolved_by": {},
                                         "resolved_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "close_code": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "close_notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "work_notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "comments": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": {}
@@ -2544,7 +2976,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["problems"],
+                        "required": [
+                            "problems"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2557,9 +2991,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listtablerecords",
             "name": "list-table-records",
-            "output": ["ActionOutput_servicenow_listtablerecords"],
+            "output": [
+                "ActionOutput_servicenow_listtablerecords"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listtablerecords", "ActionOutput_servicenow_listtablerecords"],
+            "usedModels": [
+                "ActionInput_servicenow_listtablerecords",
+                "ActionOutput_servicenow_listtablerecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2591,7 +3030,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["table_name"],
+                        "required": [
+                            "table_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_listtablerecords": {
@@ -2614,7 +3055,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2627,9 +3070,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_servicenow_listusers"],
+            "output": [
+                "ActionOutput_servicenow_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_listusers", "ActionOutput_servicenow_listusers"],
+            "usedModels": [
+                "ActionInput_servicenow_listusers",
+                "ActionOutput_servicenow_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2673,7 +3121,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["sys_id"],
+                                    "required": [
+                                        "sys_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2681,7 +3131,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2694,9 +3146,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_ordercatalogitem",
             "name": "order-catalog-item",
-            "output": ["ActionOutput_servicenow_ordercatalogitem"],
+            "output": [
+                "ActionOutput_servicenow_ordercatalogitem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_ordercatalogitem", "ActionOutput_servicenow_ordercatalogitem"],
+            "usedModels": [
+                "ActionInput_servicenow_ordercatalogitem",
+                "ActionOutput_servicenow_ordercatalogitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2724,7 +3181,9 @@
                                 }
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_ordercatalogitem": {
@@ -2746,7 +3205,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "number", "request_number", "request_id"],
+                        "required": [
+                            "sys_id",
+                            "number",
+                            "request_number",
+                            "request_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2759,9 +3223,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_updateapproval",
             "name": "update-approval",
-            "output": ["ActionOutput_servicenow_updateapproval"],
+            "output": [
+                "ActionOutput_servicenow_updateapproval"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_updateapproval", "ActionOutput_servicenow_updateapproval"],
+            "usedModels": [
+                "ActionInput_servicenow_updateapproval",
+                "ActionOutput_servicenow_updateapproval"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2774,7 +3243,10 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["approved", "rejected"],
+                                "enum": [
+                                    "approved",
+                                    "rejected"
+                                ],
                                 "description": "The desired approval state."
                             },
                             "comments": {
@@ -2782,7 +3254,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "state"],
+                        "required": [
+                            "sys_id",
+                            "state"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_updateapproval": {
@@ -2804,7 +3279,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id", "state"],
+                        "required": [
+                            "sys_id",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2817,9 +3295,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_updatechangerequest",
             "name": "update-change-request",
-            "output": ["ActionOutput_servicenow_updatechangerequest"],
+            "output": [
+                "ActionOutput_servicenow_updatechangerequest"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_updatechangerequest", "ActionOutput_servicenow_updatechangerequest"],
+            "usedModels": [
+                "ActionInput_servicenow_updatechangerequest",
+                "ActionOutput_servicenow_updatechangerequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2839,7 +3322,10 @@
                                 "description": "Fields to update on the change request. Example: { \"short_description\": \"Updated description\" }"
                             }
                         },
-                        "required": ["sys_id", "fields"],
+                        "required": [
+                            "sys_id",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_updatechangerequest": {
@@ -2865,9 +3351,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_updatechangetask",
             "name": "update-change-task",
-            "output": ["ActionOutput_servicenow_updatechangetask"],
+            "output": [
+                "ActionOutput_servicenow_updatechangetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_updatechangetask", "ActionOutput_servicenow_updatechangetask"],
+            "usedModels": [
+                "ActionInput_servicenow_updatechangetask",
+                "ActionOutput_servicenow_updatechangetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2911,7 +3402,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_updatechangetask": {
@@ -2942,7 +3435,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2955,9 +3450,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_updategroup",
             "name": "update-group",
-            "output": ["ActionOutput_servicenow_updategroup"],
+            "output": [
+                "ActionOutput_servicenow_updategroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_updategroup", "ActionOutput_servicenow_updategroup"],
+            "usedModels": [
+                "ActionInput_servicenow_updategroup",
+                "ActionOutput_servicenow_updategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2997,7 +3497,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_updategroup": {
@@ -3013,7 +3515,10 @@
                                 "type": "string"
                             },
                             "active": {
-                                "type": ["string", "boolean"]
+                                "type": [
+                                    "string",
+                                    "boolean"
+                                ]
                             },
                             "manager": {
                                 "anyOf": [
@@ -3067,7 +3572,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3080,9 +3587,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_updateincident",
             "name": "update-incident",
-            "output": ["ActionOutput_servicenow_updateincident"],
+            "output": [
+                "ActionOutput_servicenow_updateincident"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_updateincident", "ActionOutput_servicenow_updateincident"],
+            "usedModels": [
+                "ActionInput_servicenow_updateincident",
+                "ActionOutput_servicenow_updateincident"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3140,7 +3652,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_updateincident": {
@@ -3198,7 +3712,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3211,9 +3727,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_updateproblem",
             "name": "update-problem",
-            "output": ["ActionOutput_servicenow_updateproblem"],
+            "output": [
+                "ActionOutput_servicenow_updateproblem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_updateproblem", "ActionOutput_servicenow_updateproblem"],
+            "usedModels": [
+                "ActionInput_servicenow_updateproblem",
+                "ActionOutput_servicenow_updateproblem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3261,7 +3782,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_updateproblem": {
@@ -3309,7 +3832,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["link", "value"],
+                                        "required": [
+                                            "link",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -3327,7 +3853,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3340,9 +3868,14 @@
             "endpoint": null,
             "input": "ActionInput_servicenow_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_servicenow_updateuser"],
+            "output": [
+                "ActionOutput_servicenow_updateuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_servicenow_updateuser", "ActionOutput_servicenow_updateuser"],
+            "usedModels": [
+                "ActionInput_servicenow_updateuser",
+                "ActionOutput_servicenow_updateuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3386,7 +3919,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_servicenow_updateuser": {
@@ -3420,7 +3955,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sys_id"],
+                        "required": [
+                            "sys_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3436,12 +3973,16 @@
             "endpoints": [],
             "input": null,
             "name": "approvals",
-            "output": ["Approval"],
+            "output": [
+                "Approval"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Approval"],
+            "usedModels": [
+                "Approval"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3480,12 +4021,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3494,12 +4040,16 @@
             "endpoints": [],
             "input": null,
             "name": "catalog-requests",
-            "output": ["CatalogRequest"],
+            "output": [
+                "CatalogRequest"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CatalogRequest"],
+            "usedModels": [
+                "CatalogRequest"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3553,12 +4103,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3567,12 +4122,16 @@
             "endpoints": [],
             "input": null,
             "name": "change-requests",
-            "output": ["ChangeRequest"],
+            "output": [
+                "ChangeRequest"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChangeRequest"],
+            "usedModels": [
+                "ChangeRequest"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3626,12 +4185,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "number", "sys_created_on", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "number",
+                            "sys_created_on",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3640,12 +4206,16 @@
             "endpoints": [],
             "input": null,
             "name": "change-tasks",
-            "output": ["ChangeTask"],
+            "output": [
+                "ChangeTask"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChangeTask"],
+            "usedModels": [
+                "ChangeTask"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3687,12 +4257,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3701,12 +4275,16 @@
             "endpoints": [],
             "input": null,
             "name": "cmdb-ci",
-            "output": ["CmdbCi"],
+            "output": [
+                "CmdbCi"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CmdbCi"],
+            "usedModels": [
+                "CmdbCi"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3734,12 +4312,17 @@
                             "company": {},
                             "active": {}
                         },
-                        "required": ["id", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3748,12 +4331,16 @@
             "endpoints": [],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3777,12 +4364,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3791,12 +4383,16 @@
             "endpoints": [],
             "input": null,
             "name": "incidents",
-            "output": ["Incident"],
+            "output": [
+                "Incident"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Incident"],
+            "usedModels": [
+                "Incident"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3868,12 +4464,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "sys_id", "number"],
+                        "required": [
+                            "id",
+                            "sys_id",
+                            "number"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3882,12 +4484,16 @@
             "endpoints": [],
             "input": null,
             "name": "knowledge-articles",
-            "output": ["KnowledgeArticle"],
+            "output": [
+                "KnowledgeArticle"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["KnowledgeArticle"],
+            "usedModels": [
+                "KnowledgeArticle"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3935,12 +4541,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3949,12 +4560,16 @@
             "endpoints": [],
             "input": null,
             "name": "problems",
-            "output": ["Problem"],
+            "output": [
+                "Problem"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Problem"],
+            "usedModels": [
+                "Problem"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4011,12 +4626,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4025,12 +4645,16 @@
             "endpoints": [],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4057,7 +4681,10 @@
                                 "type": "string"
                             },
                             "active": {
-                                "type": ["boolean", "string"]
+                                "type": [
+                                    "boolean",
+                                    "string"
+                                ]
                             },
                             "sys_updated_on": {
                                 "type": "string"
@@ -4066,12 +4693,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "user_name", "sys_updated_on"],
+                        "required": [
+                            "id",
+                            "user_name",
+                            "sys_updated_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

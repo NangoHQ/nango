@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createactivity",
             "name": "create-activity",
-            "output": ["ActionOutput_pipedrive_createactivity"],
-            "scopes": ["activities:full"],
-            "usedModels": ["ActionInput_pipedrive_createactivity", "ActionOutput_pipedrive_createactivity"],
+            "output": [
+                "ActionOutput_pipedrive_createactivity"
+            ],
+            "scopes": [
+                "activities:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createactivity",
+                "ActionOutput_pipedrive_createactivity"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -129,7 +136,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["person_id"],
+                                    "required": [
+                                        "person_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -164,7 +173,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -181,7 +192,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["subject", "type"],
+                        "required": [
+                            "subject",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createactivity": {
@@ -264,7 +278,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -277,9 +293,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createdeal",
             "name": "create-deal",
-            "output": ["ActionOutput_pipedrive_createdeal"],
-            "scopes": ["deals:full"],
-            "usedModels": ["ActionInput_pipedrive_createdeal", "ActionOutput_pipedrive_createdeal"],
+            "output": [
+                "ActionOutput_pipedrive_createdeal"
+            ],
+            "scopes": [
+                "deals:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createdeal",
+                "ActionOutput_pipedrive_createdeal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -321,7 +344,11 @@
                             "status": {
                                 "description": "The status of the deal. Values: open, won, lost",
                                 "type": "string",
-                                "enum": ["open", "won", "lost"]
+                                "enum": [
+                                    "open",
+                                    "won",
+                                    "lost"
+                                ]
                             },
                             "expected_close_date": {
                                 "description": "The expected close date of the deal. In ISO 8601 format: YYYY-MM-DD. Example: \"2025-12-31\"",
@@ -344,7 +371,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createdeal": {
@@ -415,7 +444,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -428,9 +460,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createlead",
             "name": "create-lead",
-            "output": ["ActionOutput_pipedrive_createlead"],
-            "scopes": ["leads:full"],
-            "usedModels": ["ActionInput_pipedrive_createlead", "ActionOutput_pipedrive_createlead"],
+            "output": [
+                "ActionOutput_pipedrive_createlead"
+            ],
+            "scopes": [
+                "leads:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createlead",
+                "ActionOutput_pipedrive_createlead"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -457,7 +496,10 @@
                                 "description": "The IDs of lead labels to associate with the lead",
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 }
                             },
                             "value": {
@@ -471,7 +513,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "expected_close_date": {
@@ -499,7 +544,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createlead": {
@@ -543,7 +590,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "expected_close_date": {
@@ -568,7 +618,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -581,9 +634,17 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createnote",
             "name": "create-note",
-            "output": ["ActionOutput_pipedrive_createnote"],
-            "scopes": ["deals:full", "contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_createnote", "ActionOutput_pipedrive_createnote"],
+            "output": [
+                "ActionOutput_pipedrive_createnote"
+            ],
+            "scopes": [
+                "deals:full",
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createnote",
+                "ActionOutput_pipedrive_createnote"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -635,7 +696,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createnote": {
@@ -684,7 +747,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "content", "user_id", "add_time", "active_flag"],
+                        "required": [
+                            "id",
+                            "content",
+                            "user_id",
+                            "add_time",
+                            "active_flag"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -697,9 +766,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createorganization",
             "name": "create-organization",
-            "output": ["ActionOutput_pipedrive_createorganization"],
-            "scopes": ["contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_createorganization", "ActionOutput_pipedrive_createorganization"],
+            "output": [
+                "ActionOutput_pipedrive_createorganization"
+            ],
+            "scopes": [
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createorganization",
+                "ActionOutput_pipedrive_createorganization"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -780,7 +856,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createorganization": {
@@ -847,7 +925,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -860,9 +941,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createperson",
             "name": "create-person",
-            "output": ["ActionOutput_pipedrive_createperson"],
-            "scopes": ["contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_createperson", "ActionOutput_pipedrive_createperson"],
+            "output": [
+                "ActionOutput_pipedrive_createperson"
+            ],
+            "scopes": [
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createperson",
+                "ActionOutput_pipedrive_createperson"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -897,7 +985,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -917,7 +1007,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -930,7 +1022,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createperson": {
@@ -957,7 +1051,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -976,7 +1072,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -987,13 +1085,18 @@
                                 "type": "number"
                             },
                             "visible_to": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "marketing_status": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1006,9 +1109,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createpipeline",
             "name": "create-pipeline",
-            "output": ["ActionOutput_pipedrive_createpipeline"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_pipedrive_createpipeline", "ActionOutput_pipedrive_createpipeline"],
+            "output": [
+                "ActionOutput_pipedrive_createpipeline"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createpipeline",
+                "ActionOutput_pipedrive_createpipeline"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1024,7 +1134,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createpipeline": {
@@ -1037,7 +1149,10 @@
                                 "type": "string"
                             },
                             "deal_probability": {
-                                "type": ["boolean", "number"]
+                                "type": [
+                                    "boolean",
+                                    "number"
+                                ]
                             },
                             "add_time": {
                                 "type": "string"
@@ -1052,7 +1167,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1065,9 +1183,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createproduct",
             "name": "create-product",
-            "output": ["ActionOutput_pipedrive_createproduct"],
-            "scopes": ["products:full"],
-            "usedModels": ["ActionInput_pipedrive_createproduct", "ActionOutput_pipedrive_createproduct"],
+            "output": [
+                "ActionOutput_pipedrive_createproduct"
+            ],
+            "scopes": [
+                "products:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createproduct",
+                "ActionOutput_pipedrive_createproduct"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1130,7 +1255,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["currency", "price"],
+                                    "required": [
+                                        "currency",
+                                        "price"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1149,7 +1277,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createproduct": {
@@ -1192,7 +1322,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1205,9 +1338,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_createstage",
             "name": "create-stage",
-            "output": ["ActionOutput_pipedrive_createstage"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_pipedrive_createstage", "ActionOutput_pipedrive_createstage"],
+            "output": [
+                "ActionOutput_pipedrive_createstage"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_createstage",
+                "ActionOutput_pipedrive_createstage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1235,7 +1375,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name", "pipeline_id"],
+                        "required": [
+                            "name",
+                            "pipeline_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_createstage": {
@@ -1272,7 +1415,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "pipeline_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "pipeline_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1285,9 +1432,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deleteactivity",
             "name": "delete-activity",
-            "output": ["ActionOutput_pipedrive_deleteactivity"],
-            "scopes": ["activities:full"],
-            "usedModels": ["ActionInput_pipedrive_deleteactivity", "ActionOutput_pipedrive_deleteactivity"],
+            "output": [
+                "ActionOutput_pipedrive_deleteactivity"
+            ],
+            "scopes": [
+                "activities:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deleteactivity",
+                "ActionOutput_pipedrive_deleteactivity"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1299,7 +1453,9 @@
                                 "description": "The ID of the activity to delete. Example: 8"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deleteactivity": {
@@ -1312,7 +1468,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1325,9 +1483,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deletedeal",
             "name": "delete-deal",
-            "output": ["ActionOutput_pipedrive_deletedeal"],
-            "scopes": ["deals:full"],
-            "usedModels": ["ActionInput_pipedrive_deletedeal", "ActionOutput_pipedrive_deletedeal"],
+            "output": [
+                "ActionOutput_pipedrive_deletedeal"
+            ],
+            "scopes": [
+                "deals:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deletedeal",
+                "ActionOutput_pipedrive_deletedeal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1339,7 +1504,9 @@
                                 "description": "The ID of the deal to delete. Example: 9"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deletedeal": {
@@ -1352,7 +1519,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1365,9 +1535,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deletelead",
             "name": "delete-lead",
-            "output": ["ActionOutput_pipedrive_deletelead"],
-            "scopes": ["leads:full"],
-            "usedModels": ["ActionInput_pipedrive_deletelead", "ActionOutput_pipedrive_deletelead"],
+            "output": [
+                "ActionOutput_pipedrive_deletelead"
+            ],
+            "scopes": [
+                "leads:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deletelead",
+                "ActionOutput_pipedrive_deletelead"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1379,7 +1556,9 @@
                                 "description": "The ID of the lead to delete. Example: \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deletelead": {
@@ -1392,7 +1571,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1405,9 +1587,17 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deletenote",
             "name": "delete-note",
-            "output": ["ActionOutput_pipedrive_deletenote"],
-            "scopes": ["deals:full", "contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_deletenote", "ActionOutput_pipedrive_deletenote"],
+            "output": [
+                "ActionOutput_pipedrive_deletenote"
+            ],
+            "scopes": [
+                "deals:full",
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deletenote",
+                "ActionOutput_pipedrive_deletenote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1419,7 +1609,9 @@
                                 "description": "The ID of the note to delete. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deletenote": {
@@ -1432,7 +1624,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success", "deleted"],
+                        "required": [
+                            "success",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1445,9 +1640,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deleteorganization",
             "name": "delete-organization",
-            "output": ["ActionOutput_pipedrive_deleteorganization"],
-            "scopes": ["contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_deleteorganization", "ActionOutput_pipedrive_deleteorganization"],
+            "output": [
+                "ActionOutput_pipedrive_deleteorganization"
+            ],
+            "scopes": [
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deleteorganization",
+                "ActionOutput_pipedrive_deleteorganization"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1459,7 +1661,9 @@
                                 "description": "The ID of the organization to delete. Example: 9"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deleteorganization": {
@@ -1475,7 +1679,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1488,9 +1694,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deleteperson",
             "name": "delete-person",
-            "output": ["ActionOutput_pipedrive_deleteperson"],
-            "scopes": ["contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_deleteperson", "ActionOutput_pipedrive_deleteperson"],
+            "output": [
+                "ActionOutput_pipedrive_deleteperson"
+            ],
+            "scopes": [
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deleteperson",
+                "ActionOutput_pipedrive_deleteperson"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1504,7 +1717,9 @@
                                 "description": "The ID of the person to delete. Example: 11"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deleteperson": {
@@ -1519,7 +1734,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1532,9 +1749,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deletepipeline",
             "name": "delete-pipeline",
-            "output": ["ActionOutput_pipedrive_deletepipeline"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_pipedrive_deletepipeline", "ActionOutput_pipedrive_deletepipeline"],
+            "output": [
+                "ActionOutput_pipedrive_deletepipeline"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deletepipeline",
+                "ActionOutput_pipedrive_deletepipeline"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1546,7 +1770,9 @@
                                 "description": "The ID of the pipeline to delete. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deletepipeline": {
@@ -1559,7 +1785,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1572,9 +1800,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deleteproduct",
             "name": "delete-product",
-            "output": ["ActionOutput_pipedrive_deleteproduct"],
-            "scopes": ["products:full"],
-            "usedModels": ["ActionInput_pipedrive_deleteproduct", "ActionOutput_pipedrive_deleteproduct"],
+            "output": [
+                "ActionOutput_pipedrive_deleteproduct"
+            ],
+            "scopes": [
+                "products:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deleteproduct",
+                "ActionOutput_pipedrive_deleteproduct"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1588,7 +1823,9 @@
                                 "description": "The ID of the product to delete. Example: 7"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deleteproduct": {
@@ -1603,7 +1840,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1616,9 +1855,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_deletestage",
             "name": "delete-stage",
-            "output": ["ActionOutput_pipedrive_deletestage"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_pipedrive_deletestage", "ActionOutput_pipedrive_deletestage"],
+            "output": [
+                "ActionOutput_pipedrive_deletestage"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_deletestage",
+                "ActionOutput_pipedrive_deletestage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1630,7 +1876,9 @@
                                 "description": "The ID of the stage to delete. Example: 13"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_deletestage": {
@@ -1643,7 +1891,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1656,9 +1906,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getactivity",
             "name": "get-activity",
-            "output": ["ActionOutput_pipedrive_getactivity"],
-            "scopes": ["activities:read"],
-            "usedModels": ["ActionInput_pipedrive_getactivity", "ActionOutput_pipedrive_getactivity"],
+            "output": [
+                "ActionOutput_pipedrive_getactivity"
+            ],
+            "scopes": [
+                "activities:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getactivity",
+                "ActionOutput_pipedrive_getactivity"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1670,7 +1927,9 @@
                                 "description": "The ID of the activity. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getactivity": {
@@ -1770,7 +2029,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1783,9 +2044,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getdeal",
             "name": "get-deal",
-            "output": ["ActionOutput_pipedrive_getdeal"],
-            "scopes": ["deals:read"],
-            "usedModels": ["ActionInput_pipedrive_getdeal", "ActionOutput_pipedrive_getdeal"],
+            "output": [
+                "ActionOutput_pipedrive_getdeal"
+            ],
+            "scopes": [
+                "deals:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getdeal",
+                "ActionOutput_pipedrive_getdeal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1797,7 +2065,9 @@
                                 "description": "The ID of the deal. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getdeal": {
@@ -1924,7 +2194,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1937,9 +2209,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getlead",
             "name": "get-lead",
-            "output": ["ActionOutput_pipedrive_getlead"],
-            "scopes": ["leads:read"],
-            "usedModels": ["ActionInput_pipedrive_getlead", "ActionOutput_pipedrive_getlead"],
+            "output": [
+                "ActionOutput_pipedrive_getlead"
+            ],
+            "scopes": [
+                "leads:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getlead",
+                "ActionOutput_pipedrive_getlead"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1951,7 +2230,9 @@
                                 "description": "The ID of the lead. Example: \"e6e17c2f-1234-4567-890a-b1234567890c\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getlead": {
@@ -1985,7 +2266,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "expected_close_date": {
@@ -2013,7 +2297,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2026,9 +2313,17 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getnote",
             "name": "get-note",
-            "output": ["ActionOutput_pipedrive_getnote"],
-            "scopes": ["deals:read", "contacts:read"],
-            "usedModels": ["ActionInput_pipedrive_getnote", "ActionOutput_pipedrive_getnote"],
+            "output": [
+                "ActionOutput_pipedrive_getnote"
+            ],
+            "scopes": [
+                "deals:read",
+                "contacts:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getnote",
+                "ActionOutput_pipedrive_getnote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2040,7 +2335,9 @@
                                 "description": "The ID of the note to retrieve. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getnote": {
@@ -2065,7 +2362,10 @@
                                 "type": "number"
                             },
                             "lead_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "project_id": {
                                 "type": "number"
@@ -2101,10 +2401,15 @@
                                 "type": "boolean"
                             },
                             "last_update_user_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2117,9 +2422,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_pipedrive_getorganization"],
-            "scopes": ["contacts:read"],
-            "usedModels": ["ActionInput_pipedrive_getorganization", "ActionOutput_pipedrive_getorganization"],
+            "output": [
+                "ActionOutput_pipedrive_getorganization"
+            ],
+            "scopes": [
+                "contacts:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getorganization",
+                "ActionOutput_pipedrive_getorganization"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2131,7 +2443,9 @@
                                 "description": "The ID of the organization to retrieve. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getorganization": {
@@ -2155,25 +2469,45 @@
                                                 "type": "number"
                                             },
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "email": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "has_pic": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "pic_hash": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "active_flag": {
-                                                "type": ["boolean", "null"]
+                                                "type": [
+                                                    "boolean",
+                                                    "null"
+                                                ]
                                             },
                                             "value": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -2199,34 +2533,64 @@
                                         "type": "object",
                                         "properties": {
                                             "value": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "country": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "admin_area_level_1": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "admin_area_level_2": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "locality": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "sublocality": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "route": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "street_number": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "subpremise": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "postal_code": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -2279,7 +2643,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2292,9 +2658,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getperson",
             "name": "get-person",
-            "output": ["ActionOutput_pipedrive_getperson"],
-            "scopes": ["contacts:read"],
-            "usedModels": ["ActionInput_pipedrive_getperson", "ActionOutput_pipedrive_getperson"],
+            "output": [
+                "ActionOutput_pipedrive_getperson"
+            ],
+            "scopes": [
+                "contacts:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getperson",
+                "ActionOutput_pipedrive_getperson"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2306,7 +2679,9 @@
                                 "description": "The ID of the person to retrieve. Example: 123"
                             }
                         },
-                        "required": ["person_id"],
+                        "required": [
+                            "person_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getperson": {
@@ -2339,13 +2714,18 @@
                                                 "type": "number"
                                             },
                                             "pic_hash": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "active_flag": {
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -2368,7 +2748,10 @@
                                                 "type": "number"
                                             },
                                             "address": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "label_ids": {
                                                 "type": "array",
@@ -2389,7 +2772,9 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["name"],
+                                        "required": [
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -2409,7 +2794,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2428,7 +2815,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2439,7 +2828,10 @@
                                 "type": "string"
                             },
                             "visible_to": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "label_ids": {
                                 "type": "array",
@@ -2454,7 +2846,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2467,9 +2861,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getpipeline",
             "name": "get-pipeline",
-            "output": ["ActionOutput_pipedrive_getpipeline"],
-            "scopes": ["deals:read"],
-            "usedModels": ["ActionInput_pipedrive_getpipeline", "ActionOutput_pipedrive_getpipeline"],
+            "output": [
+                "ActionOutput_pipedrive_getpipeline"
+            ],
+            "scopes": [
+                "deals:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getpipeline",
+                "ActionOutput_pipedrive_getpipeline"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2481,7 +2882,9 @@
                                 "description": "The ID of the pipeline to retrieve. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getpipeline": {
@@ -2500,10 +2903,16 @@
                                 "type": "string"
                             },
                             "update_time": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2516,9 +2925,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getproduct",
             "name": "get-product",
-            "output": ["ActionOutput_pipedrive_getproduct"],
-            "scopes": ["products:read"],
-            "usedModels": ["ActionInput_pipedrive_getproduct", "ActionOutput_pipedrive_getproduct"],
+            "output": [
+                "ActionOutput_pipedrive_getproduct"
+            ],
+            "scopes": [
+                "products:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getproduct",
+                "ActionOutput_pipedrive_getproduct"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2532,7 +2948,9 @@
                                 "description": "The ID of the product. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getproduct": {
@@ -2583,7 +3001,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": {}
                                     }
                                 ]
@@ -2592,7 +3012,10 @@
                                 "type": "boolean"
                             },
                             "visible_to": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "prices": {
                                 "type": "array",
@@ -2606,13 +3029,22 @@
                                             "type": "number"
                                         },
                                         "cost": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "direct_cost": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["currency", "price"],
+                                    "required": [
+                                        "currency",
+                                        "price"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2638,7 +3070,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2651,9 +3086,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getstage",
             "name": "get-stage",
-            "output": ["ActionOutput_pipedrive_getstage"],
-            "scopes": ["deals:read"],
-            "usedModels": ["ActionInput_pipedrive_getstage", "ActionOutput_pipedrive_getstage"],
+            "output": [
+                "ActionOutput_pipedrive_getstage"
+            ],
+            "scopes": [
+                "deals:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getstage",
+                "ActionOutput_pipedrive_getstage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2665,7 +3107,9 @@
                                 "description": "The ID of the stage. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getstage": {
@@ -2690,7 +3134,10 @@
                                 "type": "number"
                             },
                             "rotten_flag": {
-                                "type": ["number", "boolean"]
+                                "type": [
+                                    "number",
+                                    "boolean"
+                                ]
                             },
                             "rotten_days": {
                                 "type": "number"
@@ -2702,7 +3149,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "order_nr", "name", "active_flag", "pipeline_id"],
+                        "required": [
+                            "id",
+                            "order_nr",
+                            "name",
+                            "active_flag",
+                            "pipeline_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2715,9 +3168,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_pipedrive_getuser"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_pipedrive_getuser", "ActionOutput_pipedrive_getuser"],
+            "output": [
+                "ActionOutput_pipedrive_getuser"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_getuser",
+                "ActionOutput_pipedrive_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2731,7 +3191,9 @@
                                 "description": "The ID of the user. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_getuser": {
@@ -2758,7 +3220,10 @@
                                 "type": "string"
                             },
                             "lang": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "locale": {
                                 "type": "string"
@@ -2776,7 +3241,10 @@
                                 "type": "string"
                             },
                             "is_admin": {
-                                "type": ["boolean", "number"]
+                                "type": [
+                                    "boolean",
+                                    "number"
+                                ]
                             },
                             "role_id": {
                                 "type": "integer",
@@ -2787,7 +3255,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "email", "active_flag"],
+                        "required": [
+                            "id",
+                            "name",
+                            "email",
+                            "active_flag"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2800,9 +3273,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listactivities",
             "name": "list-activities",
-            "output": ["ActionOutput_pipedrive_listactivities"],
-            "scopes": ["activities:read"],
-            "usedModels": ["ActionInput_pipedrive_listactivities", "ActionOutput_pipedrive_listactivities"],
+            "output": [
+                "ActionOutput_pipedrive_listactivities"
+            ],
+            "scopes": [
+                "activities:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listactivities",
+                "ActionOutput_pipedrive_listactivities"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2937,7 +3417,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of activities"
@@ -2947,7 +3429,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["activities"],
+                        "required": [
+                            "activities"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2960,9 +3444,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listdeals",
             "name": "list-deals",
-            "output": ["ActionOutput_pipedrive_listdeals"],
-            "scopes": ["deals:read"],
-            "usedModels": ["ActionInput_pipedrive_listdeals", "ActionOutput_pipedrive_listdeals"],
+            "output": [
+                "ActionOutput_pipedrive_listdeals"
+            ],
+            "scopes": [
+                "deals:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listdeals",
+                "ActionOutput_pipedrive_listdeals"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3038,7 +3529,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3046,7 +3539,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3059,9 +3554,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listleads",
             "name": "list-leads",
-            "output": ["ActionOutput_pipedrive_listleads"],
-            "scopes": ["leads:read"],
-            "usedModels": ["ActionInput_pipedrive_listleads", "ActionOutput_pipedrive_listleads"],
+            "output": [
+                "ActionOutput_pipedrive_listleads"
+            ],
+            "scopes": [
+                "leads:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listleads",
+                "ActionOutput_pipedrive_listleads"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3131,15 +3633,24 @@
                                         },
                                         "owner_id": {
                                             "description": "The ID of the user who owns the lead.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "person_id": {
                                             "description": "The ID of the person the lead is associated with.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "organization_id": {
                                             "description": "The ID of the organization the lead is associated with.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "add_time": {
                                             "description": "The date and time the lead was created.",
@@ -3155,15 +3666,24 @@
                                         },
                                         "expected_close_date": {
                                             "description": "The expected close date of the lead.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "next_activity_id": {
                                             "description": "The ID of the next activity associated with the lead.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "source_name": {
                                             "description": "The source name of the lead.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "label_ids": {
                                             "description": "The IDs of labels attached to the lead.",
@@ -3173,7 +3693,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The list of leads."
@@ -3183,7 +3706,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["leads"],
+                        "required": [
+                            "leads"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3196,9 +3721,17 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listnotes",
             "name": "list-notes",
-            "output": ["ActionOutput_pipedrive_listnotes"],
-            "scopes": ["deals:read", "contacts:read"],
-            "usedModels": ["ActionInput_pipedrive_listnotes", "ActionOutput_pipedrive_listnotes"],
+            "output": [
+                "ActionOutput_pipedrive_listnotes"
+            ],
+            "scopes": [
+                "deals:read",
+                "contacts:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listnotes",
+                "ActionOutput_pipedrive_listnotes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3357,7 +3890,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The list of notes."
@@ -3367,7 +3902,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3380,9 +3917,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_pipedrive_listorganizations"],
-            "scopes": ["contacts:read"],
-            "usedModels": ["ActionInput_pipedrive_listorganizations", "ActionOutput_pipedrive_listorganizations"],
+            "output": [
+                "ActionOutput_pipedrive_listorganizations"
+            ],
+            "scopes": [
+                "contacts:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listorganizations",
+                "ActionOutput_pipedrive_listorganizations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3412,12 +3956,19 @@
                             "sort_by": {
                                 "description": "Field to sort by. Default: id",
                                 "type": "string",
-                                "enum": ["id", "update_time", "add_time"]
+                                "enum": [
+                                    "id",
+                                    "update_time",
+                                    "add_time"
+                                ]
                             },
                             "sort_direction": {
                                 "description": "Sort direction. Default: asc",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "include_fields": {
                                 "description": "Comma-separated additional fields to include (e.g., next_activity_id, last_activity_id, open_deals_count).",
@@ -3486,7 +4037,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "label"],
+                                                "required": [
+                                                    "id",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3530,7 +4084,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3538,7 +4095,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organizations"],
+                        "required": [
+                            "organizations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3551,9 +4110,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listpersons",
             "name": "list-persons",
-            "output": ["ActionOutput_pipedrive_listpersons"],
-            "scopes": ["contacts:read"],
-            "usedModels": ["ActionInput_pipedrive_listpersons", "ActionOutput_pipedrive_listpersons"],
+            "output": [
+                "ActionOutput_pipedrive_listpersons"
+            ],
+            "scopes": [
+                "contacts:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listpersons",
+                "ActionOutput_pipedrive_listpersons"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3587,12 +4153,19 @@
                             "sort_by": {
                                 "description": "The field to sort by. Defaults to id",
                                 "type": "string",
-                                "enum": ["id", "update_time", "add_time"]
+                                "enum": [
+                                    "id",
+                                    "update_time",
+                                    "add_time"
+                                ]
                             },
                             "sort_direction": {
                                 "description": "The sorting direction. Defaults to asc",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "limit": {
                                 "description": "For pagination, the limit of entries to be returned. Maximum value of 500",
@@ -3634,7 +4207,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["value"],
+                                                "required": [
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3653,7 +4228,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["value"],
+                                                "required": [
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3676,7 +4253,10 @@
                                             "type": "string"
                                         },
                                         "visible_to": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         },
                                         "label_ids": {
                                             "type": "array",
@@ -3696,12 +4276,17 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "label"],
+                                                "required": [
+                                                    "id",
+                                                    "label"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3710,7 +4295,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["persons"],
+                        "required": [
+                            "persons"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3723,9 +4310,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listpipelines",
             "name": "list-pipelines",
-            "output": ["ActionOutput_pipedrive_listpipelines"],
-            "scopes": ["deals:read"],
-            "usedModels": ["ActionInput_pipedrive_listpipelines", "ActionOutput_pipedrive_listpipelines"],
+            "output": [
+                "ActionOutput_pipedrive_listpipelines"
+            ],
+            "scopes": [
+                "deals:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listpipelines",
+                "ActionOutput_pipedrive_listpipelines"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3745,12 +4339,19 @@
                             "sort_by": {
                                 "description": "Field to sort by. Default: id",
                                 "type": "string",
-                                "enum": ["id", "update_time", "add_time"]
+                                "enum": [
+                                    "id",
+                                    "update_time",
+                                    "add_time"
+                                ]
                             },
                             "sort_direction": {
                                 "description": "Sort direction. Default: asc",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3782,7 +4383,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3790,7 +4394,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3803,9 +4409,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listproducts",
             "name": "list-products",
-            "output": ["ActionOutput_pipedrive_listproducts"],
-            "scopes": ["products:read"],
-            "usedModels": ["ActionInput_pipedrive_listproducts", "ActionOutput_pipedrive_listproducts"],
+            "output": [
+                "ActionOutput_pipedrive_listproducts"
+            ],
+            "scopes": [
+                "products:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listproducts",
+                "ActionOutput_pipedrive_listproducts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3843,12 +4456,20 @@
                             "sort_by": {
                                 "description": "The field to sort by. Supported fields: id, name, add_time, update_time.",
                                 "type": "string",
-                                "enum": ["id", "name", "add_time", "update_time"]
+                                "enum": [
+                                    "id",
+                                    "name",
+                                    "add_time",
+                                    "update_time"
+                                ]
                             },
                             "sort_direction": {
                                 "description": "The sorting direction. Supported values: asc, desc.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3889,7 +4510,10 @@
                                             "type": "boolean"
                                         },
                                         "visible_to": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         },
                                         "owner_id": {
                                             "anyOf": [
@@ -3936,12 +4560,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency", "price"],
+                                                "required": [
+                                                    "currency",
+                                                    "price"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3949,7 +4579,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3962,9 +4594,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_liststages",
             "name": "list-stages",
-            "output": ["ActionOutput_pipedrive_liststages"],
-            "scopes": ["deals:read"],
-            "usedModels": ["ActionInput_pipedrive_liststages", "ActionOutput_pipedrive_liststages"],
+            "output": [
+                "ActionOutput_pipedrive_liststages"
+            ],
+            "scopes": [
+                "deals:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_liststages",
+                "ActionOutput_pipedrive_liststages"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3978,12 +4617,20 @@
                             "sort_by": {
                                 "description": "The field to sort by.",
                                 "type": "string",
-                                "enum": ["id", "update_time", "add_time", "order_nr"]
+                                "enum": [
+                                    "id",
+                                    "update_time",
+                                    "add_time",
+                                    "order_nr"
+                                ]
                             },
                             "sort_direction": {
                                 "description": "The sorting direction.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "limit": {
                                 "description": "For pagination, the limit of entries to be returned. Maximum value of 500 is allowed.",
@@ -4018,25 +4665,48 @@
                                             "type": "number"
                                         },
                                         "deal_probability": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "is_deal_rot_enabled": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "days_to_rotten": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "add_time": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "update_time": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "active_flag": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "pipeline_id", "order_nr"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "pipeline_id",
+                                        "order_nr"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4044,7 +4714,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4057,9 +4729,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_pipedrive_listusers"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_pipedrive_listusers", "ActionOutput_pipedrive_listusers"],
+            "output": [
+                "ActionOutput_pipedrive_listusers"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_listusers",
+                "ActionOutput_pipedrive_listusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4132,7 +4811,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4155,14 +4836,20 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["start", "limit"],
+                                        "required": [
+                                            "start",
+                                            "limit"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["items", "success"],
+                        "required": [
+                            "items",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4175,9 +4862,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updateactivity",
             "name": "update-activity",
-            "output": ["ActionOutput_pipedrive_updateactivity"],
-            "scopes": ["activities:full"],
-            "usedModels": ["ActionInput_pipedrive_updateactivity", "ActionOutput_pipedrive_updateactivity"],
+            "output": [
+                "ActionOutput_pipedrive_updateactivity"
+            ],
+            "scopes": [
+                "activities:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updateactivity",
+                "ActionOutput_pipedrive_updateactivity"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4253,7 +4947,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updateactivity": {
@@ -4317,7 +5013,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4330,9 +5028,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updatedeal",
             "name": "update-deal",
-            "output": ["ActionOutput_pipedrive_updatedeal"],
-            "scopes": ["deals:full"],
-            "usedModels": ["ActionInput_pipedrive_updatedeal", "ActionOutput_pipedrive_updatedeal"],
+            "output": [
+                "ActionOutput_pipedrive_updatedeal"
+            ],
+            "scopes": [
+                "deals:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updatedeal",
+                "ActionOutput_pipedrive_updatedeal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4378,7 +5083,11 @@
                             "status": {
                                 "description": "The status of the deal",
                                 "type": "string",
-                                "enum": ["open", "won", "lost"]
+                                "enum": [
+                                    "open",
+                                    "won",
+                                    "lost"
+                                ]
                             },
                             "probability": {
                                 "description": "The success probability percentage of the deal",
@@ -4412,7 +5121,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updatedeal": {
@@ -4483,7 +5194,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4496,9 +5210,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updatelead",
             "name": "update-lead",
-            "output": ["ActionOutput_pipedrive_updatelead"],
-            "scopes": ["leads:full"],
-            "usedModels": ["ActionInput_pipedrive_updatelead", "ActionOutput_pipedrive_updatelead"],
+            "output": [
+                "ActionOutput_pipedrive_updatelead"
+            ],
+            "scopes": [
+                "leads:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updatelead",
+                "ActionOutput_pipedrive_updatelead"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4526,11 +5247,17 @@
                             },
                             "person_id": {
                                 "description": "The ID of a person which this lead will be linked to. Set to null to unlink.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "organization_id": {
                                 "description": "The ID of an organization which this lead will be linked to. Set to null to unlink.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_archived": {
                                 "description": "A flag indicating whether the lead is archived",
@@ -4549,7 +5276,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -4559,7 +5289,10 @@
                             },
                             "expected_close_date": {
                                 "description": "The expected close date in ISO 8601 format (YYYY-MM-DD). Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "visible_to": {
                                 "description": "The visibility of the lead",
@@ -4571,14 +5304,22 @@
                             },
                             "channel": {
                                 "description": "The ID of Marketing channel this lead was created from. Set to null to clear.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "channel_id": {
                                 "description": "The optional ID to further distinguish the Marketing channel. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updatelead": {
@@ -4623,7 +5364,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -4657,7 +5401,9 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4670,9 +5416,17 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updatenote",
             "name": "update-note",
-            "output": ["ActionOutput_pipedrive_updatenote"],
-            "scopes": ["deals:full", "contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_updatenote", "ActionOutput_pipedrive_updatenote"],
+            "output": [
+                "ActionOutput_pipedrive_updatenote"
+            ],
+            "scopes": [
+                "deals:full",
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updatenote",
+                "ActionOutput_pipedrive_updatenote"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4742,7 +5496,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updatenote": {
@@ -4800,7 +5556,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4813,9 +5571,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updateorganization",
             "name": "update-organization",
-            "output": ["ActionOutput_pipedrive_updateorganization"],
-            "scopes": ["contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_updateorganization", "ActionOutput_pipedrive_updateorganization"],
+            "output": [
+                "ActionOutput_pipedrive_updateorganization"
+            ],
+            "scopes": [
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updateorganization",
+                "ActionOutput_pipedrive_updateorganization"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4901,7 +5666,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updateorganization": {
@@ -4968,7 +5735,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4981,9 +5750,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updateperson",
             "name": "update-person",
-            "output": ["ActionOutput_pipedrive_updateperson"],
-            "scopes": ["contacts:full"],
-            "usedModels": ["ActionInput_pipedrive_updateperson", "ActionOutput_pipedrive_updateperson"],
+            "output": [
+                "ActionOutput_pipedrive_updateperson"
+            ],
+            "scopes": [
+                "contacts:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updateperson",
+                "ActionOutput_pipedrive_updateperson"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5022,7 +5798,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5042,7 +5820,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5058,7 +5838,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updateperson": {
@@ -5091,7 +5873,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5110,7 +5894,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5124,7 +5910,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5137,9 +5925,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updatepipeline",
             "name": "update-pipeline",
-            "output": ["ActionOutput_pipedrive_updatepipeline"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_pipedrive_updatepipeline", "ActionOutput_pipedrive_updatepipeline"],
+            "output": [
+                "ActionOutput_pipedrive_updatepipeline"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updatepipeline",
+                "ActionOutput_pipedrive_updatepipeline"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5159,7 +5954,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updatepipeline": {
@@ -5175,7 +5972,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5188,9 +5988,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updateproduct",
             "name": "update-product",
-            "output": ["ActionOutput_pipedrive_updateproduct"],
-            "scopes": ["products:full"],
-            "usedModels": ["ActionInput_pipedrive_updateproduct", "ActionOutput_pipedrive_updateproduct"],
+            "output": [
+                "ActionOutput_pipedrive_updateproduct"
+            ],
+            "scopes": [
+                "products:full"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updateproduct",
+                "ActionOutput_pipedrive_updateproduct"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5204,19 +6011,31 @@
                                 "type": "string"
                             },
                             "code": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "unit": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "tax": {
                                 "type": "number"
                             },
                             "category": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "owner_id": {
                                 "type": "number"
@@ -5245,7 +6064,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["currency", "price"],
+                                    "required": [
+                                        "currency",
+                                        "price"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5267,7 +6089,14 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["one-time", "annually", "semi-annually", "quarterly", "monthly", "weekly"]
+                                        "enum": [
+                                            "one-time",
+                                            "annually",
+                                            "semi-annually",
+                                            "quarterly",
+                                            "monthly",
+                                            "weekly"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -5275,10 +6104,15 @@
                                 ]
                             },
                             "billing_frequency_cycles": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updateproduct": {
@@ -5325,7 +6159,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5338,9 +6175,16 @@
             "endpoint": null,
             "input": "ActionInput_pipedrive_updatestage",
             "name": "update-stage",
-            "output": ["ActionOutput_pipedrive_updatestage"],
-            "scopes": ["admin"],
-            "usedModels": ["ActionInput_pipedrive_updatestage", "ActionOutput_pipedrive_updatestage"],
+            "output": [
+                "ActionOutput_pipedrive_updatestage"
+            ],
+            "scopes": [
+                "admin"
+            ],
+            "usedModels": [
+                "ActionInput_pipedrive_updatestage",
+                "ActionOutput_pipedrive_updatestage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5372,7 +6216,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["stage_id"],
+                        "required": [
+                            "stage_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_pipedrive_updatestage": {
@@ -5415,7 +6261,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "pipeline_id", "order_nr"],
+                        "required": [
+                            "id",
+                            "name",
+                            "pipeline_id",
+                            "order_nr"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5436,12 +6287,18 @@
             ],
             "input": null,
             "name": "activities",
-            "output": ["Activity"],
+            "output": [
+                "Activity"
+            ],
             "runs": "every hour",
-            "scopes": ["activities:read"],
+            "scopes": [
+                "activities:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Activity"],
+            "usedModels": [
+                "Activity"
+            ],
             "version": "2.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5513,12 +6370,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5532,12 +6393,18 @@
             ],
             "input": null,
             "name": "deals",
-            "output": ["Deal"],
+            "output": [
+                "Deal"
+            ],
             "runs": "every hour",
-            "scopes": ["deals:read"],
+            "scopes": [
+                "deals:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Deal"],
+            "usedModels": [
+                "Deal"
+            ],
             "version": "2.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5600,15 +6467,24 @@
                                 "type": "string"
                             },
                             "visible_to": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             }
                         },
-                        "required": ["id", "title", "update_time"],
+                        "required": [
+                            "id",
+                            "title",
+                            "update_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5622,12 +6498,18 @@
             ],
             "input": null,
             "name": "leads",
-            "output": ["Lead"],
+            "output": [
+                "Lead"
+            ],
             "runs": "every hour",
-            "scopes": ["leads:read"],
+            "scopes": [
+                "leads:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Lead"],
+            "usedModels": [
+                "Lead"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5648,10 +6530,16 @@
                                 "type": "number"
                             },
                             "person_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "organization_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "value": {
                                 "anyOf": [
@@ -5665,7 +6553,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -5674,7 +6565,10 @@
                                 ]
                             },
                             "expected_close_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "was_seen": {
                                 "type": "boolean"
@@ -5686,24 +6580,43 @@
                                 "type": "string"
                             },
                             "channel": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "channel_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "origin": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "origin_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "title", "add_time", "update_time"],
+                        "required": [
+                            "id",
+                            "title",
+                            "add_time",
+                            "update_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5717,12 +6630,19 @@
             ],
             "input": null,
             "name": "notes",
-            "output": ["Note"],
+            "output": [
+                "Note"
+            ],
             "runs": "every hour",
-            "scopes": ["deals:read", "contacts:read"],
+            "scopes": [
+                "deals:read",
+                "contacts:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Note"],
+            "usedModels": [
+                "Note"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5764,12 +6684,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5783,12 +6707,18 @@
             ],
             "input": null,
             "name": "organizations",
-            "output": ["Organization"],
+            "output": [
+                "Organization"
+            ],
             "runs": "every hour",
-            "scopes": ["contacts:read"],
+            "scopes": [
+                "contacts:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Organization"],
+            "usedModels": [
+                "Organization"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5815,12 +6745,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "update_time"],
+                        "required": [
+                            "id",
+                            "update_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5834,12 +6769,18 @@
             ],
             "input": null,
             "name": "persons",
-            "output": ["Person"],
+            "output": [
+                "Person"
+            ],
             "runs": "every hour",
-            "scopes": ["contacts:read"],
+            "scopes": [
+                "contacts:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Person"],
+            "usedModels": [
+                "Person"
+            ],
             "version": "2.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5868,7 +6809,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5887,7 +6830,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5904,12 +6849,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "update_time"],
+                        "required": [
+                            "id",
+                            "name",
+                            "update_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5923,12 +6874,18 @@
             ],
             "input": null,
             "name": "pipelines",
-            "output": ["Pipeline"],
+            "output": [
+                "Pipeline"
+            ],
             "runs": "every hour",
-            "scopes": ["deals:read"],
+            "scopes": [
+                "deals:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Pipeline"],
+            "usedModels": [
+                "Pipeline"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5952,12 +6909,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "update_time"],
+                        "required": [
+                            "id",
+                            "update_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5971,12 +6933,18 @@
             ],
             "input": null,
             "name": "products",
-            "output": ["Product"],
+            "output": [
+                "Product"
+            ],
             "runs": "every hour",
-            "scopes": ["products:read"],
+            "scopes": [
+                "products:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Product"],
+            "usedModels": [
+                "Product"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6038,17 +7006,25 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["currency", "price"],
+                                    "required": [
+                                        "currency",
+                                        "price"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6062,12 +7038,18 @@
             ],
             "input": null,
             "name": "stages",
-            "output": ["Stage"],
+            "output": [
+                "Stage"
+            ],
             "runs": "every hour",
-            "scopes": ["deals:read"],
+            "scopes": [
+                "deals:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Stage"],
+            "usedModels": [
+                "Stage"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6103,12 +7085,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "pipeline_id", "order_nr", "add_time"],
+                        "required": [
+                            "id",
+                            "name",
+                            "pipeline_id",
+                            "order_nr",
+                            "add_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6122,12 +7112,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["users:read"],
+            "scopes": [
+                "users:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6175,12 +7171,18 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "email"],
+                        "required": [
+                            "id",
+                            "name",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

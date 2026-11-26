@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_hackerrank_work_createinterview",
             "name": "create-interview",
-            "output": ["ActionOutput_hackerrank_work_createinterview"],
+            "output": [
+                "ActionOutput_hackerrank_work_createinterview"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_hackerrank_work_createinterview", "ActionOutput_hackerrank_work_createinterview"],
+            "usedModels": [
+                "ActionInput_hackerrank_work_createinterview",
+                "ActionOutput_hackerrank_work_createinterview"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -93,7 +98,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "email"],
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "result_url": {
@@ -219,7 +227,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "email"],
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "result_url": {
@@ -265,9 +276,14 @@
             "endpoint": null,
             "input": "ActionInput_hackerrank_work_createtest",
             "name": "create-test",
-            "output": ["ActionOutput_hackerrank_work_createtest"],
+            "output": [
+                "ActionOutput_hackerrank_work_createtest"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_hackerrank_work_createtest", "ActionOutput_hackerrank_work_createtest"],
+            "usedModels": [
+                "ActionInput_hackerrank_work_createtest",
+                "ActionOutput_hackerrank_work_createtest"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -528,12 +544,17 @@
             ],
             "input": "SyncMetadata_hackerrank_work_interviews",
             "name": "interviews",
-            "output": ["HackerRankWorkInterview"],
+            "output": [
+                "HackerRankWorkInterview"
+            ],
             "runs": "every 6 hours",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["HackerRankWorkInterview", "SyncMetadata_hackerrank_work_interviews"],
+            "usedModels": [
+                "HackerRankWorkInterview",
+                "SyncMetadata_hackerrank_work_interviews"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -618,7 +639,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "email"],
+                                "required": [
+                                    "name",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "result_url": {
@@ -661,7 +685,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -675,12 +701,17 @@
             ],
             "input": "SyncMetadata_hackerrank_work_teams",
             "name": "teams",
-            "output": ["HackerRankWorkTeam"],
+            "output": [
+                "HackerRankWorkTeam"
+            ],
             "runs": "every 6 hours",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["HackerRankWorkTeam", "SyncMetadata_hackerrank_work_teams"],
+            "usedModels": [
+                "HackerRankWorkTeam",
+                "SyncMetadata_hackerrank_work_teams"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -782,12 +813,17 @@
             ],
             "input": "SyncMetadata_hackerrank_work_tests",
             "name": "tests",
-            "output": ["HackerRankWorkTest"],
+            "output": [
+                "HackerRankWorkTest"
+            ],
             "runs": "every 6 hours",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["HackerRankWorkTest", "SyncMetadata_hackerrank_work_tests"],
+            "usedModels": [
+                "HackerRankWorkTest",
+                "SyncMetadata_hackerrank_work_tests"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -904,12 +940,17 @@
             ],
             "input": "SyncMetadata_hackerrank_work_users",
             "name": "users",
-            "output": ["HackerRankWorkUser"],
+            "output": [
+                "HackerRankWorkUser"
+            ],
             "runs": "every 6 hours",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["HackerRankWorkUser", "SyncMetadata_hackerrank_work_users"],
+            "usedModels": [
+                "HackerRankWorkUser",
+                "SyncMetadata_hackerrank_work_users"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {

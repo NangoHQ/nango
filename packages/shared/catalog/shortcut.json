@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createcategory",
             "name": "create-category",
-            "output": ["ActionOutput_shortcut_createcategory"],
+            "output": [
+                "ActionOutput_shortcut_createcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createcategory", "ActionOutput_shortcut_createcategory"],
+            "usedModels": [
+                "ActionInput_shortcut_createcategory",
+                "ActionOutput_shortcut_createcategory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -29,7 +34,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createcategory": {
@@ -51,7 +58,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -64,9 +73,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createcustomfield",
             "name": "create-custom-field",
-            "output": ["ActionOutput_shortcut_createcustomfield"],
+            "output": [
+                "ActionOutput_shortcut_createcustomfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createcustomfield", "ActionOutput_shortcut_createcustomfield"],
+            "usedModels": [
+                "ActionInput_shortcut_createcustomfield",
+                "ActionOutput_shortcut_createcustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -89,7 +103,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -100,14 +116,22 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["feature", "bug", "chore"]
+                                    "enum": [
+                                        "feature",
+                                        "bug",
+                                        "chore"
+                                    ]
                                 }
                             },
                             "canonical_name": {
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "field_type", "values"],
+                        "required": [
+                            "name",
+                            "field_type",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createcustomfield": {
@@ -149,12 +173,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "field_type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "field_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -167,9 +198,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createepiccomment",
             "name": "create-epic-comment",
-            "output": ["ActionOutput_shortcut_createepiccomment"],
+            "output": [
+                "ActionOutput_shortcut_createepiccomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createepiccomment", "ActionOutput_shortcut_createepiccomment"],
+            "usedModels": [
+                "ActionInput_shortcut_createepiccomment",
+                "ActionOutput_shortcut_createepiccomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -187,7 +223,10 @@
                                 "description": "The comment text. Markdown is supported."
                             }
                         },
-                        "required": ["epic_public_id", "text"],
+                        "required": [
+                            "epic_public_id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createepiccomment": {
@@ -243,7 +282,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -256,9 +298,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createepic",
             "name": "create-epic",
-            "output": ["ActionOutput_shortcut_createepic"],
+            "output": [
+                "ActionOutput_shortcut_createepic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createepic", "ActionOutput_shortcut_createepic"],
+            "usedModels": [
+                "ActionInput_shortcut_createepic",
+                "ActionOutput_shortcut_createepic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -308,7 +355,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createepic": {
@@ -362,7 +411,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -375,9 +427,16 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createiteration",
             "name": "create-iteration",
-            "output": ["ActionOutput_shortcut_createiteration"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_shortcut_createiteration", "ActionOutput_shortcut_createiteration"],
+            "output": [
+                "ActionOutput_shortcut_createiteration"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_shortcut_createiteration",
+                "ActionOutput_shortcut_createiteration"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -410,7 +469,11 @@
                                 }
                             }
                         },
-                        "required": ["name", "start_date", "end_date"],
+                        "required": [
+                            "name",
+                            "start_date",
+                            "end_date"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createiteration": {
@@ -447,7 +510,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -460,9 +526,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createlabel",
             "name": "create-label",
-            "output": ["ActionOutput_shortcut_createlabel"],
+            "output": [
+                "ActionOutput_shortcut_createlabel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createlabel", "ActionOutput_shortcut_createlabel"],
+            "usedModels": [
+                "ActionInput_shortcut_createlabel",
+                "ActionOutput_shortcut_createlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -486,7 +557,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createlabel": {
@@ -508,7 +581,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -521,9 +597,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createlinkedfile",
             "name": "create-linked-file",
-            "output": ["ActionOutput_shortcut_createlinkedfile"],
+            "output": [
+                "ActionOutput_shortcut_createlinkedfile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createlinkedfile", "ActionOutput_shortcut_createlinkedfile"],
+            "usedModels": [
+                "ActionInput_shortcut_createlinkedfile",
+                "ActionOutput_shortcut_createlinkedfile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -540,7 +621,13 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["url", "google", "dropbox", "box", "onedrive"],
+                                "enum": [
+                                    "url",
+                                    "google",
+                                    "dropbox",
+                                    "box",
+                                    "onedrive"
+                                ],
                                 "description": "Type of linked file."
                             },
                             "description": {
@@ -548,7 +635,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "url", "type"],
+                        "required": [
+                            "name",
+                            "url",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createlinkedfile": {
@@ -576,7 +667,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "url", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "url",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -589,9 +685,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createmilestone",
             "name": "create-milestone",
-            "output": ["ActionOutput_shortcut_createmilestone"],
+            "output": [
+                "ActionOutput_shortcut_createmilestone"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createmilestone", "ActionOutput_shortcut_createmilestone"],
+            "usedModels": [
+                "ActionInput_shortcut_createmilestone",
+                "ActionOutput_shortcut_createmilestone"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -622,7 +723,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createmilestone": {
@@ -635,7 +738,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "categories": {
                                 "type": "array",
@@ -661,21 +767,33 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "archived": {
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "started_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "type": "string"
@@ -696,13 +814,19 @@
                                 "type": "boolean"
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "started": {
                                 "type": "boolean"
                             },
                             "started_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "position": {
                                 "type": "number"
@@ -729,7 +853,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -742,9 +869,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createstorycomment",
             "name": "create-story-comment",
-            "output": ["ActionOutput_shortcut_createstorycomment"],
+            "output": [
+                "ActionOutput_shortcut_createstorycomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createstorycomment", "ActionOutput_shortcut_createstorycomment"],
+            "usedModels": [
+                "ActionInput_shortcut_createstorycomment",
+                "ActionOutput_shortcut_createstorycomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -768,7 +900,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["story_public_id", "text"],
+                        "required": [
+                            "story_public_id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createstorycomment": {
@@ -796,7 +931,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "story_id", "text", "author_id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "story_id",
+                            "text",
+                            "author_id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -809,9 +951,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createstorylink",
             "name": "create-story-link",
-            "output": ["ActionOutput_shortcut_createstorylink"],
+            "output": [
+                "ActionOutput_shortcut_createstorylink"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createstorylink", "ActionOutput_shortcut_createstorylink"],
+            "usedModels": [
+                "ActionInput_shortcut_createstorylink",
+                "ActionOutput_shortcut_createstorylink"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -832,18 +979,29 @@
                             },
                             "verb": {
                                 "type": "string",
-                                "enum": ["blocks", "duplicates", "relates to"],
+                                "enum": [
+                                    "blocks",
+                                    "duplicates",
+                                    "relates to"
+                                ],
                                 "description": "The relationship verb. Example: \"blocks\""
                             }
                         },
-                        "required": ["subject_id", "object_id", "verb"],
+                        "required": [
+                            "subject_id",
+                            "object_id",
+                            "verb"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createstorylink": {
                         "type": "object",
                         "properties": {
                             "id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "subject_id": {
                                 "type": "number"
@@ -855,7 +1013,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "subject_id", "object_id", "verb"],
+                        "required": [
+                            "id",
+                            "subject_id",
+                            "object_id",
+                            "verb"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -868,9 +1031,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createstorytask",
             "name": "create-story-task",
-            "output": ["ActionOutput_shortcut_createstorytask"],
+            "output": [
+                "ActionOutput_shortcut_createstorytask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createstorytask", "ActionOutput_shortcut_createstorytask"],
+            "usedModels": [
+                "ActionInput_shortcut_createstorytask",
+                "ActionOutput_shortcut_createstorytask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -899,7 +1067,10 @@
                                 }
                             }
                         },
-                        "required": ["story_public_id", "description"],
+                        "required": [
+                            "story_public_id",
+                            "description"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createstorytask": {
@@ -941,7 +1112,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "description", "story_id"],
+                        "required": [
+                            "id",
+                            "description",
+                            "story_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -954,9 +1129,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_createstory",
             "name": "create-story",
-            "output": ["ActionOutput_shortcut_createstory"],
+            "output": [
+                "ActionOutput_shortcut_createstory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_createstory", "ActionOutput_shortcut_createstory"],
+            "usedModels": [
+                "ActionInput_shortcut_createstory",
+                "ActionOutput_shortcut_createstory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -982,7 +1162,11 @@
                             "story_type": {
                                 "description": "Story type. Default: 'feature'.",
                                 "type": "string",
-                                "enum": ["feature", "bug", "chore"]
+                                "enum": [
+                                    "feature",
+                                    "bug",
+                                    "chore"
+                                ]
                             },
                             "epic_id": {
                                 "description": "Epic ID.",
@@ -1019,7 +1203,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_createstory": {
@@ -1071,7 +1257,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1084,9 +1273,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletecategory",
             "name": "delete-category",
-            "output": ["ActionOutput_shortcut_deletecategory"],
+            "output": [
+                "ActionOutput_shortcut_deletecategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deletecategory", "ActionOutput_shortcut_deletecategory"],
+            "usedModels": [
+                "ActionInput_shortcut_deletecategory",
+                "ActionOutput_shortcut_deletecategory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1100,7 +1294,9 @@
                                 "description": "Category ID. Example: 32"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletecategory": {
@@ -1113,7 +1309,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1126,9 +1325,16 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletecustomfield",
             "name": "delete-custom-field",
-            "output": ["ActionOutput_shortcut_deletecustomfield"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_shortcut_deletecustomfield", "ActionOutput_shortcut_deletecustomfield"],
+            "output": [
+                "ActionOutput_shortcut_deletecustomfield"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_shortcut_deletecustomfield",
+                "ActionOutput_shortcut_deletecustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1140,7 +1346,9 @@
                                 "description": "The unique ID of the custom field to delete. Example: \"6a53c255-dbbc-4bc8-8b96-a982e615f120\""
                             }
                         },
-                        "required": ["custom_field_id"],
+                        "required": [
+                            "custom_field_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletecustomfield": {
@@ -1153,7 +1361,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1166,9 +1377,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deleteepic",
             "name": "delete-epic",
-            "output": ["ActionOutput_shortcut_deleteepic"],
+            "output": [
+                "ActionOutput_shortcut_deleteepic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deleteepic", "ActionOutput_shortcut_deleteepic"],
+            "usedModels": [
+                "ActionInput_shortcut_deleteepic",
+                "ActionOutput_shortcut_deleteepic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1182,7 +1398,9 @@
                                 "description": "The public ID of the epic to delete. Example: 26"
                             }
                         },
-                        "required": ["epic_public_id"],
+                        "required": [
+                            "epic_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deleteepic": {
@@ -1195,7 +1413,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "epic_public_id"],
+                        "required": [
+                            "success",
+                            "epic_public_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1208,9 +1429,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deleteiteration",
             "name": "delete-iteration",
-            "output": ["ActionOutput_shortcut_deleteiteration"],
+            "output": [
+                "ActionOutput_shortcut_deleteiteration"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deleteiteration", "ActionOutput_shortcut_deleteiteration"],
+            "usedModels": [
+                "ActionInput_shortcut_deleteiteration",
+                "ActionOutput_shortcut_deleteiteration"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1224,7 +1450,9 @@
                                 "description": "The unique ID of the Iteration. Example: 28"
                             }
                         },
-                        "required": ["iteration_public_id"],
+                        "required": [
+                            "iteration_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deleteiteration": {
@@ -1237,7 +1465,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "iteration_public_id"],
+                        "required": [
+                            "success",
+                            "iteration_public_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1250,9 +1481,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletelabel",
             "name": "delete-label",
-            "output": ["ActionOutput_shortcut_deletelabel"],
+            "output": [
+                "ActionOutput_shortcut_deletelabel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deletelabel", "ActionOutput_shortcut_deletelabel"],
+            "usedModels": [
+                "ActionInput_shortcut_deletelabel",
+                "ActionOutput_shortcut_deletelabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1264,7 +1500,9 @@
                                 "description": "Label ID. Example: 30"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletelabel": {
@@ -1274,7 +1512,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1287,9 +1527,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletelinkedfile",
             "name": "delete-linked-file",
-            "output": ["ActionOutput_shortcut_deletelinkedfile"],
+            "output": [
+                "ActionOutput_shortcut_deletelinkedfile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deletelinkedfile", "ActionOutput_shortcut_deletelinkedfile"],
+            "usedModels": [
+                "ActionInput_shortcut_deletelinkedfile",
+                "ActionOutput_shortcut_deletelinkedfile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1303,7 +1548,9 @@
                                 "description": "The ID of the linked file to delete. Example: 46"
                             }
                         },
-                        "required": ["linked_file_id"],
+                        "required": [
+                            "linked_file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletelinkedfile": {
@@ -1316,7 +1563,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["linked_file_id", "success"],
+                        "required": [
+                            "linked_file_id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1329,9 +1579,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletemilestone",
             "name": "delete-milestone",
-            "output": ["ActionOutput_shortcut_deletemilestone"],
+            "output": [
+                "ActionOutput_shortcut_deletemilestone"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deletemilestone", "ActionOutput_shortcut_deletemilestone"],
+            "usedModels": [
+                "ActionInput_shortcut_deletemilestone",
+                "ActionOutput_shortcut_deletemilestone"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1345,7 +1600,9 @@
                                 "description": "The unique ID of the Milestone (Objective) to delete. Example: 43"
                             }
                         },
-                        "required": ["milestone_id"],
+                        "required": [
+                            "milestone_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletemilestone": {
@@ -1358,7 +1615,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "milestone_id"],
+                        "required": [
+                            "success",
+                            "milestone_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1371,9 +1631,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletestorycomment",
             "name": "delete-story-comment",
-            "output": ["ActionOutput_shortcut_deletestorycomment"],
+            "output": [
+                "ActionOutput_shortcut_deletestorycomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deletestorycomment", "ActionOutput_shortcut_deletestorycomment"],
+            "usedModels": [
+                "ActionInput_shortcut_deletestorycomment",
+                "ActionOutput_shortcut_deletestorycomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1393,7 +1658,10 @@
                                 "description": "The unique ID of the Comment. Example: 37"
                             }
                         },
-                        "required": ["story_public_id", "comment_id"],
+                        "required": [
+                            "story_public_id",
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletestorycomment": {
@@ -1403,7 +1671,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1416,9 +1686,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletestorylink",
             "name": "delete-story-link",
-            "output": ["ActionOutput_shortcut_deletestorylink"],
+            "output": [
+                "ActionOutput_shortcut_deletestorylink"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deletestorylink", "ActionOutput_shortcut_deletestorylink"],
+            "usedModels": [
+                "ActionInput_shortcut_deletestorylink",
+                "ActionOutput_shortcut_deletestorylink"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1432,7 +1707,9 @@
                                 "description": "The unique public ID of the story link to delete. Example: 500000019"
                             }
                         },
-                        "required": ["story_link_public_id"],
+                        "required": [
+                            "story_link_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletestorylink": {
@@ -1442,7 +1719,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1455,9 +1734,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletestorytask",
             "name": "delete-story-task",
-            "output": ["ActionOutput_shortcut_deletestorytask"],
+            "output": [
+                "ActionOutput_shortcut_deletestorytask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_deletestorytask", "ActionOutput_shortcut_deletestorytask"],
+            "usedModels": [
+                "ActionInput_shortcut_deletestorytask",
+                "ActionOutput_shortcut_deletestorytask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1477,7 +1761,10 @@
                                 "description": "The unique ID of the task to delete. Example: 39"
                             }
                         },
-                        "required": ["story_public_id", "task_id"],
+                        "required": [
+                            "story_public_id",
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletestorytask": {
@@ -1487,7 +1774,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1500,9 +1789,16 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_deletestory",
             "name": "delete-story",
-            "output": ["ActionOutput_shortcut_deletestory"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_shortcut_deletestory", "ActionOutput_shortcut_deletestory"],
+            "output": [
+                "ActionOutput_shortcut_deletestory"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_shortcut_deletestory",
+                "ActionOutput_shortcut_deletestory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1516,7 +1812,9 @@
                                 "description": "The unique ID of the Story. Example: 33"
                             }
                         },
-                        "required": ["story_public_id"],
+                        "required": [
+                            "story_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_deletestory": {
@@ -1526,7 +1824,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1539,9 +1839,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_getcurrentmember",
             "name": "get-current-member",
-            "output": ["ActionOutput_shortcut_getcurrentmember"],
+            "output": [
+                "ActionOutput_shortcut_getcurrentmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_getcurrentmember", "ActionOutput_shortcut_getcurrentmember"],
+            "usedModels": [
+                "ActionInput_shortcut_getcurrentmember",
+                "ActionOutput_shortcut_getcurrentmember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1599,7 +1904,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "organization2": {
@@ -1609,11 +1916,21 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "is_owner", "mention_name", "name", "role", "workspace2", "organization2"],
+                        "required": [
+                            "id",
+                            "is_owner",
+                            "mention_name",
+                            "name",
+                            "role",
+                            "workspace2",
+                            "organization2"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1626,9 +1943,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_getepic",
             "name": "get-epic",
-            "output": ["ActionOutput_shortcut_getepic"],
+            "output": [
+                "ActionOutput_shortcut_getepic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_getepic", "ActionOutput_shortcut_getepic"],
+            "usedModels": [
+                "ActionInput_shortcut_getepic",
+                "ActionOutput_shortcut_getepic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1642,7 +1964,9 @@
                                 "description": "The unique public ID of the epic. Example: 16"
                             }
                         },
-                        "required": ["epic_id"],
+                        "required": [
+                            "epic_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_getepic": {
@@ -1655,7 +1979,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "comments": {
                                 "anyOf": [
@@ -1668,7 +1995,10 @@
                                                     "type": "number"
                                                 },
                                                 "text": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "author_id": {
                                                     "anyOf": [
@@ -1683,13 +2013,21 @@
                                                     ]
                                                 },
                                                 "created_at": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "updated_at": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1704,28 +2042,52 @@
                                         "type": "object",
                                         "properties": {
                                             "num_stories_total": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "num_stories_done": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "num_stories_in_progress": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "num_stories_unstarted": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "num_points_total": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "num_points_done": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "num_points_in_progress": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "num_points_unstarted": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -1750,7 +2112,10 @@
                                 }
                             },
                             "milestone_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "epic_state_id": {
                                 "type": "number"
@@ -1765,7 +2130,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1778,9 +2146,16 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_getstorytask",
             "name": "get-story-task",
-            "output": ["ActionOutput_shortcut_getstorytask"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_shortcut_getstorytask", "ActionOutput_shortcut_getstorytask"],
+            "output": [
+                "ActionOutput_shortcut_getstorytask"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_shortcut_getstorytask",
+                "ActionOutput_shortcut_getstorytask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1800,7 +2175,10 @@
                                 "description": "The unique ID of the Task. Example: 39"
                             }
                         },
-                        "required": ["story_public_id", "task_id"],
+                        "required": [
+                            "story_public_id",
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_getstorytask": {
@@ -1825,7 +2203,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "complete", "description", "owner_ids", "position"],
+                        "required": [
+                            "id",
+                            "complete",
+                            "description",
+                            "owner_ids",
+                            "position"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1838,9 +2222,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_getstory",
             "name": "get-story",
-            "output": ["ActionOutput_shortcut_getstory"],
+            "output": [
+                "ActionOutput_shortcut_getstory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_getstory", "ActionOutput_shortcut_getstory"],
+            "usedModels": [
+                "ActionInput_shortcut_getstory",
+                "ActionOutput_shortcut_getstory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1854,7 +2243,9 @@
                                 "description": "The public ID of the story. Example: 35"
                             }
                         },
-                        "required": ["story_public_id"],
+                        "required": [
+                            "story_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_getstory": {
@@ -1911,7 +2302,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1936,7 +2329,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1964,7 +2359,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "subject_id", "object_id"],
+                                    "required": [
+                                        "id",
+                                        "subject_id",
+                                        "object_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1983,7 +2382,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1996,7 +2397,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2018,7 +2421,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2071,7 +2476,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2084,9 +2491,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listcategories",
             "name": "list-categories",
-            "output": ["ActionOutput_shortcut_listcategories"],
+            "output": [
+                "ActionOutput_shortcut_listcategories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listcategories", "ActionOutput_shortcut_listcategories"],
+            "usedModels": [
+                "ActionInput_shortcut_listcategories",
+                "ActionOutput_shortcut_listcategories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2133,7 +2545,11 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["id", "name", "type"],
+                            "required": [
+                                "id",
+                                "name",
+                                "type"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -2147,9 +2563,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listcustomfields",
             "name": "list-custom-fields",
-            "output": ["ActionOutput_shortcut_listcustomfields"],
+            "output": [
+                "ActionOutput_shortcut_listcustomfields"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listcustomfields", "ActionOutput_shortcut_listcustomfields"],
+            "usedModels": [
+                "ActionInput_shortcut_listcustomfields",
+                "ActionOutput_shortcut_listcustomfields"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2184,16 +2605,28 @@
                                                 "type": "string"
                                             },
                                             "color_key": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "entity_type": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "position": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["id", "value"],
+                                        "required": [
+                                            "id",
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -2204,31 +2637,60 @@
                                     }
                                 },
                                 "canonical_name": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "created_at": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "description": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "enabled": {
-                                    "type": ["boolean", "null"]
+                                    "type": [
+                                        "boolean",
+                                        "null"
+                                    ]
                                 },
                                 "entity_type": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "icon_set_identifier": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "position": {
-                                    "type": ["number", "null"]
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ]
                                 },
                                 "updated_at": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 }
                             },
-                            "required": ["id", "name", "field_type", "values"],
+                            "required": [
+                                "id",
+                                "name",
+                                "field_type",
+                                "values"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -2242,9 +2704,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listepics",
             "name": "list-epics",
-            "output": ["ActionOutput_shortcut_listepics"],
+            "output": [
+                "ActionOutput_shortcut_listepics"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listepics", "ActionOutput_shortcut_listepics"],
+            "usedModels": [
+                "ActionInput_shortcut_listepics",
+                "ActionOutput_shortcut_listepics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2278,13 +2745,19 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "epic_state_id": {
                                             "type": "number"
                                         },
                                         "milestone_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "archived": {
                                             "type": "boolean"
@@ -2296,7 +2769,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2305,7 +2780,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2318,9 +2795,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_shortcut_listgroups"],
+            "output": [
+                "ActionOutput_shortcut_listgroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listgroups", "ActionOutput_shortcut_listgroups"],
+            "usedModels": [
+                "ActionInput_shortcut_listgroups",
+                "ActionOutput_shortcut_listgroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2366,11 +2848,17 @@
                                         "workflow_ids": {
                                             "type": "array",
                                             "items": {
-                                                "type": ["string", "number"]
+                                                "type": [
+                                                    "string",
+                                                    "number"
+                                                ]
                                             }
                                         },
                                         "default_workflow_id": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "mention_name": {
                                             "type": "string"
@@ -2382,7 +2870,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "member_ids", "workflow_ids"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "member_ids",
+                                        "workflow_ids"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2391,7 +2884,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2404,9 +2899,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listiterations",
             "name": "list-iterations",
-            "output": ["ActionOutput_shortcut_listiterations"],
+            "output": [
+                "ActionOutput_shortcut_listiterations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listiterations", "ActionOutput_shortcut_listiterations"],
+            "usedModels": [
+                "ActionInput_shortcut_listiterations",
+                "ActionOutput_shortcut_listiterations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2498,12 +2998,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2516,9 +3020,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listlabels",
             "name": "list-labels",
-            "output": ["ActionOutput_shortcut_listlabels"],
+            "output": [
+                "ActionOutput_shortcut_listlabels"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listlabels", "ActionOutput_shortcut_listlabels"],
+            "usedModels": [
+                "ActionInput_shortcut_listlabels",
+                "ActionOutput_shortcut_listlabels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2547,19 +3056,31 @@
                                             "type": "boolean"
                                         },
                                         "color": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "entity_type": {
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "id": {
                                             "type": "number"
@@ -2619,15 +3140,23 @@
                                             "additionalProperties": false
                                         },
                                         "updated_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2640,9 +3169,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listlinkedfiles",
             "name": "list-linked-files",
-            "output": ["ActionOutput_shortcut_listlinkedfiles"],
+            "output": [
+                "ActionOutput_shortcut_listlinkedfiles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listlinkedfiles", "ActionOutput_shortcut_listlinkedfiles"],
+            "usedModels": [
+                "ActionInput_shortcut_listlinkedfiles",
+                "ActionOutput_shortcut_listlinkedfiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2674,7 +3208,10 @@
                                 },
                                 "content_type": {
                                     "description": "The content type of the image (e.g. text/plain).",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "created_at": {
                                     "type": "string",
@@ -2686,7 +3223,10 @@
                                 },
                                 "description": {
                                     "description": "The description of the file.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "entity_type": {
                                     "type": "string",
@@ -2715,7 +3255,10 @@
                                 },
                                 "size": {
                                     "description": "The filesize, if the integration provided it.",
-                                    "type": ["number", "null"]
+                                    "type": [
+                                        "number",
+                                        "null"
+                                    ]
                                 },
                                 "story_ids": {
                                     "type": "array",
@@ -2726,7 +3269,10 @@
                                 },
                                 "thumbnail_url": {
                                     "description": "The URL of the file thumbnail, if the integration provided it.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "uploader_id": {
                                     "type": "string",
@@ -2760,9 +3306,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listmembers",
             "name": "list-members",
-            "output": ["ActionOutput_shortcut_listmembers"],
+            "output": [
+                "ActionOutput_shortcut_listmembers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listmembers", "ActionOutput_shortcut_listmembers"],
+            "usedModels": [
+                "ActionInput_shortcut_listmembers",
+                "ActionOutput_shortcut_listmembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2803,12 +3354,16 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2821,9 +3376,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listmilestones",
             "name": "list-milestones",
-            "output": ["ActionOutput_shortcut_listmilestones"],
+            "output": [
+                "ActionOutput_shortcut_listmilestones"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listmilestones", "ActionOutput_shortcut_listmilestones"],
+            "usedModels": [
+                "ActionInput_shortcut_listmilestones",
+                "ActionOutput_shortcut_listmilestones"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2887,7 +3447,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2895,16 +3457,25 @@
                                             "type": "boolean"
                                         },
                                         "completed_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "completed_at_override": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "entity_type": {
                                             "type": "string"
@@ -2922,10 +3493,16 @@
                                             "type": "boolean"
                                         },
                                         "started_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "started_at_override": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "state": {
                                             "type": "string"
@@ -2949,7 +3526,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2958,7 +3538,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2971,9 +3553,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_shortcut_listprojects"],
+            "output": [
+                "ActionOutput_shortcut_listprojects"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listprojects", "ActionOutput_shortcut_listprojects"],
+            "usedModels": [
+                "ActionInput_shortcut_listprojects",
+                "ActionOutput_shortcut_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3002,7 +3589,10 @@
                                             "type": "string"
                                         },
                                         "abbreviation": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "app_url": {
                                             "type": "string"
@@ -3011,7 +3601,10 @@
                                             "type": "boolean"
                                         },
                                         "color": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3020,13 +3613,19 @@
                                             "type": "number"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "entity_type": {
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "follower_ids": {
                                             "type": "array",
@@ -3068,7 +3667,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3076,7 +3678,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3089,9 +3693,16 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_liststories",
             "name": "list-stories",
-            "output": ["ActionOutput_shortcut_liststories"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_shortcut_liststories", "ActionOutput_shortcut_liststories"],
+            "output": [
+                "ActionOutput_shortcut_liststories"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_shortcut_liststories",
+                "ActionOutput_shortcut_liststories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3255,7 +3866,10 @@
                                             "type": "boolean"
                                         },
                                         "completed_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3264,22 +3878,37 @@
                                             "type": "string"
                                         },
                                         "deadline": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "entity_type": {
                                             "type": "string"
                                         },
                                         "epic_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "estimate": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "follower_ids": {
                                             "type": "array",
@@ -3288,10 +3917,16 @@
                                             }
                                         },
                                         "group_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "iteration_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "label_ids": {
                                             "type": "array",
@@ -3309,7 +3944,10 @@
                                             "type": "number"
                                         },
                                         "project_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "requested_by_id": {
                                             "type": "string"
@@ -3324,7 +3962,10 @@
                                             "type": "number"
                                         },
                                         "parent_story_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "stats": {
                                             "type": "object",
@@ -3374,7 +4015,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3385,7 +4029,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["stories"],
+                        "required": [
+                            "stories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3398,9 +4044,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_listworkflows",
             "name": "list-workflows",
-            "output": ["ActionOutput_shortcut_listworkflows"],
+            "output": [
+                "ActionOutput_shortcut_listworkflows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_listworkflows", "ActionOutput_shortcut_listworkflows"],
+            "usedModels": [
+                "ActionInput_shortcut_listworkflows",
+                "ActionOutput_shortcut_listworkflows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3468,7 +4119,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3497,12 +4151,17 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["workflows"],
+                        "required": [
+                            "workflows"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3515,9 +4174,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_updateepic",
             "name": "update-epic",
-            "output": ["ActionOutput_shortcut_updateepic"],
+            "output": [
+                "ActionOutput_shortcut_updateepic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_updateepic", "ActionOutput_shortcut_updateepic"],
+            "usedModels": [
+                "ActionInput_shortcut_updateepic",
+                "ActionOutput_shortcut_updateepic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3543,19 +4207,34 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deadline": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "started_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "milestone_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "objective_ids": {
                                 "type": "array",
@@ -3629,12 +4308,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "after_id": {
                                 "type": "number"
@@ -3643,10 +4327,15 @@
                                 "type": "number"
                             },
                             "planned_start_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["epic_public_id"],
+                        "required": [
+                            "epic_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_updateepic": {
@@ -3680,28 +4369,52 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deadline": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "started_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "started_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "milestone_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "objective_ids": {
                                 "type": "array",
@@ -3722,10 +4435,16 @@
                                 }
                             },
                             "requested_by_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "group_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "group_ids": {
                                 "type": "array",
@@ -3759,7 +4478,17 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "archived", "epic_state_id", "state", "created_at", "updated_at", "app_url", "entity_type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "archived",
+                            "epic_state_id",
+                            "state",
+                            "created_at",
+                            "updated_at",
+                            "app_url",
+                            "entity_type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3772,9 +4501,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_updateiteration",
             "name": "update-iteration",
-            "output": ["ActionOutput_shortcut_updateiteration"],
+            "output": [
+                "ActionOutput_shortcut_updateiteration"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_updateiteration", "ActionOutput_shortcut_updateiteration"],
+            "usedModels": [
+                "ActionInput_shortcut_updateiteration",
+                "ActionOutput_shortcut_updateiteration"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3793,7 +4527,10 @@
                             },
                             "description": {
                                 "description": "The description of the Iteration. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_date": {
                                 "description": "The date this Iteration begins. Example: \"2026-07-12\"",
@@ -3811,7 +4548,9 @@
                                 }
                             }
                         },
-                        "required": ["iteration_public_id"],
+                        "required": [
+                            "iteration_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_updateiteration": {
@@ -3836,7 +4575,9 @@
                                                     "maximum": 9007199254740991
                                                 }
                                             },
-                                            "required": ["group_id"],
+                                            "required": [
+                                                "group_id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3849,7 +4590,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "end_date": {
                                 "type": "string"
@@ -3939,13 +4683,19 @@
                                                     "type": "string"
                                                 },
                                                 "description": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "entity_type": {
                                                     "type": "string"
                                                 },
                                                 "external_id": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "global_id": {
                                                     "type": "string"
@@ -3969,7 +4719,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["app_url", "created_at", "entity_type", "global_id", "id", "name", "updated_at"],
+                                            "required": [
+                                                "app_url",
+                                                "created_at",
+                                                "entity_type",
+                                                "global_id",
+                                                "id",
+                                                "name",
+                                                "updated_at"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -4095,7 +4853,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["app_url", "created_at", "end_date", "entity_type", "global_id", "id", "name", "start_date", "status", "updated_at"],
+                        "required": [
+                            "app_url",
+                            "created_at",
+                            "end_date",
+                            "entity_type",
+                            "global_id",
+                            "id",
+                            "name",
+                            "start_date",
+                            "status",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4108,9 +4877,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_updatelabel",
             "name": "update-label",
-            "output": ["ActionOutput_shortcut_updatelabel"],
+            "output": [
+                "ActionOutput_shortcut_updatelabel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_updatelabel", "ActionOutput_shortcut_updatelabel"],
+            "usedModels": [
+                "ActionInput_shortcut_updatelabel",
+                "ActionOutput_shortcut_updatelabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4128,13 +4902,18 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "archived": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_updatelabel": {
@@ -4144,16 +4923,28 @@
                                 "type": "number"
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "archived": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "entity_type": {
                                 "type": "string"
@@ -4166,7 +4957,10 @@
                             },
                             "stats": {}
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4179,9 +4973,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_updatemilestone",
             "name": "update-milestone",
-            "output": ["ActionOutput_shortcut_updatemilestone"],
+            "output": [
+                "ActionOutput_shortcut_updatemilestone"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_updatemilestone", "ActionOutput_shortcut_updatemilestone"],
+            "usedModels": [
+                "ActionInput_shortcut_updatemilestone",
+                "ActionOutput_shortcut_updatemilestone"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4204,7 +5003,11 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["to do", "in progress", "done"]
+                                "enum": [
+                                    "to do",
+                                    "in progress",
+                                    "done"
+                                ]
                             },
                             "categories": {
                                 "description": "An array of category names to attach to the Milestone. Example: [\"Q3 Goals\"]",
@@ -4217,7 +5020,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["milestone_id"],
+                        "required": [
+                            "milestone_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_updatemilestone": {
@@ -4230,7 +5035,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "type": "string"
@@ -4265,10 +5073,16 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4276,10 +5090,16 @@
                                 "type": "boolean"
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -4306,10 +5126,16 @@
                                 "type": "boolean"
                             },
                             "started_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "started_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "stats": {
                                 "type": "object",
@@ -4327,7 +5153,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "state"],
+                        "required": [
+                            "id",
+                            "name",
+                            "state"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -4340,9 +5170,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_updatestorytask",
             "name": "update-story-task",
-            "output": ["ActionOutput_shortcut_updatestorytask"],
+            "output": [
+                "ActionOutput_shortcut_updatestorytask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_updatestorytask", "ActionOutput_shortcut_updatestorytask"],
+            "usedModels": [
+                "ActionInput_shortcut_updatestorytask",
+                "ActionOutput_shortcut_updatestorytask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4385,7 +5220,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["story_public_id", "task_id"],
+                        "required": [
+                            "story_public_id",
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_updatestorytask": {
@@ -4475,9 +5313,14 @@
             "endpoint": null,
             "input": "ActionInput_shortcut_updatestory",
             "name": "update-story",
-            "output": ["ActionOutput_shortcut_updatestory"],
+            "output": [
+                "ActionOutput_shortcut_updatestory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shortcut_updatestory", "ActionOutput_shortcut_updatestory"],
+            "usedModels": [
+                "ActionInput_shortcut_updatestory",
+                "ActionOutput_shortcut_updatestory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4504,11 +5347,17 @@
                             },
                             "epic_id": {
                                 "description": "The ID of the epic the story belongs to.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "iteration_id": {
                                 "description": "The ID of the iteration the story belongs to.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "owner_ids": {
                                 "description": "An array of UUIDs of the owners of this story.",
@@ -4530,24 +5379,40 @@
                             },
                             "deadline": {
                                 "description": "The due date of the story.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "estimate": {
                                 "description": "The numeric point estimate of the story. Can also be null, which means unestimated.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "project_id": {
                                 "description": "The ID of the project the story belongs to.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "group_id": {
                                 "description": "The ID of the group to associate with this story.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "story_type": {
                                 "description": "The type of story (feature, bug, chore).",
                                 "type": "string",
-                                "enum": ["bug", "chore", "feature"]
+                                "enum": [
+                                    "bug",
+                                    "chore",
+                                    "feature"
+                                ]
                             },
                             "follower_ids": {
                                 "description": "An array of UUIDs of the followers of this story.",
@@ -4566,10 +5431,15 @@
                                             "type": "string"
                                         },
                                         "value_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["field_id"],
+                                    "required": [
+                                        "field_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4607,11 +5477,17 @@
                             },
                             "started_at_override": {
                                 "description": "A manual override for the time/date the Story was started.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at_override": {
                                 "description": "A manual override for the time/date the Story was completed.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "after_id": {
                                 "description": "The ID of the story we want to move this story after.",
@@ -4624,7 +5500,10 @@
                             "move_to": {
                                 "description": "One of \"first\" or \"last\".",
                                 "type": "string",
-                                "enum": ["first", "last"]
+                                "enum": [
+                                    "first",
+                                    "last"
+                                ]
                             },
                             "branch_ids": {
                                 "description": "An array of IDs of Branches attached to the story.",
@@ -4650,12 +5529,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["story_id"],
+                                    "required": [
+                                        "story_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["story_public_id"],
+                        "required": [
+                            "story_public_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shortcut_updatestory": {
@@ -4698,7 +5581,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "text"],
+                                    "required": [
+                                        "id",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4710,10 +5596,16 @@
                                 "type": "boolean"
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -4728,33 +5620,56 @@
                                         },
                                         "value": {},
                                         "value_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["field_id"],
+                                    "required": [
+                                        "field_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "cycle_time": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "deadline": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "entity_type": {
                                 "type": "string"
                             },
                             "epic_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "estimate": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_links": {
                                 "type": "array",
@@ -4773,7 +5688,10 @@
                                 }
                             },
                             "group_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "group_mention_ids": {
                                 "type": "array",
@@ -4785,7 +5703,10 @@
                                 "type": "number"
                             },
                             "iteration_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "label_ids": {
                                 "type": "array",
@@ -4814,24 +5735,36 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "entity_type": {
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "lead_time": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "linked_files": {
                                 "type": "array",
@@ -4850,7 +5783,10 @@
                                 }
                             },
                             "moved_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -4862,7 +5798,10 @@
                                 }
                             },
                             "parent_story_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "position": {
                                 "type": "number"
@@ -4874,7 +5813,10 @@
                                 }
                             },
                             "project_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "pull_requests": {
                                 "type": "array",
@@ -4887,10 +5829,16 @@
                                 "type": "boolean"
                             },
                             "started_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "started_at_override": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "stats": {
                                 "type": "object",
@@ -4958,12 +5906,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "subject_id", "object_id", "verb"],
+                                    "required": [
+                                        "id",
+                                        "subject_id",
+                                        "object_id",
+                                        "verb"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "story_template_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "story_type": {
                                 "type": "string"
@@ -5004,12 +5960,18 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "description"],
+                                    "required": [
+                                        "id",
+                                        "description"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "updated_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "workflow_id": {
                                 "type": "number"
@@ -5018,7 +5980,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["app_url", "archived", "created_at", "entity_type", "id", "name", "story_type", "workflow_id", "workflow_state_id"],
+                        "required": [
+                            "app_url",
+                            "archived",
+                            "created_at",
+                            "entity_type",
+                            "id",
+                            "name",
+                            "story_type",
+                            "workflow_id",
+                            "workflow_state_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -5034,12 +6006,16 @@
             "endpoints": [],
             "input": null,
             "name": "categories",
-            "output": ["Category"],
+            "output": [
+                "Category"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Category"],
+            "usedModels": [
+                "Category"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5075,7 +6051,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5089,12 +6068,16 @@
             "endpoints": [],
             "input": null,
             "name": "custom-fields",
-            "output": ["CustomField"],
+            "output": [
+                "CustomField"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CustomField"],
+            "usedModels": [
+                "CustomField"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5144,7 +6127,10 @@
                                     "type": "object",
                                     "properties": {
                                         "color_key": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "entity_type": {
                                             "type": "string"
@@ -5160,12 +6146,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5179,12 +6169,16 @@
             "endpoints": [],
             "input": null,
             "name": "epics",
-            "output": ["Epic"],
+            "output": [
+                "Epic"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Epic"],
+            "usedModels": [
+                "Epic"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5196,12 +6190,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5210,12 +6208,16 @@
             "endpoints": [],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5254,7 +6256,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5268,12 +6272,16 @@
             "endpoints": [],
             "input": null,
             "name": "iterations",
-            "output": ["Iteration"],
+            "output": [
+                "Iteration"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Iteration"],
+            "usedModels": [
+                "Iteration"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5337,16 +6345,25 @@
                                             "type": "string"
                                         },
                                         "color": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "archived": {
                                             "type": "boolean"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -5355,7 +6372,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5429,7 +6449,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "created_at", "name", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "name",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5443,12 +6468,16 @@
             "endpoints": [],
             "input": null,
             "name": "labels",
-            "output": ["Label"],
+            "output": [
+                "Label"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Label"],
+            "usedModels": [
+                "Label"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5481,7 +6510,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5495,12 +6527,16 @@
             "endpoints": [],
             "input": null,
             "name": "members",
-            "output": ["Member"],
+            "output": [
+                "Member"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Member"],
+            "usedModels": [
+                "Member"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5536,7 +6572,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5550,12 +6588,16 @@
             "endpoints": [],
             "input": null,
             "name": "milestones",
-            "output": ["Milestone"],
+            "output": [
+                "Milestone"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Milestone"],
+            "usedModels": [
+                "Milestone"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5635,7 +6677,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "created_at", "name", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "name",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5649,12 +6696,16 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5749,7 +6800,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5763,12 +6816,16 @@
             "endpoints": [],
             "input": null,
             "name": "stories",
-            "output": ["Story"],
+            "output": [
+                "Story"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Story"],
+            "usedModels": [
+                "Story"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5783,12 +6840,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "updated_at"],
+                        "required": [
+                            "id",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5797,12 +6859,16 @@
             "endpoints": [],
             "input": null,
             "name": "workflows",
-            "output": ["Workflow"],
+            "output": [
+                "Workflow"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workflow"],
+            "usedModels": [
+                "Workflow"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5889,7 +6955,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5902,7 +6971,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }

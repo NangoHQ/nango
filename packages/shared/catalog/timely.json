@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_createclient",
             "name": "create-client",
-            "output": ["ActionOutput_timely_createclient"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_createclient", "ActionOutput_timely_createclient"],
+            "output": [
+                "ActionOutput_timely_createclient"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_createclient",
+                "ActionOutput_timely_createclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -27,7 +34,10 @@
                                 "description": "Name of the client (company) to create. Must not be blank. Example: \"Acme Corp\"."
                             }
                         },
-                        "required": ["account_id", "name"],
+                        "required": [
+                            "account_id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new Timely client (company)."
                     },
@@ -52,14 +62,23 @@
                             },
                             "external_id": {
                                 "description": "External identifier for the client, or null when none is set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_at": {
                                 "type": "string",
                                 "description": "ISO 8601 timestamp (with timezone offset) when the client was last changed."
                             }
                         },
-                        "required": ["id", "name", "color", "active", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "active",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A newly created Timely client (company)."
                     }
@@ -73,9 +92,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_createevent",
             "name": "create-event",
-            "output": ["ActionOutput_timely_createevent"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_createevent", "ActionOutput_timely_createevent"],
+            "output": [
+                "ActionOutput_timely_createevent"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_createevent",
+                "ActionOutput_timely_createevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -116,7 +142,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["account_id", "day", "project_id"],
+                        "required": [
+                            "account_id",
+                            "day",
+                            "project_id"
+                        ],
                         "additionalProperties": false,
                         "description": "A time entry to log against a project in a Timely account."
                     },
@@ -137,7 +167,10 @@
                             },
                             "note": {
                                 "description": "Note attached to the time entry, or null when none was provided.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "duration": {
                                 "type": "object",
@@ -171,7 +204,15 @@
                                         "description": "Total logged duration expressed in minutes."
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Logged duration broken down into its components and totals."
                             },
@@ -203,7 +244,14 @@
                                         "description": "Whether the project is active."
                                     }
                                 },
-                                "required": ["id", "name", "color", "rate_type", "billable", "active"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "color",
+                                    "rate_type",
+                                    "billable",
+                                    "active"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Project the time entry was logged against."
                             },
@@ -223,7 +271,11 @@
                                         "description": "Display name of the user."
                                     }
                                 },
-                                "required": ["id", "email", "name"],
+                                "required": [
+                                    "id",
+                                    "email",
+                                    "name"
+                                ],
                                 "additionalProperties": false,
                                 "description": "User the time entry was logged by."
                             },
@@ -270,13 +322,21 @@
                                         "description": "ISO 4217 code of the cost currency."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Cost calculated for the time entry."
                             },
                             "external_id": {
                                 "description": "External identifier set by an integration, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "number",
@@ -318,9 +378,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_createlabel",
             "name": "create-label",
-            "output": ["ActionOutput_timely_createlabel"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_createlabel", "ActionOutput_timely_createlabel"],
+            "output": [
+                "ActionOutput_timely_createlabel"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_createlabel",
+                "ActionOutput_timely_createlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -351,7 +418,10 @@
                                 ]
                             }
                         },
-                        "required": ["account_id", "name"],
+                        "required": [
+                            "account_id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Timely label."
                     },
@@ -389,7 +459,10 @@
                             },
                             "emoji": {
                                 "description": "URL of the emoji image shown for the label, or null when none is set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "type": "boolean",
@@ -397,7 +470,10 @@
                             },
                             "external_id": {
                                 "description": "External identifier mapped to this label, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string",
@@ -415,7 +491,18 @@
                                 "description": "Nested child labels. Always empty for a newly created label."
                             }
                         },
-                        "required": ["id", "name", "sequence", "parent_id", "emoji", "active", "external_id", "created_at", "updated_at", "children"],
+                        "required": [
+                            "id",
+                            "name",
+                            "sequence",
+                            "parent_id",
+                            "emoji",
+                            "active",
+                            "external_id",
+                            "created_at",
+                            "updated_at",
+                            "children"
+                        ],
                         "additionalProperties": false,
                         "description": "A Timely label, optionally nested under a parent label."
                     }
@@ -429,9 +516,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_timely_createproject"],
+            "output": [
+                "ActionOutput_timely_createproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_createproject", "ActionOutput_timely_createproject"],
+            "usedModels": [
+                "ActionInput_timely_createproject",
+                "ActionOutput_timely_createproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -471,7 +563,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["account_id", "name", "company_id"],
+                        "required": [
+                            "account_id",
+                            "name",
+                            "company_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Timely project"
                     },
@@ -488,11 +584,17 @@
                             },
                             "description": {
                                 "description": "Project description, or null when unset",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Project color as a hex string, or null when unset",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "rate_type": {
                                 "type": "string",
@@ -512,7 +614,10 @@
                             },
                             "external_id": {
                                 "description": "External identifier, or null when unset",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "enable_labels": {
                                 "type": "string",
@@ -533,14 +638,22 @@
                                             },
                                             "color": {
                                                 "description": "Client color as a hex string, or null when unset",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "active": {
                                                 "type": "boolean",
                                                 "description": "Whether the client is active"
                                             }
                                         },
-                                        "required": ["id", "name", "color", "active"],
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "color",
+                                            "active"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -586,9 +699,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_deleteevent",
             "name": "delete-event",
-            "output": ["ActionOutput_timely_deleteevent"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_deleteevent", "ActionOutput_timely_deleteevent"],
+            "output": [
+                "ActionOutput_timely_deleteevent"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_deleteevent",
+                "ActionOutput_timely_deleteevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -608,7 +728,10 @@
                                 "description": "ID of the logged time entry (event) to delete. Example: 297113615"
                             }
                         },
-                        "required": ["account_id", "event_id"],
+                        "required": [
+                            "account_id",
+                            "event_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for permanently deleting a single logged time entry."
                     },
@@ -626,7 +749,10 @@
                                 "description": "ID of the time entry that was deleted. Example: 297113615"
                             }
                         },
-                        "required": ["deleted", "event_id"],
+                        "required": [
+                            "deleted",
+                            "event_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of deleting a logged time entry."
                     }
@@ -640,9 +766,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_deletelabel",
             "name": "delete-label",
-            "output": ["ActionOutput_timely_deletelabel"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_deletelabel", "ActionOutput_timely_deletelabel"],
+            "output": [
+                "ActionOutput_timely_deletelabel"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_deletelabel",
+                "ActionOutput_timely_deletelabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -662,7 +795,10 @@
                                 "description": "ID of the label to delete. Example: 4687689."
                             }
                         },
-                        "required": ["account_id", "label_id"],
+                        "required": [
+                            "account_id",
+                            "label_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifiers for the label to delete."
                     },
@@ -678,7 +814,10 @@
                                 "description": "ID of the label that was deleted."
                             }
                         },
-                        "required": ["deleted", "label_id"],
+                        "required": [
+                            "deleted",
+                            "label_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the label was deleted."
                     }
@@ -692,9 +831,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_deleteprojectsafely",
             "name": "delete-project-safely",
-            "output": ["ActionOutput_timely_deleteprojectsafely"],
+            "output": [
+                "ActionOutput_timely_deleteprojectsafely"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_deleteprojectsafely", "ActionOutput_timely_deleteprojectsafely"],
+            "usedModels": [
+                "ActionInput_timely_deleteprojectsafely",
+                "ActionOutput_timely_deleteprojectsafely"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -728,7 +872,10 @@
                                 "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
                             }
                         },
-                        "required": ["account_id", "project_id"],
+                        "required": [
+                            "account_id",
+                            "project_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a Timely project after checking it for logged time."
                     },
@@ -758,7 +905,12 @@
                                 "description": "End date (YYYY-MM-DD) of the window checked for logged time."
                             }
                         },
-                        "required": ["deleted", "eventCount", "since", "upto"],
+                        "required": [
+                            "deleted",
+                            "eventCount",
+                            "since",
+                            "upto"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the safe project deletion, including whether it was blocked and how many time entries were affected."
                     }
@@ -772,9 +924,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_deleteproject",
             "name": "delete-project",
-            "output": ["ActionOutput_timely_deleteproject"],
+            "output": [
+                "ActionOutput_timely_deleteproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_deleteproject", "ActionOutput_timely_deleteproject"],
+            "usedModels": [
+                "ActionInput_timely_deleteproject",
+                "ActionOutput_timely_deleteproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -794,7 +951,10 @@
                                 "description": "ID of the project to permanently delete. Example: 5698287"
                             }
                         },
-                        "required": ["account_id", "project_id"],
+                        "required": [
+                            "account_id",
+                            "project_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the Timely account and the project to permanently delete."
                     },
@@ -818,7 +978,11 @@
                                 "description": "ID of the project that was deleted."
                             }
                         },
-                        "required": ["deleted", "account_id", "project_id"],
+                        "required": [
+                            "deleted",
+                            "account_id",
+                            "project_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation of the permanently deleted project."
                     }
@@ -832,9 +996,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_getclient",
             "name": "get-client",
-            "output": ["ActionOutput_timely_getclient"],
+            "output": [
+                "ActionOutput_timely_getclient"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_getclient", "ActionOutput_timely_getclient"],
+            "usedModels": [
+                "ActionInput_timely_getclient",
+                "ActionOutput_timely_getclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -854,7 +1023,10 @@
                                 "description": "ID of the client to retrieve. Example: 2193170"
                             }
                         },
-                        "required": ["account_id", "client_id"],
+                        "required": [
+                            "account_id",
+                            "client_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Timely client by account and client ID."
                     },
@@ -871,7 +1043,10 @@
                             },
                             "color": {
                                 "description": "Hex color assigned to the client in Timely, without the leading \"#\", or null when unset. Example: \"1976d2\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "type": "boolean",
@@ -879,14 +1054,24 @@
                             },
                             "external_id": {
                                 "description": "External identifier for the client, or null when none has been set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_at": {
                                 "description": "ISO 8601 timestamp of the last client update. Example: \"2026-10-07T05:54:36+03:00\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "active"],
+                        "required": [
+                            "id",
+                            "name",
+                            "active"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Timely client, including inactive ones."
                     }
@@ -900,9 +1085,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_getevent",
             "name": "get-event",
-            "output": ["ActionOutput_timely_getevent"],
+            "output": [
+                "ActionOutput_timely_getevent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_getevent", "ActionOutput_timely_getevent"],
+            "usedModels": [
+                "ActionInput_timely_getevent",
+                "ActionOutput_timely_getevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -922,7 +1112,10 @@
                                 "description": "ID of the logged time entry (event) to retrieve. Example: 297121928"
                             }
                         },
-                        "required": ["account_id", "event_id"],
+                        "required": [
+                            "account_id",
+                            "event_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the Timely account and the logged time entry to retrieve."
                     },
@@ -943,7 +1136,10 @@
                             },
                             "note": {
                                 "description": "Free-text note attached to the entry, if any.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "duration": {
                                 "type": "object",
@@ -977,7 +1173,15 @@
                                         "description": "Duration expressed in minutes."
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Duration actually logged for the entry."
                             },
@@ -1013,7 +1217,15 @@
                                         "description": "Duration expressed in minutes."
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Estimated duration for the entry."
                             },
@@ -1037,7 +1249,12 @@
                                         "description": "ISO code of the currency the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Cost of the logged time."
                             },
@@ -1061,7 +1278,12 @@
                                         "description": "ISO code of the currency the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Estimated cost of the entry."
                             },
@@ -1085,7 +1307,12 @@
                                         "description": "ISO code of the currency the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Internal cost of the logged time."
                             },
@@ -1109,7 +1336,12 @@
                                         "description": "ISO code of the currency the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Estimated internal cost of the entry."
                             },
@@ -1146,11 +1378,17 @@
                                     },
                                     "description": {
                                         "description": "Description of the project, if any.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "external_id": {
                                         "description": "External identifier of the project, if set.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "enable_labels": {
                                         "type": "string",
@@ -1195,7 +1433,10 @@
                                                     },
                                                     "color": {
                                                         "description": "Hex color code assigned to the client, or null when unset.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "active": {
                                                         "type": "boolean",
@@ -1203,14 +1444,24 @@
                                                     },
                                                     "external_id": {
                                                         "description": "External identifier of the client, if set.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "updated_at": {
                                                         "description": "Timestamp when the client was last updated.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["id", "name", "active"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "active"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -1248,18 +1499,27 @@
                                     },
                                     "email": {
                                         "description": "Email address of the user, when Timely includes it.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "name": {
                                         "description": "Display name of the user, when Timely includes it.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "updated_at": {
                                         "type": "string",
                                         "description": "Timestamp when the user record was last updated."
                                     }
                                 },
-                                "required": ["id", "updated_at"],
+                                "required": [
+                                    "id",
+                                    "updated_at"
+                                ],
                                 "additionalProperties": false,
                                 "description": "User the time entry belongs to."
                             },
@@ -1291,7 +1551,10 @@
                             },
                             "locked_reason": {
                                 "description": "Reason the entry is locked, if any.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "estimated": {
                                 "type": "boolean",
@@ -1319,11 +1582,17 @@
                             },
                             "created_from": {
                                 "description": "Source the entry was created from, e.g. \"Web\" or \"Nango\", when known.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_from": {
                                 "description": "Source the entry was last updated from, when known.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "creator_id": {
                                 "type": "number",
@@ -1335,7 +1604,10 @@
                             },
                             "external_id": {
                                 "description": "External identifier of the entry, if set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "entry_ids": {
                                 "type": "array",
@@ -1346,11 +1618,17 @@
                             },
                             "suggestion_id": {
                                 "description": "ID of the suggestion the entry was created from, if any.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "autosheet_proposal_id": {
                                 "description": "ID of the autosheet proposal the entry was created from, if any.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "draft": {
                                 "type": "boolean",
@@ -1362,11 +1640,17 @@
                             },
                             "forecast_id": {
                                 "description": "ID of the forecast the entry belongs to, if any.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "billed_at": {
                                 "description": "Timestamp when the entry was billed, if billed.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_link_ids": {
                                 "type": "array",
@@ -1397,7 +1681,10 @@
                             },
                             "invoice_id": {
                                 "description": "ID of the invoice the entry was billed on, if any.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "sequence": {
                                 "type": "number",
@@ -1409,11 +1696,17 @@
                             },
                             "to": {
                                 "description": "End timestamp of the entry when it represents a timer range; otherwise null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "from": {
                                 "description": "Start timestamp of the entry when it represents a timer range; otherwise null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -1475,9 +1768,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_getlabel",
             "name": "get-label",
-            "output": ["ActionOutput_timely_getlabel"],
+            "output": [
+                "ActionOutput_timely_getlabel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_getlabel", "ActionOutput_timely_getlabel"],
+            "usedModels": [
+                "ActionInput_timely_getlabel",
+                "ActionOutput_timely_getlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1497,7 +1795,10 @@
                                 "description": "ID of the label to retrieve. Example: 4687689"
                             }
                         },
-                        "required": ["account_id", "label_id"],
+                        "required": [
+                            "account_id",
+                            "label_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the account and label to retrieve."
                     },
@@ -1526,11 +1827,17 @@
                                     },
                                     "parent_id": {
                                         "description": "ID of the parent label, or null when the label is top-level.",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "emoji": {
                                         "description": "URL of the emoji icon assigned to the label, or null when none is set.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "active": {
                                         "type": "boolean",
@@ -1538,7 +1845,10 @@
                                     },
                                     "external_id": {
                                         "description": "External system identifier for the label, or null when unset.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "created_at": {
                                         "type": "string",
@@ -1560,7 +1870,18 @@
                                         "description": "Child labels nested under this label."
                                     }
                                 },
-                                "required": ["id", "name", "sequence", "parent_id", "emoji", "active", "external_id", "created_at", "updated_at", "children"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "sequence",
+                                    "parent_id",
+                                    "emoji",
+                                    "active",
+                                    "external_id",
+                                    "created_at",
+                                    "updated_at",
+                                    "children"
+                                ],
                                 "additionalProperties": false
                             }
                         }
@@ -1575,9 +1896,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_getprojecttimesummary",
             "name": "get-project-time-summary",
-            "output": ["ActionOutput_timely_getprojecttimesummary"],
+            "output": [
+                "ActionOutput_timely_getprojecttimesummary"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_getprojecttimesummary", "ActionOutput_timely_getprojecttimesummary"],
+            "usedModels": [
+                "ActionInput_timely_getprojecttimesummary",
+                "ActionOutput_timely_getprojecttimesummary"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1607,7 +1933,12 @@
                                 "description": "End of the range, inclusive, in YYYY-MM-DD format. Example: \"2026-10-31\""
                             }
                         },
-                        "required": ["account_id", "project_id", "since", "upto"],
+                        "required": [
+                            "account_id",
+                            "project_id",
+                            "since",
+                            "upto"
+                        ],
                         "additionalProperties": false,
                         "description": "Project ID plus the inclusive day range used to scope the time-entry breakdown."
                     },
@@ -1638,7 +1969,10 @@
                                                 "description": "Client name the project belongs to."
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "duration": {
@@ -1661,7 +1995,12 @@
                                                 "description": "All-time logged duration formatted as HH:MM."
                                             }
                                         },
-                                        "required": ["total_hours", "total_minutes", "total_seconds", "formatted"],
+                                        "required": [
+                                            "total_hours",
+                                            "total_minutes",
+                                            "total_seconds",
+                                            "formatted"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "All-time logged duration on the project, not scoped to the requested range."
                                     },
@@ -1681,20 +2020,37 @@
                                                 "description": "Currency code for the cost. Example: \"kes\""
                                             }
                                         },
-                                        "required": ["amount", "formatted", "currency_code"],
+                                        "required": [
+                                            "amount",
+                                            "formatted",
+                                            "currency_code"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "All-time cost on the project, not scoped to the requested range."
                                     },
                                     "first_logged_on": {
                                         "description": "Day (YYYY-MM-DD) of the earliest logged entry, or null when the project has no logged time.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "last_logged_on": {
                                         "description": "Day (YYYY-MM-DD) of the latest logged entry, or null when the project has no logged time.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id", "name", "duration", "cost", "first_logged_on", "last_logged_on"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "duration",
+                                    "cost",
+                                    "first_logged_on",
+                                    "last_logged_on"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time project metadata and totals, unaffected by since/upto."
                             },
@@ -1754,18 +2110,32 @@
                                                     "description": "Label IDs attached to the entry; empty unless the project enables labels."
                                                 }
                                             },
-                                            "required": ["id", "day", "total_hours", "label_ids"],
+                                            "required": [
+                                                "id",
+                                                "day",
+                                                "total_hours",
+                                                "label_ids"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": "Individual time entries inside the requested range."
                                     }
                                 },
-                                "required": ["since", "upto", "total_hours", "entry_count", "entries"],
+                                "required": [
+                                    "since",
+                                    "upto",
+                                    "total_hours",
+                                    "entry_count",
+                                    "entries"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Date-range-scoped totals and entry breakdown."
                             }
                         },
-                        "required": ["project", "range"],
+                        "required": [
+                            "project",
+                            "range"
+                        ],
                         "additionalProperties": false,
                         "description": "A project with its all-time totals and the entries/total logged inside a specific date range."
                     }
@@ -1779,9 +2149,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_timely_getproject"],
+            "output": [
+                "ActionOutput_timely_getproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_getproject", "ActionOutput_timely_getproject"],
+            "usedModels": [
+                "ActionInput_timely_getproject",
+                "ActionOutput_timely_getproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1801,7 +2176,10 @@
                                 "description": "ID of the project to retrieve. Example: 5691492"
                             }
                         },
-                        "required": ["account_id", "project_id"],
+                        "required": [
+                            "account_id",
+                            "project_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single project from Timely"
                     },
@@ -1826,11 +2204,17 @@
                             },
                             "description": {
                                 "description": "Project description, or null when unset",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Project display color as a hex string, or null when unset",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "rate_type": {
                                 "type": "string",
@@ -1850,7 +2234,10 @@
                             },
                             "external_id": {
                                 "description": "External identifier assigned to the project, or null when unset",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "budget_scope": {
                                 "anyOf": [
@@ -1884,14 +2271,24 @@
                                             },
                                             "external_id": {
                                                 "description": "External identifier assigned to the client, or null when unset",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "updated_at": {
                                                 "type": "string",
                                                 "description": "When the client was last updated (ISO 8601)"
                                             }
                                         },
-                                        "required": ["id", "name", "color", "active", "external_id", "updated_at"],
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "color",
+                                            "active",
+                                            "external_id",
+                                            "updated_at"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1910,7 +2307,10 @@
                             },
                             "budget_expired_on": {
                                 "description": "Date the project budget expired, or null when not set",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "has_recurrence": {
                                 "type": "boolean",
@@ -1948,7 +2348,13 @@
                                         "description": "Whether the currency symbol is displayed before the amount"
                                     }
                                 },
-                                "required": ["id", "name", "iso_code", "symbol", "symbol_first"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "iso_code",
+                                    "symbol",
+                                    "symbol_first"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Currency the project amounts are expressed in"
                             },
@@ -2073,7 +2479,14 @@
                                             "description": "When the label assignment was last updated (ISO 8601)"
                                         }
                                     },
-                                    "required": ["project_id", "label_id", "budget", "required", "default", "updated_at"],
+                                    "required": [
+                                        "project_id",
+                                        "label_id",
+                                        "budget",
+                                        "required",
+                                        "default",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Labels available or assigned on the project"
@@ -2119,7 +2532,12 @@
                                         "description": "Lowercase currency code. Example: \"kes\""
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time logged cost for the project"
                             },
@@ -2143,7 +2561,12 @@
                                         "description": "Lowercase currency code. Example: \"kes\""
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Estimated cost for the project"
                             },
@@ -2179,7 +2602,15 @@
                                         "description": "Total duration expressed in minutes"
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time logged duration for the project"
                             },
@@ -2215,7 +2646,15 @@
                                         "description": "Total duration expressed in minutes"
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Estimated duration for the project"
                             },
@@ -2239,7 +2678,12 @@
                                         "description": "Lowercase currency code. Example: \"kes\""
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time billed cost for the project"
                             },
@@ -2275,7 +2719,15 @@
                                         "description": "Total duration expressed in minutes"
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time billed duration for the project"
                             },
@@ -2299,7 +2751,12 @@
                                         "description": "Lowercase currency code. Example: \"kes\""
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time unbilled cost for the project"
                             },
@@ -2335,17 +2792,31 @@
                                         "description": "Total duration expressed in minutes"
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time unbilled duration for the project"
                             },
                             "first_logged_on": {
                                 "description": "First day time was logged on the project (YYYY-MM-DD), or null when no time has been logged",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_logged_on": {
                                 "description": "Most recent day time was logged on the project (YYYY-MM-DD), or null when no time has been logged",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locked_hours": {
                                 "type": "boolean",
@@ -2422,9 +2893,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_gettimereport",
             "name": "get-time-report",
-            "output": ["ActionOutput_timely_gettimereport"],
+            "output": [
+                "ActionOutput_timely_gettimereport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_gettimereport", "ActionOutput_timely_gettimereport"],
+            "usedModels": [
+                "ActionInput_timely_gettimereport",
+                "ActionOutput_timely_gettimereport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2448,7 +2924,11 @@
                                 "description": "End of the reporting window (inclusive), as YYYY-MM-DD. Example: \"2026-10-31\""
                             }
                         },
-                        "required": ["account_id", "since", "upto"],
+                        "required": [
+                            "account_id",
+                            "since",
+                            "upto"
+                        ],
                         "additionalProperties": false,
                         "description": "Arguments for retrieving a date-range time and cost report from Timely for a single account."
                     },
@@ -2510,7 +2990,15 @@
                                                     "description": "Total duration expressed in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Total logged time across this client's projects inside the window."
                                         },
@@ -2547,7 +3035,15 @@
                                                     "description": "Total duration expressed in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "billed_duration": {
@@ -2583,7 +3079,15 @@
                                                     "description": "Total duration expressed in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "unbilled_duration": {
@@ -2619,7 +3123,15 @@
                                                     "description": "Total duration expressed in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "billable_duration": {
@@ -2655,7 +3167,15 @@
                                                     "description": "Total duration expressed in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "non_billable_duration": {
@@ -2691,7 +3211,15 @@
                                                     "description": "Total duration expressed in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "cost": {
@@ -2715,7 +3243,12 @@
                                                     "description": "ISO 4217 currency code. Example: \"kes\""
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "estimated_cost": {
@@ -2739,7 +3272,12 @@
                                                     "description": "ISO 4217 currency code. Example: \"kes\""
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "billed_cost": {
@@ -2763,7 +3301,12 @@
                                                     "description": "ISO 4217 currency code. Example: \"kes\""
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "unbilled_cost": {
@@ -2787,7 +3330,12 @@
                                                     "description": "ISO 4217 currency code. Example: \"kes\""
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "internal_cost": {
@@ -2811,7 +3359,12 @@
                                                     "description": "ISO 4217 currency code. Example: \"kes\""
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "profit": {
@@ -2835,7 +3388,12 @@
                                                     "description": "ISO 4217 currency code. Example: \"kes\""
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "profitability": {
@@ -3154,7 +3712,12 @@
                                                                 "description": "ISO 4217 currency code. Example: \"kes\""
                                                             }
                                                         },
-                                                        "required": ["fractional", "formatted", "amount", "currency_code"],
+                                                        "required": [
+                                                            "fractional",
+                                                            "formatted",
+                                                            "amount",
+                                                            "currency_code"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "estimated_cost": {
@@ -3178,7 +3741,12 @@
                                                                 "description": "ISO 4217 currency code. Example: \"kes\""
                                                             }
                                                         },
-                                                        "required": ["fractional", "formatted", "amount", "currency_code"],
+                                                        "required": [
+                                                            "fractional",
+                                                            "formatted",
+                                                            "amount",
+                                                            "currency_code"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "billed_cost": {
@@ -3202,7 +3770,12 @@
                                                                 "description": "ISO 4217 currency code. Example: \"kes\""
                                                             }
                                                         },
-                                                        "required": ["fractional", "formatted", "amount", "currency_code"],
+                                                        "required": [
+                                                            "fractional",
+                                                            "formatted",
+                                                            "amount",
+                                                            "currency_code"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "unbilled_cost": {
@@ -3226,7 +3799,12 @@
                                                                 "description": "ISO 4217 currency code. Example: \"kes\""
                                                             }
                                                         },
-                                                        "required": ["fractional", "formatted", "amount", "currency_code"],
+                                                        "required": [
+                                                            "fractional",
+                                                            "formatted",
+                                                            "amount",
+                                                            "currency_code"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "internal_cost": {
@@ -3250,7 +3828,12 @@
                                                                 "description": "ISO 4217 currency code. Example: \"kes\""
                                                             }
                                                         },
-                                                        "required": ["fractional", "formatted", "amount", "currency_code"],
+                                                        "required": [
+                                                            "fractional",
+                                                            "formatted",
+                                                            "amount",
+                                                            "currency_code"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "profit": {
@@ -3274,7 +3857,12 @@
                                                                 "description": "ISO 4217 currency code. Example: \"kes\""
                                                             }
                                                         },
-                                                        "required": ["fractional", "formatted", "amount", "currency_code"],
+                                                        "required": [
+                                                            "fractional",
+                                                            "formatted",
+                                                            "amount",
+                                                            "currency_code"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "profitability": {
@@ -3282,19 +3870,33 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["project_id", "project_name", "active", "duration"],
+                                                "required": [
+                                                    "project_id",
+                                                    "project_name",
+                                                    "active",
+                                                    "duration"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Per-project breakdown for this client inside the window."
                                         }
                                     },
-                                    "required": ["client_id", "client_name", "duration", "projects"],
+                                    "required": [
+                                        "client_id",
+                                        "client_name",
+                                        "duration",
+                                        "projects"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Per-client rollup with a nested project breakdown. Empty when no time was logged in the window."
                             }
                         },
-                        "required": ["since", "upto", "clients"],
+                        "required": [
+                            "since",
+                            "upto",
+                            "clients"
+                        ],
                         "additionalProperties": false,
                         "description": "Date-range-scoped time and cost rollup grouped by client, each with a per-project breakdown."
                     }
@@ -3308,9 +3910,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_timely_getuser"],
+            "output": [
+                "ActionOutput_timely_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_getuser", "ActionOutput_timely_getuser"],
+            "usedModels": [
+                "ActionInput_timely_getuser",
+                "ActionOutput_timely_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3330,7 +3937,10 @@
                                 "description": "ID of the user to retrieve. Example: 2418691"
                             }
                         },
-                        "required": ["account_id", "user_id"],
+                        "required": [
+                            "account_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Timely user."
                     },
@@ -3363,15 +3973,24 @@
                             },
                             "created_at": {
                                 "description": "Unix timestamp (seconds) when the user was created.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "updated_at": {
                                 "description": "Unix timestamp (seconds) when the user was last updated.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "last_received_memories_date": {
                                 "description": "Date the user last received memories, or null if none.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sign_in_count": {
                                 "type": "number",
@@ -3379,15 +3998,24 @@
                             },
                             "external_id": {
                                 "description": "Identifier of the user in an external system, or null if not linked.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "time_zone": {
                                 "description": "IANA time zone of the user, e.g. \"Africa/Nairobi\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "memory_retention_days": {
                                 "description": "Memory retention period in days, or null if not set.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "avatar": {
                                 "description": "Avatar image URLs for the user, or null if none.",
@@ -3420,7 +4048,14 @@
                                                 "description": "URL of the small avatar image."
                                             }
                                         },
-                                        "required": ["large_retina", "large", "medium_retina", "medium", "small_retina", "small"],
+                                        "required": [
+                                            "large_retina",
+                                            "large",
+                                            "medium_retina",
+                                            "medium",
+                                            "small_retina",
+                                            "small"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3430,7 +4065,10 @@
                             },
                             "type": {
                                 "description": "Resource type discriminator, e.g. \"User\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "work_days": {
                                 "type": "string",
@@ -3442,7 +4080,10 @@
                             },
                             "weekly_capacity": {
                                 "description": "Weekly capacity of the user in hours.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "active_projects_count": {
                                 "description": "Number of active projects the user is assigned to.",
@@ -3450,11 +4091,17 @@
                             },
                             "user_level": {
                                 "description": "Permission level of the user, e.g. \"admin\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "admin": {
                                 "description": "Whether the user is an account administrator.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "hide_hourly_rate": {
                                 "type": "boolean",
@@ -3466,19 +4113,31 @@
                             },
                             "deleted": {
                                 "description": "Whether the user has been deleted.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "default_hour_rate": {
                                 "description": "Default hourly rate of the user.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "internal_hour_rate": {
                                 "description": "Internal hourly rate of the user.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "role_id": {
                                 "description": "ID of the role assigned to the user.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "role": {
                                 "description": "Role assigned to the user, or null if none.",
@@ -3495,7 +4154,10 @@
                                                 "description": "Name of the role, e.g. \"admin\"."
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3533,9 +4195,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_listaccounts",
             "name": "list-accounts",
-            "output": ["ActionOutput_timely_listaccounts"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_listaccounts", "ActionOutput_timely_listaccounts"],
+            "output": [
+                "ActionOutput_timely_listaccounts"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_listaccounts",
+                "ActionOutput_timely_listaccounts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3586,7 +4255,13 @@
                                             "description": "Whether the currency symbol is displayed before the amount."
                                         }
                                     },
-                                    "required": ["id", "name", "iso_code", "symbol", "symbol_first"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "iso_code",
+                                        "symbol",
+                                        "symbol_first"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Currency configured for the account."
                                 },
@@ -3595,22 +4270,36 @@
                                     "properties": {
                                         "large_retina": {
                                             "description": "URL of the large retina account logo, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "medium_retina": {
                                             "description": "URL of the medium retina account logo, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "small_retina": {
                                             "description": "URL of the small retina account logo, or null when not set.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "brand_logo": {
                                             "type": "boolean",
                                             "description": "Whether the account uses a custom brand logo."
                                         }
                                     },
-                                    "required": ["large_retina", "medium_retina", "small_retina", "brand_logo"],
+                                    "required": [
+                                        "large_retina",
+                                        "medium_retina",
+                                        "small_retina",
+                                        "brand_logo"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Account logo URLs and brand-logo flag."
                                 },
@@ -3640,7 +4329,10 @@
                                 },
                                 "next_charge": {
                                     "description": "Date of the next charge in YYYY-MM-DD format, or null when there is none.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "start_of_week": {
                                     "type": "number",
@@ -3672,7 +4364,10 @@
                                 },
                                 "appstore_transaction_id": {
                                     "description": "App Store transaction ID when subscribed via the App Store, otherwise null.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "owner_id": {
                                     "type": "number",
@@ -3696,11 +4391,17 @@
                                 },
                                 "estimated_company_size": {
                                     "description": "Estimated company size, or null when not set.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "industry": {
                                     "description": "Industry of the account, or null when not set.",
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "memory_retention_days": {
                                     "type": "number",
@@ -3758,7 +4459,15 @@
                                             "description": "Total capacity expressed in minutes."
                                         }
                                     },
-                                    "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                    "required": [
+                                        "hours",
+                                        "minutes",
+                                        "seconds",
+                                        "formatted",
+                                        "total_hours",
+                                        "total_seconds",
+                                        "total_minutes"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Default weekly capacity for a user."
                                 },
@@ -3804,7 +4513,10 @@
                                                 "description": "Days remaining for the feature, or -1 when the feature is not time-limited."
                                             }
                                         },
-                                        "required": ["name", "days"],
+                                        "required": [
+                                            "name",
+                                            "days"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "description": "Features enabled for the account."
@@ -3868,9 +4580,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_listclients",
             "name": "list-clients",
-            "output": ["ActionOutput_timely_listclients"],
+            "output": [
+                "ActionOutput_timely_listclients"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_listclients", "ActionOutput_timely_listclients"],
+            "usedModels": [
+                "ActionInput_timely_listclients",
+                "ActionOutput_timely_listclients"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3884,7 +4601,9 @@
                                 "description": "Timely account ID. Discover it with the list-accounts action. Example: 1145787"
                             }
                         },
-                        "required": ["account_id"],
+                        "required": [
+                            "account_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the active clients (companies) of a Timely account."
                     },
@@ -3906,7 +4625,10 @@
                                         },
                                         "color": {
                                             "description": "Hex color assigned to the client, or null if unset. Example: \"1976d2\"",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "active": {
                                             "type": "boolean",
@@ -3914,20 +4636,32 @@
                                         },
                                         "external_id": {
                                             "description": "Identifier of the linked external system record, or null if none.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
                                             "description": "ISO 8601 timestamp of the last client update. Example: \"2026-10-07T05:54:36+03:00\"",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "active"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "active"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "All active clients (companies) in the account."
                             }
                         },
-                        "required": ["clients"],
+                        "required": [
+                            "clients"
+                        ],
                         "additionalProperties": false,
                         "description": "Active clients (companies) of a Timely account."
                     }
@@ -3941,9 +4675,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_timely_listevents"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_listevents", "ActionOutput_timely_listevents"],
+            "output": [
+                "ActionOutput_timely_listevents"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_listevents",
+                "ActionOutput_timely_listevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4004,7 +4745,10 @@
                                         },
                                         "note": {
                                             "description": "Free-text note attached to the time entry.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "user": {
                                             "type": "object",
@@ -4022,7 +4766,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "User the time entry is attributed to."
                                         },
@@ -4058,7 +4804,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {},
                                             "description": "Project the time entry is logged against."
                                         },
@@ -4094,7 +4842,15 @@
                                                     "description": "Total duration in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Duration actually logged."
                                         },
@@ -4130,7 +4886,15 @@
                                                     "description": "Total duration in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Estimated duration for the entry."
                                         },
@@ -4154,7 +4918,12 @@
                                                     "description": "Currency code, e.g. \"kes\"."
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Computed cost of the entry."
                                         },
@@ -4178,7 +4947,12 @@
                                                     "description": "Currency code, e.g. \"kes\"."
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Estimated cost of the entry."
                                         },
@@ -4204,7 +4978,10 @@
                                         },
                                         "locked_reason": {
                                             "description": "Reason the entry is locked, when locked.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "label_ids": {
                                             "type": "array",
@@ -4222,11 +4999,17 @@
                                         },
                                         "from": {
                                             "description": "Start time of the entry, when it represents a time block.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "to": {
                                             "description": "End time of the entry, when it represents a time block.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "number",
@@ -4238,11 +5021,17 @@
                                         },
                                         "created_from": {
                                             "description": "Source the entry was created from, e.g. \"Web\" or \"Nango\", when known.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_from": {
                                             "description": "Source the entry was last updated from, when known.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "deleted": {
                                             "type": "boolean",
@@ -4254,7 +5043,10 @@
                                         },
                                         "external_id": {
                                             "description": "External identifier attached to the entry, when present.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sequence": {
                                             "type": "number",
@@ -4296,7 +5088,9 @@
                                 "description": "Time entries matching the requested filters."
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "Logged Timely time entries (events) matching the requested filters."
                     }
@@ -4310,9 +5104,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_listlabels",
             "name": "list-labels",
-            "output": ["ActionOutput_timely_listlabels"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_listlabels", "ActionOutput_timely_listlabels"],
+            "output": [
+                "ActionOutput_timely_listlabels"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_listlabels",
+                "ActionOutput_timely_listlabels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4326,7 +5127,9 @@
                                 "description": "Timely account ID. Discover it with the list-accounts action. Example: 1145787"
                             }
                         },
-                        "required": ["account_id"],
+                        "required": [
+                            "account_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the labels of a Timely account."
                     },
@@ -4341,7 +5144,9 @@
                                 "description": "Top-level labels in the account. Each label nests its child labels in the children array."
                             }
                         },
-                        "required": ["labels"],
+                        "required": [
+                            "labels"
+                        ],
                         "additionalProperties": false,
                         "description": "All labels in the Timely account, returned as a hierarchical tree.",
                         "definitions": {
@@ -4362,11 +5167,17 @@
                                     },
                                     "parent_id": {
                                         "description": "ID of the parent label, or null for a top-level label.",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "emoji": {
                                         "description": "URL of the label emoji, or null if the label has none.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "active": {
                                         "type": "boolean",
@@ -4374,7 +5185,10 @@
                                     },
                                     "external_id": {
                                         "description": "External identifier for the label, or null if none was set.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "created_at": {
                                         "type": "string",
@@ -4392,7 +5206,18 @@
                                         "description": "Nested child labels. Empty array for a label with no children."
                                     }
                                 },
-                                "required": ["id", "name", "sequence", "parent_id", "emoji", "active", "external_id", "created_at", "updated_at", "children"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "sequence",
+                                    "parent_id",
+                                    "emoji",
+                                    "active",
+                                    "external_id",
+                                    "created_at",
+                                    "updated_at",
+                                    "children"
+                                ],
                                 "additionalProperties": false
                             }
                         }
@@ -4407,9 +5232,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_timely_listprojects"],
+            "output": [
+                "ActionOutput_timely_listprojects"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_listprojects", "ActionOutput_timely_listprojects"],
+            "usedModels": [
+                "ActionInput_timely_listprojects",
+                "ActionOutput_timely_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4423,7 +5253,9 @@
                                 "description": "Timely account ID. Example: 1145787"
                             }
                         },
-                        "required": ["account_id"],
+                        "required": [
+                            "account_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing all projects in a Timely account."
                     },
@@ -4453,11 +5285,17 @@
                                         },
                                         "description": {
                                             "description": "Project description.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "color": {
                                             "description": "Project color as a hex code without the leading \"#\", or null when unset. Example: \"ffeb3b\"",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "rate_type": {
                                             "type": "string",
@@ -4491,7 +5329,10 @@
                                                         },
                                                         "color": {
                                                             "description": "Client color as a hex code without the leading \"#\", or null when unset. Example: \"1976d2\"",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "active": {
                                                             "type": "boolean",
@@ -4499,14 +5340,24 @@
                                                         },
                                                         "external_id": {
                                                             "description": "External ID assigned by an integrating system, if any.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "updated_at": {
                                                             "description": "ISO 8601 timestamp of the last client update.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["id", "name", "active"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "active"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -4542,7 +5393,13 @@
                                                     "description": "Whether the symbol is displayed before the amount."
                                                 }
                                             },
-                                            "required": ["id", "name", "iso_code", "symbol", "symbol_first"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "iso_code",
+                                                "symbol",
+                                                "symbol_first"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Currency configured for the project."
                                         },
@@ -4637,7 +5494,15 @@
                                                     "description": "Total duration expressed in minutes."
                                                 }
                                             },
-                                            "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                            "required": [
+                                                "hours",
+                                                "minutes",
+                                                "seconds",
+                                                "formatted",
+                                                "total_hours",
+                                                "total_seconds",
+                                                "total_minutes"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "All-time duration logged against the project (aggregate, not date-scoped)."
                                         },
@@ -4661,7 +5526,12 @@
                                                     "description": "ISO currency code for the cost. Example: \"kes\""
                                                 }
                                             },
-                                            "required": ["fractional", "formatted", "amount", "currency_code"],
+                                            "required": [
+                                                "fractional",
+                                                "formatted",
+                                                "amount",
+                                                "currency_code"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "All-time cost logged against the project (aggregate, not date-scoped)."
                                         }
@@ -4691,7 +5561,10 @@
                                 "description": "Number of projects returned."
                             }
                         },
-                        "required": ["projects", "count"],
+                        "required": [
+                            "projects",
+                            "count"
+                        ],
                         "additionalProperties": false,
                         "description": "The projects visible in the requested Timely account."
                     }
@@ -4705,9 +5578,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_timely_listusers"],
+            "output": [
+                "ActionOutput_timely_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_listusers", "ActionOutput_timely_listusers"],
+            "usedModels": [
+                "ActionInput_timely_listusers",
+                "ActionOutput_timely_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4721,7 +5599,9 @@
                                 "description": "Timely account ID. Example: 1145787. Discover it with the list-accounts action."
                             }
                         },
-                        "required": ["account_id"],
+                        "required": [
+                            "account_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the users in a Timely account."
                     },
@@ -4829,7 +5709,10 @@
                                                     "description": "Name of the user role, such as \"admin\"."
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "created_at": {
@@ -4841,13 +5724,20 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "email", "name", "active"],
+                                    "required": [
+                                        "id",
+                                        "email",
+                                        "name",
+                                        "active"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Team members in the account."
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false,
                         "description": "Response containing the team members in the account."
                     }
@@ -4861,9 +5751,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_logtimetonamedproject",
             "name": "log-time-to-named-project",
-            "output": ["ActionOutput_timely_logtimetonamedproject"],
+            "output": [
+                "ActionOutput_timely_logtimetonamedproject"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_logtimetonamedproject", "ActionOutput_timely_logtimetonamedproject"],
+            "usedModels": [
+                "ActionInput_timely_logtimetonamedproject",
+                "ActionOutput_timely_logtimetonamedproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4916,7 +5811,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["project_name", "day"],
+                        "required": [
+                            "project_name",
+                            "day"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for logging time against a named project, creating the project if it does not already exist."
                     },
@@ -4971,12 +5869,25 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "day", "hours", "minutes", "total_hours", "project_id"],
+                                "required": [
+                                    "id",
+                                    "day",
+                                    "hours",
+                                    "minutes",
+                                    "total_hours",
+                                    "project_id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The time entry that was created."
                             }
                         },
-                        "required": ["account_id", "project_id", "project_name", "created_project", "event"],
+                        "required": [
+                            "account_id",
+                            "project_id",
+                            "project_name",
+                            "created_project",
+                            "event"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of logging the time entry, including whether a new project was created or an existing one was reused."
                     }
@@ -4990,9 +5901,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_updateclient",
             "name": "update-client",
-            "output": ["ActionOutput_timely_updateclient"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_updateclient", "ActionOutput_timely_updateclient"],
+            "output": [
+                "ActionOutput_timely_updateclient"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_updateclient",
+                "ActionOutput_timely_updateclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5029,7 +5947,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["account_id", "client_id"],
+                        "required": [
+                            "account_id",
+                            "client_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields to change on a Timely client. Provide at least one of name, color, external_id, or active."
                     },
@@ -5046,7 +5967,10 @@
                             },
                             "color": {
                                 "description": "Client color as a hex string with no leading \"#\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "type": "boolean",
@@ -5054,14 +5978,27 @@
                             },
                             "external_id": {
                                 "description": "External identifier for the client, or null if none is set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_at": {
                                 "description": "ISO-8601 timestamp with timezone offset of the last update to the client.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "color", "active", "external_id", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "active",
+                            "external_id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false,
                         "description": "The Timely client after the update."
                     }
@@ -5075,9 +6012,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_updateevent",
             "name": "update-event",
-            "output": ["ActionOutput_timely_updateevent"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_updateevent", "ActionOutput_timely_updateevent"],
+            "output": [
+                "ActionOutput_timely_updateevent"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_updateevent",
+                "ActionOutput_timely_updateevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5141,7 +6085,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["account_id", "event_id"],
+                        "required": [
+                            "account_id",
+                            "event_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields to change on an existing Timely time entry. Only the supplied fields are updated (partial merge)."
                     },
@@ -5164,7 +6111,10 @@
                             },
                             "note": {
                                 "description": "Note attached to the time entry, or null when there is none.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "hours": {
                                 "type": "integer",
@@ -5197,7 +6147,10 @@
                             },
                             "project_name": {
                                 "description": "Name of the project the time is logged against, or null when none.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "label_ids": {
                                 "type": "array",
@@ -5218,7 +6171,10 @@
                             },
                             "external_id": {
                                 "description": "External identifier for the entry, or null when there is none.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user_id": {
                                 "anyOf": [
@@ -5282,9 +6238,14 @@
             "endpoint": null,
             "input": "ActionInput_timely_updatelabel",
             "name": "update-label",
-            "output": ["ActionOutput_timely_updatelabel"],
+            "output": [
+                "ActionOutput_timely_updatelabel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_timely_updatelabel", "ActionOutput_timely_updatelabel"],
+            "usedModels": [
+                "ActionInput_timely_updatelabel",
+                "ActionOutput_timely_updatelabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5332,7 +6293,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["account_id", "label_id"],
+                        "required": [
+                            "account_id",
+                            "label_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields to change on the label; omitted fields keep their current values."
                     },
@@ -5361,11 +6325,17 @@
                                     },
                                     "parent_id": {
                                         "description": "ID of the parent label, or null when the label is top-level.",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "emoji": {
                                         "description": "URL of the emoji/icon assigned to the label, or null when none is set.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "active": {
                                         "type": "boolean",
@@ -5373,7 +6343,10 @@
                                     },
                                     "external_id": {
                                         "description": "External identifier associated with the label, or null when none is set.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "created_at": {
                                         "type": "string",
@@ -5395,7 +6368,18 @@
                                         "description": "Child labels nested under this label."
                                     }
                                 },
-                                "required": ["id", "name", "sequence", "parent_id", "emoji", "active", "external_id", "created_at", "updated_at", "children"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "sequence",
+                                    "parent_id",
+                                    "emoji",
+                                    "active",
+                                    "external_id",
+                                    "created_at",
+                                    "updated_at",
+                                    "children"
+                                ],
                                 "additionalProperties": false
                             }
                         }
@@ -5410,9 +6394,16 @@
             "endpoint": null,
             "input": "ActionInput_timely_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_timely_updateproject"],
-            "scopes": ["manage"],
-            "usedModels": ["ActionInput_timely_updateproject", "ActionOutput_timely_updateproject"],
+            "output": [
+                "ActionOutput_timely_updateproject"
+            ],
+            "scopes": [
+                "manage"
+            ],
+            "usedModels": [
+                "ActionInput_timely_updateproject",
+                "ActionOutput_timely_updateproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5437,17 +6428,27 @@
                             },
                             "color": {
                                 "description": "New hex color without the leading \"#\", e.g. \"ff0000\". Pass null to clear the color.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "rate_type": {
                                 "description": "Billing mode: \"non-billable\", \"project\" (uses the project hourly rate), or \"user\" (uses each user's rate).",
                                 "type": "string",
-                                "enum": ["non-billable", "project", "user"]
+                                "enum": [
+                                    "non-billable",
+                                    "project",
+                                    "user"
+                                ]
                             },
                             "enable_labels": {
                                 "description": "Whether time entries on this project can carry labels: \"none\" or \"all\". Must be \"all\" before an event on this project can be saved with label_ids.",
                                 "type": "string",
-                                "enum": ["none", "all"]
+                                "enum": [
+                                    "none",
+                                    "all"
+                                ]
                             },
                             "active": {
                                 "description": "Whether the project is active. Set false to archive it.",
@@ -5478,7 +6479,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["account_id", "project_id"],
+                        "required": [
+                            "account_id",
+                            "project_id"
+                        ],
                         "additionalProperties": false,
                         "description": "The account and project identifiers plus the project fields to partially update."
                     },
@@ -5499,11 +6503,17 @@
                             },
                             "description": {
                                 "description": "Project description, or null when none is set.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Project hex color without the leading \"#\", or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "rate_type": {
                                 "type": "string",
@@ -5531,7 +6541,10 @@
                             },
                             "external_id": {
                                 "description": "External identifier associated with the project, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "required_notes": {
                                 "type": "boolean",
@@ -5551,7 +6564,10 @@
                                                 "description": "Client (company) name."
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -5603,12 +6619,16 @@
             "endpoints": [],
             "input": null,
             "name": "clients",
-            "output": ["Client"],
+            "output": [
+                "Client"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Client"],
+            "usedModels": [
+                "Client"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5649,7 +6669,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "client_id", "account_id", "name", "active"],
+                        "required": [
+                            "id",
+                            "client_id",
+                            "account_id",
+                            "name",
+                            "active"
+                        ],
                         "additionalProperties": false,
                         "description": "An active client (company) in Timely."
                     }
@@ -5664,12 +6690,17 @@
             "endpoints": [],
             "input": "SyncMetadata_timely_events",
             "name": "events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event", "SyncMetadata_timely_events"],
+            "usedModels": [
+                "Event",
+                "SyncMetadata_timely_events"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5695,11 +6726,17 @@
                             },
                             "user_email": {
                                 "description": "Email address of the user who logged the time entry, or null when Timely omits it.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user_name": {
                                 "description": "Display name of the user who logged the time entry, or null when Timely omits it.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "project_id": {
                                 "type": "number",
@@ -5707,15 +6744,24 @@
                             },
                             "project_name": {
                                 "description": "Name of the project the time was logged against, or null when Timely omits it.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "client_id": {
                                 "description": "ID of the client that owns the project, or null when the project has no client.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "client_name": {
                                 "description": "Name of the client that owns the project, or null when the project has no client.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "day": {
                                 "type": "string",
@@ -5723,7 +6769,10 @@
                             },
                             "note": {
                                 "description": "Free-text note attached to the time entry, or null when none was provided.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "duration_hours": {
                                 "type": "number",
@@ -5759,7 +6808,10 @@
                             },
                             "billed_at": {
                                 "description": "Timestamp at which the entry was billed, or null when not yet billed.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "cost_amount": {
                                 "type": "number",
@@ -5775,7 +6827,10 @@
                             },
                             "external_id": {
                                 "description": "Caller-supplied external identifier for the entry, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "label_ids": {
                                 "type": "array",
@@ -5790,7 +6845,10 @@
                             },
                             "locked_reason": {
                                 "description": "Reason the time entry is locked, or null when it is not locked.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "number",
@@ -5802,11 +6860,17 @@
                             },
                             "created_from": {
                                 "description": "Source that created the event (e.g. Web, Nango), or null when unknown.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "updated_from": {
                                 "description": "Source that last updated the event (e.g. Web, Nango), or null when unknown.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "creator_id": {
                                 "type": "number",
@@ -5878,7 +6942,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5887,12 +6953,16 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5918,11 +6988,17 @@
                             },
                             "description": {
                                 "description": "Project description, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Project color as a hex string without a leading #, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "rate_type": {
                                 "type": "string",
@@ -5942,11 +7018,17 @@
                             },
                             "external_id": {
                                 "description": "Caller-supplied external identifier, or null when unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "budget_scope": {
                                 "description": "Budget scope of the project, or null when no budget is scoped.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "client": {
                                 "description": "Client (company) the project belongs to, when one is set.",
@@ -5964,7 +7046,10 @@
                                             },
                                             "color": {
                                                 "description": "Client color as a hex string without a leading #, or null when unset.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "active": {
                                                 "type": "boolean",
@@ -5972,14 +7057,24 @@
                                             },
                                             "external_id": {
                                                 "description": "Caller-supplied external identifier, or null when unset.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "updated_at": {
                                                 "description": "ISO 8601 timestamp of when the client was last updated.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["id", "name", "active"],
+                                        "required": [
+                                            "id",
+                                            "name",
+                                            "active"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -5997,7 +7092,10 @@
                             },
                             "budget_expired_on": {
                                 "description": "Date the project budget expires, or null when it does not expire.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "has_recurrence": {
                                 "type": "boolean",
@@ -6035,7 +7133,13 @@
                                         "description": "Whether the currency symbol is shown before the amount."
                                     }
                                 },
-                                "required": ["id", "name", "iso_code", "symbol", "symbol_first"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "iso_code",
+                                    "symbol",
+                                    "symbol_first"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Currency used for the project."
                             },
@@ -6160,7 +7264,14 @@
                                             "description": "ISO 8601 timestamp of when this project-label link was last updated."
                                         }
                                     },
-                                    "required": ["project_id", "label_id", "budget", "required", "default", "updated_at"],
+                                    "required": [
+                                        "project_id",
+                                        "label_id",
+                                        "budget",
+                                        "required",
+                                        "default",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Labels attached to the project."
@@ -6206,7 +7317,12 @@
                                         "description": "Currency code the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time logged cost for the project."
                             },
@@ -6230,7 +7346,12 @@
                                         "description": "Currency code the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Estimated cost for the project."
                             },
@@ -6266,7 +7387,15 @@
                                         "description": "Total duration expressed in minutes."
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time logged duration for the project."
                             },
@@ -6302,7 +7431,15 @@
                                         "description": "Total duration expressed in minutes."
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Estimated duration for the project."
                             },
@@ -6326,7 +7463,12 @@
                                         "description": "Currency code the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time billed cost for the project."
                             },
@@ -6362,7 +7504,15 @@
                                         "description": "Total duration expressed in minutes."
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time billed duration for the project."
                             },
@@ -6386,7 +7536,12 @@
                                         "description": "Currency code the cost is expressed in."
                                     }
                                 },
-                                "required": ["fractional", "formatted", "amount", "currency_code"],
+                                "required": [
+                                    "fractional",
+                                    "formatted",
+                                    "amount",
+                                    "currency_code"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time unbilled cost for the project."
                             },
@@ -6422,7 +7577,15 @@
                                         "description": "Total duration expressed in minutes."
                                     }
                                 },
-                                "required": ["hours", "minutes", "seconds", "formatted", "total_hours", "total_seconds", "total_minutes"],
+                                "required": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds",
+                                    "formatted",
+                                    "total_hours",
+                                    "total_seconds",
+                                    "total_minutes"
+                                ],
                                 "additionalProperties": false,
                                 "description": "All-time unbilled duration for the project."
                             },
@@ -6494,12 +7657,16 @@
             "endpoints": [],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6604,7 +7771,10 @@
                                         "description": "Name of the role (e.g. 'admin')."
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "avatar": {
@@ -6663,7 +7833,14 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "user_id", "account_id", "email", "name", "active"],
+                        "required": [
+                            "id",
+                            "user_id",
+                            "account_id",
+                            "email",
+                            "name",
+                            "active"
+                        ],
                         "additionalProperties": false,
                         "description": "A Timely user (a team member in the account)."
                     }

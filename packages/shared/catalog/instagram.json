@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_createcommentreply",
             "name": "create-comment-reply",
-            "output": ["ActionOutput_instagram_createcommentreply"],
-            "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
-            "usedModels": ["ActionInput_instagram_createcommentreply", "ActionOutput_instagram_createcommentreply"],
+            "output": [
+                "ActionOutput_instagram_createcommentreply"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_comments"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_createcommentreply",
+                "ActionOutput_instagram_createcommentreply"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -27,7 +35,10 @@
                                 "description": "The text of the reply comment. Example: \"Thanks for sharing!\""
                             }
                         },
-                        "required": ["comment_id", "message"],
+                        "required": [
+                            "comment_id",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for replying to an Instagram comment."
                     },
@@ -39,7 +50,9 @@
                                 "description": "The ID of the newly created reply comment."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created reply comment."
                     }
@@ -53,9 +66,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_createmediacontainer",
             "name": "create-media-container",
-            "output": ["ActionOutput_instagram_createmediacontainer"],
-            "scopes": ["instagram_business_basic", "instagram_business_content_publish"],
-            "usedModels": ["ActionInput_instagram_createmediacontainer", "ActionOutput_instagram_createmediacontainer"],
+            "output": [
+                "ActionOutput_instagram_createmediacontainer"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_content_publish"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_createmediacontainer",
+                "ActionOutput_instagram_createmediacontainer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -78,7 +99,13 @@
                             "media_type": {
                                 "description": "Container type. Use REELS or STORIES for those formats, VIDEO for a feed video, and CAROUSEL for a carousel parent. Defaults to IMAGE when image_url is provided.",
                                 "type": "string",
-                                "enum": ["IMAGE", "VIDEO", "REELS", "STORIES", "CAROUSEL"]
+                                "enum": [
+                                    "IMAGE",
+                                    "VIDEO",
+                                    "REELS",
+                                    "STORIES",
+                                    "CAROUSEL"
+                                ]
                             },
                             "caption": {
                                 "description": "Caption for the media. Not supported for carousel child containers or stories.",
@@ -123,7 +150,11 @@
                                             "description": "Vertical position of the tag relative to the image height, typically between 0 and 1. Example: 0.5"
                                         }
                                     },
-                                    "required": ["username", "x", "y"],
+                                    "required": [
+                                        "username",
+                                        "x",
+                                        "y"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -173,7 +204,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The created Instagram media container ID and optional resumable upload URI."
                     }
@@ -187,9 +220,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_instagram_deletecomment"],
-            "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
-            "usedModels": ["ActionInput_instagram_deletecomment", "ActionOutput_instagram_deletecomment"],
+            "output": [
+                "ActionOutput_instagram_deletecomment"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_comments"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_deletecomment",
+                "ActionOutput_instagram_deletecomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -202,7 +243,9 @@
                                 "description": "The Instagram comment ID to delete. Example: \"17895695668004550\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting an Instagram comment."
                     },
@@ -214,7 +257,9 @@
                                 "description": "Whether Instagram accepted and processed the comment deletion."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the Instagram comment deletion."
                     }
@@ -228,9 +273,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_deletemedia",
             "name": "delete-media",
-            "output": ["ActionOutput_instagram_deletemedia"],
-            "scopes": ["instagram_business_basic", "instagram_business_content_publish"],
-            "usedModels": ["ActionInput_instagram_deletemedia", "ActionOutput_instagram_deletemedia"],
+            "output": [
+                "ActionOutput_instagram_deletemedia"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_content_publish"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_deletemedia",
+                "ActionOutput_instagram_deletemedia"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -243,7 +296,9 @@
                                 "description": "The ID of the published Instagram media object to delete."
                             }
                         },
-                        "required": ["mediaId"],
+                        "required": [
+                            "mediaId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting an Instagram media object."
                     },
@@ -279,11 +334,16 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["message"],
+                                "required": [
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["mediaId", "deleted"],
+                        "required": [
+                            "mediaId",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of an Instagram media deletion attempt."
                     }
@@ -297,9 +357,16 @@
             "endpoint": null,
             "input": "ActionInput_instagram_getaccount",
             "name": "get-account",
-            "output": ["ActionOutput_instagram_getaccount"],
-            "scopes": ["instagram_business_basic"],
-            "usedModels": ["ActionInput_instagram_getaccount", "ActionOutput_instagram_getaccount"],
+            "output": [
+                "ActionOutput_instagram_getaccount"
+            ],
+            "scopes": [
+                "instagram_business_basic"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_getaccount",
+                "ActionOutput_instagram_getaccount"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -363,7 +430,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Instagram business or creator account details."
                     }
@@ -377,9 +446,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_getcomment",
             "name": "get-comment",
-            "output": ["ActionOutput_instagram_getcomment"],
-            "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
-            "usedModels": ["ActionInput_instagram_getcomment", "ActionOutput_instagram_getcomment"],
+            "output": [
+                "ActionOutput_instagram_getcomment"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_comments"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_getcomment",
+                "ActionOutput_instagram_getcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -392,7 +469,9 @@
                                 "description": "The Instagram comment ID to retrieve. Example: \"17881770991003328\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Instagram comment."
                     },
@@ -437,9 +516,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_getmediainsights",
             "name": "get-media-insights",
-            "output": ["ActionOutput_instagram_getmediainsights"],
-            "scopes": ["instagram_business_basic", "instagram_business_manage_insights"],
-            "usedModels": ["ActionInput_instagram_getmediainsights", "ActionOutput_instagram_getmediainsights"],
+            "output": [
+                "ActionOutput_instagram_getmediainsights"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_insights"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_getmediainsights",
+                "ActionOutput_instagram_getmediainsights"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -461,7 +548,9 @@
                                 }
                             }
                         },
-                        "required": ["media_id"],
+                        "required": [
+                            "media_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving insights for an Instagram media object."
                     },
@@ -496,20 +585,30 @@
                                         },
                                         "value": {
                                             "description": "Numeric value of the metric, or null when the provider returns no value.",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "id": {
                                             "description": "Provider identifier for the metric result.",
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "period", "value"],
+                                    "required": [
+                                        "name",
+                                        "period",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Insight metrics returned by the provider."
                             }
                         },
-                        "required": ["media_id", "metrics"],
+                        "required": [
+                            "media_id",
+                            "metrics"
+                        ],
                         "additionalProperties": false,
                         "description": "Insight metrics for an Instagram media object."
                     }
@@ -523,9 +622,16 @@
             "endpoint": null,
             "input": "ActionInput_instagram_getmedia",
             "name": "get-media",
-            "output": ["ActionOutput_instagram_getmedia"],
-            "scopes": ["instagram_business_basic"],
-            "usedModels": ["ActionInput_instagram_getmedia", "ActionOutput_instagram_getmedia"],
+            "output": [
+                "ActionOutput_instagram_getmedia"
+            ],
+            "scopes": [
+                "instagram_business_basic"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_getmedia",
+                "ActionOutput_instagram_getmedia"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -538,7 +644,9 @@
                                 "description": "The Instagram media ID. Example: \"1234567890\""
                             }
                         },
-                        "required": ["media_id"],
+                        "required": [
+                            "media_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the Instagram media object to retrieve."
                     },
@@ -578,7 +686,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "media_type"],
+                        "required": [
+                            "id",
+                            "media_type"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Instagram media object with its caption, type, URLs, timestamp, and engagement counts."
                     }
@@ -592,9 +703,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_getuserinsights",
             "name": "get-user-insights",
-            "output": ["ActionOutput_instagram_getuserinsights"],
-            "scopes": ["instagram_business_basic", "instagram_business_manage_insights"],
-            "usedModels": ["ActionInput_instagram_getuserinsights", "ActionOutput_instagram_getuserinsights"],
+            "output": [
+                "ActionOutput_instagram_getuserinsights"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_insights"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_getuserinsights",
+                "ActionOutput_instagram_getuserinsights"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -608,7 +727,14 @@
                             },
                             "period": {
                                 "type": "string",
-                                "enum": ["day", "week", "days_28", "month", "lifetime", "total_over_range"],
+                                "enum": [
+                                    "day",
+                                    "week",
+                                    "days_28",
+                                    "month",
+                                    "lifetime",
+                                    "total_over_range"
+                                ],
                                 "description": "Aggregation period for the metrics. Example: \"day\""
                             },
                             "since": {
@@ -626,12 +752,22 @@
                             "timeframe": {
                                 "description": "Preset timeframe required by demographic metrics. Overrides since and until for those metrics.",
                                 "type": "string",
-                                "enum": ["last_14_days", "last_30_days", "last_90_days", "prev_month", "this_month", "this_week"]
+                                "enum": [
+                                    "last_14_days",
+                                    "last_30_days",
+                                    "last_90_days",
+                                    "prev_month",
+                                    "this_month",
+                                    "this_week"
+                                ]
                             },
                             "metric_type": {
                                 "description": "How to aggregate results: \"time_series\" for values per period, or \"total_value\" for a single total with optional breakdowns.",
                                 "type": "string",
-                                "enum": ["time_series", "total_value"]
+                                "enum": [
+                                    "time_series",
+                                    "total_value"
+                                ]
                             },
                             "breakdown": {
                                 "description": "Breakdown dimension for metrics that support it. Example: \"media_product_type\"",
@@ -644,7 +780,10 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["metric", "period"],
+                        "required": [
+                            "metric",
+                            "period"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for retrieving account-level insights for an Instagram business or creator account."
                     },
@@ -748,7 +887,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["name", "period"],
+                                    "required": [
+                                        "name",
+                                        "period"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Insights returned for each requested metric."
@@ -769,7 +911,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false,
                         "description": "Account-level insights returned for the requested metrics."
                     }
@@ -783,9 +927,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_listconversations",
             "name": "list-conversations",
-            "output": ["ActionOutput_instagram_listconversations"],
-            "scopes": ["instagram_business_basic", "instagram_business_manage_messages"],
-            "usedModels": ["ActionInput_instagram_listconversations", "ActionOutput_instagram_listconversations"],
+            "output": [
+                "ActionOutput_instagram_listconversations"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_messages"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_listconversations",
+                "ActionOutput_instagram_listconversations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -838,12 +990,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Conversations returned for this page, most recent first."
@@ -853,7 +1009,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of Instagram Direct conversations and the cursor for the next page."
                     }
@@ -867,9 +1025,16 @@
             "endpoint": null,
             "input": "ActionInput_instagram_listmediachildren",
             "name": "list-media-children",
-            "output": ["ActionOutput_instagram_listmediachildren"],
-            "scopes": ["instagram_business_basic"],
-            "usedModels": ["ActionInput_instagram_listmediachildren", "ActionOutput_instagram_listmediachildren"],
+            "output": [
+                "ActionOutput_instagram_listmediachildren"
+            ],
+            "scopes": [
+                "instagram_business_basic"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_listmediachildren",
+                "ActionOutput_instagram_listmediachildren"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -882,7 +1047,9 @@
                                 "description": "Instagram media ID of the carousel album. Example: \"17896450804038745\""
                             }
                         },
-                        "required": ["media_id"],
+                        "required": [
+                            "media_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the child media of an Instagram carousel album."
                     },
@@ -923,13 +1090,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Child media items contained in the carousel album."
                             }
                         },
-                        "required": ["children"],
+                        "required": [
+                            "children"
+                        ],
                         "additionalProperties": false,
                         "description": "Child media items of an Instagram carousel album."
                     }
@@ -943,9 +1114,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_listmediacomments",
             "name": "list-media-comments",
-            "output": ["ActionOutput_instagram_listmediacomments"],
-            "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
-            "usedModels": ["ActionInput_instagram_listmediacomments", "ActionOutput_instagram_listmediacomments"],
+            "output": [
+                "ActionOutput_instagram_listmediacomments"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_comments"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_listmediacomments",
+                "ActionOutput_instagram_listmediacomments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -962,7 +1141,14 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["id", "text", "username", "timestamp", "like_count", "parent_id"]
+                                    "enum": [
+                                        "id",
+                                        "text",
+                                        "username",
+                                        "timestamp",
+                                        "like_count",
+                                        "parent_id"
+                                    ]
                                 }
                             },
                             "limit": {
@@ -977,7 +1163,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["media_id"],
+                        "required": [
+                            "media_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Filters for listing comments on an Instagram media object."
                     },
@@ -1014,7 +1202,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Comments returned for the requested media object."
@@ -1024,7 +1214,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of comments for an Instagram media object."
                     }
@@ -1038,9 +1230,16 @@
             "endpoint": null,
             "input": "ActionInput_instagram_listmedia",
             "name": "list-media",
-            "output": ["ActionOutput_instagram_listmedia"],
-            "scopes": ["instagram_business_basic"],
-            "usedModels": ["ActionInput_instagram_listmedia", "ActionOutput_instagram_listmedia"],
+            "output": [
+                "ActionOutput_instagram_listmedia"
+            ],
+            "scopes": [
+                "instagram_business_basic"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_listmedia",
+                "ActionOutput_instagram_listmedia"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1117,7 +1316,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Media objects published by the account, newest first."
@@ -1127,7 +1328,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of media published by an Instagram business or creator account."
                     }
@@ -1141,9 +1344,16 @@
             "endpoint": null,
             "input": "ActionInput_instagram_liststories",
             "name": "list-stories",
-            "output": ["ActionOutput_instagram_liststories"],
-            "scopes": ["instagram_business_basic"],
-            "usedModels": ["ActionInput_instagram_liststories", "ActionOutput_instagram_liststories"],
+            "output": [
+                "ActionOutput_instagram_liststories"
+            ],
+            "scopes": [
+                "instagram_business_basic"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_liststories",
+                "ActionOutput_instagram_liststories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1213,7 +1423,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Story media objects for the account."
@@ -1223,7 +1435,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["stories"],
+                        "required": [
+                            "stories"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of Instagram stories and the cursor for the next page."
                     }
@@ -1237,9 +1451,17 @@
             "endpoint": null,
             "input": "ActionInput_instagram_publishmediacontainer",
             "name": "publish-media-container",
-            "output": ["ActionOutput_instagram_publishmediacontainer"],
-            "scopes": ["instagram_business_basic", "instagram_business_content_publish"],
-            "usedModels": ["ActionInput_instagram_publishmediacontainer", "ActionOutput_instagram_publishmediacontainer"],
+            "output": [
+                "ActionOutput_instagram_publishmediacontainer"
+            ],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_content_publish"
+            ],
+            "usedModels": [
+                "ActionInput_instagram_publishmediacontainer",
+                "ActionOutput_instagram_publishmediacontainer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1257,7 +1479,9 @@
                                 "description": "ID of a prepared Instagram media container whose status_code is FINISHED."
                             }
                         },
-                        "required": ["creation_id"],
+                        "required": [
+                            "creation_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for publishing a prepared Instagram media container."
                     },
@@ -1269,7 +1493,9 @@
                                 "description": "ID of the published Instagram media object."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The published Instagram media object."
                     }
@@ -1286,12 +1512,19 @@
             "endpoints": [],
             "input": "SyncMetadata_instagram_accountmedia",
             "name": "account-media",
-            "output": ["Media"],
+            "output": [
+                "Media"
+            ],
             "runs": "every hour",
-            "scopes": ["instagram_business_basic"],
+            "scopes": [
+                "instagram_business_basic"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Media", "SyncMetadata_instagram_accountmedia"],
+            "usedModels": [
+                "Media",
+                "SyncMetadata_instagram_accountmedia"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1369,18 +1602,24 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "A single item within an Instagram carousel album."
                                         },
                                         "description": "Carousel child media objects returned by Instagram."
                                     }
                                 },
-                                "required": ["data"],
+                                "required": [
+                                    "data"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "An Instagram media object published by the connected business or creator account."
                     },
@@ -1401,7 +1640,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1410,12 +1651,19 @@
             "endpoints": [],
             "input": null,
             "name": "conversations",
-            "output": ["Conversation"],
+            "output": [
+                "Conversation"
+            ],
             "runs": "every hour",
-            "scopes": ["instagram_business_basic", "instagram_business_manage_messages"],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_messages"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Conversation"],
+            "usedModels": [
+                "Conversation"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1449,14 +1697,18 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "A participant in an Instagram Direct conversation"
                                         },
                                         "description": "Participants in the conversation"
                                     }
                                 },
-                                "required": ["data"],
+                                "required": [
+                                    "data"
+                                ],
                                 "additionalProperties": false
                             },
                             "messages": {
@@ -1489,7 +1741,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "message": {
@@ -1497,24 +1751,32 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "A message in an Instagram Direct conversation"
                                         },
                                         "description": "Most recent messages in the conversation"
                                     }
                                 },
-                                "required": ["data"],
+                                "required": [
+                                    "data"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "An Instagram Direct conversation between the connected business account and one or more participants"
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1523,12 +1785,19 @@
             "endpoints": [],
             "input": null,
             "name": "media-comments",
-            "output": ["MediaComment"],
+            "output": [
+                "MediaComment"
+            ],
             "runs": "every hour",
-            "scopes": ["instagram_business_basic", "instagram_business_manage_comments"],
+            "scopes": [
+                "instagram_business_basic",
+                "instagram_business_manage_comments"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MediaComment"],
+            "usedModels": [
+                "MediaComment"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1569,13 +1838,18 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "media_id"],
+                        "required": [
+                            "id",
+                            "media_id"
+                        ],
                         "additionalProperties": false,
                         "description": "An Instagram comment or reply posted on a media item."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1584,12 +1858,19 @@
             "endpoints": [],
             "input": "SyncMetadata_instagram_stories",
             "name": "stories",
-            "output": ["Story"],
+            "output": [
+                "Story"
+            ],
             "runs": "every hour",
-            "scopes": ["instagram_business_basic"],
+            "scopes": [
+                "instagram_business_basic"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Story", "SyncMetadata_instagram_stories"],
+            "usedModels": [
+                "Story",
+                "SyncMetadata_instagram_stories"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1646,7 +1927,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "An Instagram story media object."
                     },
@@ -1663,7 +1946,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

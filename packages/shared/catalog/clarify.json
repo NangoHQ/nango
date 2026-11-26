@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_clarify_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_clarify_getlist"],
+            "output": [
+                "ActionOutput_clarify_getlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clarify_getlist", "ActionOutput_clarify_getlist"],
+            "usedModels": [
+                "ActionInput_clarify_getlist",
+                "ActionOutput_clarify_getlist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -25,7 +30,10 @@
                                 "description": "Unique ID of the list."
                             }
                         },
-                        "required": ["object", "listId"],
+                        "required": [
+                            "object",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clarify_getlist": {
@@ -41,10 +49,16 @@
                                 "type": "string"
                             },
                             "emoji": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
                                 "type": "string"
@@ -59,7 +73,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "entity"],
+                        "required": [
+                            "id",
+                            "title",
+                            "entity"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -72,9 +90,14 @@
             "endpoint": null,
             "input": "ActionInput_clarify_listlistresources",
             "name": "list-list-resources",
-            "output": ["ActionOutput_clarify_listlistresources"],
+            "output": [
+                "ActionOutput_clarify_listlistresources"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clarify_listlistresources", "ActionOutput_clarify_listlistresources"],
+            "usedModels": [
+                "ActionInput_clarify_listlistresources",
+                "ActionOutput_clarify_listlistresources"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -102,7 +125,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["object", "listId"],
+                        "required": [
+                            "object",
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clarify_listlistresources": {
@@ -127,7 +153,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "type", "attributes"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "attributes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -147,7 +177,12 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["totalRecords", "totalPages", "offset", "limit"],
+                                "required": [
+                                    "totalRecords",
+                                    "totalPages",
+                                    "offset",
+                                    "limit"
+                                ],
                                 "additionalProperties": false
                             },
                             "nextOffset": {
@@ -155,7 +190,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["resources", "meta"],
+                        "required": [
+                            "resources",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -168,9 +206,14 @@
             "endpoint": null,
             "input": "ActionInput_clarify_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_clarify_listlists"],
+            "output": [
+                "ActionOutput_clarify_listlists"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clarify_listlists", "ActionOutput_clarify_listlists"],
+            "usedModels": [
+                "ActionInput_clarify_listlists",
+                "ActionOutput_clarify_listlists"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -197,10 +240,16 @@
                                 "default": "all",
                                 "description": "Which list types to return. Clarify excludes dynamic lists unless filter[type] is set; default all fetches static and dynamic.",
                                 "type": "string",
-                                "enum": ["static", "dynamic", "all"]
+                                "enum": [
+                                    "static",
+                                    "dynamic",
+                                    "all"
+                                ]
                             }
                         },
-                        "required": ["listType"],
+                        "required": [
+                            "listType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clarify_listlists": {
@@ -221,10 +270,16 @@
                                             "type": "string"
                                         },
                                         "emoji": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "type": "string"
@@ -239,7 +294,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "entity"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "entity"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -259,7 +318,12 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["totalRecords", "totalPages", "offset", "limit"],
+                                "required": [
+                                    "totalRecords",
+                                    "totalPages",
+                                    "offset",
+                                    "limit"
+                                ],
                                 "additionalProperties": false
                             },
                             "nextOffset": {
@@ -267,7 +331,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["lists", "meta"],
+                        "required": [
+                            "lists",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }

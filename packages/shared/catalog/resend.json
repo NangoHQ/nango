@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_addcontacttosegment",
             "name": "add-contact-to-segment",
-            "output": ["ActionOutput_resend_addcontacttosegment"],
+            "output": [
+                "ActionOutput_resend_addcontacttosegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_addcontacttosegment", "ActionOutput_resend_addcontacttosegment"],
+            "usedModels": [
+                "ActionInput_resend_addcontacttosegment",
+                "ActionOutput_resend_addcontacttosegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -23,7 +28,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contact_id", "segment_id"],
+                        "required": [
+                            "contact_id",
+                            "segment_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_addcontacttosegment": {
@@ -51,9 +59,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_cancelbroadcast",
             "name": "cancel-broadcast",
-            "output": ["ActionOutput_resend_cancelbroadcast"],
+            "output": [
+                "ActionOutput_resend_cancelbroadcast"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_cancelbroadcast", "ActionOutput_resend_cancelbroadcast"],
+            "usedModels": [
+                "ActionInput_resend_cancelbroadcast",
+                "ActionOutput_resend_cancelbroadcast"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -64,7 +77,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_cancelbroadcast": {
@@ -89,9 +104,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_cancelemail",
             "name": "cancel-email",
-            "output": ["ActionOutput_resend_cancelemail"],
+            "output": [
+                "ActionOutput_resend_cancelemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_cancelemail", "ActionOutput_resend_cancelemail"],
+            "usedModels": [
+                "ActionInput_resend_cancelemail",
+                "ActionOutput_resend_cancelemail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -102,7 +122,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email_id"],
+                        "required": [
+                            "email_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_resend_cancelemail": {
@@ -115,7 +137,10 @@
                                 "type": "string"
                             },
                             "message_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "to": {
                                 "type": "array",
@@ -133,10 +158,16 @@
                                 "type": "string"
                             },
                             "html": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bcc": {
                                 "anyOf": [
@@ -207,9 +238,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createaudience",
             "name": "create-audience",
-            "output": ["ActionOutput_resend_createaudience"],
+            "output": [
+                "ActionOutput_resend_createaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createaudience", "ActionOutput_resend_createaudience"],
+            "usedModels": [
+                "ActionInput_resend_createaudience",
+                "ActionOutput_resend_createaudience"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -223,11 +259,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createaudience": {
@@ -255,9 +295,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createbroadcast",
             "name": "create-broadcast",
-            "output": ["ActionOutput_resend_createbroadcast"],
+            "output": [
+                "ActionOutput_resend_createbroadcast"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createbroadcast", "ActionOutput_resend_createbroadcast"],
+            "usedModels": [
+                "ActionInput_resend_createbroadcast",
+                "ActionOutput_resend_createbroadcast"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -307,11 +352,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["segment_id", "from", "subject"],
+                                "required": [
+                                    "segment_id",
+                                    "from",
+                                    "subject"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createbroadcast": {
@@ -336,9 +387,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createcontactimport",
             "name": "create-contact-import",
-            "output": ["ActionOutput_resend_createcontactimport"],
+            "output": [
+                "ActionOutput_resend_createcontactimport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createcontactimport", "ActionOutput_resend_createcontactimport"],
+            "usedModels": [
+                "ActionInput_resend_createcontactimport",
+                "ActionOutput_resend_createcontactimport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -386,10 +442,17 @@
                                                         },
                                                         "type": {
                                                             "type": "string",
-                                                            "enum": ["string", "number", "boolean"]
+                                                            "enum": [
+                                                                "string",
+                                                                "number",
+                                                                "boolean"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["column", "type"],
+                                                    "required": [
+                                                        "column",
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": {}
                                                 }
                                             }
@@ -399,7 +462,10 @@
                                     "on_conflict": {
                                         "description": "How to handle contacts that already exist. Example: \"upsert\"",
                                         "type": "string",
-                                        "enum": ["upsert", "skip"]
+                                        "enum": [
+                                            "upsert",
+                                            "skip"
+                                        ]
                                     },
                                     "segments": {
                                         "description": "Segments to add the imported contacts to. Example: [{\"id\": \"78e7a5c6-9a91-4c63-9d1f-3b9c0b5b9ab6\"}]",
@@ -411,7 +477,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -426,19 +494,29 @@
                                                 },
                                                 "subscription": {
                                                     "type": "string",
-                                                    "enum": ["opt_in", "opt_out"]
+                                                    "enum": [
+                                                        "opt_in",
+                                                        "opt_out"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id", "subscription"],
+                                            "required": [
+                                                "id",
+                                                "subscription"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
                                 },
-                                "required": ["file"],
+                                "required": [
+                                    "file"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_resend_createcontactimport": {
@@ -463,9 +541,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createcontactproperty",
             "name": "create-contact-property",
-            "output": ["ActionOutput_resend_createcontactproperty"],
+            "output": [
+                "ActionOutput_resend_createcontactproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createcontactproperty", "ActionOutput_resend_createcontactproperty"],
+            "usedModels": [
+                "ActionInput_resend_createcontactproperty",
+                "ActionOutput_resend_createcontactproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -491,7 +574,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["key", "type"],
+                                        "required": [
+                                            "key",
+                                            "type"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -511,13 +597,18 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["key", "type"],
+                                        "required": [
+                                            "key",
+                                            "type"
+                                        ],
                                         "additionalProperties": {}
                                     }
                                 ]
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createcontactproperty": {
@@ -542,9 +633,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_resend_createcontact"],
+            "output": [
+                "ActionOutput_resend_createcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createcontact", "ActionOutput_resend_createcontact"],
+            "usedModels": [
+                "ActionInput_resend_createcontact",
+                "ActionOutput_resend_createcontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -593,7 +689,10 @@
                                                 },
                                                 "subscription": {
                                                     "type": "string",
-                                                    "enum": ["opt_in", "opt_out"]
+                                                    "enum": [
+                                                        "opt_in",
+                                                        "opt_out"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": {}
@@ -603,11 +702,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["email"],
+                                "required": [
+                                    "email"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createcontact": {
@@ -632,9 +735,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createdomainclaim",
             "name": "create-domain-claim",
-            "output": ["ActionOutput_resend_createdomainclaim"],
+            "output": [
+                "ActionOutput_resend_createdomainclaim"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createdomainclaim", "ActionOutput_resend_createdomainclaim"],
+            "usedModels": [
+                "ActionInput_resend_createdomainclaim",
+                "ActionOutput_resend_createdomainclaim"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -649,7 +757,12 @@
                                     },
                                     "region": {
                                         "type": "string",
-                                        "enum": ["us-east-1", "eu-west-1", "sa-east-1", "ap-northeast-1"]
+                                        "enum": [
+                                            "us-east-1",
+                                            "eu-west-1",
+                                            "sa-east-1",
+                                            "ap-northeast-1"
+                                        ]
                                     },
                                     "custom_return_path": {
                                         "type": "string"
@@ -664,11 +777,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createdomainclaim": {
@@ -685,16 +802,33 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "verified", "completed", "blocked", "expired", "superseded", "canceled", "failed"]
+                                "enum": [
+                                    "pending",
+                                    "verified",
+                                    "completed",
+                                    "blocked",
+                                    "expired",
+                                    "superseded",
+                                    "canceled",
+                                    "failed"
+                                ]
                             },
                             "domain_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "region": {
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["us-east-1", "eu-west-1", "sa-east-1", "ap-northeast-1"]
+                                        "enum": [
+                                            "us-east-1",
+                                            "eu-west-1",
+                                            "sa-east-1",
+                                            "ap-northeast-1"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -724,7 +858,11 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["grace_period", "recent_owner_activity", "pending_scheduled_emails"]
+                                        "enum": [
+                                            "grace_period",
+                                            "recent_owner_activity",
+                                            "pending_scheduled_emails"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -732,7 +870,10 @@
                                 ]
                             },
                             "failure_reason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -753,9 +894,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createdomain",
             "name": "create-domain",
-            "output": ["ActionOutput_resend_createdomain"],
+            "output": [
+                "ActionOutput_resend_createdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createdomain", "ActionOutput_resend_createdomain"],
+            "usedModels": [
+                "ActionInput_resend_createdomain",
+                "ActionOutput_resend_createdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -770,7 +916,12 @@
                                     },
                                     "region": {
                                         "type": "string",
-                                        "enum": ["us-east-1", "eu-west-1", "sa-east-1", "ap-northeast-1"]
+                                        "enum": [
+                                            "us-east-1",
+                                            "eu-west-1",
+                                            "sa-east-1",
+                                            "ap-northeast-1"
+                                        ]
                                     },
                                     "custom_return_path": {
                                         "type": "string"
@@ -783,18 +934,27 @@
                                     },
                                     "tls": {
                                         "type": "string",
-                                        "enum": ["opportunistic", "enforced"]
+                                        "enum": [
+                                            "opportunistic",
+                                            "enforced"
+                                        ]
                                     },
                                     "capabilities": {
                                         "type": "object",
                                         "properties": {
                                             "sending": {
                                                 "type": "string",
-                                                "enum": ["enabled", "disabled"]
+                                                "enum": [
+                                                    "enabled",
+                                                    "disabled"
+                                                ]
                                             },
                                             "receiving": {
                                                 "type": "string",
-                                                "enum": ["enabled", "disabled"]
+                                                "enum": [
+                                                    "enabled",
+                                                    "disabled"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -803,11 +963,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_resend_createdomain": {
@@ -827,18 +991,31 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "verified", "failed", "not_started", "partially_verified", "partially_failed"]
+                                "enum": [
+                                    "pending",
+                                    "verified",
+                                    "failed",
+                                    "not_started",
+                                    "partially_verified",
+                                    "partially_failed"
+                                ]
                             },
                             "capabilities": {
                                 "type": "object",
                                 "properties": {
                                     "sending": {
                                         "type": "string",
-                                        "enum": ["enabled", "disabled"]
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
                                     },
                                     "receiving": {
                                         "type": "string",
-                                        "enum": ["enabled", "disabled"]
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": {}
@@ -850,21 +1027,38 @@
                                     "properties": {
                                         "record": {
                                             "type": "string",
-                                            "enum": ["SPF", "DKIM", "Receiving", "Tracking", "TrackingCAA"]
+                                            "enum": [
+                                                "SPF",
+                                                "DKIM",
+                                                "Receiving",
+                                                "Tracking",
+                                                "TrackingCAA"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["MX", "TXT", "CNAME", "CAA"]
+                                            "enum": [
+                                                "MX",
+                                                "TXT",
+                                                "CNAME",
+                                                "CAA"
+                                            ]
                                         },
                                         "ttl": {
                                             "type": "string"
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["pending", "verified", "failed", "temporary_failure", "not_started"]
+                                            "enum": [
+                                                "pending",
+                                                "verified",
+                                                "failed",
+                                                "temporary_failure",
+                                                "not_started"
+                                            ]
                                         },
                                         "value": {
                                             "type": "string"
@@ -903,9 +1097,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createsegment",
             "name": "create-segment",
-            "output": ["ActionOutput_resend_createsegment"],
+            "output": [
+                "ActionOutput_resend_createsegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createsegment", "ActionOutput_resend_createsegment"],
+            "usedModels": [
+                "ActionInput_resend_createsegment",
+                "ActionOutput_resend_createsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -928,11 +1127,15 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createsegment": {
@@ -957,9 +1160,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createtemplate",
             "name": "create-template",
-            "output": ["ActionOutput_resend_createtemplate"],
+            "output": [
+                "ActionOutput_resend_createtemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createtemplate", "ActionOutput_resend_createtemplate"],
+            "usedModels": [
+                "ActionInput_resend_createtemplate",
+                "ActionOutput_resend_createtemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1003,7 +1211,13 @@
                                                 },
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["string", "number", "boolean", "object", "list"]
+                                                    "enum": [
+                                                        "string",
+                                                        "number",
+                                                        "boolean",
+                                                        "object",
+                                                        "list"
+                                                    ]
                                                 },
                                                 "fallback_value": {
                                                     "anyOf": [
@@ -1028,16 +1242,24 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["key", "type"],
+                                            "required": [
+                                                "key",
+                                                "type"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
                                 },
-                                "required": ["name", "html"],
+                                "required": [
+                                    "name",
+                                    "html"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createtemplate": {
@@ -1062,9 +1284,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createtopic",
             "name": "create-topic",
-            "output": ["ActionOutput_resend_createtopic"],
+            "output": [
+                "ActionOutput_resend_createtopic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createtopic", "ActionOutput_resend_createtopic"],
+            "usedModels": [
+                "ActionInput_resend_createtopic",
+                "ActionOutput_resend_createtopic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1080,7 +1307,10 @@
                                     },
                                     "default_subscription": {
                                         "type": "string",
-                                        "enum": ["opt_in", "opt_out"]
+                                        "enum": [
+                                            "opt_in",
+                                            "opt_out"
+                                        ]
                                     },
                                     "description": {
                                         "type": "string",
@@ -1088,14 +1318,22 @@
                                     },
                                     "visibility": {
                                         "type": "string",
-                                        "enum": ["public", "private"]
+                                        "enum": [
+                                            "public",
+                                            "private"
+                                        ]
                                     }
                                 },
-                                "required": ["name", "default_subscription"],
+                                "required": [
+                                    "name",
+                                    "default_subscription"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createtopic": {
@@ -1120,9 +1358,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_resend_createwebhook"],
+            "output": [
+                "ActionOutput_resend_createwebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_createwebhook", "ActionOutput_resend_createwebhook"],
+            "usedModels": [
+                "ActionInput_resend_createwebhook",
+                "ActionOutput_resend_createwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1143,11 +1386,16 @@
                                         }
                                     }
                                 },
-                                "required": ["endpoint", "events"],
+                                "required": [
+                                    "endpoint",
+                                    "events"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_createwebhook": {
@@ -1175,9 +1423,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deleteaudience",
             "name": "delete-audience",
-            "output": ["ActionOutput_resend_deleteaudience"],
+            "output": [
+                "ActionOutput_resend_deleteaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deleteaudience", "ActionOutput_resend_deleteaudience"],
+            "usedModels": [
+                "ActionInput_resend_deleteaudience",
+                "ActionOutput_resend_deleteaudience"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1188,7 +1441,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deleteaudience": {
@@ -1216,9 +1471,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletebroadcast",
             "name": "delete-broadcast",
-            "output": ["ActionOutput_resend_deletebroadcast"],
+            "output": [
+                "ActionOutput_resend_deletebroadcast"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletebroadcast", "ActionOutput_resend_deletebroadcast"],
+            "usedModels": [
+                "ActionInput_resend_deletebroadcast",
+                "ActionOutput_resend_deletebroadcast"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1229,7 +1489,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletebroadcast": {
@@ -1257,9 +1519,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletecontactproperty",
             "name": "delete-contact-property",
-            "output": ["ActionOutput_resend_deletecontactproperty"],
+            "output": [
+                "ActionOutput_resend_deletecontactproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletecontactproperty", "ActionOutput_resend_deletecontactproperty"],
+            "usedModels": [
+                "ActionInput_resend_deletecontactproperty",
+                "ActionOutput_resend_deletecontactproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1270,7 +1537,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletecontactproperty": {
@@ -1298,9 +1567,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_resend_deletecontact"],
+            "output": [
+                "ActionOutput_resend_deletecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletecontact", "ActionOutput_resend_deletecontact"],
+            "usedModels": [
+                "ActionInput_resend_deletecontact",
+                "ActionOutput_resend_deletecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1311,7 +1585,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletecontact": {
@@ -1339,9 +1615,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletedomain",
             "name": "delete-domain",
-            "output": ["ActionOutput_resend_deletedomain"],
+            "output": [
+                "ActionOutput_resend_deletedomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletedomain", "ActionOutput_resend_deletedomain"],
+            "usedModels": [
+                "ActionInput_resend_deletedomain",
+                "ActionOutput_resend_deletedomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1352,7 +1633,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain_id"],
+                        "required": [
+                            "domain_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletedomain": {
@@ -1380,9 +1663,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletesegment",
             "name": "delete-segment",
-            "output": ["ActionOutput_resend_deletesegment"],
+            "output": [
+                "ActionOutput_resend_deletesegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletesegment", "ActionOutput_resend_deletesegment"],
+            "usedModels": [
+                "ActionInput_resend_deletesegment",
+                "ActionOutput_resend_deletesegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1393,7 +1681,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletesegment": {
@@ -1421,9 +1711,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletetemplate",
             "name": "delete-template",
-            "output": ["ActionOutput_resend_deletetemplate"],
+            "output": [
+                "ActionOutput_resend_deletetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletetemplate", "ActionOutput_resend_deletetemplate"],
+            "usedModels": [
+                "ActionInput_resend_deletetemplate",
+                "ActionOutput_resend_deletetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1434,7 +1729,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletetemplate": {
@@ -1462,9 +1759,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletetopic",
             "name": "delete-topic",
-            "output": ["ActionOutput_resend_deletetopic"],
+            "output": [
+                "ActionOutput_resend_deletetopic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletetopic", "ActionOutput_resend_deletetopic"],
+            "usedModels": [
+                "ActionInput_resend_deletetopic",
+                "ActionOutput_resend_deletetopic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1475,7 +1777,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletetopic": {
@@ -1503,9 +1807,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_resend_deletewebhook"],
+            "output": [
+                "ActionOutput_resend_deletewebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_deletewebhook", "ActionOutput_resend_deletewebhook"],
+            "usedModels": [
+                "ActionInput_resend_deletewebhook",
+                "ActionOutput_resend_deletewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1516,7 +1825,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_deletewebhook": {
@@ -1544,9 +1855,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_duplicatetemplate",
             "name": "duplicate-template",
-            "output": ["ActionOutput_resend_duplicatetemplate"],
+            "output": [
+                "ActionOutput_resend_duplicatetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_duplicatetemplate", "ActionOutput_resend_duplicatetemplate"],
+            "usedModels": [
+                "ActionInput_resend_duplicatetemplate",
+                "ActionOutput_resend_duplicatetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1557,7 +1873,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_duplicatetemplate": {
@@ -1582,9 +1900,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getaudience",
             "name": "get-audience",
-            "output": ["ActionOutput_resend_getaudience"],
+            "output": [
+                "ActionOutput_resend_getaudience"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getaudience", "ActionOutput_resend_getaudience"],
+            "usedModels": [
+                "ActionInput_resend_getaudience",
+                "ActionOutput_resend_getaudience"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1595,7 +1918,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getaudience": {
@@ -1626,9 +1951,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getbroadcast",
             "name": "get-broadcast",
-            "output": ["ActionOutput_resend_getbroadcast"],
+            "output": [
+                "ActionOutput_resend_getbroadcast"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getbroadcast", "ActionOutput_resend_getbroadcast"],
+            "usedModels": [
+                "ActionInput_resend_getbroadcast",
+                "ActionOutput_resend_getbroadcast"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1639,7 +1969,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getbroadcast": {
@@ -1652,10 +1984,16 @@
                                 "type": "string"
                             },
                             "audience_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "segment_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "from": {
                                 "type": "string"
@@ -1686,19 +2024,34 @@
                                 "type": "string"
                             },
                             "scheduled_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sent_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "html": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "topic_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "additionalProperties": {}
@@ -1713,9 +2066,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getcontactimport",
             "name": "get-contact-import",
-            "output": ["ActionOutput_resend_getcontactimport"],
+            "output": [
+                "ActionOutput_resend_getcontactimport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getcontactimport", "ActionOutput_resend_getcontactimport"],
+            "usedModels": [
+                "ActionInput_resend_getcontactimport",
+                "ActionOutput_resend_getcontactimport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1726,7 +2084,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getcontactimport": {
@@ -1740,13 +2100,21 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["queued", "in_progress", "completed", "failed"]
+                                "enum": [
+                                    "queued",
+                                    "in_progress",
+                                    "completed",
+                                    "failed"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "counts": {
                                 "type": "object",
@@ -1792,9 +2160,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getcontactproperty",
             "name": "get-contact-property",
-            "output": ["ActionOutput_resend_getcontactproperty"],
+            "output": [
+                "ActionOutput_resend_getcontactproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getcontactproperty", "ActionOutput_resend_getcontactproperty"],
+            "usedModels": [
+                "ActionInput_resend_getcontactproperty",
+                "ActionOutput_resend_getcontactproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1805,7 +2178,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getcontactproperty": {
@@ -1822,16 +2197,26 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["string", "number"]
+                                "enum": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "fallback_value": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "key", "type"],
+                        "required": [
+                            "id",
+                            "key",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1844,9 +2229,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_resend_getcontact"],
+            "output": [
+                "ActionOutput_resend_getcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getcontact", "ActionOutput_resend_getcontact"],
+            "usedModels": [
+                "ActionInput_resend_getcontact",
+                "ActionOutput_resend_getcontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1857,7 +2247,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getcontact": {
@@ -1873,10 +2265,16 @@
                                 "type": "string"
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -1902,9 +2300,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getdomainclaim",
             "name": "get-domain-claim",
-            "output": ["ActionOutput_resend_getdomainclaim"],
+            "output": [
+                "ActionOutput_resend_getdomainclaim"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getdomainclaim", "ActionOutput_resend_getdomainclaim"],
+            "usedModels": [
+                "ActionInput_resend_getdomainclaim",
+                "ActionOutput_resend_getdomainclaim"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1915,7 +2318,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain_id"],
+                        "required": [
+                            "domain_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getdomainclaim": {
@@ -1932,16 +2337,33 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "verified", "completed", "blocked", "expired", "superseded", "canceled", "failed"]
+                                "enum": [
+                                    "pending",
+                                    "verified",
+                                    "completed",
+                                    "blocked",
+                                    "expired",
+                                    "superseded",
+                                    "canceled",
+                                    "failed"
+                                ]
                             },
                             "domain_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "region": {
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["us-east-1", "eu-west-1", "sa-east-1", "ap-northeast-1"]
+                                        "enum": [
+                                            "us-east-1",
+                                            "eu-west-1",
+                                            "sa-east-1",
+                                            "ap-northeast-1"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -1971,7 +2393,11 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["grace_period", "recent_owner_activity", "pending_scheduled_emails"]
+                                        "enum": [
+                                            "grace_period",
+                                            "recent_owner_activity",
+                                            "pending_scheduled_emails"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -1979,7 +2405,10 @@
                                 ]
                             },
                             "failure_reason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -2000,9 +2429,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getdomain",
             "name": "get-domain",
-            "output": ["ActionOutput_resend_getdomain"],
+            "output": [
+                "ActionOutput_resend_getdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getdomain", "ActionOutput_resend_getdomain"],
+            "usedModels": [
+                "ActionInput_resend_getdomain",
+                "ActionOutput_resend_getdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2013,7 +2447,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain_id"],
+                        "required": [
+                            "domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_resend_getdomain": {
@@ -2030,7 +2466,14 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "verified", "failed", "not_started", "partially_verified", "partially_failed"]
+                                "enum": [
+                                    "pending",
+                                    "verified",
+                                    "failed",
+                                    "not_started",
+                                    "partially_verified",
+                                    "partially_failed"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -2052,11 +2495,17 @@
                                 "properties": {
                                     "sending": {
                                         "type": "string",
-                                        "enum": ["enabled", "disabled"]
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
                                     },
                                     "receiving": {
                                         "type": "string",
-                                        "enum": ["enabled", "disabled"]
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": {}
@@ -2068,21 +2517,38 @@
                                     "properties": {
                                         "record": {
                                             "type": "string",
-                                            "enum": ["SPF", "DKIM", "Receiving", "Tracking", "TrackingCAA"]
+                                            "enum": [
+                                                "SPF",
+                                                "DKIM",
+                                                "Receiving",
+                                                "Tracking",
+                                                "TrackingCAA"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["MX", "TXT", "CNAME", "CAA"]
+                                            "enum": [
+                                                "MX",
+                                                "TXT",
+                                                "CNAME",
+                                                "CAA"
+                                            ]
                                         },
                                         "ttl": {
                                             "type": "string"
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["pending", "verified", "failed", "temporary_failure", "not_started"]
+                                            "enum": [
+                                                "pending",
+                                                "verified",
+                                                "failed",
+                                                "temporary_failure",
+                                                "not_started"
+                                            ]
                                         },
                                         "value": {
                                             "type": "string"
@@ -2109,9 +2575,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getemailattachment",
             "name": "get-email-attachment",
-            "output": ["ActionOutput_resend_getemailattachment"],
+            "output": [
+                "ActionOutput_resend_getemailattachment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getemailattachment", "ActionOutput_resend_getemailattachment"],
+            "usedModels": [
+                "ActionInput_resend_getemailattachment",
+                "ActionOutput_resend_getemailattachment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2125,7 +2596,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email_id", "attachment_id"],
+                        "required": [
+                            "email_id",
+                            "attachment_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getemailattachment": {
@@ -2138,7 +2612,10 @@
                                 "type": "string"
                             },
                             "filename": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "content_type": {
                                 "type": "string"
@@ -2150,7 +2627,10 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["inline", "attachment"]
+                                        "enum": [
+                                            "inline",
+                                            "attachment"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -2181,9 +2661,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getemailmetrics",
             "name": "get-email-metrics",
-            "output": ["ActionOutput_resend_getemailmetrics"],
+            "output": [
+                "ActionOutput_resend_getemailmetrics"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getemailmetrics", "ActionOutput_resend_getemailmetrics"],
+            "usedModels": [
+                "ActionInput_resend_getemailmetrics",
+                "ActionOutput_resend_getemailmetrics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2201,7 +2686,12 @@
                             },
                             "granularity": {
                                 "type": "string",
-                                "enum": ["hourly", "daily", "weekly", "monthly"]
+                                "enum": [
+                                    "hourly",
+                                    "daily",
+                                    "weekly",
+                                    "monthly"
+                                ]
                             },
                             "metrics": {
                                 "type": "array",
@@ -2237,7 +2727,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["period", "domain", "email", "broadcast"]
+                                    "enum": [
+                                        "period",
+                                        "domain",
+                                        "email",
+                                        "broadcast"
+                                    ]
                                 }
                             },
                             "domain_id": {
@@ -2283,12 +2778,22 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["period", "domain", "email", "broadcast"]
+                                    "enum": [
+                                        "period",
+                                        "domain",
+                                        "email",
+                                        "broadcast"
+                                    ]
                                 }
                             },
                             "granularity": {
                                 "type": "string",
-                                "enum": ["hourly", "daily", "weekly", "monthly"]
+                                "enum": [
+                                    "hourly",
+                                    "daily",
+                                    "weekly",
+                                    "monthly"
+                                ]
                             },
                             "totals": {
                                 "type": "object",
@@ -2339,9 +2844,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getemail",
             "name": "get-email",
-            "output": ["ActionOutput_resend_getemail"],
+            "output": [
+                "ActionOutput_resend_getemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getemail", "ActionOutput_resend_getemail"],
+            "usedModels": [
+                "ActionInput_resend_getemail",
+                "ActionOutput_resend_getemail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2352,7 +2862,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email_id"],
+                        "required": [
+                            "email_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_resend_getemail": {
@@ -2365,7 +2877,10 @@
                                 "type": "string"
                             },
                             "message_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "to": {
                                 "type": "array",
@@ -2383,10 +2898,16 @@
                                 "type": "string"
                             },
                             "html": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bcc": {
                                 "anyOf": [
@@ -2457,9 +2978,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getreceivedemailattachment",
             "name": "get-received-email-attachment",
-            "output": ["ActionOutput_resend_getreceivedemailattachment"],
+            "output": [
+                "ActionOutput_resend_getreceivedemailattachment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getreceivedemailattachment", "ActionOutput_resend_getreceivedemailattachment"],
+            "usedModels": [
+                "ActionInput_resend_getreceivedemailattachment",
+                "ActionOutput_resend_getreceivedemailattachment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2473,7 +2999,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email_id", "attachment_id"],
+                        "required": [
+                            "email_id",
+                            "attachment_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getreceivedemailattachment": {
@@ -2486,7 +3015,10 @@
                                 "type": "string"
                             },
                             "filename": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "content_type": {
                                 "type": "string"
@@ -2498,7 +3030,10 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["inline", "attachment"]
+                                        "enum": [
+                                            "inline",
+                                            "attachment"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -2529,9 +3064,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getreceivedemail",
             "name": "get-received-email",
-            "output": ["ActionOutput_resend_getreceivedemail"],
+            "output": [
+                "ActionOutput_resend_getreceivedemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getreceivedemail", "ActionOutput_resend_getreceivedemail"],
+            "usedModels": [
+                "ActionInput_resend_getreceivedemail",
+                "ActionOutput_resend_getreceivedemail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2542,7 +3082,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email_id"],
+                        "required": [
+                            "email_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getreceivedemail": {
@@ -2567,7 +3109,10 @@
                                 "type": "string"
                             },
                             "message_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bcc": {
                                 "anyOf": [
@@ -2615,10 +3160,16 @@
                                 }
                             },
                             "html": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "headers": {
                                 "anyOf": [
@@ -2644,7 +3195,10 @@
                                             "type": "string"
                                         },
                                         "filename": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "content_type": {
                                             "type": "string"
@@ -2656,7 +3210,10 @@
                                             "anyOf": [
                                                 {
                                                     "type": "string",
-                                                    "enum": ["inline", "attachment"]
+                                                    "enum": [
+                                                        "inline",
+                                                        "attachment"
+                                                    ]
                                                 },
                                                 {
                                                     "type": "null"
@@ -2685,9 +3242,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getsegment",
             "name": "get-segment",
-            "output": ["ActionOutput_resend_getsegment"],
+            "output": [
+                "ActionOutput_resend_getsegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getsegment", "ActionOutput_resend_getsegment"],
+            "usedModels": [
+                "ActionInput_resend_getsegment",
+                "ActionOutput_resend_getsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2698,7 +3260,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getsegment": {
@@ -2737,9 +3301,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_gettemplate",
             "name": "get-template",
-            "output": ["ActionOutput_resend_gettemplate"],
+            "output": [
+                "ActionOutput_resend_gettemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_gettemplate", "ActionOutput_resend_gettemplate"],
+            "usedModels": [
+                "ActionInput_resend_gettemplate",
+                "ActionOutput_resend_gettemplate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2750,7 +3319,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_gettemplate": {
@@ -2772,7 +3343,10 @@
                                 "type": "string"
                             },
                             "from": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "subject": {
                                 "type": "string"
@@ -2809,7 +3383,13 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["string", "number", "boolean", "object", "list"]
+                                            "enum": [
+                                                "string",
+                                                "number",
+                                                "boolean",
+                                                "object",
+                                                "list"
+                                            ]
                                         },
                                         "fallback_value": {
                                             "anyOf": [
@@ -2840,7 +3420,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["key", "type"],
+                                    "required": [
+                                        "key",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2852,10 +3435,16 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["draft", "published"]
+                                "enum": [
+                                    "draft",
+                                    "published"
+                                ]
                             },
                             "published_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "has_unpublished_versions": {
                                 "type": "boolean"
@@ -2873,9 +3462,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_gettopic",
             "name": "get-topic",
-            "output": ["ActionOutput_resend_gettopic"],
+            "output": [
+                "ActionOutput_resend_gettopic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_gettopic", "ActionOutput_resend_gettopic"],
+            "usedModels": [
+                "ActionInput_resend_gettopic",
+                "ActionOutput_resend_gettopic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2887,7 +3481,9 @@
                                 "description": "The topic ID. Example: \"b6d24b8e-af0b-4c3c-be0c-359bbd97381e\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_gettopic": {
@@ -2907,11 +3503,17 @@
                             },
                             "default_subscription": {
                                 "type": "string",
-                                "enum": ["opt_in", "opt_out"]
+                                "enum": [
+                                    "opt_in",
+                                    "opt_out"
+                                ]
                             },
                             "visibility": {
                                 "type": "string",
-                                "enum": ["public", "private"]
+                                "enum": [
+                                    "public",
+                                    "private"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -2929,9 +3531,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getwebhookevent",
             "name": "get-webhook-event",
-            "output": ["ActionOutput_resend_getwebhookevent"],
+            "output": [
+                "ActionOutput_resend_getwebhookevent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getwebhookevent", "ActionOutput_resend_getwebhookevent"],
+            "usedModels": [
+                "ActionInput_resend_getwebhookevent",
+                "ActionOutput_resend_getwebhookevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2945,7 +3552,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id", "event_id"],
+                        "required": [
+                            "webhook_id",
+                            "event_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getwebhookevent": {
@@ -2965,10 +3575,18 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "attempting", "success", "failed"]
+                                "enum": [
+                                    "pending",
+                                    "attempting",
+                                    "success",
+                                    "failed"
+                                ]
                             },
                             "next_attempt_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "payload": {
                                 "type": "object",
@@ -2988,9 +3606,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_getwebhook",
             "name": "get-webhook",
-            "output": ["ActionOutput_resend_getwebhook"],
+            "output": [
+                "ActionOutput_resend_getwebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_getwebhook", "ActionOutput_resend_getwebhook"],
+            "usedModels": [
+                "ActionInput_resend_getwebhook",
+                "ActionOutput_resend_getwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3001,7 +3624,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_getwebhook": {
@@ -3051,9 +3676,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listaudiences",
             "name": "list-audiences",
-            "output": ["ActionOutput_resend_listaudiences"],
+            "output": [
+                "ActionOutput_resend_listaudiences"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listaudiences", "ActionOutput_resend_listaudiences"],
+            "usedModels": [
+                "ActionInput_resend_listaudiences",
+                "ActionOutput_resend_listaudiences"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3099,9 +3729,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listbroadcastclickedlinks",
             "name": "list-broadcast-clicked-links",
-            "output": ["ActionOutput_resend_listbroadcastclickedlinks"],
+            "output": [
+                "ActionOutput_resend_listbroadcastclickedlinks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listbroadcastclickedlinks", "ActionOutput_resend_listbroadcastclickedlinks"],
+            "usedModels": [
+                "ActionInput_resend_listbroadcastclickedlinks",
+                "ActionOutput_resend_listbroadcastclickedlinks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3123,7 +3758,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listbroadcastclickedlinks": {
@@ -3176,9 +3813,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listbroadcastrecipients",
             "name": "list-broadcast-recipients",
-            "output": ["ActionOutput_resend_listbroadcastrecipients"],
+            "output": [
+                "ActionOutput_resend_listbroadcastrecipients"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listbroadcastrecipients", "ActionOutput_resend_listbroadcastrecipients"],
+            "usedModels": [
+                "ActionInput_resend_listbroadcastrecipients",
+                "ActionOutput_resend_listbroadcastrecipients"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3190,14 +3832,27 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["sent", "delivered", "opened", "clicked", "bounced", "complained", "unsubscribed", "suppressed"]
+                                "enum": [
+                                    "sent",
+                                    "delivered",
+                                    "opened",
+                                    "clicked",
+                                    "bounced",
+                                    "complained",
+                                    "unsubscribed",
+                                    "suppressed"
+                                ]
                             },
                             "email": {
                                 "type": "string"
                             },
                             "bounce_type": {
                                 "type": "string",
-                                "enum": ["permanent", "transient", "undetermined"]
+                                "enum": [
+                                    "permanent",
+                                    "transient",
+                                    "undetermined"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -3211,7 +3866,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listbroadcastrecipients": {
@@ -3232,7 +3890,10 @@
                                             "type": "string"
                                         },
                                         "contact_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
                                             "type": "string"
@@ -3244,7 +3905,11 @@
                                         },
                                         "bounce_type": {
                                             "type": "string",
-                                            "enum": ["permanent", "transient", "undetermined"]
+                                            "enum": [
+                                                "permanent",
+                                                "transient",
+                                                "undetermined"
+                                            ]
                                         },
                                         "clicked_links": {
                                             "type": "array",
@@ -3283,9 +3948,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listbroadcasts",
             "name": "list-broadcasts",
-            "output": ["ActionOutput_resend_listbroadcasts"],
+            "output": [
+                "ActionOutput_resend_listbroadcasts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listbroadcasts", "ActionOutput_resend_listbroadcasts"],
+            "usedModels": [
+                "ActionInput_resend_listbroadcasts",
+                "ActionOutput_resend_listbroadcasts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3327,10 +3997,16 @@
                                             "type": "string"
                                         },
                                         "audience_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "segment_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string"
@@ -3339,13 +4015,22 @@
                                             "type": "string"
                                         },
                                         "scheduled_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sent_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "topic_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": {}
@@ -3367,9 +4052,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listcontactimports",
             "name": "list-contact-imports",
-            "output": ["ActionOutput_resend_listcontactimports"],
+            "output": [
+                "ActionOutput_resend_listcontactimports"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listcontactimports", "ActionOutput_resend_listcontactimports"],
+            "usedModels": [
+                "ActionInput_resend_listcontactimports",
+                "ActionOutput_resend_listcontactimports"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3378,7 +4068,12 @@
                         "properties": {
                             "status": {
                                 "type": "string",
-                                "enum": ["queued", "in_progress", "completed", "failed"]
+                                "enum": [
+                                    "queued",
+                                    "in_progress",
+                                    "completed",
+                                    "failed"
+                                ]
                             },
                             "limit": {
                                 "type": "integer",
@@ -3416,13 +4111,21 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["queued", "in_progress", "completed", "failed"]
+                                            "enum": [
+                                                "queued",
+                                                "in_progress",
+                                                "completed",
+                                                "failed"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
                                         },
                                         "completed_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "counts": {
                                             "type": "object",
@@ -3475,9 +4178,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listcontactproperties",
             "name": "list-contact-properties",
-            "output": ["ActionOutput_resend_listcontactproperties"],
+            "output": [
+                "ActionOutput_resend_listcontactproperties"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listcontactproperties", "ActionOutput_resend_listcontactproperties"],
+            "usedModels": [
+                "ActionInput_resend_listcontactproperties",
+                "ActionOutput_resend_listcontactproperties"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3520,10 +4228,16 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["string", "number"]
+                                            "enum": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "fallback_value": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3548,9 +4262,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listcontactsegments",
             "name": "list-contact-segments",
-            "output": ["ActionOutput_resend_listcontactsegments"],
+            "output": [
+                "ActionOutput_resend_listcontactsegments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listcontactsegments", "ActionOutput_resend_listcontactsegments"],
+            "usedModels": [
+                "ActionInput_resend_listcontactsegments",
+                "ActionOutput_resend_listcontactsegments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3572,7 +4291,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contact_id"],
+                        "required": [
+                            "contact_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listcontactsegments": {
@@ -3618,9 +4339,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listcontacttopics",
             "name": "list-contact-topics",
-            "output": ["ActionOutput_resend_listcontacttopics"],
+            "output": [
+                "ActionOutput_resend_listcontacttopics"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listcontacttopics", "ActionOutput_resend_listcontacttopics"],
+            "usedModels": [
+                "ActionInput_resend_listcontacttopics",
+                "ActionOutput_resend_listcontacttopics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3642,7 +4368,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contact_id"],
+                        "required": [
+                            "contact_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listcontacttopics": {
@@ -3670,7 +4398,10 @@
                                         },
                                         "subscription": {
                                             "type": "string",
-                                            "enum": ["opt_in", "opt_out"]
+                                            "enum": [
+                                                "opt_in",
+                                                "opt_out"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": {}
@@ -3692,9 +4423,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_resend_listcontacts"],
+            "output": [
+                "ActionOutput_resend_listcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listcontacts", "ActionOutput_resend_listcontacts"],
+            "usedModels": [
+                "ActionInput_resend_listcontacts",
+                "ActionOutput_resend_listcontacts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3739,10 +4475,16 @@
                                             "type": "string"
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3770,9 +4512,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listdomains",
             "name": "list-domains",
-            "output": ["ActionOutput_resend_listdomains"],
+            "output": [
+                "ActionOutput_resend_listdomains"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listdomains", "ActionOutput_resend_listdomains"],
+            "usedModels": [
+                "ActionInput_resend_listdomains",
+                "ActionOutput_resend_listdomains"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3815,7 +4562,14 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["pending", "verified", "failed", "not_started", "partially_verified", "partially_failed"]
+                                            "enum": [
+                                                "pending",
+                                                "verified",
+                                                "failed",
+                                                "not_started",
+                                                "partially_verified",
+                                                "partially_failed"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -3834,11 +4588,17 @@
                                             "properties": {
                                                 "sending": {
                                                     "type": "string",
-                                                    "enum": ["enabled", "disabled"]
+                                                    "enum": [
+                                                        "enabled",
+                                                        "disabled"
+                                                    ]
                                                 },
                                                 "receiving": {
                                                     "type": "string",
-                                                    "enum": ["enabled", "disabled"]
+                                                    "enum": [
+                                                        "enabled",
+                                                        "disabled"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": {}
@@ -3863,9 +4623,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listemailattachments",
             "name": "list-email-attachments",
-            "output": ["ActionOutput_resend_listemailattachments"],
+            "output": [
+                "ActionOutput_resend_listemailattachments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listemailattachments", "ActionOutput_resend_listemailattachments"],
+            "usedModels": [
+                "ActionInput_resend_listemailattachments",
+                "ActionOutput_resend_listemailattachments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3887,7 +4652,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email_id"],
+                        "required": [
+                            "email_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listemailattachments": {
@@ -3908,7 +4675,10 @@
                                             "type": "string"
                                         },
                                         "filename": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "content_type": {
                                             "type": "string"
@@ -3920,7 +4690,10 @@
                                             "anyOf": [
                                                 {
                                                     "type": "string",
-                                                    "enum": ["inline", "attachment"]
+                                                    "enum": [
+                                                        "inline",
+                                                        "attachment"
+                                                    ]
                                                 },
                                                 {
                                                     "type": "null"
@@ -3958,9 +4731,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listemails",
             "name": "list-emails",
-            "output": ["ActionOutput_resend_listemails"],
+            "output": [
+                "ActionOutput_resend_listemails"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listemails", "ActionOutput_resend_listemails"],
+            "usedModels": [
+                "ActionInput_resend_listemails",
+                "ActionOutput_resend_listemails"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4002,7 +4780,10 @@
                                             "type": "string"
                                         },
                                         "message_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "to": {
                                             "type": "array",
@@ -4020,10 +4801,16 @@
                                             "type": "string"
                                         },
                                         "html": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "bcc": {
                                             "anyOf": [
@@ -4101,9 +4888,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listreceivedemailattachments",
             "name": "list-received-email-attachments",
-            "output": ["ActionOutput_resend_listreceivedemailattachments"],
+            "output": [
+                "ActionOutput_resend_listreceivedemailattachments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listreceivedemailattachments", "ActionOutput_resend_listreceivedemailattachments"],
+            "usedModels": [
+                "ActionInput_resend_listreceivedemailattachments",
+                "ActionOutput_resend_listreceivedemailattachments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4125,7 +4917,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email_id"],
+                        "required": [
+                            "email_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listreceivedemailattachments": {
@@ -4146,7 +4940,10 @@
                                             "type": "string"
                                         },
                                         "filename": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "content_type": {
                                             "type": "string"
@@ -4158,7 +4955,10 @@
                                             "anyOf": [
                                                 {
                                                     "type": "string",
-                                                    "enum": ["inline", "attachment"]
+                                                    "enum": [
+                                                        "inline",
+                                                        "attachment"
+                                                    ]
                                                 },
                                                 {
                                                     "type": "null"
@@ -4196,9 +4996,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listreceivedemails",
             "name": "list-received-emails",
-            "output": ["ActionOutput_resend_listreceivedemails"],
+            "output": [
+                "ActionOutput_resend_listreceivedemails"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listreceivedemails", "ActionOutput_resend_listreceivedemails"],
+            "usedModels": [
+                "ActionInput_resend_listreceivedemails",
+                "ActionOutput_resend_listreceivedemails"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4246,10 +5051,16 @@
                                             "type": "string"
                                         },
                                         "subject": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "message_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "bcc": {
                                             "anyOf": [
@@ -4302,7 +5113,10 @@
                                                         "type": "string"
                                                     },
                                                     "filename": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "content_type": {
                                                         "type": "string"
@@ -4314,7 +5128,10 @@
                                                         "anyOf": [
                                                             {
                                                                 "type": "string",
-                                                                "enum": ["inline", "attachment"]
+                                                                "enum": [
+                                                                    "inline",
+                                                                    "attachment"
+                                                                ]
                                                             },
                                                             {
                                                                 "type": "null"
@@ -4350,9 +5167,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listsegments",
             "name": "list-segments",
-            "output": ["ActionOutput_resend_listsegments"],
+            "output": [
+                "ActionOutput_resend_listsegments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listsegments", "ActionOutput_resend_listsegments"],
+            "usedModels": [
+                "ActionInput_resend_listsegments",
+                "ActionOutput_resend_listsegments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4419,9 +5241,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listtemplates",
             "name": "list-templates",
-            "output": ["ActionOutput_resend_listtemplates"],
+            "output": [
+                "ActionOutput_resend_listtemplates"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listtemplates", "ActionOutput_resend_listtemplates"],
+            "usedModels": [
+                "ActionInput_resend_listtemplates",
+                "ActionOutput_resend_listtemplates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4461,10 +5288,16 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["draft", "published"]
+                                            "enum": [
+                                                "draft",
+                                                "published"
+                                            ]
                                         },
                                         "published_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -4498,9 +5331,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listtopics",
             "name": "list-topics",
-            "output": ["ActionOutput_resend_listtopics"],
+            "output": [
+                "ActionOutput_resend_listtopics"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listtopics", "ActionOutput_resend_listtopics"],
+            "usedModels": [
+                "ActionInput_resend_listtopics",
+                "ActionOutput_resend_listtopics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4546,11 +5384,17 @@
                                         },
                                         "default_subscription": {
                                             "type": "string",
-                                            "enum": ["opt_in", "opt_out"]
+                                            "enum": [
+                                                "opt_in",
+                                                "opt_out"
+                                            ]
                                         },
                                         "visibility": {
                                             "type": "string",
-                                            "enum": ["public", "private"]
+                                            "enum": [
+                                                "public",
+                                                "private"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -4575,9 +5419,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listwebhookeventattempts",
             "name": "list-webhook-event-attempts",
-            "output": ["ActionOutput_resend_listwebhookeventattempts"],
+            "output": [
+                "ActionOutput_resend_listwebhookeventattempts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listwebhookeventattempts", "ActionOutput_resend_listwebhookeventattempts"],
+            "usedModels": [
+                "ActionInput_resend_listwebhookeventattempts",
+                "ActionOutput_resend_listwebhookeventattempts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4599,7 +5448,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id", "event_id"],
+                        "required": [
+                            "webhook_id",
+                            "event_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listwebhookeventattempts": {
@@ -4650,9 +5502,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listwebhookevents",
             "name": "list-webhook-events",
-            "output": ["ActionOutput_resend_listwebhookevents"],
+            "output": [
+                "ActionOutput_resend_listwebhookevents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listwebhookevents", "ActionOutput_resend_listwebhookevents"],
+            "usedModels": [
+                "ActionInput_resend_listwebhookevents",
+                "ActionOutput_resend_listwebhookevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4671,7 +5528,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_listwebhookevents": {
@@ -4699,7 +5558,12 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["pending", "attempting", "success", "failed"]
+                                            "enum": [
+                                                "pending",
+                                                "attempting",
+                                                "success",
+                                                "failed"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": {}
@@ -4721,9 +5585,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_resend_listwebhooks"],
+            "output": [
+                "ActionOutput_resend_listwebhooks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_listwebhooks", "ActionOutput_resend_listwebhooks"],
+            "usedModels": [
+                "ActionInput_resend_listwebhooks",
+                "ActionOutput_resend_listwebhooks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4803,9 +5672,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_publishtemplate",
             "name": "publish-template",
-            "output": ["ActionOutput_resend_publishtemplate"],
+            "output": [
+                "ActionOutput_resend_publishtemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_publishtemplate", "ActionOutput_resend_publishtemplate"],
+            "usedModels": [
+                "ActionInput_resend_publishtemplate",
+                "ActionOutput_resend_publishtemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4816,7 +5690,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_publishtemplate": {
@@ -4841,9 +5717,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_removecontactfromsegment",
             "name": "remove-contact-from-segment",
-            "output": ["ActionOutput_resend_removecontactfromsegment"],
+            "output": [
+                "ActionOutput_resend_removecontactfromsegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_removecontactfromsegment", "ActionOutput_resend_removecontactfromsegment"],
+            "usedModels": [
+                "ActionInput_resend_removecontactfromsegment",
+                "ActionOutput_resend_removecontactfromsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4857,7 +5738,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contact_id", "segment_id"],
+                        "required": [
+                            "contact_id",
+                            "segment_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_removecontactfromsegment": {
@@ -4888,9 +5772,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_replaywebhookevent",
             "name": "replay-webhook-event",
-            "output": ["ActionOutput_resend_replaywebhookevent"],
+            "output": [
+                "ActionOutput_resend_replaywebhookevent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_replaywebhookevent", "ActionOutput_resend_replaywebhookevent"],
+            "usedModels": [
+                "ActionInput_resend_replaywebhookevent",
+                "ActionOutput_resend_replaywebhookevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4904,7 +5793,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id", "event_id"],
+                        "required": [
+                            "webhook_id",
+                            "event_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_replaywebhookevent": {
@@ -4929,9 +5821,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_sendbroadcast",
             "name": "send-broadcast",
-            "output": ["ActionOutput_resend_sendbroadcast"],
+            "output": [
+                "ActionOutput_resend_sendbroadcast"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_sendbroadcast", "ActionOutput_resend_sendbroadcast"],
+            "usedModels": [
+                "ActionInput_resend_sendbroadcast",
+                "ActionOutput_resend_sendbroadcast"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4951,7 +5848,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_sendbroadcast": {
@@ -4973,9 +5873,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_sendemailbatch",
             "name": "send-email-batch",
-            "output": ["ActionOutput_resend_sendemailbatch"],
+            "output": [
+                "ActionOutput_resend_sendemailbatch"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_sendemailbatch", "ActionOutput_resend_sendemailbatch"],
+            "usedModels": [
+                "ActionInput_resend_sendemailbatch",
+                "ActionOutput_resend_sendemailbatch"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5072,11 +5977,16 @@
                                                         "type": "string"
                                                     },
                                                     "additionalProperties": {
-                                                        "type": ["string", "number"]
+                                                        "type": [
+                                                            "string",
+                                                            "number"
+                                                        ]
                                                     }
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "headers": {
@@ -5123,7 +6033,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "value"],
+                                                "required": [
+                                                    "name",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -5131,12 +6044,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "subject"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "subject"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_sendemailbatch": {
@@ -5167,9 +6086,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_sendemail",
             "name": "send-email",
-            "output": ["ActionOutput_resend_sendemail"],
+            "output": [
+                "ActionOutput_resend_sendemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_sendemail", "ActionOutput_resend_sendemail"],
+            "usedModels": [
+                "ActionInput_resend_sendemail",
+                "ActionOutput_resend_sendemail"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5260,11 +6184,16 @@
                                                 "type": "object",
                                                 "properties": {},
                                                 "additionalProperties": {
-                                                    "type": ["string", "number"]
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
                                                 }
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "headers": {
@@ -5311,7 +6240,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name", "value"],
+                                            "required": [
+                                                "name",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -5319,11 +6251,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["from", "to", "subject"],
+                                "required": [
+                                    "from",
+                                    "to",
+                                    "subject"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["body"],
+                        "required": [
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_resend_sendemail": {
@@ -5345,9 +6283,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_shareemail",
             "name": "share-email",
-            "output": ["ActionOutput_resend_shareemail"],
+            "output": [
+                "ActionOutput_resend_shareemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_shareemail", "ActionOutput_resend_shareemail"],
+            "usedModels": [
+                "ActionInput_resend_shareemail",
+                "ActionOutput_resend_shareemail"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5368,7 +6311,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["email_id"],
+                        "required": [
+                            "email_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_shareemail": {
@@ -5396,9 +6341,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatebroadcast",
             "name": "update-broadcast",
-            "output": ["ActionOutput_resend_updatebroadcast"],
+            "output": [
+                "ActionOutput_resend_updatebroadcast"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatebroadcast", "ActionOutput_resend_updatebroadcast"],
+            "usedModels": [
+                "ActionInput_resend_updatebroadcast",
+                "ActionOutput_resend_updatebroadcast"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5448,7 +6398,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatebroadcast": {
@@ -5473,9 +6426,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatecontactproperty",
             "name": "update-contact-property",
-            "output": ["ActionOutput_resend_updatecontactproperty"],
+            "output": [
+                "ActionOutput_resend_updatecontactproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatecontactproperty", "ActionOutput_resend_updatecontactproperty"],
+            "usedModels": [
+                "ActionInput_resend_updatecontactproperty",
+                "ActionOutput_resend_updatecontactproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5489,13 +6447,19 @@
                                 "type": "object",
                                 "properties": {
                                     "fallback_value": {
-                                        "type": ["string", "number"]
+                                        "type": [
+                                            "string",
+                                            "number"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatecontactproperty": {
@@ -5520,9 +6484,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatecontacttopics",
             "name": "update-contact-topics",
-            "output": ["ActionOutput_resend_updatecontacttopics"],
+            "output": [
+                "ActionOutput_resend_updatecontacttopics"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatecontacttopics", "ActionOutput_resend_updatecontacttopics"],
+            "usedModels": [
+                "ActionInput_resend_updatecontacttopics",
+                "ActionOutput_resend_updatecontacttopics"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5545,19 +6514,30 @@
                                                 },
                                                 "subscription": {
                                                     "type": "string",
-                                                    "enum": ["opt_in", "opt_out"]
+                                                    "enum": [
+                                                        "opt_in",
+                                                        "opt_out"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id", "subscription"],
+                                            "required": [
+                                                "id",
+                                                "subscription"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
                                 },
-                                "required": ["topics"],
+                                "required": [
+                                    "topics"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["contact_id", "body"],
+                        "required": [
+                            "contact_id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatecontacttopics": {
@@ -5579,7 +6559,10 @@
                                         },
                                         "subscription": {
                                             "type": "string",
-                                            "enum": ["opt_in", "opt_out"]
+                                            "enum": [
+                                                "opt_in",
+                                                "opt_out"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": {}
@@ -5598,9 +6581,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_resend_updatecontact"],
+            "output": [
+                "ActionOutput_resend_updatecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatecontact", "ActionOutput_resend_updatecontact"],
+            "usedModels": [
+                "ActionInput_resend_updatecontact",
+                "ActionOutput_resend_updatecontact"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5634,7 +6622,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatecontact": {
@@ -5659,9 +6650,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatedomain",
             "name": "update-domain",
-            "output": ["ActionOutput_resend_updatedomain"],
+            "output": [
+                "ActionOutput_resend_updatedomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatedomain", "ActionOutput_resend_updatedomain"],
+            "usedModels": [
+                "ActionInput_resend_updatedomain",
+                "ActionOutput_resend_updatedomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5682,18 +6678,27 @@
                                     },
                                     "tls": {
                                         "type": "string",
-                                        "enum": ["opportunistic", "enforced"]
+                                        "enum": [
+                                            "opportunistic",
+                                            "enforced"
+                                        ]
                                     },
                                     "capabilities": {
                                         "type": "object",
                                         "properties": {
                                             "sending": {
                                                 "type": "string",
-                                                "enum": ["enabled", "disabled"]
+                                                "enum": [
+                                                    "enabled",
+                                                    "disabled"
+                                                ]
                                             },
                                             "receiving": {
                                                 "type": "string",
-                                                "enum": ["enabled", "disabled"]
+                                                "enum": [
+                                                    "enabled",
+                                                    "disabled"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -5705,7 +6710,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["domain_id", "body"],
+                        "required": [
+                            "domain_id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatedomain": {
@@ -5730,9 +6738,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updateemail",
             "name": "update-email",
-            "output": ["ActionOutput_resend_updateemail"],
+            "output": [
+                "ActionOutput_resend_updateemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updateemail", "ActionOutput_resend_updateemail"],
+            "usedModels": [
+                "ActionInput_resend_updateemail",
+                "ActionOutput_resend_updateemail"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5752,7 +6765,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["email_id", "body"],
+                        "required": [
+                            "email_id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updateemail": {
@@ -5774,9 +6790,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatesegment",
             "name": "update-segment",
-            "output": ["ActionOutput_resend_updatesegment"],
+            "output": [
+                "ActionOutput_resend_updatesegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatesegment", "ActionOutput_resend_updatesegment"],
+            "usedModels": [
+                "ActionInput_resend_updatesegment",
+                "ActionOutput_resend_updatesegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5793,11 +6814,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatesegment": {
@@ -5822,9 +6848,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatetemplate",
             "name": "update-template",
-            "output": ["ActionOutput_resend_updatetemplate"],
+            "output": [
+                "ActionOutput_resend_updatetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatetemplate", "ActionOutput_resend_updatetemplate"],
+            "usedModels": [
+                "ActionInput_resend_updatetemplate",
+                "ActionOutput_resend_updatetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5871,7 +6902,13 @@
                                                 },
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["string", "number", "boolean", "object", "list"]
+                                                    "enum": [
+                                                        "string",
+                                                        "number",
+                                                        "boolean",
+                                                        "object",
+                                                        "list"
+                                                    ]
                                                 },
                                                 "fallback_value": {
                                                     "anyOf": [
@@ -5896,7 +6933,10 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["key", "type"],
+                                            "required": [
+                                                "key",
+                                                "type"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
@@ -5904,7 +6944,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatetemplate": {
@@ -5929,9 +6972,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatetopic",
             "name": "update-topic",
-            "output": ["ActionOutput_resend_updatetopic"],
+            "output": [
+                "ActionOutput_resend_updatetopic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatetopic", "ActionOutput_resend_updatetopic"],
+            "usedModels": [
+                "ActionInput_resend_updatetopic",
+                "ActionOutput_resend_updatetopic"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5954,13 +7002,19 @@
                                     },
                                     "visibility": {
                                         "type": "string",
-                                        "enum": ["public", "private"]
+                                        "enum": [
+                                            "public",
+                                            "private"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatetopic": {
@@ -5985,9 +7039,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_resend_updatewebhook"],
+            "output": [
+                "ActionOutput_resend_updatewebhook"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_updatewebhook", "ActionOutput_resend_updatewebhook"],
+            "usedModels": [
+                "ActionInput_resend_updatewebhook",
+                "ActionOutput_resend_updatewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6012,13 +7071,19 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["enabled", "disabled"]
+                                        "enum": [
+                                            "enabled",
+                                            "disabled"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["webhook_id", "body"],
+                        "required": [
+                            "webhook_id",
+                            "body"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_updatewebhook": {
@@ -6043,9 +7108,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_verifydomainclaim",
             "name": "verify-domain-claim",
-            "output": ["ActionOutput_resend_verifydomainclaim"],
+            "output": [
+                "ActionOutput_resend_verifydomainclaim"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_verifydomainclaim", "ActionOutput_resend_verifydomainclaim"],
+            "usedModels": [
+                "ActionInput_resend_verifydomainclaim",
+                "ActionOutput_resend_verifydomainclaim"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6056,7 +7126,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain_id"],
+                        "required": [
+                            "domain_id"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_resend_verifydomainclaim": {
@@ -6073,16 +7145,33 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "verified", "completed", "blocked", "expired", "superseded", "canceled", "failed"]
+                                "enum": [
+                                    "pending",
+                                    "verified",
+                                    "completed",
+                                    "blocked",
+                                    "expired",
+                                    "superseded",
+                                    "canceled",
+                                    "failed"
+                                ]
                             },
                             "domain_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "region": {
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["us-east-1", "eu-west-1", "sa-east-1", "ap-northeast-1"]
+                                        "enum": [
+                                            "us-east-1",
+                                            "eu-west-1",
+                                            "sa-east-1",
+                                            "ap-northeast-1"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -6112,7 +7201,11 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["grace_period", "recent_owner_activity", "pending_scheduled_emails"]
+                                        "enum": [
+                                            "grace_period",
+                                            "recent_owner_activity",
+                                            "pending_scheduled_emails"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -6120,7 +7213,10 @@
                                 ]
                             },
                             "failure_reason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -6141,9 +7237,14 @@
             "endpoint": null,
             "input": "ActionInput_resend_verifydomain",
             "name": "verify-domain",
-            "output": ["ActionOutput_resend_verifydomain"],
+            "output": [
+                "ActionOutput_resend_verifydomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_resend_verifydomain", "ActionOutput_resend_verifydomain"],
+            "usedModels": [
+                "ActionInput_resend_verifydomain",
+                "ActionOutput_resend_verifydomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6154,7 +7255,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain_id"],
+                        "required": [
+                            "domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_resend_verifydomain": {

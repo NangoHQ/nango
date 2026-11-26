@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_anrok_createephemeraltransaction",
             "name": "create-ephemeral-transaction",
-            "output": ["ActionOutput_anrok_createephemeraltransaction"],
+            "output": [
+                "ActionOutput_anrok_createephemeraltransaction"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anrok_createephemeraltransaction", "ActionOutput_anrok_createephemeraltransaction"],
+            "usedModels": [
+                "ActionInput_anrok_createephemeraltransaction",
+                "ActionOutput_anrok_createephemeraltransaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -53,7 +58,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["external_id", "name", "address_line_1", "city", "zip", "country", "taxable", "tax_number"],
+                                "required": [
+                                    "external_id",
+                                    "name",
+                                    "address_line_1",
+                                    "city",
+                                    "zip",
+                                    "country",
+                                    "taxable",
+                                    "tax_number"
+                                ],
                                 "additionalProperties": false
                             },
                             "fees": {
@@ -65,18 +79,33 @@
                                             "type": "string"
                                         },
                                         "item_code": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "amount_cents": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["item_id", "item_code", "amount_cents"],
+                                    "required": [
+                                        "item_id",
+                                        "item_code",
+                                        "amount_cents"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["issuing_date", "currency", "contact", "fees"],
+                        "required": [
+                            "issuing_date",
+                            "currency",
+                            "contact",
+                            "fees"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_anrok_createephemeraltransaction": {
@@ -124,7 +153,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["external_id", "name", "address_line_1", "city", "zip", "country", "taxable", "tax_number"],
+                                            "required": [
+                                                "external_id",
+                                                "name",
+                                                "address_line_1",
+                                                "city",
+                                                "zip",
+                                                "country",
+                                                "taxable",
+                                                "tax_number"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "fees": {
@@ -136,13 +174,23 @@
                                                         "type": "string"
                                                     },
                                                     "item_code": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "amount_cents": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["item_id", "item_code", "amount_cents"],
+                                                "required": [
+                                                    "item_id",
+                                                    "item_code",
+                                                    "amount_cents"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -153,7 +201,12 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["issuing_date", "currency", "contact", "fees"],
+                                    "required": [
+                                        "issuing_date",
+                                        "currency",
+                                        "contact",
+                                        "fees"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -199,7 +252,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["external_id", "name", "address_line_1", "city", "zip", "country", "taxable", "tax_number"],
+                                            "required": [
+                                                "external_id",
+                                                "name",
+                                                "address_line_1",
+                                                "city",
+                                                "zip",
+                                                "country",
+                                                "taxable",
+                                                "tax_number"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "fees": {
@@ -211,24 +273,43 @@
                                                         "type": "string"
                                                     },
                                                     "item_code": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "amount_cents": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["item_id", "item_code", "amount_cents"],
+                                                "required": [
+                                                    "item_id",
+                                                    "item_code",
+                                                    "amount_cents"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
                                         "validation_errors": {}
                                     },
-                                    "required": ["issuing_date", "currency", "contact", "fees", "validation_errors"],
+                                    "required": [
+                                        "issuing_date",
+                                        "currency",
+                                        "contact",
+                                        "fees",
+                                        "validation_errors"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["succeeded", "failed"],
+                        "required": [
+                            "succeeded",
+                            "failed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -241,9 +322,14 @@
             "endpoint": null,
             "input": "ActionInput_anrok_createorupdatetransaction",
             "name": "create-or-update-transaction",
-            "output": ["ActionOutput_anrok_createorupdatetransaction"],
+            "output": [
+                "ActionOutput_anrok_createorupdatetransaction"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anrok_createorupdatetransaction", "ActionOutput_anrok_createorupdatetransaction"],
+            "usedModels": [
+                "ActionInput_anrok_createorupdatetransaction",
+                "ActionOutput_anrok_createorupdatetransaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -289,7 +375,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["external_id", "name", "address_line_1", "city", "zip", "country", "taxable", "tax_number"],
+                                    "required": [
+                                        "external_id",
+                                        "name",
+                                        "address_line_1",
+                                        "city",
+                                        "zip",
+                                        "country",
+                                        "taxable",
+                                        "tax_number"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "fees": {
@@ -301,18 +396,33 @@
                                                 "type": "string"
                                             },
                                             "item_code": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "amount_cents": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["item_id", "item_code", "amount_cents"],
+                                        "required": [
+                                            "item_id",
+                                            "item_code",
+                                            "amount_cents"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 }
                             },
-                            "required": ["issuing_date", "currency", "contact", "fees"],
+                            "required": [
+                                "issuing_date",
+                                "currency",
+                                "contact",
+                                "fees"
+                            ],
                             "additionalProperties": false
                         }
                     },
@@ -361,7 +471,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["external_id", "name", "address_line_1", "city", "zip", "country", "taxable", "tax_number"],
+                                            "required": [
+                                                "external_id",
+                                                "name",
+                                                "address_line_1",
+                                                "city",
+                                                "zip",
+                                                "country",
+                                                "taxable",
+                                                "tax_number"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "fees": {
@@ -373,13 +492,23 @@
                                                         "type": "string"
                                                     },
                                                     "item_code": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "amount_cents": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["item_id", "item_code", "amount_cents"],
+                                                "required": [
+                                                    "item_id",
+                                                    "item_code",
+                                                    "amount_cents"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -390,7 +519,12 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["issuing_date", "currency", "contact", "fees"],
+                                    "required": [
+                                        "issuing_date",
+                                        "currency",
+                                        "contact",
+                                        "fees"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -436,7 +570,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["external_id", "name", "address_line_1", "city", "zip", "country", "taxable", "tax_number"],
+                                            "required": [
+                                                "external_id",
+                                                "name",
+                                                "address_line_1",
+                                                "city",
+                                                "zip",
+                                                "country",
+                                                "taxable",
+                                                "tax_number"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "fees": {
@@ -448,24 +591,43 @@
                                                         "type": "string"
                                                     },
                                                     "item_code": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "amount_cents": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["item_id", "item_code", "amount_cents"],
+                                                "required": [
+                                                    "item_id",
+                                                    "item_code",
+                                                    "amount_cents"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
                                         "validation_errors": {}
                                     },
-                                    "required": ["issuing_date", "currency", "contact", "fees", "validation_errors"],
+                                    "required": [
+                                        "issuing_date",
+                                        "currency",
+                                        "contact",
+                                        "fees",
+                                        "validation_errors"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["succeeded", "failed"],
+                        "required": [
+                            "succeeded",
+                            "failed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -478,9 +640,14 @@
             "endpoint": null,
             "input": "ActionInput_anrok_negatetransaction",
             "name": "negate-transaction",
-            "output": ["ActionOutput_anrok_negatetransaction"],
+            "output": [
+                "ActionOutput_anrok_negatetransaction"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anrok_negatetransaction", "ActionOutput_anrok_negatetransaction"],
+            "usedModels": [
+                "ActionInput_anrok_negatetransaction",
+                "ActionOutput_anrok_negatetransaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -496,7 +663,10 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["id", "voided_id"],
+                            "required": [
+                                "id",
+                                "voided_id"
+                            ],
                             "additionalProperties": false
                         }
                     },
@@ -515,7 +685,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "voided_id"],
+                                    "required": [
+                                        "id",
+                                        "voided_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -532,12 +705,19 @@
                                         },
                                         "validation_errors": {}
                                     },
-                                    "required": ["id", "voided_id", "validation_errors"],
+                                    "required": [
+                                        "id",
+                                        "voided_id",
+                                        "validation_errors"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["succeeded", "failed"],
+                        "required": [
+                            "succeeded",
+                            "failed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -550,9 +730,14 @@
             "endpoint": null,
             "input": "ActionInput_anrok_voidtransaction",
             "name": "void-transaction",
-            "output": ["ActionOutput_anrok_voidtransaction"],
+            "output": [
+                "ActionOutput_anrok_voidtransaction"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_anrok_voidtransaction", "ActionOutput_anrok_voidtransaction"],
+            "usedModels": [
+                "ActionInput_anrok_voidtransaction",
+                "ActionOutput_anrok_voidtransaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -565,7 +750,9 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["id"],
+                            "required": [
+                                "id"
+                            ],
                             "additionalProperties": false
                         }
                     },
@@ -581,7 +768,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -595,12 +784,18 @@
                                         },
                                         "validation_errors": {}
                                     },
-                                    "required": ["id", "validation_errors"],
+                                    "required": [
+                                        "id",
+                                        "validation_errors"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["succeeded", "failed"],
+                        "required": [
+                            "succeeded",
+                            "failed"
+                        ],
                         "additionalProperties": false
                     }
                 }

@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_callmethod",
             "name": "call-method",
-            "output": ["ActionOutput_odoo_api_key_callmethod"],
+            "output": [
+                "ActionOutput_odoo_api_key_callmethod"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_callmethod", "ActionOutput_odoo_api_key_callmethod"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_callmethod",
+                "ActionOutput_odoo_api_key_callmethod"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -42,7 +47,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["model", "method"],
+                        "required": [
+                            "model",
+                            "method"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_callmethod": {
@@ -50,7 +58,9 @@
                         "properties": {
                             "result": {}
                         },
-                        "required": ["result"],
+                        "required": [
+                            "result"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -63,9 +73,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_countrecords",
             "name": "count-records",
-            "output": ["ActionOutput_odoo_api_key_countrecords"],
+            "output": [
+                "ActionOutput_odoo_api_key_countrecords"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_countrecords", "ActionOutput_odoo_api_key_countrecords"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_countrecords",
+                "ActionOutput_odoo_api_key_countrecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -82,7 +97,9 @@
                                 "items": {}
                             }
                         },
-                        "required": ["model"],
+                        "required": [
+                            "model"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_countrecords": {
@@ -93,7 +110,9 @@
                                 "description": "Number of records matching the domain"
                             }
                         },
-                        "required": ["count"],
+                        "required": [
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -106,9 +125,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_createrecord",
             "name": "create-record",
-            "output": ["ActionOutput_odoo_api_key_createrecord"],
+            "output": [
+                "ActionOutput_odoo_api_key_createrecord"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_createrecord", "ActionOutput_odoo_api_key_createrecord"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_createrecord",
+                "ActionOutput_odoo_api_key_createrecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -131,7 +155,10 @@
                                 "description": "List of value dictionaries to create records with. Example: [{\"name\": \"Test Contact\"}]"
                             }
                         },
-                        "required": ["model", "vals_list"],
+                        "required": [
+                            "model",
+                            "vals_list"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_createrecord": {
@@ -145,7 +172,9 @@
                                 "description": "Array of newly created record IDs"
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -158,9 +187,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_deleterecord",
             "name": "delete-record",
-            "output": ["ActionOutput_odoo_api_key_deleterecord"],
+            "output": [
+                "ActionOutput_odoo_api_key_deleterecord"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_deleterecord", "ActionOutput_odoo_api_key_deleterecord"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_deleterecord",
+                "ActionOutput_odoo_api_key_deleterecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -178,7 +212,10 @@
                                 "description": "Record ID to delete. Example: 11"
                             }
                         },
-                        "required": ["model", "id"],
+                        "required": [
+                            "model",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_deleterecord": {
@@ -188,7 +225,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -201,9 +240,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_duplicaterecord",
             "name": "duplicate-record",
-            "output": ["ActionOutput_odoo_api_key_duplicaterecord"],
+            "output": [
+                "ActionOutput_odoo_api_key_duplicaterecord"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_duplicaterecord", "ActionOutput_odoo_api_key_duplicaterecord"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_duplicaterecord",
+                "ActionOutput_odoo_api_key_duplicaterecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -229,7 +273,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["model", "id"],
+                        "required": [
+                            "model",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_duplicaterecord": {
@@ -240,7 +287,9 @@
                                 "description": "ID of the newly created duplicate record."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -253,9 +302,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_findrecordsbyname",
             "name": "find-records-by-name",
-            "output": ["ActionOutput_odoo_api_key_findrecordsbyname"],
+            "output": [
+                "ActionOutput_odoo_api_key_findrecordsbyname"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_findrecordsbyname", "ActionOutput_odoo_api_key_findrecordsbyname"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_findrecordsbyname",
+                "ActionOutput_odoo_api_key_findrecordsbyname"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -282,7 +336,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["model", "name"],
+                        "required": [
+                            "model",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_findrecordsbyname": {
@@ -300,12 +357,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "display_name"],
+                                    "required": [
+                                        "id",
+                                        "display_name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -318,9 +380,16 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_getrecordfields",
             "name": "get-record-fields",
-            "output": ["ActionOutput_odoo_api_key_getrecordfields"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_odoo_api_key_getrecordfields", "ActionOutput_odoo_api_key_getrecordfields"],
+            "output": [
+                "ActionOutput_odoo_api_key_getrecordfields"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_odoo_api_key_getrecordfields",
+                "ActionOutput_odoo_api_key_getrecordfields"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -332,7 +401,9 @@
                                 "description": "Odoo model name. Example: \"res.partner\""
                             }
                         },
-                        "required": ["model"],
+                        "required": [
+                            "model"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_getrecordfields": {
@@ -350,7 +421,10 @@
                                     "type": "string"
                                 }
                             },
-                            "required": ["string", "type"],
+                            "required": [
+                                "string",
+                                "type"
+                            ],
                             "additionalProperties": {}
                         }
                     }
@@ -364,9 +438,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_readrecord",
             "name": "read-record",
-            "output": ["ActionOutput_odoo_api_key_readrecord"],
+            "output": [
+                "ActionOutput_odoo_api_key_readrecord"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_readrecord", "ActionOutput_odoo_api_key_readrecord"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_readrecord",
+                "ActionOutput_odoo_api_key_readrecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -394,7 +473,10 @@
                                 }
                             }
                         },
-                        "required": ["model", "ids"],
+                        "required": [
+                            "model",
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_readrecord": {
@@ -411,7 +493,9 @@
                                 }
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -424,9 +508,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_searchreadrecords",
             "name": "search-read-records",
-            "output": ["ActionOutput_odoo_api_key_searchreadrecords"],
+            "output": [
+                "ActionOutput_odoo_api_key_searchreadrecords"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_searchreadrecords", "ActionOutput_odoo_api_key_searchreadrecords"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_searchreadrecords",
+                "ActionOutput_odoo_api_key_searchreadrecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -462,7 +551,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["model"],
+                        "required": [
+                            "model"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_searchreadrecords": {
@@ -483,9 +574,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_searchrecords",
             "name": "search-records",
-            "output": ["ActionOutput_odoo_api_key_searchrecords"],
+            "output": [
+                "ActionOutput_odoo_api_key_searchrecords"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_searchrecords", "ActionOutput_odoo_api_key_searchrecords"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_searchrecords",
+                "ActionOutput_odoo_api_key_searchrecords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -518,7 +614,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["model"],
+                        "required": [
+                            "model"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_searchrecords": {
@@ -534,7 +632,10 @@
                                 }
                             }
                         },
-                        "required": ["model", "ids"],
+                        "required": [
+                            "model",
+                            "ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -547,9 +648,14 @@
             "endpoint": null,
             "input": "ActionInput_odoo_api_key_updaterecord",
             "name": "update-record",
-            "output": ["ActionOutput_odoo_api_key_updaterecord"],
+            "output": [
+                "ActionOutput_odoo_api_key_updaterecord"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_odoo_api_key_updaterecord", "ActionOutput_odoo_api_key_updaterecord"],
+            "usedModels": [
+                "ActionInput_odoo_api_key_updaterecord",
+                "ActionOutput_odoo_api_key_updaterecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -575,7 +681,11 @@
                                 "description": "Field values to write. Example: {\"phone\": \"555-1234\"}"
                             }
                         },
-                        "required": ["model", "id", "vals"],
+                        "required": [
+                            "model",
+                            "id",
+                            "vals"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_odoo_api_key_updaterecord": {
@@ -591,7 +701,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "model", "id"],
+                        "required": [
+                            "success",
+                            "model",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -607,12 +721,16 @@
             "endpoints": [],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -642,12 +760,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -656,12 +778,16 @@
             "endpoints": [],
             "input": null,
             "name": "crm-leads",
-            "output": ["CrmLead"],
+            "output": [
+                "CrmLead"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CrmLead"],
+            "usedModels": [
+                "CrmLead"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -703,12 +829,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -717,12 +848,16 @@
             "endpoints": [],
             "input": null,
             "name": "invoices",
-            "output": ["Invoice"],
+            "output": [
+                "Invoice"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invoice"],
+            "usedModels": [
+                "Invoice"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -763,12 +898,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -777,12 +916,16 @@
             "endpoints": [],
             "input": null,
             "name": "payments",
-            "output": ["Payment"],
+            "output": [
+                "Payment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Payment"],
+            "usedModels": [
+                "Payment"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -821,12 +964,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -835,12 +982,16 @@
             "endpoints": [],
             "input": null,
             "name": "products",
-            "output": ["Product"],
+            "output": [
+                "Product"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Product"],
+            "usedModels": [
+                "Product"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -889,12 +1040,18 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "name", "write_date"],
+                        "required": [
+                            "id",
+                            "name",
+                            "write_date"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -903,12 +1060,16 @@
             "endpoints": [],
             "input": null,
             "name": "project-tasks",
-            "output": ["ProjectTask"],
+            "output": [
+                "ProjectTask"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProjectTask"],
+            "usedModels": [
+                "ProjectTask"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -961,12 +1122,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -975,12 +1140,16 @@
             "endpoints": [],
             "input": null,
             "name": "sale-orders",
-            "output": ["SaleOrder"],
+            "output": [
+                "SaleOrder"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SaleOrder"],
+            "usedModels": [
+                "SaleOrder"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1094,12 +1263,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "write_date"],
+                        "required": [
+                            "id",
+                            "write_date"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

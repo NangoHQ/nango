@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_archiveitem",
             "name": "archive-item",
-            "output": ["ActionOutput_monday_archiveitem"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_archiveitem", "ActionOutput_monday_archiveitem"],
+            "output": [
+                "ActionOutput_monday_archiveitem"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_archiveitem",
+                "ActionOutput_monday_archiveitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -21,7 +28,9 @@
                                 "description": "The ID of the item to archive. Example: \"2933609588\""
                             }
                         },
-                        "required": ["item_id"],
+                        "required": [
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_archiveitem": {
@@ -34,7 +43,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -47,9 +58,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_changecolumnvalue",
             "name": "change-column-value",
-            "output": ["ActionOutput_monday_changecolumnvalue"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_changecolumnvalue", "ActionOutput_monday_changecolumnvalue"],
+            "output": [
+                "ActionOutput_monday_changecolumnvalue"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_changecolumnvalue",
+                "ActionOutput_monday_changecolumnvalue"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -77,7 +95,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["item_id", "column_id", "board_id", "value"],
+                        "required": [
+                            "item_id",
+                            "column_id",
+                            "board_id",
+                            "value"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_changecolumnvalue": {
@@ -107,12 +130,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -125,9 +152,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_createboard",
             "name": "create-board",
-            "output": ["ActionOutput_monday_createboard"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_createboard", "ActionOutput_monday_createboard"],
+            "output": [
+                "ActionOutput_monday_createboard"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_createboard",
+                "ActionOutput_monday_createboard"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -140,7 +174,11 @@
                             },
                             "board_kind": {
                                 "type": "string",
-                                "enum": ["private", "public", "share"],
+                                "enum": [
+                                    "private",
+                                    "public",
+                                    "share"
+                                ],
                                 "description": "The type of board to create."
                             },
                             "description": {
@@ -182,7 +220,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["board_name", "board_kind"],
+                        "required": [
+                            "board_name",
+                            "board_kind"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_createboard": {
@@ -210,7 +251,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "state", "board_kind", "url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "state",
+                            "board_kind",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -223,9 +270,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_createcolumn",
             "name": "create-column",
-            "output": ["ActionOutput_monday_createcolumn"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_createcolumn", "ActionOutput_monday_createcolumn"],
+            "output": [
+                "ActionOutput_monday_createcolumn"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_createcolumn",
+                "ActionOutput_monday_createcolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -249,7 +303,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["board_id", "title", "column_type"],
+                        "required": [
+                            "board_id",
+                            "title",
+                            "column_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_createcolumn": {
@@ -268,7 +326,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "type"],
+                        "required": [
+                            "id",
+                            "title",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -281,9 +343,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_creategroup",
             "name": "create-group",
-            "output": ["ActionOutput_monday_creategroup"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_creategroup", "ActionOutput_monday_creategroup"],
+            "output": [
+                "ActionOutput_monday_creategroup"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_creategroup",
+                "ActionOutput_monday_creategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -309,10 +378,16 @@
                             "position_relative_method": {
                                 "description": "Position relative method.",
                                 "type": "string",
-                                "enum": ["before_at", "after_at"]
+                                "enum": [
+                                    "before_at",
+                                    "after_at"
+                                ]
                             }
                         },
-                        "required": ["board_id", "group_name"],
+                        "required": [
+                            "board_id",
+                            "group_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_creategroup": {
@@ -331,7 +406,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -344,9 +421,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_createitem",
             "name": "create-item",
-            "output": ["ActionOutput_monday_createitem"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_createitem", "ActionOutput_monday_createitem"],
+            "output": [
+                "ActionOutput_monday_createitem"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_createitem",
+                "ActionOutput_monday_createitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -384,10 +468,16 @@
                             "position_relative_method": {
                                 "description": "Position relative to the specified item.",
                                 "type": "string",
-                                "enum": ["before_at", "after_at"]
+                                "enum": [
+                                    "before_at",
+                                    "after_at"
+                                ]
                             }
                         },
-                        "required": ["board_id", "item_name"],
+                        "required": [
+                            "board_id",
+                            "item_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_createitem": {
@@ -412,7 +502,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -425,9 +517,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_createsubitem",
             "name": "create-subitem",
-            "output": ["ActionOutput_monday_createsubitem"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_createsubitem", "ActionOutput_monday_createsubitem"],
+            "output": [
+                "ActionOutput_monday_createsubitem"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_createsubitem",
+                "ActionOutput_monday_createsubitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -443,7 +542,10 @@
                                 "description": "The new subitem name. Example: \"Design mockup\""
                             }
                         },
-                        "required": ["parent_item_id", "item_name"],
+                        "required": [
+                            "parent_item_id",
+                            "item_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_createsubitem": {
@@ -459,7 +561,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "board_id"],
+                        "required": [
+                            "id",
+                            "board_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -472,9 +577,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_createupdate",
             "name": "create-update",
-            "output": ["ActionOutput_monday_createupdate"],
-            "scopes": ["updates:write"],
-            "usedModels": ["ActionInput_monday_createupdate", "ActionOutput_monday_createupdate"],
+            "output": [
+                "ActionOutput_monday_createupdate"
+            ],
+            "scopes": [
+                "updates:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_createupdate",
+                "ActionOutput_monday_createupdate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -494,7 +606,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["item_id", "body"],
+                        "required": [
+                            "item_id",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_createupdate": {
@@ -522,7 +637,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -535,9 +652,17 @@
             "endpoint": null,
             "input": "ActionInput_monday_deleteboard",
             "name": "delete-board",
-            "output": ["ActionOutput_monday_deleteboard"],
-            "scopes": ["boards:read", "boards:write"],
-            "usedModels": ["ActionInput_monday_deleteboard", "ActionOutput_monday_deleteboard"],
+            "output": [
+                "ActionOutput_monday_deleteboard"
+            ],
+            "scopes": [
+                "boards:read",
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_deleteboard",
+                "ActionOutput_monday_deleteboard"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -553,7 +678,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["board_id"],
+                        "required": [
+                            "board_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_deleteboard": {
@@ -572,7 +699,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -585,9 +714,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_deletecolumn",
             "name": "delete-column",
-            "output": ["ActionOutput_monday_deletecolumn"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_deletecolumn", "ActionOutput_monday_deletecolumn"],
+            "output": [
+                "ActionOutput_monday_deletecolumn"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_deletecolumn",
+                "ActionOutput_monday_deletecolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -603,7 +739,10 @@
                                 "description": "The unique identifier of the column to delete. Example: \"task_status\""
                             }
                         },
-                        "required": ["board_id", "column_id"],
+                        "required": [
+                            "board_id",
+                            "column_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_deletecolumn": {
@@ -614,7 +753,9 @@
                                 "description": "The unique identifier of the deleted column."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -627,9 +768,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_deletegroup",
             "name": "delete-group",
-            "output": ["ActionOutput_monday_deletegroup"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_deletegroup", "ActionOutput_monday_deletegroup"],
+            "output": [
+                "ActionOutput_monday_deletegroup"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_deletegroup",
+                "ActionOutput_monday_deletegroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -649,7 +797,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["board_id", "group_id"],
+                        "required": [
+                            "board_id",
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_deletegroup": {
@@ -665,7 +816,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -678,9 +831,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_deleteitem",
             "name": "delete-item",
-            "output": ["ActionOutput_monday_deleteitem"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_deleteitem", "ActionOutput_monday_deleteitem"],
+            "output": [
+                "ActionOutput_monday_deleteitem"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_deleteitem",
+                "ActionOutput_monday_deleteitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -696,7 +856,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["item_id"],
+                        "required": [
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_deleteitem": {
@@ -707,13 +869,20 @@
                             },
                             "operation": {
                                 "type": "string",
-                                "enum": ["archive", "delete"]
+                                "enum": [
+                                    "archive",
+                                    "delete"
+                                ]
                             },
                             "success": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["item_id", "operation", "success"],
+                        "required": [
+                            "item_id",
+                            "operation",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -726,9 +895,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_deleteupdate",
             "name": "delete-update",
-            "output": ["ActionOutput_monday_deleteupdate"],
-            "scopes": ["updates:write"],
-            "usedModels": ["ActionInput_monday_deleteupdate", "ActionOutput_monday_deleteupdate"],
+            "output": [
+                "ActionOutput_monday_deleteupdate"
+            ],
+            "scopes": [
+                "updates:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_deleteupdate",
+                "ActionOutput_monday_deleteupdate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -740,7 +916,9 @@
                                 "description": "The unique identifier of the update to delete. Example: \"1234567890\""
                             }
                         },
-                        "required": ["updateId"],
+                        "required": [
+                            "updateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_deleteupdate": {
@@ -751,7 +929,9 @@
                                 "description": "The unique identifier of the deleted update."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -764,9 +944,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_duplicateboard",
             "name": "duplicate-board",
-            "output": ["ActionOutput_monday_duplicateboard"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_duplicateboard", "ActionOutput_monday_duplicateboard"],
+            "output": [
+                "ActionOutput_monday_duplicateboard"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_duplicateboard",
+                "ActionOutput_monday_duplicateboard"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -779,7 +966,11 @@
                             },
                             "duplicate_type": {
                                 "type": "string",
-                                "enum": ["duplicate_board_with_structure", "duplicate_board_with_pulses", "duplicate_board_with_pulses_and_updates"],
+                                "enum": [
+                                    "duplicate_board_with_structure",
+                                    "duplicate_board_with_pulses",
+                                    "duplicate_board_with_pulses_and_updates"
+                                ],
                                 "description": "The type of duplication to perform."
                             },
                             "board_name": {
@@ -799,7 +990,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["board_id", "duplicate_type"],
+                        "required": [
+                            "board_id",
+                            "duplicate_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_duplicateboard": {
@@ -812,7 +1006,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -825,9 +1021,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getboard",
             "name": "get-board",
-            "output": ["ActionOutput_monday_getboard"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_getboard", "ActionOutput_monday_getboard"],
+            "output": [
+                "ActionOutput_monday_getboard"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getboard",
+                "ActionOutput_monday_getboard"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -839,7 +1042,9 @@
                                 "description": "The unique identifier of the board to retrieve. Example: \"5096980653\""
                             }
                         },
-                        "required": ["board_id"],
+                        "required": [
+                            "board_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getboard": {
@@ -876,7 +1081,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "groups": {
@@ -897,7 +1105,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -916,7 +1127,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "type"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -924,7 +1139,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -937,9 +1155,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getcolumn",
             "name": "get-column",
-            "output": ["ActionOutput_monday_getcolumn"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_getcolumn", "ActionOutput_monday_getcolumn"],
+            "output": [
+                "ActionOutput_monday_getcolumn"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getcolumn",
+                "ActionOutput_monday_getcolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -955,7 +1180,10 @@
                                 "description": "The column ID. Example: \"task_status\""
                             }
                         },
-                        "required": ["board_id", "column_id"],
+                        "required": [
+                            "board_id",
+                            "column_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getcolumn": {
@@ -981,7 +1209,11 @@
                             },
                             "settings": {}
                         },
-                        "required": ["id", "title", "type"],
+                        "required": [
+                            "id",
+                            "title",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -994,9 +1226,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getgroup",
             "name": "get-group",
-            "output": ["ActionOutput_monday_getgroup"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_getgroup", "ActionOutput_monday_getgroup"],
+            "output": [
+                "ActionOutput_monday_getgroup"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getgroup",
+                "ActionOutput_monday_getgroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1012,7 +1251,10 @@
                                 "description": "The group ID to retrieve. Example: \"topics\""
                             }
                         },
-                        "required": ["board_id", "group_id"],
+                        "required": [
+                            "board_id",
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getgroup": {
@@ -1031,7 +1273,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "color", "position"],
+                        "required": [
+                            "id",
+                            "title",
+                            "color",
+                            "position"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1044,9 +1291,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getitem",
             "name": "get-item",
-            "output": ["ActionOutput_monday_getitem"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_getitem", "ActionOutput_monday_getitem"],
+            "output": [
+                "ActionOutput_monday_getitem"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getitem",
+                "ActionOutput_monday_getitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1058,7 +1312,9 @@
                                 "description": "The unique identifier of the item to retrieve. Example: \"2933609588\""
                             }
                         },
-                        "required": ["item_id"],
+                        "required": [
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getitem": {
@@ -1125,7 +1381,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1138,9 +1397,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getsubitem",
             "name": "get-subitem",
-            "output": ["ActionOutput_monday_getsubitem"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_getsubitem", "ActionOutput_monday_getsubitem"],
+            "output": [
+                "ActionOutput_monday_getsubitem"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getsubitem",
+                "ActionOutput_monday_getsubitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1152,7 +1418,9 @@
                                 "description": "The ID of the subitem to retrieve. Example: \"2933645613\""
                             }
                         },
-                        "required": ["subitem_id"],
+                        "required": [
+                            "subitem_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getsubitem": {
@@ -1179,12 +1447,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1197,9 +1469,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getteam",
             "name": "get-team",
-            "output": ["ActionOutput_monday_getteam"],
-            "scopes": ["teams:read"],
-            "usedModels": ["ActionInput_monday_getteam", "ActionOutput_monday_getteam"],
+            "output": [
+                "ActionOutput_monday_getteam"
+            ],
+            "scopes": [
+                "teams:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getteam",
+                "ActionOutput_monday_getteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1211,7 +1490,9 @@
                                 "description": "The unique identifier of the team to retrieve. Example: \"13240071\""
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getteam": {
@@ -1241,7 +1522,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1262,7 +1546,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -1272,7 +1559,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1285,9 +1575,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getupdate",
             "name": "get-update",
-            "output": ["ActionOutput_monday_getupdate"],
-            "scopes": ["updates:read"],
-            "usedModels": ["ActionInput_monday_getupdate", "ActionOutput_monday_getupdate"],
+            "output": [
+                "ActionOutput_monday_getupdate"
+            ],
+            "scopes": [
+                "updates:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getupdate",
+                "ActionOutput_monday_getupdate"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1299,7 +1596,9 @@
                                 "description": "The unique identifier of the update. Example: \"579526624\""
                             }
                         },
-                        "required": ["update_id"],
+                        "required": [
+                            "update_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getupdate": {
@@ -1339,11 +1638,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1356,9 +1660,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_monday_getuser"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_monday_getuser", "ActionOutput_monday_getuser"],
+            "output": [
+                "ActionOutput_monday_getuser"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getuser",
+                "ActionOutput_monday_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1370,7 +1681,9 @@
                                 "description": "The unique identifier of the user. Example: \"104094154\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getuser": {
@@ -1418,12 +1731,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "email", "url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "email",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1436,9 +1756,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_getworkspace",
             "name": "get-workspace",
-            "output": ["ActionOutput_monday_getworkspace"],
-            "scopes": ["workspaces:read"],
-            "usedModels": ["ActionInput_monday_getworkspace", "ActionOutput_monday_getworkspace"],
+            "output": [
+                "ActionOutput_monday_getworkspace"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_getworkspace",
+                "ActionOutput_monday_getworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1450,7 +1777,9 @@
                                 "description": "The unique identifier of the monday.com workspace to retrieve."
                             }
                         },
-                        "required": ["workspaceId"],
+                        "required": [
+                            "workspaceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_getworkspace": {
@@ -1475,7 +1804,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1488,9 +1820,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listboards",
             "name": "list-boards",
-            "output": ["ActionOutput_monday_listboards"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_listboards", "ActionOutput_monday_listboards"],
+            "output": [
+                "ActionOutput_monday_listboards"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listboards",
+                "ActionOutput_monday_listboards"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1507,12 +1846,21 @@
                             "board_kind": {
                                 "description": "The type of board to return.",
                                 "type": "string",
-                                "enum": ["private", "public", "share"]
+                                "enum": [
+                                    "private",
+                                    "public",
+                                    "share"
+                                ]
                             },
                             "state": {
                                 "description": "The state of the board to return. Defaults to active.",
                                 "type": "string",
-                                "enum": ["active", "all", "archived", "deleted"]
+                                "enum": [
+                                    "active",
+                                    "all",
+                                    "archived",
+                                    "deleted"
+                                ]
                             },
                             "workspace_ids": {
                                 "description": "Workspace IDs that contain the boards to return. Example: [\"6502905\"]",
@@ -1563,7 +1911,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1571,7 +1922,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["boards"],
+                        "required": [
+                            "boards"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1584,9 +1937,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listcolumns",
             "name": "list-columns",
-            "output": ["ActionOutput_monday_listcolumns"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_listcolumns", "ActionOutput_monday_listcolumns"],
+            "output": [
+                "ActionOutput_monday_listcolumns"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listcolumns",
+                "ActionOutput_monday_listcolumns"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1635,7 +1995,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "type", "board_id", "board_name"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "type",
+                                        "board_id",
+                                        "board_name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1643,7 +2009,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["columns"],
+                        "required": [
+                            "columns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1656,9 +2024,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_monday_listgroups"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_listgroups", "ActionOutput_monday_listgroups"],
+            "output": [
+                "ActionOutput_monday_listgroups"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listgroups",
+                "ActionOutput_monday_listgroups"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1677,7 +2052,9 @@
                                 }
                             }
                         },
-                        "required": ["board_id"],
+                        "required": [
+                            "board_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_listgroups": {
@@ -1707,12 +2084,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1725,9 +2107,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listitems",
             "name": "list-items",
-            "output": ["ActionOutput_monday_listitems"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_listitems", "ActionOutput_monday_listitems"],
+            "output": [
+                "ActionOutput_monday_listitems"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listitems",
+                "ActionOutput_monday_listitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1771,7 +2160,10 @@
                                                         {
                                                             "type": "array",
                                                             "items": {
-                                                                "type": ["string", "number"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "number"
+                                                                ]
                                                             }
                                                         }
                                                     ]
@@ -1783,13 +2175,18 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["column_id"],
+                                            "required": [
+                                                "column_id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
                                     "operator": {
                                         "type": "string",
-                                        "enum": ["and", "or"]
+                                        "enum": [
+                                            "and",
+                                            "or"
+                                        ]
                                     },
                                     "order_by": {
                                         "type": "array",
@@ -1801,10 +2198,15 @@
                                                 },
                                                 "direction": {
                                                     "type": "string",
-                                                    "enum": ["asc", "desc"]
+                                                    "enum": [
+                                                        "asc",
+                                                        "desc"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["column_id"],
+                                            "required": [
+                                                "column_id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1818,7 +2220,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["board_id"],
+                        "required": [
+                            "board_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_listitems": {
@@ -1862,18 +2266,29 @@
                                                         "type": "string"
                                                     },
                                                     "text": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "value": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1881,7 +2296,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1894,9 +2311,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listsubitems",
             "name": "list-subitems",
-            "output": ["ActionOutput_monday_listsubitems"],
-            "scopes": ["boards:read"],
-            "usedModels": ["ActionInput_monday_listsubitems", "ActionOutput_monday_listsubitems"],
+            "output": [
+                "ActionOutput_monday_listsubitems"
+            ],
+            "scopes": [
+                "boards:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listsubitems",
+                "ActionOutput_monday_listsubitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1908,7 +2332,9 @@
                                 "description": "Parent item ID. Example: \"2933602562\""
                             }
                         },
-                        "required": ["parent_item_id"],
+                        "required": [
+                            "parent_item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_listsubitems": {
@@ -1940,17 +2366,25 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "board_id"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "board_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["subitems"],
+                        "required": [
+                            "subitems"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1963,9 +2397,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listteams",
             "name": "list-teams",
-            "output": ["ActionOutput_monday_listteams"],
-            "scopes": ["teams:read"],
-            "usedModels": ["ActionInput_monday_listteams", "ActionOutput_monday_listteams"],
+            "output": [
+                "ActionOutput_monday_listteams"
+            ],
+            "scopes": [
+                "teams:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listteams",
+                "ActionOutput_monday_listteams"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2019,7 +2460,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2035,12 +2478,17 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2048,7 +2496,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teams"],
+                        "required": [
+                            "teams"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2061,9 +2511,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listupdates",
             "name": "list-updates",
-            "output": ["ActionOutput_monday_listupdates"],
-            "scopes": ["updates:read"],
-            "usedModels": ["ActionInput_monday_listupdates", "ActionOutput_monday_listupdates"],
+            "output": [
+                "ActionOutput_monday_listupdates"
+            ],
+            "scopes": [
+                "updates:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listupdates",
+                "ActionOutput_monday_listupdates"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2156,7 +2613,9 @@
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2164,7 +2623,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2172,7 +2633,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["updates"],
+                        "required": [
+                            "updates"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2185,9 +2648,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_monday_listusers"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_monday_listusers", "ActionOutput_monday_listusers"],
+            "output": [
+                "ActionOutput_monday_listusers"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listusers",
+                "ActionOutput_monday_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2273,12 +2743,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "email"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2286,7 +2762,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2299,9 +2777,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_listworkspaces",
             "name": "list-workspaces",
-            "output": ["ActionOutput_monday_listworkspaces"],
-            "scopes": ["workspaces:read"],
-            "usedModels": ["ActionInput_monday_listworkspaces", "ActionOutput_monday_listworkspaces"],
+            "output": [
+                "ActionOutput_monday_listworkspaces"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_monday_listworkspaces",
+                "ActionOutput_monday_listworkspaces"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2318,7 +2803,11 @@
                             "kind": {
                                 "description": "Filter by workspace kind.",
                                 "type": "string",
-                                "enum": ["closed", "open", "template"]
+                                "enum": [
+                                    "closed",
+                                    "open",
+                                    "template"
+                                ]
                             },
                             "limit": {
                                 "description": "Number of workspaces to return per page. Min: 1, max: 100, default: 25.",
@@ -2329,7 +2818,12 @@
                             "state": {
                                 "description": "Filter by workspace state. Default: active.",
                                 "type": "string",
-                                "enum": ["active", "all", "archived", "deleted"]
+                                "enum": [
+                                    "active",
+                                    "all",
+                                    "archived",
+                                    "deleted"
+                                ]
                             },
                             "cursor": {
                                 "description": "Pagination cursor (page number) from the previous response. Omit for the first page.",
@@ -2362,7 +2856,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2370,7 +2867,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2383,9 +2882,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_moveitemtoboard",
             "name": "move-item-to-board",
-            "output": ["ActionOutput_monday_moveitemtoboard"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_moveitemtoboard", "ActionOutput_monday_moveitemtoboard"],
+            "output": [
+                "ActionOutput_monday_moveitemtoboard"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_moveitemtoboard",
+                "ActionOutput_monday_moveitemtoboard"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2405,7 +2911,11 @@
                                 "description": "The unique identifier of the target group on the target board. Example: \"new_group\""
                             }
                         },
-                        "required": ["item_id", "board_id", "group_id"],
+                        "required": [
+                            "item_id",
+                            "board_id",
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_moveitemtoboard": {
@@ -2427,7 +2937,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2440,9 +2952,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_moveitemtogroup",
             "name": "move-item-to-group",
-            "output": ["ActionOutput_monday_moveitemtogroup"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_moveitemtogroup", "ActionOutput_monday_moveitemtogroup"],
+            "output": [
+                "ActionOutput_monday_moveitemtogroup"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_moveitemtogroup",
+                "ActionOutput_monday_moveitemtogroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2458,7 +2977,10 @@
                                 "description": "Group ID. Example: \"topics\", \"new_group313\""
                             }
                         },
-                        "required": ["item_id", "group_id"],
+                        "required": [
+                            "item_id",
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_moveitemtogroup": {
@@ -2471,7 +2993,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2484,9 +3008,17 @@
             "endpoint": null,
             "input": "ActionInput_monday_updateboard",
             "name": "update-board",
-            "output": ["ActionOutput_monday_updateboard"],
-            "scopes": ["boards:read", "boards:write"],
-            "usedModels": ["ActionInput_monday_updateboard", "ActionOutput_monday_updateboard"],
+            "output": [
+                "ActionOutput_monday_updateboard"
+            ],
+            "scopes": [
+                "boards:read",
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_updateboard",
+                "ActionOutput_monday_updateboard"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2499,7 +3031,12 @@
                             },
                             "board_attribute": {
                                 "type": "string",
-                                "enum": ["name", "description", "communication", "item_nickname"],
+                                "enum": [
+                                    "name",
+                                    "description",
+                                    "communication",
+                                    "item_nickname"
+                                ],
                                 "description": "The board attribute to update"
                             },
                             "new_value": {
@@ -2507,7 +3044,11 @@
                                 "description": "The new attribute value"
                             }
                         },
-                        "required": ["board_id", "board_attribute", "new_value"],
+                        "required": [
+                            "board_id",
+                            "board_attribute",
+                            "new_value"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_updateboard": {
@@ -2535,7 +3076,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2548,9 +3091,17 @@
             "endpoint": null,
             "input": "ActionInput_monday_updatecolumn",
             "name": "update-column",
-            "output": ["ActionOutput_monday_updatecolumn"],
-            "scopes": ["boards:read", "boards:write"],
-            "usedModels": ["ActionInput_monday_updatecolumn", "ActionOutput_monday_updatecolumn"],
+            "output": [
+                "ActionOutput_monday_updatecolumn"
+            ],
+            "scopes": [
+                "boards:read",
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_updatecolumn",
+                "ActionOutput_monday_updatecolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2578,7 +3129,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["board_id", "column_id"],
+                        "required": [
+                            "board_id",
+                            "column_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_updatecolumn": {
@@ -2600,7 +3154,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2613,9 +3169,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_updategroup",
             "name": "update-group",
-            "output": ["ActionOutput_monday_updategroup"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_updategroup", "ActionOutput_monday_updategroup"],
+            "output": [
+                "ActionOutput_monday_updategroup"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_updategroup",
+                "ActionOutput_monday_updategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2632,7 +3195,13 @@
                             },
                             "group_attribute": {
                                 "type": "string",
-                                "enum": ["color", "position", "relative_position_after", "relative_position_before", "title"],
+                                "enum": [
+                                    "color",
+                                    "position",
+                                    "relative_position_after",
+                                    "relative_position_before",
+                                    "title"
+                                ],
                                 "description": "The group attribute to update."
                             },
                             "new_value": {
@@ -2640,7 +3209,12 @@
                                 "description": "The new attribute value."
                             }
                         },
-                        "required": ["board_id", "group_id", "group_attribute", "new_value"],
+                        "required": [
+                            "board_id",
+                            "group_id",
+                            "group_attribute",
+                            "new_value"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_updategroup": {
@@ -2659,7 +3233,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2672,9 +3248,16 @@
             "endpoint": null,
             "input": "ActionInput_monday_updateitem",
             "name": "update-item",
-            "output": ["ActionOutput_monday_updateitem"],
-            "scopes": ["boards:write"],
-            "usedModels": ["ActionInput_monday_updateitem", "ActionOutput_monday_updateitem"],
+            "output": [
+                "ActionOutput_monday_updateitem"
+            ],
+            "scopes": [
+                "boards:write"
+            ],
+            "usedModels": [
+                "ActionInput_monday_updateitem",
+                "ActionOutput_monday_updateitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2698,7 +3281,11 @@
                                 "description": "Column values to update keyed by column ID. Example: { \"task_estimation\": \"5\" }"
                             }
                         },
-                        "required": ["item_id", "board_id", "column_values"],
+                        "required": [
+                            "item_id",
+                            "board_id",
+                            "column_values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_monday_updateitem": {
@@ -2729,7 +3316,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2750,12 +3339,18 @@
             ],
             "input": null,
             "name": "boards",
-            "output": ["Board"],
+            "output": [
+                "Board"
+            ],
             "runs": "every hour",
-            "scopes": ["boards:read"],
+            "scopes": [
+                "boards:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Board"],
+            "usedModels": [
+                "Board"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2788,12 +3383,21 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "state", "board_kind", "updated_at", "url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "state",
+                            "board_kind",
+                            "updated_at",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2807,12 +3411,18 @@
             ],
             "input": null,
             "name": "columns",
-            "output": ["Column"],
+            "output": [
+                "Column"
+            ],
             "runs": "every hour",
-            "scopes": ["boards:read"],
+            "scopes": [
+                "boards:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Column"],
+            "usedModels": [
+                "Column"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2839,12 +3449,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "board_id", "column_id", "title", "type"],
+                        "required": [
+                            "id",
+                            "board_id",
+                            "column_id",
+                            "title",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2858,12 +3476,18 @@
             ],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
-            "scopes": ["boards:read"],
+            "scopes": [
+                "boards:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2893,12 +3517,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "board_id"],
+                        "required": [
+                            "id",
+                            "board_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2907,12 +3536,18 @@
             "endpoints": [],
             "input": null,
             "name": "items",
-            "output": ["Item"],
+            "output": [
+                "Item"
+            ],
             "runs": "every hour",
-            "scopes": ["boards:read"],
+            "scopes": [
+                "boards:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Item"],
+            "usedModels": [
+                "Item"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2948,12 +3583,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2962,12 +3601,18 @@
             "endpoints": [],
             "input": null,
             "name": "subitems",
-            "output": ["Subitem"],
+            "output": [
+                "Subitem"
+            ],
             "runs": "every hour",
-            "scopes": ["boards:read"],
+            "scopes": [
+                "boards:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subitem"],
+            "usedModels": [
+                "Subitem"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2996,17 +3641,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "board_id"],
+                        "required": [
+                            "id",
+                            "board_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3020,12 +3672,18 @@
             ],
             "input": null,
             "name": "teams",
-            "output": ["Team"],
+            "output": [
+                "Team"
+            ],
             "runs": "every hour",
-            "scopes": ["teams:read"],
+            "scopes": [
+                "teams:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Team"],
+            "usedModels": [
+                "Team"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3043,7 +3701,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3062,12 +3723,18 @@
             ],
             "input": null,
             "name": "updates",
-            "output": ["Update"],
+            "output": [
+                "Update"
+            ],
             "runs": "every hour",
-            "scopes": ["updates:read"],
+            "scopes": [
+                "updates:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Update"],
+            "usedModels": [
+                "Update"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3129,17 +3796,23 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3153,12 +3826,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["users:read"],
+            "scopes": [
+                "users:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3203,12 +3882,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3222,12 +3905,18 @@
             ],
             "input": null,
             "name": "workspaces",
-            "output": ["Workspace"],
+            "output": [
+                "Workspace"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read"],
+            "scopes": [
+                "workspaces:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workspace"],
+            "usedModels": [
+                "Workspace"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3251,12 +3940,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_createissue",
             "name": "create-issue",
-            "output": ["ActionOutput_ninety_io_createissue"],
+            "output": [
+                "ActionOutput_ninety_io_createissue"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_createissue", "ActionOutput_ninety_io_createissue"],
+            "usedModels": [
+                "ActionInput_ninety_io_createissue",
+                "ActionOutput_ninety_io_createissue"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +30,10 @@
                                 "description": "Team ID. Example: \"6a616ba8908190d6d9458153\""
                             }
                         },
-                        "required": ["title", "teamId"],
+                        "required": [
+                            "title",
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_createissue": {
@@ -59,7 +67,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "teamId"],
+                        "required": [
+                            "id",
+                            "title",
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -72,9 +84,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_createmilestone",
             "name": "create-milestone",
-            "output": ["ActionOutput_ninety_io_createmilestone"],
+            "output": [
+                "ActionOutput_ninety_io_createmilestone"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_createmilestone", "ActionOutput_ninety_io_createmilestone"],
+            "usedModels": [
+                "ActionInput_ninety_io_createmilestone",
+                "ActionOutput_ninety_io_createmilestone"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -118,7 +135,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["rockId", "title", "dueDate", "teamId"],
+                        "required": [
+                            "rockId",
+                            "title",
+                            "dueDate",
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_createmilestone": {
@@ -179,7 +201,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -192,9 +216,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_createrock",
             "name": "create-rock",
-            "output": ["ActionOutput_ninety_io_createrock"],
+            "output": [
+                "ActionOutput_ninety_io_createrock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_createrock", "ActionOutput_ninety_io_createrock"],
+            "usedModels": [
+                "ActionInput_ninety_io_createrock",
+                "ActionOutput_ninety_io_createrock"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -215,17 +244,33 @@
                             },
                             "statusCode": {
                                 "type": "string",
-                                "enum": ["OFF_TRACK", "ON_TRACK", "DONE", "CANCELED"],
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ],
                                 "description": "Status of the rock."
                             },
                             "levelCode": {
                                 "type": "string",
-                                "enum": ["USER", "COMPANY_AND_DEPARTMENT", "COMPANY", "DEPARTMENT"],
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ],
                                 "description": "Level of the rock."
                             },
                             "quarter": {
                                 "type": "string",
-                                "enum": ["Q1", "Q2", "Q3", "Q4", "None"],
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ],
                                 "description": "Quarter of the rock."
                             },
                             "description": {
@@ -244,7 +289,14 @@
                                 }
                             }
                         },
-                        "required": ["teamId", "title", "dueDate", "statusCode", "levelCode", "quarter"],
+                        "required": [
+                            "teamId",
+                            "title",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_createrock": {
@@ -340,7 +392,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "dueDate"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "dueDate"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -384,7 +440,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "teamId", "title", "dueDate", "statusCode", "levelCode", "quarter"],
+                        "required": [
+                            "id",
+                            "teamId",
+                            "title",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -397,9 +461,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_createtodo",
             "name": "create-todo",
-            "output": ["ActionOutput_ninety_io_createtodo"],
+            "output": [
+                "ActionOutput_ninety_io_createtodo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_createtodo", "ActionOutput_ninety_io_createtodo"],
+            "usedModels": [
+                "ActionInput_ninety_io_createtodo",
+                "ActionOutput_ninety_io_createtodo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -415,7 +484,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_createtodo": {
@@ -431,7 +502,10 @@
                                 "type": "boolean"
                             },
                             "teamId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "userId": {
                                 "type": "string"
@@ -446,13 +520,22 @@
                                 "type": "boolean"
                             },
                             "deletedDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deletedByUserId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -465,9 +548,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_deleteissue",
             "name": "delete-issue",
-            "output": ["ActionOutput_ninety_io_deleteissue"],
+            "output": [
+                "ActionOutput_ninety_io_deleteissue"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_deleteissue", "ActionOutput_ninety_io_deleteissue"],
+            "usedModels": [
+                "ActionInput_ninety_io_deleteissue",
+                "ActionOutput_ninety_io_deleteissue"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -479,7 +567,9 @@
                                 "description": "The unique identifier of the issue to delete. Example: \"6a6174eeec1cad4577a10b9a\""
                             }
                         },
-                        "required": ["issueId"],
+                        "required": [
+                            "issueId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_deleteissue": {
@@ -489,7 +579,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issueId"],
+                        "required": [
+                            "issueId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -502,9 +594,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_deleterock",
             "name": "delete-rock",
-            "output": ["ActionOutput_ninety_io_deleterock"],
+            "output": [
+                "ActionOutput_ninety_io_deleterock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_deleterock", "ActionOutput_ninety_io_deleterock"],
+            "usedModels": [
+                "ActionInput_ninety_io_deleterock",
+                "ActionOutput_ninety_io_deleterock"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -516,7 +613,9 @@
                                 "description": "Rock ID. Example: \"6a6175355346be5d56149d93\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_deleterock": {
@@ -529,7 +628,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -542,9 +644,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_deletescorecardnote",
             "name": "delete-scorecard-note",
-            "output": ["ActionOutput_ninety_io_deletescorecardnote"],
+            "output": [
+                "ActionOutput_ninety_io_deletescorecardnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_deletescorecardnote", "ActionOutput_ninety_io_deletescorecardnote"],
+            "usedModels": [
+                "ActionInput_ninety_io_deletescorecardnote",
+                "ActionOutput_ninety_io_deletescorecardnote"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -560,7 +667,10 @@
                                 "description": "The period start date in ISO 8601 format. Example: \"2026-01-01T00:00:00Z\""
                             }
                         },
-                        "required": ["kpiId", "periodStartDate"],
+                        "required": [
+                            "kpiId",
+                            "periodStartDate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_deletescorecardnote": {
@@ -576,7 +686,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "kpiId", "periodStartDate"],
+                        "required": [
+                            "success",
+                            "kpiId",
+                            "periodStartDate"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -589,9 +703,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_deletescorecardscore",
             "name": "delete-scorecard-score",
-            "output": ["ActionOutput_ninety_io_deletescorecardscore"],
+            "output": [
+                "ActionOutput_ninety_io_deletescorecardscore"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_deletescorecardscore", "ActionOutput_ninety_io_deletescorecardscore"],
+            "usedModels": [
+                "ActionInput_ninety_io_deletescorecardscore",
+                "ActionOutput_ninety_io_deletescorecardscore"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -607,7 +726,10 @@
                                 "description": "The ISO 8601 start date of the period whose score should be deleted. Must exactly match the date used when the score was created. Example: \"2025-01-01T00:00:00Z\""
                             }
                         },
-                        "required": ["kpiId", "periodStartDate"],
+                        "required": [
+                            "kpiId",
+                            "periodStartDate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_deletescorecardscore": {
@@ -617,7 +739,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -630,9 +754,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_deletetodo",
             "name": "delete-todo",
-            "output": ["ActionOutput_ninety_io_deletetodo"],
+            "output": [
+                "ActionOutput_ninety_io_deletetodo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_deletetodo", "ActionOutput_ninety_io_deletetodo"],
+            "usedModels": [
+                "ActionInput_ninety_io_deletetodo",
+                "ActionOutput_ninety_io_deletetodo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -644,7 +773,9 @@
                                 "description": "To-Do ID to delete. Example: \"6a6174ad545a6c26e85e387e\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_deletetodo": {
@@ -657,7 +788,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -670,9 +804,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_getissue",
             "name": "get-issue",
-            "output": ["ActionOutput_ninety_io_getissue"],
+            "output": [
+                "ActionOutput_ninety_io_getissue"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_getissue", "ActionOutput_ninety_io_getissue"],
+            "usedModels": [
+                "ActionInput_ninety_io_getissue",
+                "ActionOutput_ninety_io_getissue"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -684,7 +823,9 @@
                                 "description": "The unique identifier of the issue. Example: \"6a68fb4f2f9e9442985c809d\""
                             }
                         },
-                        "required": ["issueId"],
+                        "required": [
+                            "issueId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_getissue": {
@@ -767,13 +908,22 @@
                             },
                             "rating": {},
                             "archivedDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completedDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "originalDueDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user": {
                                 "type": "object",
@@ -783,7 +933,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -796,9 +948,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_getmilestone",
             "name": "get-milestone",
-            "output": ["ActionOutput_ninety_io_getmilestone"],
+            "output": [
+                "ActionOutput_ninety_io_getmilestone"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_getmilestone", "ActionOutput_ninety_io_getmilestone"],
+            "usedModels": [
+                "ActionInput_ninety_io_getmilestone",
+                "ActionOutput_ninety_io_getmilestone"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -810,7 +967,9 @@
                                 "description": "Milestone ID. Example: \"6a61758b5346be5d56149d9f\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_getmilestone": {
@@ -874,7 +1033,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -887,9 +1048,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_getrock",
             "name": "get-rock",
-            "output": ["ActionOutput_ninety_io_getrock"],
+            "output": [
+                "ActionOutput_ninety_io_getrock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_getrock", "ActionOutput_ninety_io_getrock"],
+            "usedModels": [
+                "ActionInput_ninety_io_getrock",
+                "ActionOutput_ninety_io_getrock"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -901,7 +1067,9 @@
                                 "description": "The unique identifier of the rock. Example: \"6a61d2d0441c43ad0eaabd3c\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_getrock": {
@@ -937,15 +1105,31 @@
                             },
                             "statusCode": {
                                 "type": "string",
-                                "enum": ["OFF_TRACK", "ON_TRACK", "DONE", "CANCELED"]
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ]
                             },
                             "levelCode": {
                                 "type": "string",
-                                "enum": ["USER", "COMPANY_AND_DEPARTMENT", "COMPANY", "DEPARTMENT"]
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ]
                             },
                             "quarter": {
                                 "type": "string",
-                                "enum": ["Q1", "Q2", "Q3", "Q4", "None"]
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ]
                             },
                             "companyId": {
                                 "type": "string"
@@ -1025,7 +1209,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "dueDate"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "dueDate"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1043,7 +1231,15 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "title", "teamId", "dueDate", "statusCode", "levelCode", "quarter"],
+                        "required": [
+                            "id",
+                            "title",
+                            "teamId",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1056,9 +1252,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_gettodo",
             "name": "get-todo",
-            "output": ["ActionOutput_ninety_io_gettodo"],
+            "output": [
+                "ActionOutput_ninety_io_gettodo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_gettodo", "ActionOutput_ninety_io_gettodo"],
+            "usedModels": [
+                "ActionInput_ninety_io_gettodo",
+                "ActionOutput_ninety_io_gettodo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1070,7 +1271,9 @@
                                 "description": "To-Do ID. Example: \"6a6174ad545a6c26e85e387e\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_gettodo": {
@@ -1177,7 +1380,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1190,9 +1395,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_ninety_io_getuser"],
+            "output": [
+                "ActionOutput_ninety_io_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_getuser", "ActionOutput_ninety_io_getuser"],
+            "usedModels": [
+                "ActionInput_ninety_io_getuser",
+                "ActionOutput_ninety_io_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1204,7 +1414,9 @@
                                 "description": "User ID. Example: \"6a616ba8908190d6d945815c\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_getuser": {
@@ -1238,7 +1450,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1251,9 +1465,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_listissues",
             "name": "list-issues",
-            "output": ["ActionOutput_ninety_io_listissues"],
+            "output": [
+                "ActionOutput_ninety_io_listissues"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_listissues", "ActionOutput_ninety_io_listissues"],
+            "usedModels": [
+                "ActionInput_ninety_io_listissues",
+                "ActionOutput_ninety_io_listissues"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1323,7 +1542,9 @@
                                         "statusCode": {},
                                         "priorityCode": {}
                                     },
-                                    "required": ["_id"],
+                                    "required": [
+                                        "_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1337,7 +1558,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1350,9 +1573,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_listrocks",
             "name": "list-rocks",
-            "output": ["ActionOutput_ninety_io_listrocks"],
+            "output": [
+                "ActionOutput_ninety_io_listrocks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_listrocks", "ActionOutput_ninety_io_listrocks"],
+            "usedModels": [
+                "ActionInput_ninety_io_listrocks",
+                "ActionOutput_ninety_io_listrocks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1361,12 +1589,23 @@
                         "properties": {
                             "sortField": {
                                 "type": "string",
-                                "enum": ["title", "statusCode", "dueDate", "completedDate", "owner", "team", "dueDateQuarter"],
+                                "enum": [
+                                    "title",
+                                    "statusCode",
+                                    "dueDate",
+                                    "completedDate",
+                                    "owner",
+                                    "team",
+                                    "dueDateQuarter"
+                                ],
                                 "description": "Field to sort by. Example: \"dueDate\""
                             },
                             "sortDirection": {
                                 "type": "string",
-                                "enum": ["ASC", "DESC"],
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ],
                                 "description": "Sort direction. Example: \"ASC\""
                             },
                             "pageSize": {
@@ -1390,7 +1629,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sortField", "sortDirection", "pageSize", "pageIndex"],
+                        "required": [
+                            "sortField",
+                            "sortDirection",
+                            "pageSize",
+                            "pageIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_listrocks": {
@@ -1409,24 +1653,43 @@
                                         },
                                         "statusCode": {
                                             "type": "string",
-                                            "enum": ["OFF_TRACK", "ON_TRACK", "DONE", "CANCELED"]
+                                            "enum": [
+                                                "OFF_TRACK",
+                                                "ON_TRACK",
+                                                "DONE",
+                                                "CANCELED"
+                                            ]
                                         },
                                         "dueDate": {
                                             "type": "string"
                                         },
                                         "completedDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "teamId": {
                                             "type": "string"
                                         },
                                         "levelCode": {
                                             "type": "string",
-                                            "enum": ["USER", "COMPANY_AND_DEPARTMENT", "COMPANY", "DEPARTMENT"]
+                                            "enum": [
+                                                "USER",
+                                                "COMPANY_AND_DEPARTMENT",
+                                                "COMPANY",
+                                                "DEPARTMENT"
+                                            ]
                                         },
                                         "quarter": {
                                             "type": "string",
-                                            "enum": ["Q1", "Q2", "Q3", "Q4", "None"]
+                                            "enum": [
+                                                "Q1",
+                                                "Q2",
+                                                "Q3",
+                                                "Q4",
+                                                "None"
+                                            ]
                                         },
                                         "milestones": {
                                             "type": "array",
@@ -1452,10 +1715,17 @@
                                                         "type": "string"
                                                     },
                                                     "updatedAt": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["_id", "title", "dueDate"],
+                                                "required": [
+                                                    "_id",
+                                                    "title",
+                                                    "dueDate"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1463,15 +1733,28 @@
                                             "type": "string"
                                         },
                                         "updatedAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["_id", "title", "statusCode", "dueDate", "teamId", "levelCode", "quarter"],
+                                    "required": [
+                                        "_id",
+                                        "title",
+                                        "statusCode",
+                                        "dueDate",
+                                        "teamId",
+                                        "levelCode",
+                                        "quarter"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1484,9 +1767,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_listscorecardkpis",
             "name": "list-scorecard-kpis",
-            "output": ["ActionOutput_ninety_io_listscorecardkpis"],
+            "output": [
+                "ActionOutput_ninety_io_listscorecardkpis"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_listscorecardkpis", "ActionOutput_ninety_io_listscorecardkpis"],
+            "usedModels": [
+                "ActionInput_ninety_io_listscorecardkpis",
+                "ActionOutput_ninety_io_listscorecardkpis"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1594,7 +1882,10 @@
                                         "teams": {},
                                         "scorecards": {}
                                     },
-                                    "required": ["_id", "title"],
+                                    "required": [
+                                        "_id",
+                                        "title"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1614,7 +1905,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "currentPage", "itemsCount", "totalCount", "totalPages"],
+                        "required": [
+                            "items",
+                            "currentPage",
+                            "itemsCount",
+                            "totalCount",
+                            "totalPages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1627,9 +1924,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_listteams",
             "name": "list-teams",
-            "output": ["ActionOutput_ninety_io_listteams"],
+            "output": [
+                "ActionOutput_ninety_io_listteams"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_listteams", "ActionOutput_ninety_io_listteams"],
+            "usedModels": [
+                "ActionInput_ninety_io_listteams",
+                "ActionOutput_ninety_io_listteams"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1662,12 +1964,16 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["teamId"],
+                                    "required": [
+                                        "teamId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["teams"],
+                        "required": [
+                            "teams"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1680,9 +1986,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_listtodos",
             "name": "list-todos",
-            "output": ["ActionOutput_ninety_io_listtodos"],
+            "output": [
+                "ActionOutput_ninety_io_listtodos"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_listtodos", "ActionOutput_ninety_io_listtodos"],
+            "usedModels": [
+                "ActionInput_ninety_io_listtodos",
+                "ActionOutput_ninety_io_listtodos"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1700,7 +2011,10 @@
                             "order": {
                                 "description": "Sort direction",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "pageSize": {
                                 "description": "Number of results per page (max 100). Example: 25",
@@ -1807,7 +2121,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "isPersonal", "completed", "archived", "userId", "companyId", "createdDate"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "isPersonal",
+                                        "completed",
+                                        "archived",
+                                        "userId",
+                                        "companyId",
+                                        "createdDate"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1815,7 +2138,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1828,9 +2153,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_updateissue",
             "name": "update-issue",
-            "output": ["ActionOutput_ninety_io_updateissue"],
+            "output": [
+                "ActionOutput_ninety_io_updateissue"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_updateissue", "ActionOutput_ninety_io_updateissue"],
+            "usedModels": [
+                "ActionInput_ninety_io_updateissue",
+                "ActionOutput_ninety_io_updateissue"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1852,7 +2182,10 @@
                             "interval": {
                                 "description": "Interval classification for the Issue",
                                 "type": "string",
-                                "enum": ["SHORT_TERM", "LONG_TERM"]
+                                "enum": [
+                                    "SHORT_TERM",
+                                    "LONG_TERM"
+                                ]
                             },
                             "description": {
                                 "description": "HTML description of the Issue",
@@ -1869,7 +2202,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["issueId"],
+                        "required": [
+                            "issueId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_updateissue": {
@@ -1927,7 +2262,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "userId", "teamId", "companyId", "archived", "completed", "createdBy", "deleted", "title", "createdDate"],
+                        "required": [
+                            "id",
+                            "userId",
+                            "teamId",
+                            "companyId",
+                            "archived",
+                            "completed",
+                            "createdBy",
+                            "deleted",
+                            "title",
+                            "createdDate"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1940,9 +2286,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_updatemilestone",
             "name": "update-milestone",
-            "output": ["ActionOutput_ninety_io_updatemilestone"],
+            "output": [
+                "ActionOutput_ninety_io_updatemilestone"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_updatemilestone", "ActionOutput_ninety_io_updatemilestone"],
+            "usedModels": [
+                "ActionInput_ninety_io_updatemilestone",
+                "ActionOutput_ninety_io_updatemilestone"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1985,7 +2336,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_updatemilestone": {
@@ -2049,7 +2402,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2062,9 +2417,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_updaterock",
             "name": "update-rock",
-            "output": ["ActionOutput_ninety_io_updaterock"],
+            "output": [
+                "ActionOutput_ninety_io_updaterock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_updaterock", "ActionOutput_ninety_io_updaterock"],
+            "usedModels": [
+                "ActionInput_ninety_io_updaterock",
+                "ActionOutput_ninety_io_updaterock"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2081,7 +2441,10 @@
                             },
                             "description": {
                                 "description": "Rock description",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dueDate": {
                                 "description": "Due date in ISO 8601 format. Example: \"2026-12-31T00:00:00Z\"",
@@ -2090,17 +2453,33 @@
                             "statusCode": {
                                 "description": "Status code",
                                 "type": "string",
-                                "enum": ["OFF_TRACK", "ON_TRACK", "DONE", "CANCELED"]
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ]
                             },
                             "levelCode": {
                                 "description": "Level code",
                                 "type": "string",
-                                "enum": ["USER", "COMPANY_AND_DEPARTMENT", "COMPANY", "DEPARTMENT"]
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ]
                             },
                             "quarter": {
                                 "description": "Quarter",
                                 "type": "string",
-                                "enum": ["Q1", "Q2", "Q3", "Q4", "None"]
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ]
                             },
                             "teamId": {
                                 "description": "Team ID",
@@ -2108,14 +2487,22 @@
                             },
                             "notes": {
                                 "description": "Notes",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "assigneeId": {
                                 "description": "Assignee user ID",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_updaterock": {
@@ -2135,15 +2522,31 @@
                             },
                             "statusCode": {
                                 "type": "string",
-                                "enum": ["OFF_TRACK", "ON_TRACK", "DONE", "CANCELED"]
+                                "enum": [
+                                    "OFF_TRACK",
+                                    "ON_TRACK",
+                                    "DONE",
+                                    "CANCELED"
+                                ]
                             },
                             "levelCode": {
                                 "type": "string",
-                                "enum": ["USER", "COMPANY_AND_DEPARTMENT", "COMPANY", "DEPARTMENT"]
+                                "enum": [
+                                    "USER",
+                                    "COMPANY_AND_DEPARTMENT",
+                                    "COMPANY",
+                                    "DEPARTMENT"
+                                ]
                             },
                             "quarter": {
                                 "type": "string",
-                                "enum": ["Q1", "Q2", "Q3", "Q4", "None"]
+                                "enum": [
+                                    "Q1",
+                                    "Q2",
+                                    "Q3",
+                                    "Q4",
+                                    "None"
+                                ]
                             },
                             "teamId": {
                                 "type": "string"
@@ -2220,12 +2623,26 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "dueDate"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "dueDate"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "title", "dueDate", "statusCode", "levelCode", "quarter", "teamId", "createdByUserId", "createdDate"],
+                        "required": [
+                            "id",
+                            "title",
+                            "dueDate",
+                            "statusCode",
+                            "levelCode",
+                            "quarter",
+                            "teamId",
+                            "createdByUserId",
+                            "createdDate"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2238,9 +2655,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_updatetodo",
             "name": "update-todo",
-            "output": ["ActionOutput_ninety_io_updatetodo"],
+            "output": [
+                "ActionOutput_ninety_io_updatetodo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_updatetodo", "ActionOutput_ninety_io_updatetodo"],
+            "usedModels": [
+                "ActionInput_ninety_io_updatetodo",
+                "ActionOutput_ninety_io_updatetodo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2257,11 +2679,17 @@
                             },
                             "description": {
                                 "description": "Description or notes",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dueDate": {
                                 "description": "Due date in ISO 8601 or YYYY-MM-DD",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed": {
                                 "description": "Whether the to-do is completed",
@@ -2281,10 +2709,15 @@
                             },
                             "repeat": {
                                 "description": "Recurrence pattern, e.g. weekly, monthly",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_updatetodo": {
@@ -2297,19 +2730,31 @@
                                 "type": "string"
                             },
                             "teamId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dueDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "originalDueDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "isPersonal": {
                                 "type": "boolean"
@@ -2323,10 +2768,16 @@
                                 ]
                             },
                             "repeat": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "seriesId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "companyId": {
                                 "type": "string"
@@ -2338,7 +2789,10 @@
                                 "type": "number"
                             },
                             "milestoneId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "autoGenerated": {
                                 "type": "boolean"
@@ -2354,28 +2808,46 @@
                                 "type": "boolean"
                             },
                             "archivedDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "archivedByUserId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed": {
                                 "type": "boolean"
                             },
                             "completedDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completedByUserId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deleted": {
                                 "type": "boolean"
                             },
                             "deletedDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deletedByUserId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "imported": {
                                 "type": "boolean"
@@ -2410,7 +2882,10 @@
                                         "type": "string"
                                     },
                                     "primaryEmail": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "emailAddresses": {
                                         "type": "array",
@@ -2438,7 +2913,10 @@
                                         "type": "string"
                                     },
                                     "primaryEmail": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "emailAddresses": {
                                         "type": "array",
@@ -2452,7 +2930,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2465,9 +2945,14 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_upsertscorecardnote",
             "name": "upsert-scorecard-note",
-            "output": ["ActionOutput_ninety_io_upsertscorecardnote"],
+            "output": [
+                "ActionOutput_ninety_io_upsertscorecardnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_ninety_io_upsertscorecardnote", "ActionOutput_ninety_io_upsertscorecardnote"],
+            "usedModels": [
+                "ActionInput_ninety_io_upsertscorecardnote",
+                "ActionOutput_ninety_io_upsertscorecardnote"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2487,7 +2972,11 @@
                                 "description": "Period start date in ISO 8601 format. Example: \"2026-01-01T00:00:00Z\""
                             }
                         },
-                        "required": ["kpiId", "note", "periodStartDate"],
+                        "required": [
+                            "kpiId",
+                            "note",
+                            "periodStartDate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_upsertscorecardnote": {
@@ -2515,7 +3004,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2528,9 +3019,16 @@
             "endpoint": null,
             "input": "ActionInput_ninety_io_upsertscorecardscore",
             "name": "upsert-scorecard-score",
-            "output": ["ActionOutput_ninety_io_upsertscorecardscore"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_ninety_io_upsertscorecardscore", "ActionOutput_ninety_io_upsertscorecardscore"],
+            "output": [
+                "ActionOutput_ninety_io_upsertscorecardscore"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_ninety_io_upsertscorecardscore",
+                "ActionOutput_ninety_io_upsertscorecardscore"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2550,7 +3048,11 @@
                                 "description": "The period start date in ISO 8601 format. Example: \"2026-01-01T00:00:00Z\""
                             }
                         },
-                        "required": ["kpiId", "value", "periodStartDate"],
+                        "required": [
+                            "kpiId",
+                            "value",
+                            "periodStartDate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ninety_io_upsertscorecardscore": {
@@ -2572,7 +3074,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "kpiId", "periodStartDate"],
+                        "required": [
+                            "id",
+                            "kpiId",
+                            "periodStartDate"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2588,12 +3094,16 @@
             "endpoints": [],
             "input": null,
             "name": "issues",
-            "output": ["Issue"],
+            "output": [
+                "Issue"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Issue"],
+            "usedModels": [
+                "Issue"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2650,12 +3160,25 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "userId", "teamId", "companyId", "archived", "completed", "createdBy", "deleted", "title", "createdDate"],
+                        "required": [
+                            "id",
+                            "userId",
+                            "teamId",
+                            "companyId",
+                            "archived",
+                            "completed",
+                            "createdBy",
+                            "deleted",
+                            "title",
+                            "createdDate"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2664,12 +3187,18 @@
             "endpoints": [],
             "input": null,
             "name": "rocks",
-            "output": ["Rock", "Milestone"],
+            "output": [
+                "Rock",
+                "Milestone"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Rock", "Milestone"],
+            "usedModels": [
+                "Rock",
+                "Milestone"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2735,7 +3264,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "Milestone": {
@@ -2769,7 +3300,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "rockId"],
+                        "required": [
+                            "id",
+                            "rockId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2783,12 +3317,16 @@
             "endpoints": [],
             "input": null,
             "name": "scorecard-kpis",
-            "output": ["ScorecardKpi"],
+            "output": [
+                "ScorecardKpi"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ScorecardKpi"],
+            "usedModels": [
+                "ScorecardKpi"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2827,12 +3365,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2841,12 +3383,16 @@
             "endpoints": [],
             "input": null,
             "name": "teams",
-            "output": ["Team"],
+            "output": [
+                "Team"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Team"],
+            "usedModels": [
+                "Team"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2870,7 +3416,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2884,12 +3432,16 @@
             "endpoints": [],
             "input": null,
             "name": "todos",
-            "output": ["Todo"],
+            "output": [
+                "Todo"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Todo"],
+            "usedModels": [
+                "Todo"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2982,7 +3534,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

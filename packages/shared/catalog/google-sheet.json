@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_appendvaluestospreadsheet",
             "name": "append-values-to-spreadsheet",
-            "output": ["ActionOutput_google_sheet_appendvaluestospreadsheet"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_appendvaluestospreadsheet", "ActionOutput_google_sheet_appendvaluestospreadsheet"],
+            "output": [
+                "ActionOutput_google_sheet_appendvaluestospreadsheet"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_appendvaluestospreadsheet",
+                "ActionOutput_google_sheet_appendvaluestospreadsheet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -42,7 +49,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["spreadsheetId", "range", "values"],
+                        "required": [
+                            "spreadsheetId",
+                            "range",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_appendvaluestospreadsheet": {
@@ -67,7 +78,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["spreadsheetId", "tableRange", "updatedRange", "updatedRows", "updatedColumns", "updatedCells"],
+                        "required": [
+                            "spreadsheetId",
+                            "tableRange",
+                            "updatedRange",
+                            "updatedRows",
+                            "updatedColumns",
+                            "updatedCells"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -80,9 +98,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_batchclearvaluesbydatafilter",
             "name": "batch-clear-values-by-data-filter",
-            "output": ["ActionOutput_google_sheet_batchclearvaluesbydatafilter"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_batchclearvaluesbydatafilter", "ActionOutput_google_sheet_batchclearvaluesbydatafilter"],
+            "output": [
+                "ActionOutput_google_sheet_batchclearvaluesbydatafilter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_batchclearvaluesbydatafilter",
+                "ActionOutput_google_sheet_batchclearvaluesbydatafilter"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -127,7 +152,9 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["sheetId"],
+                                            "required": [
+                                                "sheetId"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "developerMetadataLookup": {
@@ -144,14 +171,22 @@
                                                 },
                                                 "locationMatchingStrategy": {
                                                     "type": "string",
-                                                    "enum": ["EXACT_LOCATION", "INTERSECTING_LOCATION"]
+                                                    "enum": [
+                                                        "EXACT_LOCATION",
+                                                        "INTERSECTING_LOCATION"
+                                                    ]
                                                 },
                                                 "location": {
                                                     "type": "object",
                                                     "properties": {
                                                         "locationType": {
                                                             "type": "string",
-                                                            "enum": ["ROW", "COLUMN", "SHEET", "SPREADSHEET"]
+                                                            "enum": [
+                                                                "ROW",
+                                                                "COLUMN",
+                                                                "SHEET",
+                                                                "SPREADSHEET"
+                                                            ]
                                                         },
                                                         "dimensionRange": {
                                                             "type": "object",
@@ -161,7 +196,10 @@
                                                                 },
                                                                 "dimension": {
                                                                     "type": "string",
-                                                                    "enum": ["ROWS", "COLUMNS"]
+                                                                    "enum": [
+                                                                        "ROWS",
+                                                                        "COLUMNS"
+                                                                    ]
                                                                 },
                                                                 "startIndex": {
                                                                     "type": "number"
@@ -170,7 +208,10 @@
                                                                     "type": "number"
                                                                 }
                                                             },
-                                                            "required": ["sheetId", "dimension"],
+                                                            "required": [
+                                                                "sheetId",
+                                                                "dimension"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
@@ -178,7 +219,10 @@
                                                 },
                                                 "visibility": {
                                                     "type": "string",
-                                                    "enum": ["DOCUMENT", "PROJECT"]
+                                                    "enum": [
+                                                        "DOCUMENT",
+                                                        "PROJECT"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -189,7 +233,10 @@
                                 "description": "The data filters used to determine which ranges to clear"
                             }
                         },
-                        "required": ["spreadsheetId", "dataFilters"],
+                        "required": [
+                            "spreadsheetId",
+                            "dataFilters"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_batchclearvaluesbydatafilter": {
@@ -207,7 +254,10 @@
                                 "description": "The ranges that were cleared, in A1 notation"
                             }
                         },
-                        "required": ["spreadsheetId", "clearedRanges"],
+                        "required": [
+                            "spreadsheetId",
+                            "clearedRanges"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -220,9 +270,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_batchclearvalues",
             "name": "batch-clear-values",
-            "output": ["ActionOutput_google_sheet_batchclearvalues"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_batchclearvalues", "ActionOutput_google_sheet_batchclearvalues"],
+            "output": [
+                "ActionOutput_google_sheet_batchclearvalues"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_batchclearvalues",
+                "ActionOutput_google_sheet_batchclearvalues"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -241,7 +298,10 @@
                                 "description": "The ranges to clear, in A1 notation. Example: [\"Sheet1!A1:D10\", \"Sheet2!B2:C5\"]"
                             }
                         },
-                        "required": ["spreadsheetId", "ranges"],
+                        "required": [
+                            "spreadsheetId",
+                            "ranges"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_batchclearvalues": {
@@ -259,7 +319,10 @@
                                 "description": "The ranges that were cleared, in A1 notation"
                             }
                         },
-                        "required": ["spreadsheetId", "clearedRanges"],
+                        "required": [
+                            "spreadsheetId",
+                            "clearedRanges"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -272,9 +335,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_batchgetvaluesbydatafilter",
             "name": "batch-get-values-by-data-filter",
-            "output": ["ActionOutput_google_sheet_batchgetvaluesbydatafilter"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_batchgetvaluesbydatafilter", "ActionOutput_google_sheet_batchgetvaluesbydatafilter"],
+            "output": [
+                "ActionOutput_google_sheet_batchgetvaluesbydatafilter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_batchgetvaluesbydatafilter",
+                "ActionOutput_google_sheet_batchgetvaluesbydatafilter"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -323,7 +393,12 @@
                                             "properties": {
                                                 "locationType": {
                                                     "type": "string",
-                                                    "enum": ["SPREADSHEET", "SHEET", "ROW", "COLUMN"]
+                                                    "enum": [
+                                                        "SPREADSHEET",
+                                                        "SHEET",
+                                                        "ROW",
+                                                        "COLUMN"
+                                                    ]
                                                 },
                                                 "metadataLocation": {
                                                     "type": "object",
@@ -332,7 +407,10 @@
                                                 },
                                                 "locationMatchingStrategy": {
                                                     "type": "string",
-                                                    "enum": ["EXACT_LOCATION", "INTERSECTING_LOCATION"]
+                                                    "enum": [
+                                                        "EXACT_LOCATION",
+                                                        "INTERSECTING_LOCATION"
+                                                    ]
                                                 },
                                                 "metadataId": {
                                                     "type": "number"
@@ -345,7 +423,10 @@
                                                 },
                                                 "visibility": {
                                                     "type": "string",
-                                                    "enum": ["DOCUMENT", "PROJECT"]
+                                                    "enum": [
+                                                        "DOCUMENT",
+                                                        "PROJECT"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -358,20 +439,33 @@
                             "majorDimension": {
                                 "description": "The major dimension that results should use. Default: ROWS",
                                 "type": "string",
-                                "enum": ["ROWS", "COLUMNS"]
+                                "enum": [
+                                    "ROWS",
+                                    "COLUMNS"
+                                ]
                             },
                             "valueRenderOption": {
                                 "description": "How values should be represented in the output. Default: FORMATTED_VALUE",
                                 "type": "string",
-                                "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
+                                "enum": [
+                                    "FORMATTED_VALUE",
+                                    "UNFORMATTED_VALUE",
+                                    "FORMULA"
+                                ]
                             },
                             "dateTimeRenderOption": {
                                 "description": "How dates, times, and durations should be represented in the output. Default: SERIAL_NUMBER",
                                 "type": "string",
-                                "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"]
+                                "enum": [
+                                    "SERIAL_NUMBER",
+                                    "FORMATTED_STRING"
+                                ]
                             }
                         },
-                        "required": ["spreadsheetId", "dataFilters"],
+                        "required": [
+                            "spreadsheetId",
+                            "dataFilters"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_batchgetvaluesbydatafilter": {
@@ -393,7 +487,10 @@
                                                 },
                                                 "majorDimension": {
                                                     "type": "string",
-                                                    "enum": ["ROWS", "COLUMNS"]
+                                                    "enum": [
+                                                        "ROWS",
+                                                        "COLUMNS"
+                                                    ]
                                                 },
                                                 "values": {
                                                     "type": "array",
@@ -442,7 +539,12 @@
                                                         "properties": {
                                                             "locationType": {
                                                                 "type": "string",
-                                                                "enum": ["SPREADSHEET", "SHEET", "ROW", "COLUMN"]
+                                                                "enum": [
+                                                                    "SPREADSHEET",
+                                                                    "SHEET",
+                                                                    "ROW",
+                                                                    "COLUMN"
+                                                                ]
                                                             },
                                                             "metadataLocation": {
                                                                 "type": "object",
@@ -451,7 +553,10 @@
                                                             },
                                                             "locationMatchingStrategy": {
                                                                 "type": "string",
-                                                                "enum": ["EXACT_LOCATION", "INTERSECTING_LOCATION"]
+                                                                "enum": [
+                                                                    "EXACT_LOCATION",
+                                                                    "INTERSECTING_LOCATION"
+                                                                ]
                                                             },
                                                             "metadataId": {
                                                                 "type": "number"
@@ -464,7 +569,10 @@
                                                             },
                                                             "visibility": {
                                                                 "type": "string",
-                                                                "enum": ["DOCUMENT", "PROJECT"]
+                                                                "enum": [
+                                                                    "DOCUMENT",
+                                                                    "PROJECT"
+                                                                ]
                                                             }
                                                         },
                                                         "additionalProperties": false
@@ -478,7 +586,9 @@
                                 }
                             }
                         },
-                        "required": ["spreadsheetId"],
+                        "required": [
+                            "spreadsheetId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -491,9 +601,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_batchgetvalues",
             "name": "batch-get-values",
-            "output": ["ActionOutput_google_sheet_batchgetvalues"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-            "usedModels": ["ActionInput_google_sheet_batchgetvalues", "ActionOutput_google_sheet_batchgetvalues"],
+            "output": [
+                "ActionOutput_google_sheet_batchgetvalues"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_batchgetvalues",
+                "ActionOutput_google_sheet_batchgetvalues"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -514,20 +631,33 @@
                             "majorDimension": {
                                 "description": "The major dimension that results should use. Defaults to ROWS.",
                                 "type": "string",
-                                "enum": ["ROWS", "COLUMNS"]
+                                "enum": [
+                                    "ROWS",
+                                    "COLUMNS"
+                                ]
                             },
                             "valueRenderOption": {
                                 "description": "How values should be rendered in the output.",
                                 "type": "string",
-                                "enum": ["FORMATTED_VALUE", "UNFORMATTED_VALUE", "FORMULA"]
+                                "enum": [
+                                    "FORMATTED_VALUE",
+                                    "UNFORMATTED_VALUE",
+                                    "FORMULA"
+                                ]
                             },
                             "dateTimeRenderOption": {
                                 "description": "How dates, times, and durations should be represented in the output.",
                                 "type": "string",
-                                "enum": ["SERIAL_NUMBER", "FORMATTED_STRING"]
+                                "enum": [
+                                    "SERIAL_NUMBER",
+                                    "FORMATTED_STRING"
+                                ]
                             }
                         },
-                        "required": ["spreadsheetId", "ranges"],
+                        "required": [
+                            "spreadsheetId",
+                            "ranges"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_batchgetvalues": {
@@ -559,13 +689,18 @@
                                             }
                                         }
                                     },
-                                    "required": ["range"],
+                                    "required": [
+                                        "range"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The values of the ranges requested."
                             }
                         },
-                        "required": ["spreadsheetId", "valueRanges"],
+                        "required": [
+                            "spreadsheetId",
+                            "valueRanges"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -578,9 +713,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_batchupdatespreadsheet",
             "name": "batch-update-spreadsheet",
-            "output": ["ActionOutput_google_sheet_batchupdatespreadsheet"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_batchupdatespreadsheet", "ActionOutput_google_sheet_batchupdatespreadsheet"],
+            "output": [
+                "ActionOutput_google_sheet_batchupdatespreadsheet"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_batchupdatespreadsheet",
+                "ActionOutput_google_sheet_batchupdatespreadsheet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -601,7 +743,10 @@
                                 }
                             }
                         },
-                        "required": ["spreadsheetId", "requests"],
+                        "required": [
+                            "spreadsheetId",
+                            "requests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_batchupdatespreadsheet": {
@@ -633,7 +778,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["spreadsheetId", "replies"],
+                        "required": [
+                            "spreadsheetId",
+                            "replies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -646,9 +794,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_clearvalues",
             "name": "clear-values",
-            "output": ["ActionOutput_google_sheet_clearvalues"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_clearvalues", "ActionOutput_google_sheet_clearvalues"],
+            "output": [
+                "ActionOutput_google_sheet_clearvalues"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_clearvalues",
+                "ActionOutput_google_sheet_clearvalues"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -664,7 +819,10 @@
                                 "description": "The A1 notation or R1C1 notation of the values to clear. Example: \"Sheet1!A1:D10\""
                             }
                         },
-                        "required": ["spreadsheetId", "range"],
+                        "required": [
+                            "spreadsheetId",
+                            "range"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_clearvalues": {
@@ -677,7 +835,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["spreadsheetId", "clearedRange"],
+                        "required": [
+                            "spreadsheetId",
+                            "clearedRange"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -690,9 +851,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_copysheet",
             "name": "copy-sheet",
-            "output": ["ActionOutput_google_sheet_copysheet"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_copysheet", "ActionOutput_google_sheet_copysheet"],
+            "output": [
+                "ActionOutput_google_sheet_copysheet"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_copysheet",
+                "ActionOutput_google_sheet_copysheet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -712,7 +880,11 @@
                                 "description": "The ID of the spreadsheet to copy the sheet to. Example: \"2xYzA...\""
                             }
                         },
-                        "required": ["sourceSpreadsheetId", "sheetId", "destinationSpreadsheetId"],
+                        "required": [
+                            "sourceSpreadsheetId",
+                            "sheetId",
+                            "destinationSpreadsheetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_copysheet": {
@@ -743,7 +915,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["sheetId", "title", "index", "sheetType"],
+                        "required": [
+                            "sheetId",
+                            "title",
+                            "index",
+                            "sheetType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -756,9 +933,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_createcolumn",
             "name": "create-column",
-            "output": ["ActionOutput_google_sheet_createcolumn"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_createcolumn", "ActionOutput_google_sheet_createcolumn"],
+            "output": [
+                "ActionOutput_google_sheet_createcolumn"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_createcolumn",
+                "ActionOutput_google_sheet_createcolumn"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -782,7 +966,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["spreadsheetId", "columnIndex"],
+                        "required": [
+                            "spreadsheetId",
+                            "columnIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_createcolumn": {
@@ -801,7 +988,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["spreadsheetId", "sheetId", "columnIndex", "success"],
+                        "required": [
+                            "spreadsheetId",
+                            "sheetId",
+                            "columnIndex",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -814,9 +1006,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_createspreadsheetrow",
             "name": "create-spreadsheet-row",
-            "output": ["ActionOutput_google_sheet_createspreadsheetrow"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_createspreadsheetrow", "ActionOutput_google_sheet_createspreadsheetrow"],
+            "output": [
+                "ActionOutput_google_sheet_createspreadsheetrow"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_createspreadsheetrow",
+                "ActionOutput_google_sheet_createspreadsheetrow"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -847,7 +1046,13 @@
                                 "description": "Array of values to insert in the new row. Example: [\"John\", \"Doe\", \"john@example.com\"]"
                             }
                         },
-                        "required": ["spreadsheetId", "sheetId", "sheetName", "rowIndex", "values"],
+                        "required": [
+                            "spreadsheetId",
+                            "sheetId",
+                            "sheetName",
+                            "rowIndex",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_createspreadsheetrow": {
@@ -872,7 +1077,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["spreadsheetId", "sheetId", "rowIndex", "values", "updatedRange"],
+                        "required": [
+                            "spreadsheetId",
+                            "sheetId",
+                            "rowIndex",
+                            "values",
+                            "updatedRange"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -885,9 +1096,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_createspreadsheet",
             "name": "create-spreadsheet",
-            "output": ["ActionOutput_google_sheet_createspreadsheet"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_createspreadsheet", "ActionOutput_google_sheet_createspreadsheet"],
+            "output": [
+                "ActionOutput_google_sheet_createspreadsheet"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_createspreadsheet",
+                "ActionOutput_google_sheet_createspreadsheet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -910,7 +1128,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["title"],
+                                "required": [
+                                    "title"
+                                ],
                                 "additionalProperties": {},
                                 "description": "Spreadsheet properties including title"
                             },
@@ -947,7 +1167,9 @@
                                 }
                             }
                         },
-                        "required": ["properties"],
+                        "required": [
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_createspreadsheet": {
@@ -963,7 +1185,10 @@
                             },
                             "properties": {}
                         },
-                        "required": ["spreadsheetId", "spreadsheetUrl"],
+                        "required": [
+                            "spreadsheetId",
+                            "spreadsheetUrl"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -976,9 +1201,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_deleteworksheet",
             "name": "delete-worksheet",
-            "output": ["ActionOutput_google_sheet_deleteworksheet"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_deleteworksheet", "ActionOutput_google_sheet_deleteworksheet"],
+            "output": [
+                "ActionOutput_google_sheet_deleteworksheet"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_deleteworksheet",
+                "ActionOutput_google_sheet_deleteworksheet"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -994,7 +1226,10 @@
                                 "description": "The name of the worksheet to delete. Example: \"Sheet2\""
                             }
                         },
-                        "required": ["spreadsheetId", "worksheetName"],
+                        "required": [
+                            "spreadsheetId",
+                            "worksheetName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_deleteworksheet": {
@@ -1007,7 +1242,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1020,9 +1258,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_getspreadsheetbydatafilter",
             "name": "get-spreadsheet-by-data-filter",
-            "output": ["ActionOutput_google_sheet_getspreadsheetbydatafilter"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_getspreadsheetbydatafilter", "ActionOutput_google_sheet_getspreadsheetbydatafilter"],
+            "output": [
+                "ActionOutput_google_sheet_getspreadsheetbydatafilter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_getspreadsheetbydatafilter",
+                "ActionOutput_google_sheet_getspreadsheetbydatafilter"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1044,7 +1289,12 @@
                                             "properties": {
                                                 "locationType": {
                                                     "type": "string",
-                                                    "enum": ["SPREADSHEET", "SHEET", "ROW", "COLUMN"]
+                                                    "enum": [
+                                                        "SPREADSHEET",
+                                                        "SHEET",
+                                                        "ROW",
+                                                        "COLUMN"
+                                                    ]
                                                 },
                                                 "metadataLocation": {
                                                     "type": "object",
@@ -1063,7 +1313,10 @@
                                                                 },
                                                                 "dimension": {
                                                                     "type": "string",
-                                                                    "enum": ["ROWS", "COLUMNS"]
+                                                                    "enum": [
+                                                                        "ROWS",
+                                                                        "COLUMNS"
+                                                                    ]
                                                                 },
                                                                 "startIndex": {
                                                                     "type": "number"
@@ -1072,7 +1325,10 @@
                                                                     "type": "number"
                                                                 }
                                                             },
-                                                            "required": ["sheetId", "dimension"],
+                                                            "required": [
+                                                                "sheetId",
+                                                                "dimension"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
@@ -1080,7 +1336,10 @@
                                                 },
                                                 "locationMatchingStrategy": {
                                                     "type": "string",
-                                                    "enum": ["EXACT_LOCATION", "INTERSECTING_LOCATION"]
+                                                    "enum": [
+                                                        "EXACT_LOCATION",
+                                                        "INTERSECTING_LOCATION"
+                                                    ]
                                                 },
                                                 "metadataId": {
                                                     "type": "number"
@@ -1093,7 +1352,10 @@
                                                 },
                                                 "visibility": {
                                                     "type": "string",
-                                                    "enum": ["DOCUMENT", "PROJECT"]
+                                                    "enum": [
+                                                        "DOCUMENT",
+                                                        "PROJECT"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -1139,7 +1401,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["spreadsheetId", "dataFilters"],
+                        "required": [
+                            "spreadsheetId",
+                            "dataFilters"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_getspreadsheetbydatafilter": {
@@ -1155,9 +1420,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_getvalues",
             "name": "get-values",
-            "output": ["ActionOutput_google_sheet_getvalues"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets.readonly"],
-            "usedModels": ["ActionInput_google_sheet_getvalues", "ActionOutput_google_sheet_getvalues"],
+            "output": [
+                "ActionOutput_google_sheet_getvalues"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_getvalues",
+                "ActionOutput_google_sheet_getvalues"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1173,7 +1445,10 @@
                                 "description": "The A1 notation or R1C1 notation of the range to retrieve values from. Example: \"Sheet1!A1:C10\" or \"Sheet1\""
                             }
                         },
-                        "required": ["spreadsheetId", "range"],
+                        "required": [
+                            "spreadsheetId",
+                            "range"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_getvalues": {
@@ -1187,13 +1462,21 @@
                             },
                             "majorDimension": {
                                 "type": "string",
-                                "enum": ["ROWS", "COLUMNS"]
+                                "enum": [
+                                    "ROWS",
+                                    "COLUMNS"
+                                ]
                             },
                             "values": {
                                 "description": "The data values in the range, as a 2D array where each inner array represents a row"
                             }
                         },
-                        "required": ["spreadsheetId", "range", "majorDimension", "values"],
+                        "required": [
+                            "spreadsheetId",
+                            "range",
+                            "majorDimension",
+                            "values"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1206,9 +1489,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_searchdevelopermetadata",
             "name": "search-developer-metadata",
-            "output": ["ActionOutput_google_sheet_searchdevelopermetadata"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_searchdevelopermetadata", "ActionOutput_google_sheet_searchdevelopermetadata"],
+            "output": [
+                "ActionOutput_google_sheet_searchdevelopermetadata"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_searchdevelopermetadata",
+                "ActionOutput_google_sheet_searchdevelopermetadata"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1245,7 +1535,10 @@
                                 }
                             }
                         },
-                        "required": ["spreadsheetId", "dataFilters"],
+                        "required": [
+                            "spreadsheetId",
+                            "dataFilters"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_searchdevelopermetadata": {
@@ -1279,7 +1572,13 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["metadataId", "metadataKey", "metadataValue", "location", "visibility"],
+                                            "required": [
+                                                "metadataId",
+                                                "metadataKey",
+                                                "metadataValue",
+                                                "location",
+                                                "visibility"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "dataFilters": {
@@ -1309,12 +1608,17 @@
                                             }
                                         }
                                     },
-                                    "required": ["developerMetadata", "dataFilters"],
+                                    "required": [
+                                        "developerMetadata",
+                                        "dataFilters"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["matchedDeveloperMetadata"],
+                        "required": [
+                            "matchedDeveloperMetadata"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1327,9 +1631,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_updateconditionalformatrule",
             "name": "update-conditional-format-rule",
-            "output": ["ActionOutput_google_sheet_updateconditionalformatrule"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_updateconditionalformatrule", "ActionOutput_google_sheet_updateconditionalformatrule"],
+            "output": [
+                "ActionOutput_google_sheet_updateconditionalformatrule"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_updateconditionalformatrule",
+                "ActionOutput_google_sheet_updateconditionalformatrule"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1405,7 +1716,9 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["type"],
+                                                "required": [
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "format": {
@@ -1448,7 +1761,9 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["condition"],
+                                        "required": [
+                                            "condition"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "gradientRule": {
@@ -1513,11 +1828,16 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["ranges"],
+                                "required": [
+                                    "ranges"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["spreadsheetId", "index"],
+                        "required": [
+                            "spreadsheetId",
+                            "index"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_updateconditionalformatrule": {
@@ -1553,7 +1873,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["spreadsheetId", "success"],
+                        "required": [
+                            "spreadsheetId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1566,9 +1889,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_updatevalues",
             "name": "update-values",
-            "output": ["ActionOutput_google_sheet_updatevalues"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_updatevalues", "ActionOutput_google_sheet_updatevalues"],
+            "output": [
+                "ActionOutput_google_sheet_updatevalues"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_updatevalues",
+                "ActionOutput_google_sheet_updatevalues"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1622,7 +1952,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["spreadsheetId", "range", "values"],
+                        "required": [
+                            "spreadsheetId",
+                            "range",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_updatevalues": {
@@ -1644,7 +1978,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["spreadsheetId", "updatedRange", "updatedRows", "updatedColumns", "updatedCells"],
+                        "required": [
+                            "spreadsheetId",
+                            "updatedRange",
+                            "updatedRows",
+                            "updatedColumns",
+                            "updatedCells"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1657,9 +1997,16 @@
             "endpoint": null,
             "input": "ActionInput_google_sheet_upsertrow",
             "name": "upsert-row",
-            "output": ["ActionOutput_google_sheet_upsertrow"],
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets"],
-            "usedModels": ["ActionInput_google_sheet_upsertrow", "ActionOutput_google_sheet_upsertrow"],
+            "output": [
+                "ActionOutput_google_sheet_upsertrow"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets"
+            ],
+            "usedModels": [
+                "ActionInput_google_sheet_upsertrow",
+                "ActionOutput_google_sheet_upsertrow"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1690,7 +2037,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["spreadsheetId", "range", "values"],
+                        "required": [
+                            "spreadsheetId",
+                            "range",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_sheet_upsertrow": {
@@ -1701,7 +2052,10 @@
                             },
                             "operation": {
                                 "type": "string",
-                                "enum": ["appended", "updated"]
+                                "enum": [
+                                    "appended",
+                                    "updated"
+                                ]
                             },
                             "spreadsheetId": {
                                 "type": "string"
@@ -1713,7 +2067,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "operation", "spreadsheetId", "updatedRange", "updatedRows"],
+                        "required": [
+                            "success",
+                            "operation",
+                            "spreadsheetId",
+                            "updatedRange",
+                            "updatedRows"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1735,12 +2095,19 @@
             ],
             "input": "SyncMetadata_google_sheet_rows",
             "name": "rows",
-            "output": ["Row"],
+            "output": [
+                "Row"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Row", "SyncMetadata_google_sheet_rows"],
+            "usedModels": [
+                "Row",
+                "SyncMetadata_google_sheet_rows"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1759,7 +2126,11 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "rowIndex", "values"],
+                        "required": [
+                            "id",
+                            "rowIndex",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_sheet_rows": {
@@ -1778,7 +2149,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["spreadsheetId"],
+                        "required": [
+                            "spreadsheetId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1798,12 +2171,19 @@
             ],
             "input": "SyncMetadata_google_sheet_worksheets",
             "name": "worksheets",
-            "output": ["Worksheet"],
+            "output": [
+                "Worksheet"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/spreadsheets.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/spreadsheets.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Worksheet", "SyncMetadata_google_sheet_worksheets"],
+            "usedModels": [
+                "Worksheet",
+                "SyncMetadata_google_sheet_worksheets"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1844,7 +2224,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "spreadsheetId", "title", "index", "sheetType"],
+                        "required": [
+                            "id",
+                            "spreadsheetId",
+                            "title",
+                            "index",
+                            "sheetType"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_sheet_worksheets": {
@@ -1855,7 +2241,9 @@
                                 "description": "Google Sheets spreadsheet ID to sync worksheets from"
                             }
                         },
-                        "required": ["spreadsheetId"],
+                        "required": [
+                            "spreadsheetId"
+                        ],
                         "additionalProperties": false
                     }
                 }

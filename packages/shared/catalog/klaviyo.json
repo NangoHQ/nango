@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_addprofilestolist",
             "name": "add-profiles-to-list",
-            "output": ["ActionOutput_klaviyo_addprofilestolist"],
-            "scopes": ["lists:write", "profiles:write"],
-            "usedModels": ["ActionInput_klaviyo_addprofilestolist", "ActionOutput_klaviyo_addprofilestolist"],
+            "output": [
+                "ActionOutput_klaviyo_addprofilestolist"
+            ],
+            "scopes": [
+                "lists:write",
+                "profiles:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_addprofilestolist",
+                "ActionOutput_klaviyo_addprofilestolist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -30,7 +38,10 @@
                                 "description": "Array of profile IDs to add to the list. Maximum 1000. Example: [\"01KWFX4MZPQDSD3YG79C83CBDV\"]"
                             }
                         },
-                        "required": ["listId", "profileIds"],
+                        "required": [
+                            "listId",
+                            "profileIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_addprofilestolist": {
@@ -40,7 +51,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -53,9 +66,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_assigntemplatetocampaignmessage",
             "name": "assign-template-to-campaign-message",
-            "output": ["ActionOutput_klaviyo_assigntemplatetocampaignmessage"],
-            "scopes": ["campaigns:write"],
-            "usedModels": ["ActionInput_klaviyo_assigntemplatetocampaignmessage", "ActionOutput_klaviyo_assigntemplatetocampaignmessage"],
+            "output": [
+                "ActionOutput_klaviyo_assigntemplatetocampaignmessage"
+            ],
+            "scopes": [
+                "campaigns:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_assigntemplatetocampaignmessage",
+                "ActionOutput_klaviyo_assigntemplatetocampaignmessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -71,7 +91,10 @@
                                 "description": "The reusable template ID. Example: \"WmRV7f\""
                             }
                         },
-                        "required": ["campaign_message_id", "template_id"],
+                        "required": [
+                            "campaign_message_id",
+                            "template_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_assigntemplatetocampaignmessage": {
@@ -84,7 +107,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign_message_id", "assigned_template_id"],
+                        "required": [
+                            "campaign_message_id",
+                            "assigned_template_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -97,9 +123,17 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_bulkimportprofiles",
             "name": "bulk-import-profiles",
-            "output": ["ActionOutput_klaviyo_bulkimportprofiles"],
-            "scopes": ["profiles:write", "lists:write"],
-            "usedModels": ["ActionInput_klaviyo_bulkimportprofiles", "ActionOutput_klaviyo_bulkimportprofiles"],
+            "output": [
+                "ActionOutput_klaviyo_bulkimportprofiles"
+            ],
+            "scopes": [
+                "profiles:write",
+                "lists:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_bulkimportprofiles",
+                "ActionOutput_klaviyo_bulkimportprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -181,7 +215,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["profiles"],
+                        "required": [
+                            "profiles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_bulkimportprofiles": {
@@ -206,7 +242,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["job_id", "status"],
+                        "required": [
+                            "job_id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -219,9 +258,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createcampaign",
             "name": "create-campaign",
-            "output": ["ActionOutput_klaviyo_createcampaign"],
-            "scopes": ["campaigns:write"],
-            "usedModels": ["ActionInput_klaviyo_createcampaign", "ActionOutput_klaviyo_createcampaign"],
+            "output": [
+                "ActionOutput_klaviyo_createcampaign"
+            ],
+            "scopes": [
+                "campaigns:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createcampaign",
+                "ActionOutput_klaviyo_createcampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -244,7 +290,10 @@
                             },
                             "channel": {
                                 "type": "string",
-                                "enum": ["email", "sms"],
+                                "enum": [
+                                    "email",
+                                    "sms"
+                                ],
                                 "description": "Message channel. Example: \"email\""
                             },
                             "message_label": {
@@ -268,7 +317,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "audience_ids", "channel"],
+                        "required": [
+                            "name",
+                            "audience_ids",
+                            "channel"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createcampaign": {
@@ -290,7 +343,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -303,9 +358,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createcatalogcategory",
             "name": "create-catalog-category",
-            "output": ["ActionOutput_klaviyo_createcatalogcategory"],
-            "scopes": ["catalogs:write"],
-            "usedModels": ["ActionInput_klaviyo_createcatalogcategory", "ActionOutput_klaviyo_createcatalogcategory"],
+            "output": [
+                "ActionOutput_klaviyo_createcatalogcategory"
+            ],
+            "scopes": [
+                "catalogs:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createcatalogcategory",
+                "ActionOutput_klaviyo_createcatalogcategory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -329,7 +391,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["external_id", "name"],
+                        "required": [
+                            "external_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createcatalogcategory": {
@@ -352,7 +417,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "external_id", "name"],
+                        "required": [
+                            "id",
+                            "external_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -365,9 +434,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createcatalogitem",
             "name": "create-catalog-item",
-            "output": ["ActionOutput_klaviyo_createcatalogitem"],
-            "scopes": ["catalogs:write"],
-            "usedModels": ["ActionInput_klaviyo_createcatalogitem", "ActionOutput_klaviyo_createcatalogitem"],
+            "output": [
+                "ActionOutput_klaviyo_createcatalogitem"
+            ],
+            "scopes": [
+                "catalogs:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createcatalogitem",
+                "ActionOutput_klaviyo_createcatalogitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -403,7 +479,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["external_id", "title", "description", "url"],
+                        "required": [
+                            "external_id",
+                            "title",
+                            "description",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createcatalogitem": {
@@ -434,7 +515,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "external_id", "title", "catalog_type", "integration_type"],
+                        "required": [
+                            "id",
+                            "external_id",
+                            "title",
+                            "catalog_type",
+                            "integration_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -447,9 +534,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createcatalogvariant",
             "name": "create-catalog-variant",
-            "output": ["ActionOutput_klaviyo_createcatalogvariant"],
-            "scopes": ["catalogs:write"],
-            "usedModels": ["ActionInput_klaviyo_createcatalogvariant", "ActionOutput_klaviyo_createcatalogvariant"],
+            "output": [
+                "ActionOutput_klaviyo_createcatalogvariant"
+            ],
+            "scopes": [
+                "catalogs:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createcatalogvariant",
+                "ActionOutput_klaviyo_createcatalogvariant"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -497,7 +591,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["item_id", "external_id", "title", "description", "url", "sku", "price", "inventory_quantity"],
+                        "required": [
+                            "item_id",
+                            "external_id",
+                            "title",
+                            "description",
+                            "url",
+                            "sku",
+                            "price",
+                            "inventory_quantity"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createcatalogvariant": {
@@ -546,7 +649,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -559,9 +664,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createcouponcode",
             "name": "create-coupon-code",
-            "output": ["ActionOutput_klaviyo_createcouponcode"],
-            "scopes": ["coupon-codes:write"],
-            "usedModels": ["ActionInput_klaviyo_createcouponcode", "ActionOutput_klaviyo_createcouponcode"],
+            "output": [
+                "ActionOutput_klaviyo_createcouponcode"
+            ],
+            "scopes": [
+                "coupon-codes:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createcouponcode",
+                "ActionOutput_klaviyo_createcouponcode"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -577,7 +689,10 @@
                                 "description": "Unique coupon code to create. Example: \"NANGOTESTCODE1\""
                             }
                         },
-                        "required": ["coupon_id", "unique_code"],
+                        "required": [
+                            "coupon_id",
+                            "unique_code"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createcouponcode": {
@@ -596,7 +711,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "coupon_id", "unique_code"],
+                        "required": [
+                            "id",
+                            "coupon_id",
+                            "unique_code"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -609,9 +728,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createcoupon",
             "name": "create-coupon",
-            "output": ["ActionOutput_klaviyo_createcoupon"],
-            "scopes": ["coupons:write"],
-            "usedModels": ["ActionInput_klaviyo_createcoupon", "ActionOutput_klaviyo_createcoupon"],
+            "output": [
+                "ActionOutput_klaviyo_createcoupon"
+            ],
+            "scopes": [
+                "coupons:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createcoupon",
+                "ActionOutput_klaviyo_createcoupon"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -628,7 +754,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["external_id"],
+                        "required": [
+                            "external_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createcoupon": {
@@ -644,7 +772,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "external_id"],
+                        "required": [
+                            "id",
+                            "external_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -657,9 +788,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createevent",
             "name": "create-event",
-            "output": ["ActionOutput_klaviyo_createevent"],
-            "scopes": ["events:write"],
-            "usedModels": ["ActionInput_klaviyo_createevent", "ActionOutput_klaviyo_createevent"],
+            "output": [
+                "ActionOutput_klaviyo_createevent"
+            ],
+            "scopes": [
+                "events:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createevent",
+                "ActionOutput_klaviyo_createevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -695,7 +833,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["metric_name", "profile_email"],
+                        "required": [
+                            "metric_name",
+                            "profile_email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createevent": {
@@ -705,7 +846,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -718,9 +861,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createimage",
             "name": "create-image",
-            "output": ["ActionOutput_klaviyo_createimage"],
-            "scopes": ["images:write"],
-            "usedModels": ["ActionInput_klaviyo_createimage", "ActionOutput_klaviyo_createimage"],
+            "output": [
+                "ActionOutput_klaviyo_createimage"
+            ],
+            "scopes": [
+                "images:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createimage",
+                "ActionOutput_klaviyo_createimage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -737,7 +887,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["import_from_url"],
+                        "required": [
+                            "import_from_url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createimage": {
@@ -756,7 +908,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -769,9 +923,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createlist",
             "name": "create-list",
-            "output": ["ActionOutput_klaviyo_createlist"],
-            "scopes": ["lists:write"],
-            "usedModels": ["ActionInput_klaviyo_createlist", "ActionOutput_klaviyo_createlist"],
+            "output": [
+                "ActionOutput_klaviyo_createlist"
+            ],
+            "scopes": [
+                "lists:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createlist",
+                "ActionOutput_klaviyo_createlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -783,7 +944,9 @@
                                 "description": "Name of the list to create. Example: \"My New List\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createlist": {
@@ -805,7 +968,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -818,9 +984,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createprofile",
             "name": "create-profile",
-            "output": ["ActionOutput_klaviyo_createprofile"],
-            "scopes": ["profiles:write"],
-            "usedModels": ["ActionInput_klaviyo_createprofile", "ActionOutput_klaviyo_createprofile"],
+            "output": [
+                "ActionOutput_klaviyo_createprofile"
+            ],
+            "scopes": [
+                "profiles:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createprofile",
+                "ActionOutput_klaviyo_createprofile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -880,7 +1053,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -893,9 +1068,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createsegment",
             "name": "create-segment",
-            "output": ["ActionOutput_klaviyo_createsegment"],
-            "scopes": ["segments:write"],
-            "usedModels": ["ActionInput_klaviyo_createsegment", "ActionOutput_klaviyo_createsegment"],
+            "output": [
+                "ActionOutput_klaviyo_createsegment"
+            ],
+            "scopes": [
+                "segments:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createsegment",
+                "ActionOutput_klaviyo_createsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -915,7 +1097,10 @@
                                 "description": "Segment condition definition. Example: { condition_groups: [{ conditions: [{ type: \"profile-property\", property: \"email\", filter: { type: \"existence\", operator: \"is-set\" } }] }] }"
                             }
                         },
-                        "required": ["name", "definition"],
+                        "required": [
+                            "name",
+                            "definition"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createsegment": {
@@ -934,7 +1119,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -947,9 +1135,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createtaggroup",
             "name": "create-tag-group",
-            "output": ["ActionOutput_klaviyo_createtaggroup"],
-            "scopes": ["tags:write"],
-            "usedModels": ["ActionInput_klaviyo_createtaggroup", "ActionOutput_klaviyo_createtaggroup"],
+            "output": [
+                "ActionOutput_klaviyo_createtaggroup"
+            ],
+            "scopes": [
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createtaggroup",
+                "ActionOutput_klaviyo_createtaggroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -966,7 +1161,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createtaggroup": {
@@ -985,7 +1182,11 @@
                                 "description": "Whether the tag group is exclusive."
                             }
                         },
-                        "required": ["id", "name", "exclusive"],
+                        "required": [
+                            "id",
+                            "name",
+                            "exclusive"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -998,9 +1199,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createtag",
             "name": "create-tag",
-            "output": ["ActionOutput_klaviyo_createtag"],
-            "scopes": ["tags:write"],
-            "usedModels": ["ActionInput_klaviyo_createtag", "ActionOutput_klaviyo_createtag"],
+            "output": [
+                "ActionOutput_klaviyo_createtag"
+            ],
+            "scopes": [
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createtag",
+                "ActionOutput_klaviyo_createtag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1016,7 +1224,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createtag": {
@@ -1029,7 +1239,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1042,9 +1255,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_createtemplate",
             "name": "create-template",
-            "output": ["ActionOutput_klaviyo_createtemplate"],
-            "scopes": ["templates:write"],
-            "usedModels": ["ActionInput_klaviyo_createtemplate", "ActionOutput_klaviyo_createtemplate"],
+            "output": [
+                "ActionOutput_klaviyo_createtemplate"
+            ],
+            "scopes": [
+                "templates:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_createtemplate",
+                "ActionOutput_klaviyo_createtemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1062,7 +1282,10 @@
                                 "description": "Raw HTML content for the template. Example: \"<html><body>Hello</body></html>\""
                             }
                         },
-                        "required": ["name", "html"],
+                        "required": [
+                            "name",
+                            "html"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_createtemplate": {
@@ -1093,7 +1316,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "editor_type", "html"],
+                        "required": [
+                            "id",
+                            "name",
+                            "editor_type",
+                            "html"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1106,9 +1334,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletecampaign",
             "name": "delete-campaign",
-            "output": ["ActionOutput_klaviyo_deletecampaign"],
-            "scopes": ["campaigns:write"],
-            "usedModels": ["ActionInput_klaviyo_deletecampaign", "ActionOutput_klaviyo_deletecampaign"],
+            "output": [
+                "ActionOutput_klaviyo_deletecampaign"
+            ],
+            "scopes": [
+                "campaigns:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletecampaign",
+                "ActionOutput_klaviyo_deletecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1120,7 +1355,9 @@
                                 "description": "Campaign ID. Example: \"01KWGH6P9PERJ0AHGNBJQMH55G\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletecampaign": {
@@ -1133,7 +1370,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1146,9 +1386,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletecatalogcategory",
             "name": "delete-catalog-category",
-            "output": ["ActionOutput_klaviyo_deletecatalogcategory"],
-            "scopes": ["catalogs:write"],
-            "usedModels": ["ActionInput_klaviyo_deletecatalogcategory", "ActionOutput_klaviyo_deletecatalogcategory"],
+            "output": [
+                "ActionOutput_klaviyo_deletecatalogcategory"
+            ],
+            "scopes": [
+                "catalogs:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletecatalogcategory",
+                "ActionOutput_klaviyo_deletecatalogcategory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1160,7 +1407,9 @@
                                 "description": "The unique identifier of the catalog category. Example: \"$custom:::$default:::nango-seed-category-1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletecatalogcategory": {
@@ -1173,7 +1422,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1186,9 +1437,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletecatalogitem",
             "name": "delete-catalog-item",
-            "output": ["ActionOutput_klaviyo_deletecatalogitem"],
-            "scopes": ["catalogs:write"],
-            "usedModels": ["ActionInput_klaviyo_deletecatalogitem", "ActionOutput_klaviyo_deletecatalogitem"],
+            "output": [
+                "ActionOutput_klaviyo_deletecatalogitem"
+            ],
+            "scopes": [
+                "catalogs:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletecatalogitem",
+                "ActionOutput_klaviyo_deletecatalogitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1200,7 +1458,9 @@
                                 "description": "Catalog item ID. Example: \"$custom:::$default:::nango-seed-item-1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletecatalogitem": {
@@ -1213,7 +1473,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1226,9 +1489,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletecatalogvariant",
             "name": "delete-catalog-variant",
-            "output": ["ActionOutput_klaviyo_deletecatalogvariant"],
-            "scopes": ["catalogs:write"],
-            "usedModels": ["ActionInput_klaviyo_deletecatalogvariant", "ActionOutput_klaviyo_deletecatalogvariant"],
+            "output": [
+                "ActionOutput_klaviyo_deletecatalogvariant"
+            ],
+            "scopes": [
+                "catalogs:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletecatalogvariant",
+                "ActionOutput_klaviyo_deletecatalogvariant"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1240,7 +1510,9 @@
                                 "description": "Catalog variant ID. Example: \"$custom:::$default:::nango_seed_variant_1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletecatalogvariant": {
@@ -1250,7 +1522,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1263,9 +1537,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletecouponcode",
             "name": "delete-coupon-code",
-            "output": ["ActionOutput_klaviyo_deletecouponcode"],
-            "scopes": ["coupon-codes:write"],
-            "usedModels": ["ActionInput_klaviyo_deletecouponcode", "ActionOutput_klaviyo_deletecouponcode"],
+            "output": [
+                "ActionOutput_klaviyo_deletecouponcode"
+            ],
+            "scopes": [
+                "coupon-codes:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletecouponcode",
+                "ActionOutput_klaviyo_deletecouponcode"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1277,7 +1558,9 @@
                                 "description": "The unique ID of the coupon code to delete. Example: \"nango_seed_coupon_1-NANGOSEED1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletecouponcode": {
@@ -1290,7 +1573,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1303,9 +1589,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletecoupon",
             "name": "delete-coupon",
-            "output": ["ActionOutput_klaviyo_deletecoupon"],
-            "scopes": ["coupons:write"],
-            "usedModels": ["ActionInput_klaviyo_deletecoupon", "ActionOutput_klaviyo_deletecoupon"],
+            "output": [
+                "ActionOutput_klaviyo_deletecoupon"
+            ],
+            "scopes": [
+                "coupons:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletecoupon",
+                "ActionOutput_klaviyo_deletecoupon"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1317,7 +1610,9 @@
                                 "description": "Coupon ID. Example: \"nango_seed_coupon_1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletecoupon": {
@@ -1330,7 +1625,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1343,9 +1641,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deleteflow",
             "name": "delete-flow",
-            "output": ["ActionOutput_klaviyo_deleteflow"],
-            "scopes": ["flows:write"],
-            "usedModels": ["ActionInput_klaviyo_deleteflow", "ActionOutput_klaviyo_deleteflow"],
+            "output": [
+                "ActionOutput_klaviyo_deleteflow"
+            ],
+            "scopes": [
+                "flows:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deleteflow",
+                "ActionOutput_klaviyo_deleteflow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1357,7 +1662,9 @@
                                 "description": "ID of the Flow to delete. Example: XVTP5Q"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deleteflow": {
@@ -1370,7 +1677,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1383,9 +1693,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletelist",
             "name": "delete-list",
-            "output": ["ActionOutput_klaviyo_deletelist"],
-            "scopes": ["lists:write"],
-            "usedModels": ["ActionInput_klaviyo_deletelist", "ActionOutput_klaviyo_deletelist"],
+            "output": [
+                "ActionOutput_klaviyo_deletelist"
+            ],
+            "scopes": [
+                "lists:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletelist",
+                "ActionOutput_klaviyo_deletelist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1397,7 +1714,9 @@
                                 "description": "The list ID to delete. Example: \"XeqJK9\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletelist": {
@@ -1410,7 +1729,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1423,9 +1745,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletesegment",
             "name": "delete-segment",
-            "output": ["ActionOutput_klaviyo_deletesegment"],
-            "scopes": ["segments:write"],
-            "usedModels": ["ActionInput_klaviyo_deletesegment", "ActionOutput_klaviyo_deletesegment"],
+            "output": [
+                "ActionOutput_klaviyo_deletesegment"
+            ],
+            "scopes": [
+                "segments:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletesegment",
+                "ActionOutput_klaviyo_deletesegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1437,7 +1766,9 @@
                                 "description": "Segment ID. Example: \"SRSEt8\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletesegment": {
@@ -1447,7 +1778,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1460,9 +1793,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletetaggroup",
             "name": "delete-tag-group",
-            "output": ["ActionOutput_klaviyo_deletetaggroup"],
-            "scopes": ["tags:write"],
-            "usedModels": ["ActionInput_klaviyo_deletetaggroup", "ActionOutput_klaviyo_deletetaggroup"],
+            "output": [
+                "ActionOutput_klaviyo_deletetaggroup"
+            ],
+            "scopes": [
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletetaggroup",
+                "ActionOutput_klaviyo_deletetaggroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1474,7 +1814,9 @@
                                 "description": "Tag group ID. Example: \"a2172fc4-968e-49e8-8ced-ea0bb242acba\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletetaggroup": {
@@ -1487,7 +1829,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1500,9 +1845,17 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletetag",
             "name": "delete-tag",
-            "output": ["ActionOutput_klaviyo_deletetag"],
-            "scopes": ["tags:read", "tags:write"],
-            "usedModels": ["ActionInput_klaviyo_deletetag", "ActionOutput_klaviyo_deletetag"],
+            "output": [
+                "ActionOutput_klaviyo_deletetag"
+            ],
+            "scopes": [
+                "tags:read",
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletetag",
+                "ActionOutput_klaviyo_deletetag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1514,7 +1867,9 @@
                                 "description": "The tag ID to delete. Example: \"aa27b1b8-9198-47da-86bf-3f6196d4c074\""
                             }
                         },
-                        "required": ["tag_id"],
+                        "required": [
+                            "tag_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletetag": {
@@ -1524,7 +1879,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1537,9 +1894,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_deletetemplate",
             "name": "delete-template",
-            "output": ["ActionOutput_klaviyo_deletetemplate"],
-            "scopes": ["templates:write"],
-            "usedModels": ["ActionInput_klaviyo_deletetemplate", "ActionOutput_klaviyo_deletetemplate"],
+            "output": [
+                "ActionOutput_klaviyo_deletetemplate"
+            ],
+            "scopes": [
+                "templates:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_deletetemplate",
+                "ActionOutput_klaviyo_deletetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1551,7 +1915,9 @@
                                 "description": "Template ID. Example: \"WmRV7f\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_deletetemplate": {
@@ -1564,7 +1930,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1577,9 +1946,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_getcampaign",
             "name": "get-campaign",
-            "output": ["ActionOutput_klaviyo_getcampaign"],
-            "scopes": ["campaigns:read"],
-            "usedModels": ["ActionInput_klaviyo_getcampaign", "ActionOutput_klaviyo_getcampaign"],
+            "output": [
+                "ActionOutput_klaviyo_getcampaign"
+            ],
+            "scopes": [
+                "campaigns:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_getcampaign",
+                "ActionOutput_klaviyo_getcampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1591,7 +1967,9 @@
                                 "description": "Campaign ID. Example: \"01KWGH6P9PERJ0AHGNBJQMH55G\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_getcampaign": {
@@ -1619,7 +1997,10 @@
                                 "type": "string"
                             },
                             "scheduled_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "attributes": {
                                 "type": "object",
@@ -1646,7 +2027,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1659,9 +2043,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_getimage",
             "name": "get-image",
-            "output": ["ActionOutput_klaviyo_getimage"],
-            "scopes": ["images:read"],
-            "usedModels": ["ActionInput_klaviyo_getimage", "ActionOutput_klaviyo_getimage"],
+            "output": [
+                "ActionOutput_klaviyo_getimage"
+            ],
+            "scopes": [
+                "images:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_getimage",
+                "ActionOutput_klaviyo_getimage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1673,7 +2064,9 @@
                                 "description": "The ID of the image. Example: \"343296489\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_getimage": {
@@ -1704,7 +2097,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1717,9 +2113,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_klaviyo_getlist"],
-            "scopes": ["lists:read"],
-            "usedModels": ["ActionInput_klaviyo_getlist", "ActionOutput_klaviyo_getlist"],
+            "output": [
+                "ActionOutput_klaviyo_getlist"
+            ],
+            "scopes": [
+                "lists:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_getlist",
+                "ActionOutput_klaviyo_getlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1731,7 +2134,9 @@
                                 "description": "Primary key that uniquely identifies this list. Example: \"XW53Ha\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_getlist": {
@@ -1756,7 +2161,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1769,9 +2177,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_getprofile",
             "name": "get-profile",
-            "output": ["ActionOutput_klaviyo_getprofile"],
-            "scopes": ["profiles:read"],
-            "usedModels": ["ActionInput_klaviyo_getprofile", "ActionOutput_klaviyo_getprofile"],
+            "output": [
+                "ActionOutput_klaviyo_getprofile"
+            ],
+            "scopes": [
+                "profiles:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_getprofile",
+                "ActionOutput_klaviyo_getprofile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1783,7 +2198,9 @@
                                 "description": "Profile ID. Example: \"01KWFX4MZPQDSD3YG79C83CBDV\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_getprofile": {
@@ -1857,7 +2274,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1870,9 +2289,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_getsegment",
             "name": "get-segment",
-            "output": ["ActionOutput_klaviyo_getsegment"],
-            "scopes": ["segments:read"],
-            "usedModels": ["ActionInput_klaviyo_getsegment", "ActionOutput_klaviyo_getsegment"],
+            "output": [
+                "ActionOutput_klaviyo_getsegment"
+            ],
+            "scopes": [
+                "segments:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_getsegment",
+                "ActionOutput_klaviyo_getsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1884,7 +2310,9 @@
                                 "description": "Segment ID. Example: \"SRSEt8\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_getsegment": {
@@ -1915,7 +2343,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "is_active", "is_processing", "is_starred"],
+                        "required": [
+                            "id",
+                            "is_active",
+                            "is_processing",
+                            "is_starred"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1928,9 +2361,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_gettemplate",
             "name": "get-template",
-            "output": ["ActionOutput_klaviyo_gettemplate"],
-            "scopes": ["templates:read"],
-            "usedModels": ["ActionInput_klaviyo_gettemplate", "ActionOutput_klaviyo_gettemplate"],
+            "output": [
+                "ActionOutput_klaviyo_gettemplate"
+            ],
+            "scopes": [
+                "templates:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_gettemplate",
+                "ActionOutput_klaviyo_gettemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1942,7 +2382,9 @@
                                 "description": "The ID of the template. Example: \"WmRV7f\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_gettemplate": {
@@ -1974,7 +2416,12 @@
                             },
                             "definition": {}
                         },
-                        "required": ["id", "name", "editor_type", "html"],
+                        "required": [
+                            "id",
+                            "name",
+                            "editor_type",
+                            "html"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1987,9 +2434,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listcampaigns",
             "name": "list-campaigns",
-            "output": ["ActionOutput_klaviyo_listcampaigns"],
-            "scopes": ["campaigns:read"],
-            "usedModels": ["ActionInput_klaviyo_listcampaigns", "ActionOutput_klaviyo_listcampaigns"],
+            "output": [
+                "ActionOutput_klaviyo_listcampaigns"
+            ],
+            "scopes": [
+                "campaigns:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listcampaigns",
+                "ActionOutput_klaviyo_listcampaigns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1999,7 +2453,11 @@
                             "channel": {
                                 "description": "Campaign channel filter. Defaults to 'email'.",
                                 "type": "string",
-                                "enum": ["email", "sms", "mobile_push"]
+                                "enum": [
+                                    "email",
+                                    "sms",
+                                    "mobile_push"
+                                ]
                             },
                             "cursor": {
                                 "description": "Pagination cursor from the previous response. Omit for the first page.",
@@ -2044,7 +2502,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2052,7 +2512,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2065,9 +2527,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listcatalogcategories",
             "name": "list-catalog-categories",
-            "output": ["ActionOutput_klaviyo_listcatalogcategories"],
-            "scopes": ["catalogs:read"],
-            "usedModels": ["ActionInput_klaviyo_listcatalogcategories", "ActionOutput_klaviyo_listcatalogcategories"],
+            "output": [
+                "ActionOutput_klaviyo_listcatalogcategories"
+            ],
+            "scopes": [
+                "catalogs:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listcatalogcategories",
+                "ActionOutput_klaviyo_listcatalogcategories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2102,7 +2571,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2110,7 +2581,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["categories"],
+                        "required": [
+                            "categories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2123,9 +2596,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listcatalogitems",
             "name": "list-catalog-items",
-            "output": ["ActionOutput_klaviyo_listcatalogitems"],
-            "scopes": ["catalogs:read"],
-            "usedModels": ["ActionInput_klaviyo_listcatalogitems", "ActionOutput_klaviyo_listcatalogitems"],
+            "output": [
+                "ActionOutput_klaviyo_listcatalogitems"
+            ],
+            "scopes": [
+                "catalogs:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listcatalogitems",
+                "ActionOutput_klaviyo_listcatalogitems"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2186,7 +2666,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2194,7 +2676,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2207,9 +2691,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listcatalogvariants",
             "name": "list-catalog-variants",
-            "output": ["ActionOutput_klaviyo_listcatalogvariants"],
-            "scopes": ["catalogs:read"],
-            "usedModels": ["ActionInput_klaviyo_listcatalogvariants", "ActionOutput_klaviyo_listcatalogvariants"],
+            "output": [
+                "ActionOutput_klaviyo_listcatalogvariants"
+            ],
+            "scopes": [
+                "catalogs:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listcatalogvariants",
+                "ActionOutput_klaviyo_listcatalogvariants"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2245,7 +2736,10 @@
                             "sort": {
                                 "description": "Sort order. Use \"created\" for ascending or \"-created\" for descending.",
                                 "type": "string",
-                                "enum": ["created", "-created"]
+                                "enum": [
+                                    "created",
+                                    "-created"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2317,7 +2811,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2325,7 +2821,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2338,9 +2836,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listcouponcodes",
             "name": "list-coupon-codes",
-            "output": ["ActionOutput_klaviyo_listcouponcodes"],
-            "scopes": ["coupon-codes:read"],
-            "usedModels": ["ActionInput_klaviyo_listcouponcodes", "ActionOutput_klaviyo_listcouponcodes"],
+            "output": [
+                "ActionOutput_klaviyo_listcouponcodes"
+            ],
+            "scopes": [
+                "coupon-codes:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listcouponcodes",
+                "ActionOutput_klaviyo_listcouponcodes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2392,7 +2897,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2400,7 +2907,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2413,9 +2922,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listcoupons",
             "name": "list-coupons",
-            "output": ["ActionOutput_klaviyo_listcoupons"],
-            "scopes": ["coupons:read"],
-            "usedModels": ["ActionInput_klaviyo_listcoupons", "ActionOutput_klaviyo_listcoupons"],
+            "output": [
+                "ActionOutput_klaviyo_listcoupons"
+            ],
+            "scopes": [
+                "coupons:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listcoupons",
+                "ActionOutput_klaviyo_listcoupons"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2449,7 +2965,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "type", "attributes"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "attributes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2457,7 +2977,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["coupons"],
+                        "required": [
+                            "coupons"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2470,9 +2992,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_klaviyo_listevents"],
-            "scopes": ["events:read"],
-            "usedModels": ["ActionInput_klaviyo_listevents", "ActionOutput_klaviyo_listevents"],
+            "output": [
+                "ActionOutput_klaviyo_listevents"
+            ],
+            "scopes": [
+                "events:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listevents",
+                "ActionOutput_klaviyo_listevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2500,7 +3029,10 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["metric", "profile"]
+                                    "enum": [
+                                        "metric",
+                                        "profile"
+                                    ]
                                 }
                             }
                         },
@@ -2533,9 +3065,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listflows",
             "name": "list-flows",
-            "output": ["ActionOutput_klaviyo_listflows"],
-            "scopes": ["flows:read"],
-            "usedModels": ["ActionInput_klaviyo_listflows", "ActionOutput_klaviyo_listflows"],
+            "output": [
+                "ActionOutput_klaviyo_listflows"
+            ],
+            "scopes": [
+                "flows:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listflows",
+                "ActionOutput_klaviyo_listflows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2594,7 +3133,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2602,7 +3144,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["flows"],
+                        "required": [
+                            "flows"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2615,9 +3159,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listforms",
             "name": "list-forms",
-            "output": ["ActionOutput_klaviyo_listforms"],
-            "scopes": ["forms:read"],
-            "usedModels": ["ActionInput_klaviyo_listforms", "ActionOutput_klaviyo_listforms"],
+            "output": [
+                "ActionOutput_klaviyo_listforms"
+            ],
+            "scopes": [
+                "forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listforms",
+                "ActionOutput_klaviyo_listforms"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2655,19 +3206,34 @@
                                             "type": "object",
                                             "properties": {
                                                 "ab_test": {
-                                                    "type": ["boolean", "null"]
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "created_at": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "status": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "updated_at": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": {}
@@ -2687,7 +3253,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["type", "id"],
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2695,7 +3264,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2708,9 +3279,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listimages",
             "name": "list-images",
-            "output": ["ActionOutput_klaviyo_listimages"],
-            "scopes": ["images:read"],
-            "usedModels": ["ActionInput_klaviyo_listimages", "ActionOutput_klaviyo_listimages"],
+            "output": [
+                "ActionOutput_klaviyo_listimages"
+            ],
+            "scopes": [
+                "images:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listimages",
+                "ActionOutput_klaviyo_listimages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2754,7 +3332,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2762,7 +3342,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2775,9 +3357,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_klaviyo_listlists"],
-            "scopes": ["lists:read"],
-            "usedModels": ["ActionInput_klaviyo_listlists", "ActionOutput_klaviyo_listlists"],
+            "output": [
+                "ActionOutput_klaviyo_listlists"
+            ],
+            "scopes": [
+                "lists:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listlists",
+                "ActionOutput_klaviyo_listlists"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2815,7 +3404,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2823,7 +3415,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2836,9 +3430,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listmetrics",
             "name": "list-metrics",
-            "output": ["ActionOutput_klaviyo_listmetrics"],
-            "scopes": ["metrics:read"],
-            "usedModels": ["ActionInput_klaviyo_listmetrics", "ActionOutput_klaviyo_listmetrics"],
+            "output": [
+                "ActionOutput_klaviyo_listmetrics"
+            ],
+            "scopes": [
+                "metrics:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listmetrics",
+                "ActionOutput_klaviyo_listmetrics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2888,7 +3489,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2896,7 +3501,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["metrics"],
+                        "required": [
+                            "metrics"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2909,9 +3516,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listprofiles",
             "name": "list-profiles",
-            "output": ["ActionOutput_klaviyo_listprofiles"],
-            "scopes": ["profiles:read"],
-            "usedModels": ["ActionInput_klaviyo_listprofiles", "ActionOutput_klaviyo_listprofiles"],
+            "output": [
+                "ActionOutput_klaviyo_listprofiles"
+            ],
+            "scopes": [
+                "profiles:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listprofiles",
+                "ActionOutput_klaviyo_listprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3004,7 +3618,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3012,7 +3628,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3025,9 +3643,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listreviews",
             "name": "list-reviews",
-            "output": ["ActionOutput_klaviyo_listreviews"],
-            "scopes": ["reviews:read"],
-            "usedModels": ["ActionInput_klaviyo_listreviews", "ActionOutput_klaviyo_listreviews"],
+            "output": [
+                "ActionOutput_klaviyo_listreviews"
+            ],
+            "scopes": [
+                "reviews:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listreviews",
+                "ActionOutput_klaviyo_listreviews"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3104,7 +3729,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["url", "name"],
+                                            "required": [
+                                                "url",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "rating": {
@@ -3135,7 +3763,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["content", "author", "updated"],
+                                            "required": [
+                                                "content",
+                                                "author",
+                                                "updated"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "event_ids": {
@@ -3148,7 +3780,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "verified", "review_type", "created", "updated", "images"],
+                                    "required": [
+                                        "id",
+                                        "verified",
+                                        "review_type",
+                                        "created",
+                                        "updated",
+                                        "images"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3156,7 +3795,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3169,9 +3810,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listsegments",
             "name": "list-segments",
-            "output": ["ActionOutput_klaviyo_listsegments"],
-            "scopes": ["segments:read"],
-            "usedModels": ["ActionInput_klaviyo_listsegments", "ActionOutput_klaviyo_listsegments"],
+            "output": [
+                "ActionOutput_klaviyo_listsegments"
+            ],
+            "scopes": [
+                "segments:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listsegments",
+                "ActionOutput_klaviyo_listsegments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3206,7 +3854,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3214,7 +3865,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3227,9 +3880,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listtaggroups",
             "name": "list-tag-groups",
-            "output": ["ActionOutput_klaviyo_listtaggroups"],
-            "scopes": ["tags:read"],
-            "usedModels": ["ActionInput_klaviyo_listtaggroups", "ActionOutput_klaviyo_listtaggroups"],
+            "output": [
+                "ActionOutput_klaviyo_listtaggroups"
+            ],
+            "scopes": [
+                "tags:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listtaggroups",
+                "ActionOutput_klaviyo_listtaggroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3264,7 +3924,12 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "default", "exclusive"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "default",
+                                        "exclusive"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3272,7 +3937,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3285,9 +3952,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listtags",
             "name": "list-tags",
-            "output": ["ActionOutput_klaviyo_listtags"],
-            "scopes": ["tags:read"],
-            "usedModels": ["ActionInput_klaviyo_listtags", "ActionOutput_klaviyo_listtags"],
+            "output": [
+                "ActionOutput_klaviyo_listtags"
+            ],
+            "scopes": [
+                "tags:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listtags",
+                "ActionOutput_klaviyo_listtags"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3319,7 +3993,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3327,7 +4004,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3340,9 +4019,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listtemplates",
             "name": "list-templates",
-            "output": ["ActionOutput_klaviyo_listtemplates"],
-            "scopes": ["templates:read"],
-            "usedModels": ["ActionInput_klaviyo_listtemplates", "ActionOutput_klaviyo_listtemplates"],
+            "output": [
+                "ActionOutput_klaviyo_listtemplates"
+            ],
+            "scopes": [
+                "templates:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listtemplates",
+                "ActionOutput_klaviyo_listtemplates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3380,7 +4066,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3388,7 +4076,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3401,9 +4091,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_klaviyo_listwebhooks"],
-            "scopes": ["webhooks:read"],
-            "usedModels": ["ActionInput_klaviyo_listwebhooks", "ActionOutput_klaviyo_listwebhooks"],
+            "output": [
+                "ActionOutput_klaviyo_listwebhooks"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_listwebhooks",
+                "ActionOutput_klaviyo_listwebhooks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3453,7 +4150,12 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "endpoint_url", "enabled"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "endpoint_url",
+                                        "enabled"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3461,7 +4163,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3474,9 +4178,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_mergeprofiles",
             "name": "merge-profiles",
-            "output": ["ActionOutput_klaviyo_mergeprofiles"],
-            "scopes": ["profiles:write"],
-            "usedModels": ["ActionInput_klaviyo_mergeprofiles", "ActionOutput_klaviyo_mergeprofiles"],
+            "output": [
+                "ActionOutput_klaviyo_mergeprofiles"
+            ],
+            "scopes": [
+                "profiles:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_mergeprofiles",
+                "ActionOutput_klaviyo_mergeprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3492,7 +4203,10 @@
                                 "description": "The ID of the profile to keep after the merge. Example: \"01KWFX5B2R2JJMQTH7J23ZZ0S1\""
                             }
                         },
-                        "required": ["source_id", "destination_id"],
+                        "required": [
+                            "source_id",
+                            "destination_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_mergeprofiles": {
@@ -3511,7 +4225,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3524,9 +4240,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_querycampaignvaluesreport",
             "name": "query-campaign-values-report",
-            "output": ["ActionOutput_klaviyo_querycampaignvaluesreport"],
-            "scopes": ["campaigns:read"],
-            "usedModels": ["ActionInput_klaviyo_querycampaignvaluesreport", "ActionOutput_klaviyo_querycampaignvaluesreport"],
+            "output": [
+                "ActionOutput_klaviyo_querycampaignvaluesreport"
+            ],
+            "scopes": [
+                "campaigns:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_querycampaignvaluesreport",
+                "ActionOutput_klaviyo_querycampaignvaluesreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3617,7 +4340,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["type", "attributes"],
+                        "required": [
+                            "type",
+                            "attributes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3630,9 +4356,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_querymetricaggregates",
             "name": "query-metric-aggregates",
-            "output": ["ActionOutput_klaviyo_querymetricaggregates"],
-            "scopes": ["metrics:read"],
-            "usedModels": ["ActionInput_klaviyo_querymetricaggregates", "ActionOutput_klaviyo_querymetricaggregates"],
+            "output": [
+                "ActionOutput_klaviyo_querymetricaggregates"
+            ],
+            "scopes": [
+                "metrics:read"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_querymetricaggregates",
+                "ActionOutput_klaviyo_querymetricaggregates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3688,7 +4421,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["metric_id", "measurements", "interval"],
+                        "required": [
+                            "metric_id",
+                            "measurements",
+                            "interval"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_querymetricaggregates": {
@@ -3764,7 +4501,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["dimensions", "measurements"],
+                                    "required": [
+                                        "dimensions",
+                                        "measurements"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3775,16 +4515,29 @@
                                         "type": "string"
                                     },
                                     "next": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "prev": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "metric_id", "measurements", "interval", "dates"],
+                        "required": [
+                            "id",
+                            "type",
+                            "metric_id",
+                            "measurements",
+                            "interval",
+                            "dates"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3797,9 +4550,17 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_removeprofilesfromlist",
             "name": "remove-profiles-from-list",
-            "output": ["ActionOutput_klaviyo_removeprofilesfromlist"],
-            "scopes": ["lists:write", "profiles:write"],
-            "usedModels": ["ActionInput_klaviyo_removeprofilesfromlist", "ActionOutput_klaviyo_removeprofilesfromlist"],
+            "output": [
+                "ActionOutput_klaviyo_removeprofilesfromlist"
+            ],
+            "scopes": [
+                "lists:write",
+                "profiles:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_removeprofilesfromlist",
+                "ActionOutput_klaviyo_removeprofilesfromlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3819,7 +4580,10 @@
                                 "description": "Profile IDs to remove from the list. Maximum 1000 per call."
                             }
                         },
-                        "required": ["list_id", "profile_ids"],
+                        "required": [
+                            "list_id",
+                            "profile_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_removeprofilesfromlist": {
@@ -3835,7 +4599,10 @@
                                 }
                             }
                         },
-                        "required": ["list_id", "removed_profile_ids"],
+                        "required": [
+                            "list_id",
+                            "removed_profile_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3848,9 +4615,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_requestprofiledeletion",
             "name": "request-profile-deletion",
-            "output": ["ActionOutput_klaviyo_requestprofiledeletion"],
-            "scopes": ["data-privacy:write"],
-            "usedModels": ["ActionInput_klaviyo_requestprofiledeletion", "ActionOutput_klaviyo_requestprofiledeletion"],
+            "output": [
+                "ActionOutput_klaviyo_requestprofiledeletion"
+            ],
+            "scopes": [
+                "data-privacy:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_requestprofiledeletion",
+                "ActionOutput_klaviyo_requestprofiledeletion"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3862,7 +4636,9 @@
                                 "description": "Email address of the profile to delete. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_requestprofiledeletion": {
@@ -3875,7 +4651,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3888,9 +4667,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_sendcampaign",
             "name": "send-campaign",
-            "output": ["ActionOutput_klaviyo_sendcampaign"],
-            "scopes": ["campaigns:write"],
-            "usedModels": ["ActionInput_klaviyo_sendcampaign", "ActionOutput_klaviyo_sendcampaign"],
+            "output": [
+                "ActionOutput_klaviyo_sendcampaign"
+            ],
+            "scopes": [
+                "campaigns:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_sendcampaign",
+                "ActionOutput_klaviyo_sendcampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3902,7 +4688,9 @@
                                 "description": "The ID of the campaign to send. Example: \"01KWGH6P9PERJ0AHGNBJQMH55G\""
                             }
                         },
-                        "required": ["campaign_id"],
+                        "required": [
+                            "campaign_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_sendcampaign": {
@@ -3918,7 +4706,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign_id", "status", "send_job_type"],
+                        "required": [
+                            "campaign_id",
+                            "status",
+                            "send_job_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3931,9 +4723,18 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_subscribeprofiles",
             "name": "subscribe-profiles",
-            "output": ["ActionOutput_klaviyo_subscribeprofiles"],
-            "scopes": ["lists:write", "profiles:write", "subscriptions:write"],
-            "usedModels": ["ActionInput_klaviyo_subscribeprofiles", "ActionOutput_klaviyo_subscribeprofiles"],
+            "output": [
+                "ActionOutput_klaviyo_subscribeprofiles"
+            ],
+            "scopes": [
+                "lists:write",
+                "profiles:write",
+                "subscriptions:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_subscribeprofiles",
+                "ActionOutput_klaviyo_subscribeprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3976,7 +4777,9 @@
                                                                     ]
                                                                 }
                                                             },
-                                                            "required": ["consent"],
+                                                            "required": [
+                                                                "consent"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
@@ -3998,7 +4801,9 @@
                                                                     ]
                                                                 }
                                                             },
-                                                            "required": ["consent"],
+                                                            "required": [
+                                                                "consent"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
@@ -4013,7 +4818,10 @@
                                 "description": "Array of profiles to subscribe."
                             }
                         },
-                        "required": ["list_id", "profiles"],
+                        "required": [
+                            "list_id",
+                            "profiles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_subscribeprofiles": {
@@ -4026,7 +4834,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "list_id"],
+                        "required": [
+                            "success",
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4039,9 +4850,18 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_unsubscribeprofiles",
             "name": "unsubscribe-profiles",
-            "output": ["ActionOutput_klaviyo_unsubscribeprofiles"],
-            "scopes": ["lists:write", "profiles:write", "subscriptions:write"],
-            "usedModels": ["ActionInput_klaviyo_unsubscribeprofiles", "ActionOutput_klaviyo_unsubscribeprofiles"],
+            "output": [
+                "ActionOutput_klaviyo_unsubscribeprofiles"
+            ],
+            "scopes": [
+                "lists:write",
+                "profiles:write",
+                "subscriptions:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_unsubscribeprofiles",
+                "ActionOutput_klaviyo_unsubscribeprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4073,7 +4893,10 @@
                                 "description": "The profiles to unsubscribe. Either email or phone_number is required per profile. Maximum 100 profiles."
                             }
                         },
-                        "required": ["list_id", "profiles"],
+                        "required": [
+                            "list_id",
+                            "profiles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_unsubscribeprofiles": {
@@ -4083,7 +4906,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4096,9 +4921,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_updatecampaign",
             "name": "update-campaign",
-            "output": ["ActionOutput_klaviyo_updatecampaign"],
-            "scopes": ["campaigns:write"],
-            "usedModels": ["ActionInput_klaviyo_updatecampaign", "ActionOutput_klaviyo_updatecampaign"],
+            "output": [
+                "ActionOutput_klaviyo_updatecampaign"
+            ],
+            "scopes": [
+                "campaigns:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_updatecampaign",
+                "ActionOutput_klaviyo_updatecampaign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4111,7 +4943,10 @@
                             },
                             "name": {
                                 "description": "The campaign name. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "audiences": {
                                 "description": "The audiences to include and/or exclude. Set to null to clear.",
@@ -4180,7 +5015,9 @@
                                                                         "type": "boolean"
                                                                     }
                                                                 },
-                                                                "required": ["is_local"],
+                                                                "required": [
+                                                                    "is_local"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -4189,7 +5026,10 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["method", "datetime"],
+                                                "required": [
+                                                    "method",
+                                                    "datetime"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4200,7 +5040,9 @@
                                                         "const": "immediate"
                                                     }
                                                 },
-                                                "required": ["method"],
+                                                "required": [
+                                                    "method"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4217,7 +5059,11 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["method", "datetime", "throttle_percentage"],
+                                                "required": [
+                                                    "method",
+                                                    "datetime",
+                                                    "throttle_percentage"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4231,7 +5077,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["method", "date"],
+                                                "required": [
+                                                    "method",
+                                                    "date"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4242,7 +5091,9 @@
                                                         "const": "ab_test_campaign"
                                                     }
                                                 },
-                                                "required": ["method"],
+                                                "required": [
+                                                    "method"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ]
@@ -4259,7 +5110,10 @@
                                         "type": "object",
                                         "properties": {
                                             "use_smart_sending": {
-                                                "type": ["boolean", "null"]
+                                                "type": [
+                                                    "boolean",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -4278,7 +5132,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "add_tracking_params": {
-                                                        "type": ["boolean", "null"]
+                                                        "type": [
+                                                            "boolean",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "custom_tracking_params": {
                                                         "anyOf": [
@@ -4306,7 +5163,11 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["type", "value", "name"],
+                                                                    "required": [
+                                                                        "type",
+                                                                        "value",
+                                                                        "name"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             },
@@ -4316,10 +5177,16 @@
                                                         ]
                                                     },
                                                     "is_tracking_clicks": {
-                                                        "type": ["boolean", "null"]
+                                                        "type": [
+                                                            "boolean",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "is_tracking_opens": {
-                                                        "type": ["boolean", "null"]
+                                                        "type": [
+                                                            "boolean",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -4328,7 +5195,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "add_tracking_params": {
-                                                        "type": ["boolean", "null"]
+                                                        "type": [
+                                                            "boolean",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "custom_tracking_params": {
                                                         "anyOf": [
@@ -4356,7 +5226,11 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["type", "value", "name"],
+                                                                    "required": [
+                                                                        "type",
+                                                                        "value",
+                                                                        "name"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             },
@@ -4376,7 +5250,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_updatecampaign": {
@@ -4417,7 +5293,9 @@
                                         ]
                                     }
                                 },
-                                "required": ["included"],
+                                "required": [
+                                    "included"
+                                ],
                                 "additionalProperties": false
                             },
                             "send_strategy": {},
@@ -4437,10 +5315,16 @@
                                 "type": "string"
                             },
                             "scheduled_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "send_time": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "campaign_message_ids": {
                                 "type": "array",
@@ -4455,7 +5339,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "status", "archived"],
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4468,9 +5357,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_updateflowstatus",
             "name": "update-flow-status",
-            "output": ["ActionOutput_klaviyo_updateflowstatus"],
-            "scopes": ["flows:write"],
-            "usedModels": ["ActionInput_klaviyo_updateflowstatus", "ActionOutput_klaviyo_updateflowstatus"],
+            "output": [
+                "ActionOutput_klaviyo_updateflowstatus"
+            ],
+            "scopes": [
+                "flows:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_updateflowstatus",
+                "ActionOutput_klaviyo_updateflowstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4483,11 +5379,19 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["draft", "manual", "live", "archived"],
+                                "enum": [
+                                    "draft",
+                                    "manual",
+                                    "live",
+                                    "archived"
+                                ],
                                 "description": "Target status for the flow."
                             }
                         },
-                        "required": ["flow_id", "status"],
+                        "required": [
+                            "flow_id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_updateflowstatus": {
@@ -4515,7 +5419,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4528,9 +5434,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_updatelist",
             "name": "update-list",
-            "output": ["ActionOutput_klaviyo_updatelist"],
-            "scopes": ["lists:write"],
-            "usedModels": ["ActionInput_klaviyo_updatelist", "ActionOutput_klaviyo_updatelist"],
+            "output": [
+                "ActionOutput_klaviyo_updatelist"
+            ],
+            "scopes": [
+                "lists:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_updatelist",
+                "ActionOutput_klaviyo_updatelist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4546,7 +5459,10 @@
                                 "description": "The new name for the list. Example: \"Updated List Name\""
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_updatelist": {
@@ -4559,7 +5475,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4572,9 +5490,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_updateprofile",
             "name": "update-profile",
-            "output": ["ActionOutput_klaviyo_updateprofile"],
-            "scopes": ["profiles:write"],
-            "usedModels": ["ActionInput_klaviyo_updateprofile", "ActionOutput_klaviyo_updateprofile"],
+            "output": [
+                "ActionOutput_klaviyo_updateprofile"
+            ],
+            "scopes": [
+                "profiles:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_updateprofile",
+                "ActionOutput_klaviyo_updateprofile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4647,7 +5572,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_updateprofile": {
@@ -4718,7 +5645,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4731,9 +5660,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_updatesegment",
             "name": "update-segment",
-            "output": ["ActionOutput_klaviyo_updatesegment"],
-            "scopes": ["segments:write"],
-            "usedModels": ["ActionInput_klaviyo_updatesegment", "ActionOutput_klaviyo_updatesegment"],
+            "output": [
+                "ActionOutput_klaviyo_updatesegment"
+            ],
+            "scopes": [
+                "segments:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_updatesegment",
+                "ActionOutput_klaviyo_updatesegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4746,7 +5682,10 @@
                             },
                             "name": {
                                 "description": "The name of the segment.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "definition": {
                                 "description": "The segment definition containing condition groups.",
@@ -4774,14 +5713,22 @@
                             },
                             "is_starred": {
                                 "description": "Whether the segment is starred.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "is_active": {
                                 "description": "Set to false to deactivate the segment. Must be the only attribute when deactivating.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_updatesegment": {
@@ -4828,7 +5775,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type", "is_active", "is_processing", "is_starred"],
+                        "required": [
+                            "id",
+                            "type",
+                            "is_active",
+                            "is_processing",
+                            "is_starred"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4841,9 +5794,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_updatetag",
             "name": "update-tag",
-            "output": ["ActionOutput_klaviyo_updatetag"],
-            "scopes": ["tags:write"],
-            "usedModels": ["ActionInput_klaviyo_updatetag", "ActionOutput_klaviyo_updatetag"],
+            "output": [
+                "ActionOutput_klaviyo_updatetag"
+            ],
+            "scopes": [
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_updatetag",
+                "ActionOutput_klaviyo_updatetag"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4859,7 +5819,10 @@
                                 "description": "New name for the tag. Example: \"updated-tag-name\""
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_updatetag": {
@@ -4872,7 +5835,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4885,9 +5851,16 @@
             "endpoint": null,
             "input": "ActionInput_klaviyo_updatetemplate",
             "name": "update-template",
-            "output": ["ActionOutput_klaviyo_updatetemplate"],
-            "scopes": ["templates:write"],
-            "usedModels": ["ActionInput_klaviyo_updatetemplate", "ActionOutput_klaviyo_updatetemplate"],
+            "output": [
+                "ActionOutput_klaviyo_updatetemplate"
+            ],
+            "scopes": [
+                "templates:write"
+            ],
+            "usedModels": [
+                "ActionInput_klaviyo_updatetemplate",
+                "ActionOutput_klaviyo_updatetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4900,22 +5873,36 @@
                             },
                             "name": {
                                 "description": "The name of the template",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "html": {
                                 "description": "The HTML contents of the template",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "text": {
                                 "description": "The plaintext of the template",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "amp": {
                                 "description": "The AMP version of the template",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_klaviyo_updatetemplate": {
@@ -4946,7 +5933,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "editor_type", "html"],
+                        "required": [
+                            "id",
+                            "name",
+                            "editor_type",
+                            "html"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4962,12 +5954,16 @@
             "endpoints": [],
             "input": null,
             "name": "campaigns",
-            "output": ["Campaign"],
+            "output": [
+                "Campaign"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Campaign"],
+            "usedModels": [
+                "Campaign"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4997,12 +5993,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5011,12 +6011,16 @@
             "endpoints": [],
             "input": null,
             "name": "catalog-categories",
-            "output": ["CatalogCategory"],
+            "output": [
+                "CatalogCategory"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CatalogCategory"],
+            "usedModels": [
+                "CatalogCategory"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5037,12 +6041,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5051,12 +6059,16 @@
             "endpoints": [],
             "input": null,
             "name": "catalog-items",
-            "output": ["CatalogItem"],
+            "output": [
+                "CatalogItem"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CatalogItem"],
+            "usedModels": [
+                "CatalogItem"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5098,12 +6110,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5112,12 +6128,19 @@
             "endpoints": [],
             "input": null,
             "name": "coupon-codes",
-            "output": ["CouponCode"],
+            "output": [
+                "CouponCode"
+            ],
             "runs": "every hour",
-            "scopes": ["coupon-codes:read", "coupons:read"],
+            "scopes": [
+                "coupon-codes:read",
+                "coupons:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CouponCode"],
+            "usedModels": [
+                "CouponCode"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5141,12 +6164,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5155,12 +6182,16 @@
             "endpoints": [],
             "input": null,
             "name": "coupons",
-            "output": ["Coupon"],
+            "output": [
+                "Coupon"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Coupon"],
+            "usedModels": [
+                "Coupon"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5185,12 +6216,17 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "external_id"],
+                        "required": [
+                            "id",
+                            "external_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5199,12 +6235,16 @@
             "endpoints": [],
             "input": null,
             "name": "events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event"],
+            "usedModels": [
+                "Event"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5244,12 +6284,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "datetime"],
+                        "required": [
+                            "id",
+                            "datetime"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5258,12 +6303,16 @@
             "endpoints": [],
             "input": null,
             "name": "flows",
-            "output": ["Flow"],
+            "output": [
+                "Flow"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Flow"],
+            "usedModels": [
+                "Flow"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5296,12 +6345,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5310,12 +6363,16 @@
             "endpoints": [],
             "input": null,
             "name": "forms",
-            "output": ["Form"],
+            "output": [
+                "Form"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Form"],
+            "usedModels": [
+                "Form"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5342,12 +6399,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5356,12 +6417,16 @@
             "endpoints": [],
             "input": null,
             "name": "images",
-            "output": ["Image"],
+            "output": [
+                "Image"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Image"],
+            "usedModels": [
+                "Image"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5391,12 +6456,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5405,12 +6474,16 @@
             "endpoints": [],
             "input": null,
             "name": "lists",
-            "output": ["List"],
+            "output": [
+                "List"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["List"],
+            "usedModels": [
+                "List"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5432,12 +6505,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5446,12 +6523,16 @@
             "endpoints": [],
             "input": null,
             "name": "metrics",
-            "output": ["Metric"],
+            "output": [
+                "Metric"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Metric"],
+            "usedModels": [
+                "Metric"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5487,12 +6568,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5501,12 +6586,16 @@
             "endpoints": [],
             "input": null,
             "name": "profiles",
-            "output": ["Profile"],
+            "output": [
+                "Profile"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Profile"],
+            "usedModels": [
+                "Profile"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5539,12 +6628,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5553,12 +6646,16 @@
             "endpoints": [],
             "input": null,
             "name": "reviews",
-            "output": ["Review"],
+            "output": [
+                "Review"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Review"],
+            "usedModels": [
+                "Review"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5639,12 +6736,20 @@
                                 }
                             }
                         },
-                        "required": ["id", "verified", "review_type", "created", "updated"],
+                        "required": [
+                            "id",
+                            "verified",
+                            "review_type",
+                            "created",
+                            "updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5653,12 +6758,16 @@
             "endpoints": [],
             "input": null,
             "name": "segments",
-            "output": ["Segment"],
+            "output": [
+                "Segment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Segment"],
+            "usedModels": [
+                "Segment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5688,12 +6797,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5702,12 +6815,16 @@
             "endpoints": [],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5731,12 +6848,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5745,12 +6866,16 @@
             "endpoints": [],
             "input": null,
             "name": "templates",
-            "output": ["Template"],
+            "output": [
+                "Template"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Template"],
+            "usedModels": [
+                "Template"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5780,12 +6905,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

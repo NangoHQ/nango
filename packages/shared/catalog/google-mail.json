@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_batchdeletemessages",
             "name": "batch-delete-messages",
-            "output": ["ActionOutput_google_mail_batchdeletemessages"],
-            "scopes": ["https://mail.google.com/"],
-            "usedModels": ["ActionInput_google_mail_batchdeletemessages", "ActionOutput_google_mail_batchdeletemessages"],
+            "output": [
+                "ActionOutput_google_mail_batchdeletemessages"
+            ],
+            "scopes": [
+                "https://mail.google.com/"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_batchdeletemessages",
+                "ActionOutput_google_mail_batchdeletemessages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,9 @@
                                 "description": "Array of Gmail message IDs to delete. Example: [\"msg123\", \"msg456\"]"
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_batchdeletemessages": {
@@ -41,9 +50,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_batchmodifymessages",
             "name": "batch-modify-messages",
-            "output": ["ActionOutput_google_mail_batchmodifymessages"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_batchmodifymessages", "ActionOutput_google_mail_batchmodifymessages"],
+            "output": [
+                "ActionOutput_google_mail_batchmodifymessages"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_batchmodifymessages",
+                "ActionOutput_google_mail_batchmodifymessages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -74,7 +90,9 @@
                                 }
                             }
                         },
-                        "required": ["ids"],
+                        "required": [
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_batchmodifymessages": {
@@ -89,7 +107,10 @@
                                 "description": "Number of messages modified."
                             }
                         },
-                        "required": ["success", "modifiedCount"],
+                        "required": [
+                            "success",
+                            "modifiedCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -102,9 +123,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_createdraft",
             "name": "create-draft",
-            "output": ["ActionOutput_google_mail_createdraft"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.compose"],
-            "usedModels": ["ActionInput_google_mail_createdraft", "ActionOutput_google_mail_createdraft"],
+            "output": [
+                "ActionOutput_google_mail_createdraft"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.compose"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_createdraft",
+                "ActionOutput_google_mail_createdraft"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -120,7 +148,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["raw"],
+                        "required": [
+                            "raw"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_createdraft": {
@@ -146,7 +176,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -159,9 +191,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_createfilter",
             "name": "create-filter",
-            "output": ["ActionOutput_google_mail_createfilter"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_createfilter", "ActionOutput_google_mail_createfilter"],
+            "output": [
+                "ActionOutput_google_mail_createfilter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_createfilter",
+                "ActionOutput_google_mail_createfilter"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -206,7 +245,11 @@
                                     "sizeComparison": {
                                         "description": "How the message size in bytes should be in relation to the size field.",
                                         "type": "string",
-                                        "enum": ["smaller", "larger", "unspecified"]
+                                        "enum": [
+                                            "smaller",
+                                            "larger",
+                                            "unspecified"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -236,7 +279,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["criteria", "action"],
+                        "required": [
+                            "criteria",
+                            "action"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_createfilter": {
@@ -283,7 +329,11 @@
                                     "sizeComparison": {
                                         "description": "How the message size in bytes should be in relation to the size field.",
                                         "type": "string",
-                                        "enum": ["smaller", "larger", "unspecified"]
+                                        "enum": [
+                                            "smaller",
+                                            "larger",
+                                            "unspecified"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -313,7 +363,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -326,9 +378,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_createlabel",
             "name": "create-label",
-            "output": ["ActionOutput_google_mail_createlabel"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.labels"],
-            "usedModels": ["ActionInput_google_mail_createlabel", "ActionOutput_google_mail_createlabel"],
+            "output": [
+                "ActionOutput_google_mail_createlabel"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.labels"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_createlabel",
+                "ActionOutput_google_mail_createlabel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -342,20 +401,31 @@
                             "labelListVisibility": {
                                 "description": "The visibility of the label in the label list. Example: \"labelShow\"",
                                 "type": "string",
-                                "enum": ["labelHide", "labelShow", "labelShowIfUnread"]
+                                "enum": [
+                                    "labelHide",
+                                    "labelShow",
+                                    "labelShowIfUnread"
+                                ]
                             },
                             "messageListVisibility": {
                                 "description": "The visibility of the label in the message list. Example: \"show\"",
                                 "type": "string",
-                                "enum": ["hide", "show"]
+                                "enum": [
+                                    "hide",
+                                    "show"
+                                ]
                             },
                             "type": {
                                 "description": "The type of the label. Only \"user\" can be created. Defaults to \"user\".",
                                 "type": "string",
-                                "enum": ["user"]
+                                "enum": [
+                                    "user"
+                                ]
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_createlabel": {
@@ -382,7 +452,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -395,9 +468,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_createsendasalias",
             "name": "create-send-as-alias",
-            "output": ["ActionOutput_google_mail_createsendasalias"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.sharing"],
-            "usedModels": ["ActionInput_google_mail_createsendasalias", "ActionOutput_google_mail_createsendasalias"],
+            "output": [
+                "ActionOutput_google_mail_createsendasalias"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.sharing"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_createsendasalias",
+                "ActionOutput_google_mail_createsendasalias"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -433,7 +513,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_createsendasalias": {
@@ -464,7 +546,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -477,9 +561,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_deletedraft",
             "name": "delete-draft",
-            "output": ["ActionOutput_google_mail_deletedraft"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.compose"],
-            "usedModels": ["ActionInput_google_mail_deletedraft", "ActionOutput_google_mail_deletedraft"],
+            "output": [
+                "ActionOutput_google_mail_deletedraft"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.compose"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_deletedraft",
+                "ActionOutput_google_mail_deletedraft"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -491,7 +582,9 @@
                                 "description": "The ID of the draft to delete. Example: \"r-1234567890abcdef\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_deletedraft": {
@@ -502,7 +595,9 @@
                                 "description": "Whether the draft was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -515,9 +610,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_deletefilter",
             "name": "delete-filter",
-            "output": ["ActionOutput_google_mail_deletefilter"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_deletefilter", "ActionOutput_google_mail_deletefilter"],
+            "output": [
+                "ActionOutput_google_mail_deletefilter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_deletefilter",
+                "ActionOutput_google_mail_deletefilter"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -529,7 +631,9 @@
                                 "description": "The ID of the filter to delete. Example: \"ABC123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_deletefilter": {
@@ -545,9 +649,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_deleteforwardingaddress",
             "name": "delete-forwarding-address",
-            "output": ["ActionOutput_google_mail_deleteforwardingaddress"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.sharing"],
-            "usedModels": ["ActionInput_google_mail_deleteforwardingaddress", "ActionOutput_google_mail_deleteforwardingaddress"],
+            "output": [
+                "ActionOutput_google_mail_deleteforwardingaddress"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.sharing"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_deleteforwardingaddress",
+                "ActionOutput_google_mail_deleteforwardingaddress"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -559,7 +670,9 @@
                                 "description": "The forwarding email address to delete. Example: \"forward@example.com\""
                             }
                         },
-                        "required": ["forwardingEmail"],
+                        "required": [
+                            "forwardingEmail"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_deleteforwardingaddress": {
@@ -570,7 +683,9 @@
                                 "description": "Whether the forwarding address was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -583,9 +698,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_deletelabel",
             "name": "delete-label",
-            "output": ["ActionOutput_google_mail_deletelabel"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.labels"],
-            "usedModels": ["ActionInput_google_mail_deletelabel", "ActionOutput_google_mail_deletelabel"],
+            "output": [
+                "ActionOutput_google_mail_deletelabel"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.labels"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_deletelabel",
+                "ActionOutput_google_mail_deletelabel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -597,7 +719,9 @@
                                 "description": "The ID of the label to delete. Example: \"Label_1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_deletelabel": {
@@ -608,7 +732,9 @@
                                 "description": "Whether the label was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -621,9 +747,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_deletemessage",
             "name": "delete-message",
-            "output": ["ActionOutput_google_mail_deletemessage"],
-            "scopes": ["https://mail.google.com/"],
-            "usedModels": ["ActionInput_google_mail_deletemessage", "ActionOutput_google_mail_deletemessage"],
+            "output": [
+                "ActionOutput_google_mail_deletemessage"
+            ],
+            "scopes": [
+                "https://mail.google.com/"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_deletemessage",
+                "ActionOutput_google_mail_deletemessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -635,7 +768,9 @@
                                 "description": "The ID of the message to delete. Example: \"123abc456def\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_deletemessage": {
@@ -650,7 +785,10 @@
                                 "description": "The ID of the deleted message"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -663,9 +801,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_deletesendasalias",
             "name": "delete-send-as-alias",
-            "output": ["ActionOutput_google_mail_deletesendasalias"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.sharing"],
-            "usedModels": ["ActionInput_google_mail_deletesendasalias", "ActionOutput_google_mail_deletesendasalias"],
+            "output": [
+                "ActionOutput_google_mail_deletesendasalias"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.sharing"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_deletesendasalias",
+                "ActionOutput_google_mail_deletesendasalias"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -677,7 +822,9 @@
                                 "description": "The email address of the send-as alias to delete. Example: \"alias@example.com\""
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_deletesendasalias": {
@@ -693,9 +840,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_deletethread",
             "name": "delete-thread",
-            "output": ["ActionOutput_google_mail_deletethread"],
-            "scopes": ["https://mail.google.com/"],
-            "usedModels": ["ActionInput_google_mail_deletethread", "ActionOutput_google_mail_deletethread"],
+            "output": [
+                "ActionOutput_google_mail_deletethread"
+            ],
+            "scopes": [
+                "https://mail.google.com/"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_deletethread",
+                "ActionOutput_google_mail_deletethread"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -707,7 +861,9 @@
                                 "description": "The ID of the thread to delete. Example: \"123abc456def789\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_deletethread": {
@@ -720,7 +876,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -733,9 +892,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getattachment",
             "name": "get-attachment",
-            "output": ["ActionOutput_google_mail_getattachment"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
-            "usedModels": ["ActionInput_google_mail_getattachment", "ActionOutput_google_mail_getattachment"],
+            "output": [
+                "ActionOutput_google_mail_getattachment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getattachment",
+                "ActionOutput_google_mail_getattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -755,7 +921,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["messageId", "attachmentId"],
+                        "required": [
+                            "messageId",
+                            "attachmentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getattachment": {
@@ -770,7 +939,10 @@
                                 "description": "The attachment data in base64url encoding"
                             }
                         },
-                        "required": ["size", "data"],
+                        "required": [
+                            "size",
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -783,9 +955,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getautoforwardingsettings",
             "name": "get-auto-forwarding-settings",
-            "output": ["ActionOutput_google_mail_getautoforwardingsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getautoforwardingsettings", "ActionOutput_google_mail_getautoforwardingsettings"],
+            "output": [
+                "ActionOutput_google_mail_getautoforwardingsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getautoforwardingsettings",
+                "ActionOutput_google_mail_getautoforwardingsettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -824,9 +1003,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getdraft",
             "name": "get-draft",
-            "output": ["ActionOutput_google_mail_getdraft"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
-            "usedModels": ["ActionInput_google_mail_getdraft", "ActionOutput_google_mail_getdraft"],
+            "output": [
+                "ActionOutput_google_mail_getdraft"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getdraft",
+                "ActionOutput_google_mail_getdraft"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -842,7 +1028,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getdraft": {
@@ -899,7 +1087,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["name", "value"],
+                                                    "required": [
+                                                        "name",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -935,7 +1126,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -948,9 +1141,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getfilter",
             "name": "get-filter",
-            "output": ["ActionOutput_google_mail_getfilter"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getfilter", "ActionOutput_google_mail_getfilter"],
+            "output": [
+                "ActionOutput_google_mail_getfilter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getfilter",
+                "ActionOutput_google_mail_getfilter"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -962,7 +1162,9 @@
                                 "description": "The ID of the filter to retrieve. Example: \"ANeLbv78uP8GVB5D7xQf1fIlIaHoeFC0fV6lCu1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getfilter": {
@@ -1009,7 +1211,11 @@
                                     "sizeComparison": {
                                         "description": "How the message size should be in relation to the size field",
                                         "type": "string",
-                                        "enum": ["unspecified", "smaller", "larger"]
+                                        "enum": [
+                                            "unspecified",
+                                            "smaller",
+                                            "larger"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -1039,7 +1245,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1052,9 +1260,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getforwardingaddress",
             "name": "get-forwarding-address",
-            "output": ["ActionOutput_google_mail_getforwardingaddress"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getforwardingaddress", "ActionOutput_google_mail_getforwardingaddress"],
+            "output": [
+                "ActionOutput_google_mail_getforwardingaddress"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getforwardingaddress",
+                "ActionOutput_google_mail_getforwardingaddress"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1066,7 +1281,9 @@
                                 "description": "The forwarding email address to retrieve. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["forwardingEmail"],
+                        "required": [
+                            "forwardingEmail"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getforwardingaddress": {
@@ -1077,13 +1294,20 @@
                             },
                             "verificationStatus": {
                                 "type": "string",
-                                "enum": ["accepted", "pending", "confirmationCodeSent"]
+                                "enum": [
+                                    "accepted",
+                                    "pending",
+                                    "confirmationCodeSent"
+                                ]
                             },
                             "verificationTime": {
                                 "type": "string"
                             }
                         },
-                        "required": ["forwardingEmail", "verificationStatus"],
+                        "required": [
+                            "forwardingEmail",
+                            "verificationStatus"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1096,9 +1320,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getimapsettings",
             "name": "get-imap-settings",
-            "output": ["ActionOutput_google_mail_getimapsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getimapsettings", "ActionOutput_google_mail_getimapsettings"],
+            "output": [
+                "ActionOutput_google_mail_getimapsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getimapsettings",
+                "ActionOutput_google_mail_getimapsettings"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1123,7 +1354,12 @@
                             },
                             "expungeBehavior": {
                                 "type": "string",
-                                "enum": ["expungeBehaviorUnspecified", "archive", "trash", "deleteForever"]
+                                "enum": [
+                                    "expungeBehaviorUnspecified",
+                                    "archive",
+                                    "trash",
+                                    "deleteForever"
+                                ]
                             },
                             "maxFolderSize": {
                                 "anyOf": [
@@ -1162,9 +1398,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getlabel",
             "name": "get-label",
-            "output": ["ActionOutput_google_mail_getlabel"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.labels"],
-            "usedModels": ["ActionInput_google_mail_getlabel", "ActionOutput_google_mail_getlabel"],
+            "output": [
+                "ActionOutput_google_mail_getlabel"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.labels"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getlabel",
+                "ActionOutput_google_mail_getlabel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1180,7 +1423,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getlabel": {
@@ -1194,15 +1439,25 @@
                             },
                             "messageListVisibility": {
                                 "type": "string",
-                                "enum": ["show", "hide"]
+                                "enum": [
+                                    "show",
+                                    "hide"
+                                ]
                             },
                             "labelListVisibility": {
                                 "type": "string",
-                                "enum": ["labelShow", "labelShowIfUnread", "labelHide"]
+                                "enum": [
+                                    "labelShow",
+                                    "labelShowIfUnread",
+                                    "labelHide"
+                                ]
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["system", "user"]
+                                "enum": [
+                                    "system",
+                                    "user"
+                                ]
                             },
                             "messagesTotal": {
                                 "type": "number"
@@ -1229,7 +1484,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1242,9 +1500,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getlanguagesettings",
             "name": "get-language-settings",
-            "output": ["ActionOutput_google_mail_getlanguagesettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getlanguagesettings", "ActionOutput_google_mail_getlanguagesettings"],
+            "output": [
+                "ActionOutput_google_mail_getlanguagesettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getlanguagesettings",
+                "ActionOutput_google_mail_getlanguagesettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1277,9 +1542,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getmessage",
             "name": "get-message",
-            "output": ["ActionOutput_google_mail_getmessage"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
-            "usedModels": ["ActionInput_google_mail_getmessage", "ActionOutput_google_mail_getmessage"],
+            "output": [
+                "ActionOutput_google_mail_getmessage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getmessage",
+                "ActionOutput_google_mail_getmessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1293,7 +1565,12 @@
                             "format": {
                                 "description": "The format to return the message in. Values: full, metadata, minimal, raw. Example: \"full\"",
                                 "type": "string",
-                                "enum": ["full", "metadata", "minimal", "raw"]
+                                "enum": [
+                                    "full",
+                                    "metadata",
+                                    "minimal",
+                                    "raw"
+                                ]
                             },
                             "metadataHeaders": {
                                 "description": "When format is metadata, only include headers specified in this array. Example: [\"Subject\", \"From\"]",
@@ -1303,7 +1580,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getmessage": {
@@ -1354,7 +1633,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["name", "value"],
+                                            "required": [
+                                                "name",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1387,7 +1669,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1400,9 +1684,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getpopsettings",
             "name": "get-pop-settings",
-            "output": ["ActionOutput_google_mail_getpopsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getpopsettings", "ActionOutput_google_mail_getpopsettings"],
+            "output": [
+                "ActionOutput_google_mail_getpopsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getpopsettings",
+                "ActionOutput_google_mail_getpopsettings"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1422,12 +1713,23 @@
                             "accessWindow": {
                                 "description": "The range of messages which are accessible via POP.",
                                 "type": "string",
-                                "enum": ["accessWindowUnspecified", "disabled", "fromNowOn", "allMail"]
+                                "enum": [
+                                    "accessWindowUnspecified",
+                                    "disabled",
+                                    "fromNowOn",
+                                    "allMail"
+                                ]
                             },
                             "disposition": {
                                 "description": "The action that will be executed on a message after it has been fetched via POP.",
                                 "type": "string",
-                                "enum": ["dispositionUnspecified", "leaveInInbox", "archive", "trash", "markRead"]
+                                "enum": [
+                                    "dispositionUnspecified",
+                                    "leaveInInbox",
+                                    "archive",
+                                    "trash",
+                                    "markRead"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1442,9 +1744,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getsendasalias",
             "name": "get-send-as-alias",
-            "output": ["ActionOutput_google_mail_getsendasalias"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getsendasalias", "ActionOutput_google_mail_getsendasalias"],
+            "output": [
+                "ActionOutput_google_mail_getsendasalias"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getsendasalias",
+                "ActionOutput_google_mail_getsendasalias"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1460,7 +1769,9 @@
                                 "description": "The send-as alias to be retrieved. Example: \"alias@example.com\""
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getsendasalias": {
@@ -1504,17 +1815,28 @@
                                     },
                                     "securityMode": {
                                         "type": "string",
-                                        "enum": ["securityModeUnspecified", "none", "ssl", "starttls"]
+                                        "enum": [
+                                            "securityModeUnspecified",
+                                            "none",
+                                            "ssl",
+                                            "starttls"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             },
                             "verificationStatus": {
                                 "type": "string",
-                                "enum": ["verificationStatusUnspecified", "accepted", "pending"]
+                                "enum": [
+                                    "verificationStatusUnspecified",
+                                    "accepted",
+                                    "pending"
+                                ]
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1527,9 +1849,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getthread",
             "name": "get-thread",
-            "output": ["ActionOutput_google_mail_getthread"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
-            "usedModels": ["ActionInput_google_mail_getthread", "ActionOutput_google_mail_getthread"],
+            "output": [
+                "ActionOutput_google_mail_getthread"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getthread",
+                "ActionOutput_google_mail_getthread"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1543,7 +1872,11 @@
                             "format": {
                                 "description": "The format to return the messages in. \"full\" returns full email data, \"metadata\" returns only IDs, labels, and headers, \"minimal\" returns only IDs and labels.",
                                 "type": "string",
-                                "enum": ["full", "metadata", "minimal"]
+                                "enum": [
+                                    "full",
+                                    "metadata",
+                                    "minimal"
+                                ]
                             },
                             "metadataHeaders": {
                                 "description": "When given and format is METADATA, only include headers specified.",
@@ -1553,7 +1886,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_getthread": {
@@ -1615,7 +1950,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name", "value"],
+                                                        "required": [
+                                                            "name",
+                                                            "value"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -1645,7 +1983,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1653,7 +1993,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1666,9 +2008,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_getvacationsettings",
             "name": "get-vacation-settings",
-            "output": ["ActionOutput_google_mail_getvacationsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_getvacationsettings", "ActionOutput_google_mail_getvacationsettings"],
+            "output": [
+                "ActionOutput_google_mail_getvacationsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_getvacationsettings",
+                "ActionOutput_google_mail_getvacationsettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1705,7 +2054,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["enableAutoReply"],
+                        "required": [
+                            "enableAutoReply"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1718,9 +2069,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listdrafts",
             "name": "list-drafts",
-            "output": ["ActionOutput_google_mail_listdrafts"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
-            "usedModels": ["ActionInput_google_mail_listdrafts", "ActionOutput_google_mail_listdrafts"],
+            "output": [
+                "ActionOutput_google_mail_listdrafts"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listdrafts",
+                "ActionOutput_google_mail_listdrafts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1769,11 +2127,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "threadId"],
+                                            "required": [
+                                                "id",
+                                                "threadId"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1786,7 +2149,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["drafts"],
+                        "required": [
+                            "drafts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1799,9 +2164,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listfilters",
             "name": "list-filters",
-            "output": ["ActionOutput_google_mail_listfilters"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_listfilters", "ActionOutput_google_mail_listfilters"],
+            "output": [
+                "ActionOutput_google_mail_listfilters"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listfilters",
+                "ActionOutput_google_mail_listfilters"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1881,7 +2253,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1889,7 +2263,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["filters"],
+                        "required": [
+                            "filters"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1902,9 +2278,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listforwardingaddresses",
             "name": "list-forwarding-addresses",
-            "output": ["ActionOutput_google_mail_listforwardingaddresses"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_listforwardingaddresses", "ActionOutput_google_mail_listforwardingaddresses"],
+            "output": [
+                "ActionOutput_google_mail_listforwardingaddresses"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listforwardingaddresses",
+                "ActionOutput_google_mail_listforwardingaddresses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1933,12 +2316,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["forwardingEmail"],
+                                    "required": [
+                                        "forwardingEmail"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["forwardingAddresses"],
+                        "required": [
+                            "forwardingAddresses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1951,9 +2338,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listlabels",
             "name": "list-labels",
-            "output": ["ActionOutput_google_mail_listlabels"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.labels"],
-            "usedModels": ["ActionInput_google_mail_listlabels", "ActionOutput_google_mail_listlabels"],
+            "output": [
+                "ActionOutput_google_mail_listlabels"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.labels"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listlabels",
+                "ActionOutput_google_mail_listlabels"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2015,12 +2409,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["labels"],
+                        "required": [
+                            "labels"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2033,9 +2433,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listmessages",
             "name": "list-messages",
-            "output": ["ActionOutput_google_mail_listmessages"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
-            "usedModels": ["ActionInput_google_mail_listmessages", "ActionOutput_google_mail_listmessages"],
+            "output": [
+                "ActionOutput_google_mail_listmessages"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listmessages",
+                "ActionOutput_google_mail_listmessages"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2085,7 +2492,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "threadId"],
+                                    "required": [
+                                        "id",
+                                        "threadId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2098,7 +2508,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2111,9 +2523,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listsendasaliases",
             "name": "list-send-as-aliases",
-            "output": ["ActionOutput_google_mail_listsendasaliases"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_listsendasaliases", "ActionOutput_google_mail_listsendasaliases"],
+            "output": [
+                "ActionOutput_google_mail_listsendasaliases"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listsendasaliases",
+                "ActionOutput_google_mail_listsendasaliases"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2159,7 +2578,9 @@
                                 }
                             }
                         },
-                        "required": ["sendAsAliases"],
+                        "required": [
+                            "sendAsAliases"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2172,9 +2593,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listthreads",
             "name": "list-threads",
-            "output": ["ActionOutput_google_mail_listthreads"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
-            "usedModels": ["ActionInput_google_mail_listthreads", "ActionOutput_google_mail_listthreads"],
+            "output": [
+                "ActionOutput_google_mail_listthreads"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listthreads",
+                "ActionOutput_google_mail_listthreads"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2258,12 +2686,16 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2286,9 +2718,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_listwatchhistory",
             "name": "list-watch-history",
-            "output": ["ActionOutput_google_mail_listwatchhistory"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_listwatchhistory", "ActionOutput_google_mail_listwatchhistory"],
+            "output": [
+                "ActionOutput_google_mail_listwatchhistory"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_listwatchhistory",
+                "ActionOutput_google_mail_listwatchhistory"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2304,7 +2743,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["messageAdded", "messageDeleted", "labelAdded", "labelRemoved"]
+                                    "enum": [
+                                        "messageAdded",
+                                        "messageDeleted",
+                                        "labelAdded",
+                                        "labelRemoved"
+                                    ]
                                 }
                             },
                             "labelId": {
@@ -2320,7 +2764,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["startHistoryId"],
+                        "required": [
+                            "startHistoryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_listwatchhistory": {
@@ -2355,7 +2801,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "threadId"],
+                                                "required": [
+                                                    "id",
+                                                    "threadId"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2383,11 +2832,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "threadId"],
+                                                        "required": [
+                                                            "id",
+                                                            "threadId"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["message"],
+                                                "required": [
+                                                    "message"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2415,11 +2869,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "threadId"],
+                                                        "required": [
+                                                            "id",
+                                                            "threadId"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["message"],
+                                                "required": [
+                                                    "message"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2444,7 +2903,10 @@
                                                                 }
                                                             }
                                                         },
-                                                        "required": ["id", "threadId"],
+                                                        "required": [
+                                                            "id",
+                                                            "threadId"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "labelIds": {
@@ -2454,7 +2916,10 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["message", "labelIds"],
+                                                "required": [
+                                                    "message",
+                                                    "labelIds"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2479,7 +2944,10 @@
                                                                 }
                                                             }
                                                         },
-                                                        "required": ["id", "threadId"],
+                                                        "required": [
+                                                            "id",
+                                                            "threadId"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "labelIds": {
@@ -2489,12 +2957,17 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["message", "labelIds"],
+                                                "required": [
+                                                    "message",
+                                                    "labelIds"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2505,7 +2978,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["history"],
+                        "required": [
+                            "history"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2518,9 +2993,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_modifymessage",
             "name": "modify-message",
-            "output": ["ActionOutput_google_mail_modifymessage"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_modifymessage", "ActionOutput_google_mail_modifymessage"],
+            "output": [
+                "ActionOutput_google_mail_modifymessage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_modifymessage",
+                "ActionOutput_google_mail_modifymessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2546,7 +3028,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_modifymessage": {
@@ -2577,7 +3061,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2590,9 +3076,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_modifythread",
             "name": "modify-thread",
-            "output": ["ActionOutput_google_mail_modifythread"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_modifythread", "ActionOutput_google_mail_modifythread"],
+            "output": [
+                "ActionOutput_google_mail_modifythread"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_modifythread",
+                "ActionOutput_google_mail_modifythread"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2618,7 +3111,9 @@
                                 }
                             }
                         },
-                        "required": ["threadId"],
+                        "required": [
+                            "threadId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_modifythread": {
@@ -2637,7 +3132,9 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2650,9 +3147,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_senddraft",
             "name": "send-draft",
-            "output": ["ActionOutput_google_mail_senddraft"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.compose"],
-            "usedModels": ["ActionInput_google_mail_senddraft", "ActionOutput_google_mail_senddraft"],
+            "output": [
+                "ActionOutput_google_mail_senddraft"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.compose"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_senddraft",
+                "ActionOutput_google_mail_senddraft"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2664,7 +3168,9 @@
                                 "description": "The ID of the draft to send. Example: \"r-1234567890\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_senddraft": {
@@ -2702,7 +3208,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2715,9 +3223,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_sendmessage",
             "name": "send-message",
-            "output": ["ActionOutput_google_mail_sendmessage"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.send"],
-            "usedModels": ["ActionInput_google_mail_sendmessage", "ActionOutput_google_mail_sendmessage"],
+            "output": [
+                "ActionOutput_google_mail_sendmessage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.send"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_sendmessage",
+                "ActionOutput_google_mail_sendmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2733,7 +3248,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["raw"],
+                        "required": [
+                            "raw"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_sendmessage": {
@@ -2767,7 +3284,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "threadId"],
+                        "required": [
+                            "id",
+                            "threadId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2780,9 +3300,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_stopwatch",
             "name": "stop-watch",
-            "output": ["ActionOutput_google_mail_stopwatch"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_stopwatch", "ActionOutput_google_mail_stopwatch"],
+            "output": [
+                "ActionOutput_google_mail_stopwatch"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_stopwatch",
+                "ActionOutput_google_mail_stopwatch"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2803,7 +3330,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2816,9 +3345,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_trashmessage",
             "name": "trash-message",
-            "output": ["ActionOutput_google_mail_trashmessage"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_trashmessage", "ActionOutput_google_mail_trashmessage"],
+            "output": [
+                "ActionOutput_google_mail_trashmessage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_trashmessage",
+                "ActionOutput_google_mail_trashmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2830,7 +3366,9 @@
                                 "description": "The ID of the message to trash. Example: \"16e69b9f7e6e0f8b\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_trashmessage": {
@@ -2861,7 +3399,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "threadId"],
+                        "required": [
+                            "id",
+                            "threadId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2874,9 +3415,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_trashthread",
             "name": "trash-thread",
-            "output": ["ActionOutput_google_mail_trashthread"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_trashthread", "ActionOutput_google_mail_trashthread"],
+            "output": [
+                "ActionOutput_google_mail_trashthread"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_trashthread",
+                "ActionOutput_google_mail_trashthread"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2888,7 +3436,9 @@
                                 "description": "The ID of the thread to trash. Example: \"18e0b4e6c8a0b9e2\""
                             }
                         },
-                        "required": ["thread_id"],
+                        "required": [
+                            "thread_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_trashthread": {
@@ -2945,7 +3495,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2958,9 +3510,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_untrashmessage",
             "name": "untrash-message",
-            "output": ["ActionOutput_google_mail_untrashmessage"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_untrashmessage", "ActionOutput_google_mail_untrashmessage"],
+            "output": [
+                "ActionOutput_google_mail_untrashmessage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_untrashmessage",
+                "ActionOutput_google_mail_untrashmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2972,7 +3531,9 @@
                                 "description": "The ID of the message to untrash. Example: \"1234567890abcdef\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_untrashmessage": {
@@ -3003,7 +3564,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3016,9 +3579,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_untrashthread",
             "name": "untrash-thread",
-            "output": ["ActionOutput_google_mail_untrashthread"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_untrashthread", "ActionOutput_google_mail_untrashthread"],
+            "output": [
+                "ActionOutput_google_mail_untrashthread"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_untrashthread",
+                "ActionOutput_google_mail_untrashthread"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3030,7 +3600,9 @@
                                 "description": "The ID of the thread to restore from trash. Example: \"18abc123def456\""
                             }
                         },
-                        "required": ["threadId"],
+                        "required": [
+                            "threadId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_untrashthread": {
@@ -3069,12 +3641,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3087,9 +3663,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updateautoforwardingsettings",
             "name": "update-auto-forwarding-settings",
-            "output": ["ActionOutput_google_mail_updateautoforwardingsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.sharing"],
-            "usedModels": ["ActionInput_google_mail_updateautoforwardingsettings", "ActionOutput_google_mail_updateautoforwardingsettings"],
+            "output": [
+                "ActionOutput_google_mail_updateautoforwardingsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.sharing"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updateautoforwardingsettings",
+                "ActionOutput_google_mail_updateautoforwardingsettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3107,10 +3690,18 @@
                             "disposition": {
                                 "description": "The state that a message should be left in after it has been forwarded.",
                                 "type": "string",
-                                "enum": ["dispositionUnspecified", "leaveInInbox", "archive", "trash", "markRead"]
+                                "enum": [
+                                    "dispositionUnspecified",
+                                    "leaveInInbox",
+                                    "archive",
+                                    "trash",
+                                    "markRead"
+                                ]
                             }
                         },
-                        "required": ["enabled"],
+                        "required": [
+                            "enabled"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_updateautoforwardingsettings": {
@@ -3124,10 +3715,18 @@
                             },
                             "disposition": {
                                 "type": "string",
-                                "enum": ["dispositionUnspecified", "leaveInInbox", "archive", "trash", "markRead"]
+                                "enum": [
+                                    "dispositionUnspecified",
+                                    "leaveInInbox",
+                                    "archive",
+                                    "trash",
+                                    "markRead"
+                                ]
                             }
                         },
-                        "required": ["enabled"],
+                        "required": [
+                            "enabled"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3140,9 +3739,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updatedraft",
             "name": "update-draft",
-            "output": ["ActionOutput_google_mail_updatedraft"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.compose"],
-            "usedModels": ["ActionInput_google_mail_updatedraft", "ActionOutput_google_mail_updatedraft"],
+            "output": [
+                "ActionOutput_google_mail_updatedraft"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.compose"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updatedraft",
+                "ActionOutput_google_mail_updatedraft"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3158,7 +3764,10 @@
                                 "description": "The raw RFC 2822 formatted MIME message as a base64url encoded string."
                             }
                         },
-                        "required": ["id", "raw"],
+                        "required": [
+                            "id",
+                            "raw"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_updatedraft": {
@@ -3198,11 +3807,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3215,9 +3828,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updateimapsettings",
             "name": "update-imap-settings",
-            "output": ["ActionOutput_google_mail_updateimapsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_updateimapsettings", "ActionOutput_google_mail_updateimapsettings"],
+            "output": [
+                "ActionOutput_google_mail_updateimapsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updateimapsettings",
+                "ActionOutput_google_mail_updateimapsettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3235,7 +3855,11 @@
                             "expunge_behavior": {
                                 "description": "Behavior for expunging messages.",
                                 "type": "string",
-                                "enum": ["archive", "trash", "deleteForever"]
+                                "enum": [
+                                    "archive",
+                                    "trash",
+                                    "deleteForever"
+                                ]
                             },
                             "max_folder_size": {
                                 "description": "Maximum folder size. Allowed values: 0 (unlimited), 1000, 2000, 5000, 10000.",
@@ -3276,7 +3900,11 @@
                             },
                             "expunge_behavior": {
                                 "type": "string",
-                                "enum": ["archive", "trash", "deleteForever"]
+                                "enum": [
+                                    "archive",
+                                    "trash",
+                                    "deleteForever"
+                                ]
                             },
                             "max_folder_size": {
                                 "anyOf": [
@@ -3315,9 +3943,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updatelabel",
             "name": "update-label",
-            "output": ["ActionOutput_google_mail_updatelabel"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.labels"],
-            "usedModels": ["ActionInput_google_mail_updatelabel", "ActionOutput_google_mail_updatelabel"],
+            "output": [
+                "ActionOutput_google_mail_updatelabel"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.labels"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updatelabel",
+                "ActionOutput_google_mail_updatelabel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3335,15 +3970,24 @@
                             "messageListVisibility": {
                                 "description": "The visibility of the label in the message list.",
                                 "type": "string",
-                                "enum": ["show", "hide"]
+                                "enum": [
+                                    "show",
+                                    "hide"
+                                ]
                             },
                             "labelListVisibility": {
                                 "description": "The visibility of the label in the label list.",
                                 "type": "string",
-                                "enum": ["labelShow", "labelShowIfUnread", "labelHide"]
+                                "enum": [
+                                    "labelShow",
+                                    "labelShowIfUnread",
+                                    "labelHide"
+                                ]
                             }
                         },
-                        "required": ["labelId"],
+                        "required": [
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_updatelabel": {
@@ -3357,15 +4001,25 @@
                             },
                             "messageListVisibility": {
                                 "type": "string",
-                                "enum": ["show", "hide"]
+                                "enum": [
+                                    "show",
+                                    "hide"
+                                ]
                             },
                             "labelListVisibility": {
                                 "type": "string",
-                                "enum": ["labelShow", "labelShowIfUnread", "labelHide"]
+                                "enum": [
+                                    "labelShow",
+                                    "labelShowIfUnread",
+                                    "labelHide"
+                                ]
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["system", "user"]
+                                "enum": [
+                                    "system",
+                                    "user"
+                                ]
                             },
                             "messagesTotal": {
                                 "type": "number"
@@ -3380,7 +4034,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3393,9 +4050,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updatelanguagesettings",
             "name": "update-language-settings",
-            "output": ["ActionOutput_google_mail_updatelanguagesettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_updatelanguagesettings", "ActionOutput_google_mail_updatelanguagesettings"],
+            "output": [
+                "ActionOutput_google_mail_updatelanguagesettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updatelanguagesettings",
+                "ActionOutput_google_mail_updatelanguagesettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3407,7 +4071,9 @@
                                 "description": "The language to display the Gmail UI in. Example: \"en\", \"fr\", \"es\", \"de\". Use \"en\" for English."
                             }
                         },
-                        "required": ["displayLanguage"],
+                        "required": [
+                            "displayLanguage"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_updatelanguagesettings": {
@@ -3417,7 +4083,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["displayLanguage"],
+                        "required": [
+                            "displayLanguage"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3430,9 +4098,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updatepopsettings",
             "name": "update-pop-settings",
-            "output": ["ActionOutput_google_mail_updatepopsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_updatepopsettings", "ActionOutput_google_mail_updatepopsettings"],
+            "output": [
+                "ActionOutput_google_mail_updatepopsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updatepopsettings",
+                "ActionOutput_google_mail_updatepopsettings"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3442,12 +4117,23 @@
                             "accessWindow": {
                                 "description": "The range of messages which are accessible via POP. Example: \"allMail\"",
                                 "type": "string",
-                                "enum": ["accessWindowUnspecified", "disabled", "allMail", "fromNowOn"]
+                                "enum": [
+                                    "accessWindowUnspecified",
+                                    "disabled",
+                                    "allMail",
+                                    "fromNowOn"
+                                ]
                             },
                             "disposition": {
                                 "description": "The action that will be executed on a message after it has been fetched via POP. Example: \"leaveInInbox\"",
                                 "type": "string",
-                                "enum": ["dispositionUnspecified", "leaveInInbox", "archive", "trash", "markRead"]
+                                "enum": [
+                                    "dispositionUnspecified",
+                                    "leaveInInbox",
+                                    "archive",
+                                    "trash",
+                                    "markRead"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3474,9 +4160,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updatesendasalias",
             "name": "update-send-as-alias",
-            "output": ["ActionOutput_google_mail_updatesendasalias"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_updatesendasalias", "ActionOutput_google_mail_updatesendasalias"],
+            "output": [
+                "ActionOutput_google_mail_updatesendasalias"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updatesendasalias",
+                "ActionOutput_google_mail_updatesendasalias"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3512,7 +4205,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_updatesendasalias": {
@@ -3551,7 +4246,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3564,9 +4261,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updatesendassmtpmsa",
             "name": "update-send-as-smtp-msa",
-            "output": ["ActionOutput_google_mail_updatesendassmtpmsa"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_updatesendassmtpmsa", "ActionOutput_google_mail_updatesendassmtpmsa"],
+            "output": [
+                "ActionOutput_google_mail_updatesendassmtpmsa"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updatesendassmtpmsa",
+                "ActionOutput_google_mail_updatesendassmtpmsa"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3602,16 +4306,28 @@
                                     },
                                     "securityMode": {
                                         "type": "string",
-                                        "enum": ["securityModeUnspecified", "none", "ssl", "starttls"],
+                                        "enum": [
+                                            "securityModeUnspecified",
+                                            "none",
+                                            "ssl",
+                                            "starttls"
+                                        ],
                                         "description": "The protocol used to secure communication with the SMTP service. Required."
                                     }
                                 },
-                                "required": ["host", "port", "securityMode"],
+                                "required": [
+                                    "host",
+                                    "port",
+                                    "securityMode"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The SMTP MSA settings for the send-as alias."
                             }
                         },
-                        "required": ["sendAsEmail", "smtpMsa"],
+                        "required": [
+                            "sendAsEmail",
+                            "smtpMsa"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_updatesendassmtpmsa": {
@@ -3652,22 +4368,39 @@
                                             },
                                             "securityMode": {
                                                 "type": "string",
-                                                "enum": ["securityModeUnspecified", "none", "ssl", "starttls"]
+                                                "enum": [
+                                                    "securityModeUnspecified",
+                                                    "none",
+                                                    "ssl",
+                                                    "starttls"
+                                                ]
                                             }
                                         },
-                                        "required": ["host", "port", "securityMode"],
+                                        "required": [
+                                            "host",
+                                            "port",
+                                            "securityMode"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "verificationStatus": {
                                         "type": "string",
-                                        "enum": ["verificationStatusUnspecified", "accepted", "pending"]
+                                        "enum": [
+                                            "verificationStatusUnspecified",
+                                            "accepted",
+                                            "pending"
+                                        ]
                                     }
                                 },
-                                "required": ["sendAsEmail"],
+                                "required": [
+                                    "sendAsEmail"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["sendAs"],
+                        "required": [
+                            "sendAs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3680,9 +4413,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_updatevacationsettings",
             "name": "update-vacation-settings",
-            "output": ["ActionOutput_google_mail_updatevacationsettings"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
-            "usedModels": ["ActionInput_google_mail_updatevacationsettings", "ActionOutput_google_mail_updatevacationsettings"],
+            "output": [
+                "ActionOutput_google_mail_updatevacationsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_updatevacationsettings",
+                "ActionOutput_google_mail_updatevacationsettings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3722,7 +4462,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["enableAutoReply"],
+                        "required": [
+                            "enableAutoReply"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_updatevacationsettings": {
@@ -3753,7 +4495,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["enableAutoReply"],
+                        "required": [
+                            "enableAutoReply"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3766,9 +4510,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_verifysendasalias",
             "name": "verify-send-as-alias",
-            "output": ["ActionOutput_google_mail_verifysendasalias"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.sharing"],
-            "usedModels": ["ActionInput_google_mail_verifysendasalias", "ActionOutput_google_mail_verifysendasalias"],
+            "output": [
+                "ActionOutput_google_mail_verifysendasalias"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.sharing"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_verifysendasalias",
+                "ActionOutput_google_mail_verifysendasalias"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3784,7 +4535,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sendAsEmail"],
+                        "required": [
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_verifysendasalias": {
@@ -3800,9 +4553,16 @@
             "endpoint": null,
             "input": "ActionInput_google_mail_watchmailbox",
             "name": "watch-mailbox",
-            "output": ["ActionOutput_google_mail_watchmailbox"],
-            "scopes": ["https://www.googleapis.com/auth/gmail.modify"],
-            "usedModels": ["ActionInput_google_mail_watchmailbox", "ActionOutput_google_mail_watchmailbox"],
+            "output": [
+                "ActionOutput_google_mail_watchmailbox"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify"
+            ],
+            "usedModels": [
+                "ActionInput_google_mail_watchmailbox",
+                "ActionOutput_google_mail_watchmailbox"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3823,10 +4583,15 @@
                             "labelFilterBehavior": {
                                 "description": "How to treat the labelIds filter. \"include\" means only labels in labelIds will trigger notifications. \"exclude\" means all labels except those in labelIds will trigger notifications.",
                                 "type": "string",
-                                "enum": ["include", "exclude"]
+                                "enum": [
+                                    "include",
+                                    "exclude"
+                                ]
                             }
                         },
-                        "required": ["topicName"],
+                        "required": [
+                            "topicName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_mail_watchmailbox": {
@@ -3841,7 +4606,10 @@
                                 "description": "The expiration time of the watch as a timestamp in milliseconds."
                             }
                         },
-                        "required": ["historyId", "expiration"],
+                        "required": [
+                            "historyId",
+                            "expiration"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3862,12 +4630,18 @@
             ],
             "input": null,
             "name": "filters",
-            "output": ["Filter"],
+            "output": [
+                "Filter"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Filter"],
+            "usedModels": [
+                "Filter"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3923,7 +4697,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3942,12 +4718,18 @@
             ],
             "input": null,
             "name": "labels",
-            "output": ["Label"],
+            "output": [
+                "Label"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/gmail.labels"],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.labels"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Label"],
+            "usedModels": [
+                "Label"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3963,15 +4745,25 @@
                             },
                             "messageListVisibility": {
                                 "type": "string",
-                                "enum": ["hide", "show"]
+                                "enum": [
+                                    "hide",
+                                    "show"
+                                ]
                             },
                             "labelListVisibility": {
                                 "type": "string",
-                                "enum": ["labelHide", "labelShow", "labelShowIfUnread"]
+                                "enum": [
+                                    "labelHide",
+                                    "labelShow",
+                                    "labelShowIfUnread"
+                                ]
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["system", "user"]
+                                "enum": [
+                                    "system",
+                                    "user"
+                                ]
                             },
                             "messagesTotal": {
                                 "type": "integer",
@@ -3994,7 +4786,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4013,12 +4808,18 @@
             ],
             "input": null,
             "name": "messages",
-            "output": ["Message"],
+            "output": [
+                "Message"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Message"],
+            "usedModels": [
+                "Message"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4052,12 +4853,19 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "threadId", "historyId", "internalDate"],
+                        "required": [
+                            "id",
+                            "threadId",
+                            "historyId",
+                            "internalDate"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4071,12 +4879,18 @@
             ],
             "input": null,
             "name": "send-as-aliases",
-            "output": ["SendAsAlias"],
+            "output": [
+                "SendAsAlias"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/gmail.settings.basic"],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.settings.basic"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SendAsAlias"],
+            "usedModels": [
+                "SendAsAlias"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4133,7 +4947,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "sendAsEmail"],
+                        "required": [
+                            "id",
+                            "sendAsEmail"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4152,12 +4969,18 @@
             ],
             "input": null,
             "name": "threads",
-            "output": ["Thread"],
+            "output": [
+                "Thread"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/gmail.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Thread"],
+            "usedModels": [
+                "Thread"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4221,7 +5044,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name", "value"],
+                                                        "required": [
+                                                            "name",
+                                                            "value"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -4254,17 +5080,25 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "threadId"],
+                                    "required": [
+                                        "id",
+                                        "threadId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "historyId"],
+                        "required": [
+                            "id",
+                            "historyId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

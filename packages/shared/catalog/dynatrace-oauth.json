@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_addusertogroups",
             "name": "add-user-to-groups",
-            "output": ["ActionOutput_dynatrace_oauth_addusertogroups"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_addusertogroups", "ActionOutput_dynatrace_oauth_addusertogroups"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_addusertogroups"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_addusertogroups",
+                "ActionOutput_dynatrace_oauth_addusertogroups"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,10 @@
                                 "description": "Array of group UUIDs to add the user to. Max 200. Example: [\"0bb8915e-fe63-4e37-a1ba-102e7daa375a\"]"
                             }
                         },
-                        "required": ["email", "group_uuids"],
+                        "required": [
+                            "email",
+                            "group_uuids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_addusertogroups": {
@@ -39,7 +49,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -52,9 +64,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_assigngrouppermissions",
             "name": "assign-group-permissions",
-            "output": ["ActionOutput_dynatrace_oauth_assigngrouppermissions"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_assigngrouppermissions", "ActionOutput_dynatrace_oauth_assigngrouppermissions"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_assigngrouppermissions"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_assigngrouppermissions",
+                "ActionOutput_dynatrace_oauth_assigngrouppermissions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -81,17 +100,28 @@
                                         },
                                         "scopeType": {
                                             "type": "string",
-                                            "enum": ["account", "tenant", "management-zone"],
+                                            "enum": [
+                                                "account",
+                                                "tenant",
+                                                "management-zone"
+                                            ],
                                             "description": "Scope type for the permission."
                                         }
                                     },
-                                    "required": ["permissionName", "scope", "scopeType"],
+                                    "required": [
+                                        "permissionName",
+                                        "scope",
+                                        "scopeType"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "One or more permissions to assign to the group."
                             }
                         },
-                        "required": ["groupUuid", "permissions"],
+                        "required": [
+                            "groupUuid",
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_assigngrouppermissions": {
@@ -101,7 +131,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -114,9 +146,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_bindpolicytogroups",
             "name": "bind-policy-to-groups",
-            "output": ["ActionOutput_dynatrace_oauth_bindpolicytogroups"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_bindpolicytogroups", "ActionOutput_dynatrace_oauth_bindpolicytogroups"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_bindpolicytogroups"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_bindpolicytogroups",
+                "ActionOutput_dynatrace_oauth_bindpolicytogroups"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -142,7 +181,10 @@
                                 }
                             }
                         },
-                        "required": ["policyUuid", "groupUuids"],
+                        "required": [
+                            "policyUuid",
+                            "groupUuids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_bindpolicytogroups": {
@@ -158,9 +200,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_creategroup",
             "name": "create-group",
-            "output": ["ActionOutput_dynatrace_oauth_creategroup"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_creategroup", "ActionOutput_dynatrace_oauth_creategroup"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_creategroup"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_creategroup",
+                "ActionOutput_dynatrace_oauth_creategroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -179,12 +228,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_creategroup": {
@@ -205,24 +258,41 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "hidden": {
                                             "type": "boolean"
                                         },
                                         "createdAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updatedAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["uuid", "name", "owner", "description", "hidden"],
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "owner",
+                                        "description",
+                                        "hidden"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -235,9 +305,17 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_createplatformtoken",
             "name": "create-platform-token",
-            "output": ["ActionOutput_dynatrace_oauth_createplatformtoken"],
-            "scopes": ["platform-token:tokens:manage", "account-env-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_createplatformtoken", "ActionOutput_dynatrace_oauth_createplatformtoken"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_createplatformtoken"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage",
+                "account-env-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createplatformtoken",
+                "ActionOutput_dynatrace_oauth_createplatformtoken"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -278,7 +356,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "scope"],
+                        "required": [
+                            "name",
+                            "scope"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_createplatformtoken": {
@@ -294,7 +375,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "tokenId", "token"],
+                        "required": [
+                            "name",
+                            "tokenId",
+                            "token"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -307,9 +392,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_createpolicy",
             "name": "create-policy",
-            "output": ["ActionOutput_dynatrace_oauth_createpolicy"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_createpolicy", "ActionOutput_dynatrace_oauth_createpolicy"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_createpolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createpolicy",
+                "ActionOutput_dynatrace_oauth_createpolicy"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -336,7 +428,10 @@
                                 "description": "Policy statement query. Must be in the form \"ALLOW service:resource-type:action;\". Example: \"ALLOW iam:groups:read;\""
                             }
                         },
-                        "required": ["name", "statementQuery"],
+                        "required": [
+                            "name",
+                            "statementQuery"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_createpolicy": {
@@ -363,10 +458,16 @@
                                     "type": "object",
                                     "properties": {
                                         "uuid": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "effect": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "permissions": {
                                             "anyOf": [
@@ -399,7 +500,10 @@
                                 }
                             }
                         },
-                        "required": ["uuid", "name"],
+                        "required": [
+                            "uuid",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -412,9 +516,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_createserviceuser",
             "name": "create-service-user",
-            "output": ["ActionOutput_dynatrace_oauth_createserviceuser"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_createserviceuser", "ActionOutput_dynatrace_oauth_createserviceuser"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_createserviceuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createserviceuser",
+                "ActionOutput_dynatrace_oauth_createserviceuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -434,7 +545,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_createserviceuser": {
@@ -459,7 +572,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uid", "email", "name"],
+                        "required": [
+                            "uid",
+                            "email",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -472,9 +589,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_dynatrace_oauth_createuser"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_createuser", "ActionOutput_dynatrace_oauth_createuser"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_createuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_createuser",
+                "ActionOutput_dynatrace_oauth_createuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -488,7 +612,9 @@
                                 "description": "Email address of the user to invite. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_createuser": {
@@ -499,7 +625,9 @@
                                 "description": "UUID of the newly created user"
                             }
                         },
-                        "required": ["userUuid"],
+                        "required": [
+                            "userUuid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -512,9 +640,17 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_deletegroup",
             "name": "delete-group",
-            "output": ["ActionOutput_dynatrace_oauth_deletegroup"],
-            "scopes": ["account-idm-read", "account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_deletegroup", "ActionOutput_dynatrace_oauth_deletegroup"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_deletegroup"
+            ],
+            "scopes": [
+                "account-idm-read",
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deletegroup",
+                "ActionOutput_dynatrace_oauth_deletegroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -526,7 +662,9 @@
                                 "description": "The UUID of the group to delete. Example: \"a74aebb2-50ae-427f-a404-1b15c60edb61\""
                             }
                         },
-                        "required": ["groupUuid"],
+                        "required": [
+                            "groupUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_deletegroup": {
@@ -539,7 +677,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["groupUuid", "deletedCount"],
+                        "required": [
+                            "groupUuid",
+                            "deletedCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -552,9 +693,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_deleteplatformtoken",
             "name": "delete-platform-token",
-            "output": ["ActionOutput_dynatrace_oauth_deleteplatformtoken"],
-            "scopes": ["platform-token:tokens:manage"],
-            "usedModels": ["ActionInput_dynatrace_oauth_deleteplatformtoken", "ActionOutput_dynatrace_oauth_deleteplatformtoken"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_deleteplatformtoken"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deleteplatformtoken",
+                "ActionOutput_dynatrace_oauth_deleteplatformtoken"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -566,7 +714,9 @@
                                 "description": "Platform token ID. Example: \"dt0s16.XXXXXXXX\""
                             }
                         },
-                        "required": ["tokenId"],
+                        "required": [
+                            "tokenId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_deleteplatformtoken": {
@@ -576,7 +726,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -589,9 +741,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_deletepolicy",
             "name": "delete-policy",
-            "output": ["ActionOutput_dynatrace_oauth_deletepolicy"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_deletepolicy", "ActionOutput_dynatrace_oauth_deletepolicy"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_deletepolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deletepolicy",
+                "ActionOutput_dynatrace_oauth_deletepolicy"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -603,7 +762,9 @@
                                 "description": "The UUID of the account-level policy to delete. Example: \"d0759a08-face-4a88-a520-13e892becccf\""
                             }
                         },
-                        "required": ["policyUuid"],
+                        "required": [
+                            "policyUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_deletepolicy": {
@@ -616,7 +777,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "policyUuid"],
+                        "required": [
+                            "success",
+                            "policyUuid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -629,9 +793,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_deleteserviceuser",
             "name": "delete-service-user",
-            "output": ["ActionOutput_dynatrace_oauth_deleteserviceuser"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_deleteserviceuser", "ActionOutput_dynatrace_oauth_deleteserviceuser"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_deleteserviceuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deleteserviceuser",
+                "ActionOutput_dynatrace_oauth_deleteserviceuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -643,7 +814,9 @@
                                 "description": "The unique identifier of the service user. Example: \"4cd1f263-743b-449c-9465-784bf1156c02\""
                             }
                         },
-                        "required": ["uid"],
+                        "required": [
+                            "uid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_deleteserviceuser": {
@@ -653,7 +826,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -666,9 +841,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_dynatrace_oauth_deleteuser"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_deleteuser", "ActionOutput_dynatrace_oauth_deleteuser"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_deleteuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_deleteuser",
+                "ActionOutput_dynatrace_oauth_deleteuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -680,7 +862,9 @@
                                 "description": "Email of the user to delete. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_deleteuser": {
@@ -693,7 +877,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "email"],
+                        "required": [
+                            "success",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -706,9 +893,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_getgrouppermissions",
             "name": "get-group-permissions",
-            "output": ["ActionOutput_dynatrace_oauth_getgrouppermissions"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_getgrouppermissions", "ActionOutput_dynatrace_oauth_getgrouppermissions"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_getgrouppermissions"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getgrouppermissions",
+                "ActionOutput_dynatrace_oauth_getgrouppermissions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -724,7 +918,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupUuid"],
+                        "required": [
+                            "groupUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_getgrouppermissions": {
@@ -769,12 +965,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["permissionName", "scope", "scopeType"],
+                                    "required": [
+                                        "permissionName",
+                                        "scope",
+                                        "scopeType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["uuid", "name", "permissions"],
+                        "required": [
+                            "uuid",
+                            "name",
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -787,9 +991,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_getgrouppolicybindings",
             "name": "get-group-policy-bindings",
-            "output": ["ActionOutput_dynatrace_oauth_getgrouppolicybindings"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_getgrouppolicybindings", "ActionOutput_dynatrace_oauth_getgrouppolicybindings"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_getgrouppolicybindings"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getgrouppolicybindings",
+                "ActionOutput_dynatrace_oauth_getgrouppolicybindings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -801,7 +1012,9 @@
                                 "description": "Group UUID. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
                             }
                         },
-                        "required": ["groupUuid"],
+                        "required": [
+                            "groupUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_getgrouppolicybindings": {
@@ -814,7 +1027,9 @@
                                 }
                             }
                         },
-                        "required": ["policyUuids"],
+                        "required": [
+                            "policyUuids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -827,9 +1042,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_getpolicygroups",
             "name": "get-policy-groups",
-            "output": ["ActionOutput_dynatrace_oauth_getpolicygroups"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_getpolicygroups", "ActionOutput_dynatrace_oauth_getpolicygroups"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_getpolicygroups"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getpolicygroups",
+                "ActionOutput_dynatrace_oauth_getpolicygroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -845,7 +1067,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["policyUuid"],
+                        "required": [
+                            "policyUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_getpolicygroups": {
@@ -872,12 +1096,19 @@
                                             }
                                         }
                                     },
-                                    "required": ["policyUuid", "groups"],
+                                    "required": [
+                                        "policyUuid",
+                                        "groups"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["levelType", "levelId", "policyBindings"],
+                        "required": [
+                            "levelType",
+                            "levelId",
+                            "policyBindings"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -890,9 +1121,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_getpolicy",
             "name": "get-policy",
-            "output": ["ActionOutput_dynatrace_oauth_getpolicy"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_getpolicy", "ActionOutput_dynatrace_oauth_getpolicy"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_getpolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getpolicy",
+                "ActionOutput_dynatrace_oauth_getpolicy"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -906,14 +1144,19 @@
                             "levelType": {
                                 "description": "Policy level type. Either \"account\" or \"global\". Defaults to \"account\" if omitted.",
                                 "type": "string",
-                                "enum": ["account", "global"]
+                                "enum": [
+                                    "account",
+                                    "global"
+                                ]
                             },
                             "levelId": {
                                 "description": "Level ID. For account level, the account UUID. For global level, the literal string \"global\". Defaults to metadata.accountUuid (the canonical source; falls back to connection_config.accountUuid) for account level, or \"global\" for global level.",
                                 "type": "string"
                             }
                         },
-                        "required": ["policyUuid"],
+                        "required": [
+                            "policyUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_getpolicy": {
@@ -971,7 +1214,11 @@
                                                                 }
                                                             }
                                                         },
-                                                        "required": ["name", "operator", "values"],
+                                                        "required": [
+                                                            "name",
+                                                            "operator",
+                                                            "values"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -981,7 +1228,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["effect", "permissions", "conditions"],
+                                    "required": [
+                                        "effect",
+                                        "permissions",
+                                        "conditions"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -989,7 +1240,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uuid", "name", "tags", "statementQuery", "statements", "category"],
+                        "required": [
+                            "uuid",
+                            "name",
+                            "tags",
+                            "statementQuery",
+                            "statements",
+                            "category"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1002,9 +1260,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_getserviceuser",
             "name": "get-service-user",
-            "output": ["ActionOutput_dynatrace_oauth_getserviceuser"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_getserviceuser", "ActionOutput_dynatrace_oauth_getserviceuser"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_getserviceuser"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getserviceuser",
+                "ActionOutput_dynatrace_oauth_getserviceuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1016,7 +1281,9 @@
                                 "description": "Service user uid. Example: \"4cd1f263-743b-449c-9465-784bf1156c02\""
                             }
                         },
-                        "required": ["uid"],
+                        "required": [
+                            "uid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_getserviceuser": {
@@ -1041,7 +1308,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uid"],
+                        "required": [
+                            "uid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1054,9 +1323,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_dynatrace_oauth_getuser"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_getuser", "ActionOutput_dynatrace_oauth_getuser"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_getuser"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_getuser",
+                "ActionOutput_dynatrace_oauth_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1068,7 +1344,9 @@
                                 "description": "User email address. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_getuser": {
@@ -1099,16 +1377,28 @@
                                         "type": "number"
                                     },
                                     "lastSuccessfulLogin": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "lastFailedLogin": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "resetPasswordTokenSentAt": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "lastSuccessfulBasicAuthentication": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "createdAt": {
                                         "type": "string"
@@ -1158,12 +1448,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "owner", "groupName"],
+                                    "required": [
+                                        "uuid",
+                                        "owner",
+                                        "groupName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["uid", "email", "groups"],
+                        "required": [
+                            "uid",
+                            "email",
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1176,9 +1474,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listaccountauditlogs",
             "name": "list-account-audit-logs",
-            "output": ["ActionOutput_dynatrace_oauth_listaccountauditlogs"],
-            "scopes": ["account-audit-logs-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listaccountauditlogs", "ActionOutput_dynatrace_oauth_listaccountauditlogs"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listaccountauditlogs"
+            ],
+            "scopes": [
+                "account-audit-logs-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listaccountauditlogs",
+                "ActionOutput_dynatrace_oauth_listaccountauditlogs"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1252,7 +1557,15 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["eventId", "timestamp", "user", "resource", "resourceName", "eventProvider", "eventType"],
+                                    "required": [
+                                        "eventId",
+                                        "timestamp",
+                                        "user",
+                                        "resource",
+                                        "resourceName",
+                                        "eventProvider",
+                                        "eventType"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1265,7 +1578,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["message"],
+                                    "required": [
+                                        "message"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1273,7 +1588,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["audits"],
+                        "required": [
+                            "audits"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1286,9 +1603,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listaccountlimits",
             "name": "list-account-limits",
-            "output": ["ActionOutput_dynatrace_oauth_listaccountlimits"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listaccountlimits", "ActionOutput_dynatrace_oauth_listaccountlimits"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listaccountlimits"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listaccountlimits",
+                "ActionOutput_dynatrace_oauth_listaccountlimits"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1324,12 +1648,21 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["limitType", "limitValue", "currentValue"],
+                                    "required": [
+                                        "limitType",
+                                        "limitValue",
+                                        "currentValue"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["pageSize", "pageNumber", "total", "results"],
+                        "required": [
+                            "pageSize",
+                            "pageNumber",
+                            "total",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1342,9 +1675,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listaccountpolicies",
             "name": "list-account-policies",
-            "output": ["ActionOutput_dynatrace_oauth_listaccountpolicies"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listaccountpolicies", "ActionOutput_dynatrace_oauth_listaccountpolicies"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listaccountpolicies"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listaccountpolicies",
+                "ActionOutput_dynatrace_oauth_listaccountpolicies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1368,7 +1708,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "tags": {
                                             "type": "array",
@@ -1378,12 +1721,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "name", "description", "tags", "category"],
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "description",
+                                        "tags",
+                                        "category"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["policies"],
+                        "required": [
+                            "policies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1396,9 +1747,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listclusters",
             "name": "list-clusters",
-            "output": ["ActionOutput_dynatrace_oauth_listclusters"],
-            "scopes": ["account-env-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listclusters", "ActionOutput_dynatrace_oauth_listclusters"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listclusters"
+            ],
+            "scopes": [
+                "account-env-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listclusters",
+                "ActionOutput_dynatrace_oauth_listclusters"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1425,12 +1783,16 @@
                                             "description": "The UUID of the cluster. Example: \"12345678-1234-1234-1234-123456789abc\""
                                         }
                                     },
-                                    "required": ["clusterId"],
+                                    "required": [
+                                        "clusterId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1443,9 +1805,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listenvironments",
             "name": "list-environments",
-            "output": ["ActionOutput_dynatrace_oauth_listenvironments"],
-            "scopes": ["account-env-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listenvironments", "ActionOutput_dynatrace_oauth_listenvironments"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listenvironments"
+            ],
+            "scopes": [
+                "account-env-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listenvironments",
+                "ActionOutput_dynatrace_oauth_listenvironments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1475,12 +1844,19 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "url", "active"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "url",
+                                        "active"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1493,9 +1869,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listglobalpolicies",
             "name": "list-global-policies",
-            "output": ["ActionOutput_dynatrace_oauth_listglobalpolicies"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listglobalpolicies", "ActionOutput_dynatrace_oauth_listglobalpolicies"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listglobalpolicies"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listglobalpolicies",
+                "ActionOutput_dynatrace_oauth_listglobalpolicies"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1529,12 +1912,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "name", "description", "tags", "category"],
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "description",
+                                        "tags",
+                                        "category"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["policies"],
+                        "required": [
+                            "policies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1547,9 +1938,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listgroupmembers",
             "name": "list-group-members",
-            "output": ["ActionOutput_dynatrace_oauth_listgroupmembers"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listgroupmembers", "ActionOutput_dynatrace_oauth_listgroupmembers"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listgroupmembers"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listgroupmembers",
+                "ActionOutput_dynatrace_oauth_listgroupmembers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1561,7 +1959,9 @@
                                 "description": "The UUID of the Dynatrace group. Example: \"3ff4aa6a-df19-44a7-9f5b-4d924dc2b283\""
                             }
                         },
-                        "required": ["groupUuid"],
+                        "required": [
+                            "groupUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_listgroupmembers": {
@@ -1597,12 +1997,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uid", "email"],
+                                    "required": [
+                                        "uid",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["count", "items"],
+                        "required": [
+                            "count",
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1615,9 +2021,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_dynatrace_oauth_listgroups"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listgroups", "ActionOutput_dynatrace_oauth_listgroups"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listgroups"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listgroups",
+                "ActionOutput_dynatrace_oauth_listgroups"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1660,12 +2073,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "name", "owner"],
+                                    "required": [
+                                        "uuid",
+                                        "name",
+                                        "owner"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["count", "items"],
+                        "required": [
+                            "count",
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1678,9 +2098,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listplatformtokens",
             "name": "list-platform-tokens",
-            "output": ["ActionOutput_dynatrace_oauth_listplatformtokens"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listplatformtokens", "ActionOutput_dynatrace_oauth_listplatformtokens"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listplatformtokens"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listplatformtokens",
+                "ActionOutput_dynatrace_oauth_listplatformtokens"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1783,7 +2210,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["tokenId", "accountUuid", "name"],
+                                    "required": [
+                                        "tokenId",
+                                        "accountUuid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -1800,9 +2231,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listpolicybindings",
             "name": "list-policy-bindings",
-            "output": ["ActionOutput_dynatrace_oauth_listpolicybindings"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listpolicybindings", "ActionOutput_dynatrace_oauth_listpolicybindings"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listpolicybindings"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listpolicybindings",
+                "ActionOutput_dynatrace_oauth_listpolicybindings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1835,12 +2273,19 @@
                                             }
                                         }
                                     },
-                                    "required": ["policyUuid", "groups"],
+                                    "required": [
+                                        "policyUuid",
+                                        "groups"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["levelType", "levelId", "policyBindings"],
+                        "required": [
+                            "levelType",
+                            "levelId",
+                            "policyBindings"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1853,9 +2298,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listserviceusers",
             "name": "list-service-users",
-            "output": ["ActionOutput_dynatrace_oauth_listserviceusers"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listserviceusers", "ActionOutput_dynatrace_oauth_listserviceusers"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listserviceusers"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listserviceusers",
+                "ActionOutput_dynatrace_oauth_listserviceusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1906,7 +2358,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uid", "type"],
+                                    "required": [
+                                        "uid",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1914,7 +2369,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["results", "totalCount"],
+                        "required": [
+                            "results",
+                            "totalCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1927,9 +2385,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_dynatrace_oauth_listusers"],
-            "scopes": ["account-idm-read"],
-            "usedModels": ["ActionInput_dynatrace_oauth_listusers", "ActionOutput_dynatrace_oauth_listusers"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_listusers"
+            ],
+            "scopes": [
+                "account-idm-read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_listusers",
+                "ActionOutput_dynatrace_oauth_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2001,12 +2466,18 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["uid", "email"],
+                                    "required": [
+                                        "uid",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["count", "items"],
+                        "required": [
+                            "count",
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2019,9 +2490,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_removegrouppermission",
             "name": "remove-group-permission",
-            "output": ["ActionOutput_dynatrace_oauth_removegrouppermission"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_removegrouppermission", "ActionOutput_dynatrace_oauth_removegrouppermission"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_removegrouppermission"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_removegrouppermission",
+                "ActionOutput_dynatrace_oauth_removegrouppermission"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2034,7 +2512,11 @@
                             },
                             "scopeType": {
                                 "type": "string",
-                                "enum": ["account", "tenant", "management-zone"],
+                                "enum": [
+                                    "account",
+                                    "tenant",
+                                    "management-zone"
+                                ],
                                 "description": "The type of the permission scope."
                             },
                             "scope": {
@@ -2046,7 +2528,12 @@
                                 "description": "The name of the permission. Example: \"account-viewer\""
                             }
                         },
-                        "required": ["groupUuid", "scopeType", "scope", "permissionName"],
+                        "required": [
+                            "groupUuid",
+                            "scopeType",
+                            "scope",
+                            "permissionName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_removegrouppermission": {
@@ -2056,7 +2543,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2069,9 +2558,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_removeuserfromgroups",
             "name": "remove-user-from-groups",
-            "output": ["ActionOutput_dynatrace_oauth_removeuserfromgroups"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_removeuserfromgroups", "ActionOutput_dynatrace_oauth_removeuserfromgroups"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_removeuserfromgroups"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_removeuserfromgroups",
+                "ActionOutput_dynatrace_oauth_removeuserfromgroups"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2090,7 +2586,10 @@
                                 "description": "Array of group UUIDs to remove the user from. Example: [\"0bb8915e-fe63-4e37-a1ba-102e7daa375a\"]"
                             }
                         },
-                        "required": ["email", "groupUuids"],
+                        "required": [
+                            "email",
+                            "groupUuids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_removeuserfromgroups": {
@@ -2100,7 +2599,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2113,9 +2614,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_setgrouppermissions",
             "name": "set-group-permissions",
-            "output": ["ActionOutput_dynatrace_oauth_setgrouppermissions"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_setgrouppermissions", "ActionOutput_dynatrace_oauth_setgrouppermissions"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_setgrouppermissions"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_setgrouppermissions",
+                "ActionOutput_dynatrace_oauth_setgrouppermissions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2141,17 +2649,28 @@
                                         },
                                         "scopeType": {
                                             "type": "string",
-                                            "enum": ["account", "tenant", "management-zone"],
+                                            "enum": [
+                                                "account",
+                                                "tenant",
+                                                "management-zone"
+                                            ],
                                             "description": "Scope type."
                                         }
                                     },
-                                    "required": ["permissionName", "scope", "scopeType"],
+                                    "required": [
+                                        "permissionName",
+                                        "scope",
+                                        "scopeType"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Full list of direct permissions to set on the group. Replaces existing direct permissions."
                             }
                         },
-                        "required": ["groupUuid", "permissions"],
+                        "required": [
+                            "groupUuid",
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_setgrouppermissions": {
@@ -2161,7 +2680,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2174,9 +2695,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_setgrouppolicies",
             "name": "set-group-policies",
-            "output": ["ActionOutput_dynatrace_oauth_setgrouppolicies"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_setgrouppolicies", "ActionOutput_dynatrace_oauth_setgrouppolicies"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_setgrouppolicies"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_setgrouppolicies",
+                "ActionOutput_dynatrace_oauth_setgrouppolicies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2195,7 +2723,10 @@
                                 "description": "List of policy UUIDs to bind to the group. Replaces any existing bindings."
                             }
                         },
-                        "required": ["groupUuid", "policyUuids"],
+                        "required": [
+                            "groupUuid",
+                            "policyUuids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_setgrouppolicies": {
@@ -2211,7 +2742,10 @@
                                 }
                             }
                         },
-                        "required": ["groupUuid", "policyUuids"],
+                        "required": [
+                            "groupUuid",
+                            "policyUuids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2224,9 +2758,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_setusergroups",
             "name": "set-user-groups",
-            "output": ["ActionOutput_dynatrace_oauth_setusergroups"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_setusergroups", "ActionOutput_dynatrace_oauth_setusergroups"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_setusergroups"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_setusergroups",
+                "ActionOutput_dynatrace_oauth_setusergroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2246,7 +2787,10 @@
                                 "description": "List of group UUIDs to assign to the user. Max 200."
                             }
                         },
-                        "required": ["email", "groupUuids"],
+                        "required": [
+                            "email",
+                            "groupUuids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_setusergroups": {
@@ -2264,9 +2808,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_unbindpolicyfromgroup",
             "name": "unbind-policy-from-group",
-            "output": ["ActionOutput_dynatrace_oauth_unbindpolicyfromgroup"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_unbindpolicyfromgroup", "ActionOutput_dynatrace_oauth_unbindpolicyfromgroup"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_unbindpolicyfromgroup"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_unbindpolicyfromgroup",
+                "ActionOutput_dynatrace_oauth_unbindpolicyfromgroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2286,7 +2837,11 @@
                                 "description": "Group UUID to remove the binding from. Example: \"0bb8915e-fe63-4e37-a1ba-102e7daa375a\""
                             }
                         },
-                        "required": ["accountUuid", "policyUuid", "groupUuid"],
+                        "required": [
+                            "accountUuid",
+                            "policyUuid",
+                            "groupUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_unbindpolicyfromgroup": {
@@ -2296,7 +2851,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2309,9 +2866,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_updategroup",
             "name": "update-group",
-            "output": ["ActionOutput_dynatrace_oauth_updategroup"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_updategroup", "ActionOutput_dynatrace_oauth_updategroup"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_updategroup"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updategroup",
+                "ActionOutput_dynatrace_oauth_updategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2335,7 +2899,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupUuid", "name", "description"],
+                        "required": [
+                            "groupUuid",
+                            "name",
+                            "description"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_updategroup": {
@@ -2351,7 +2919,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupUuid", "name", "description"],
+                        "required": [
+                            "groupUuid",
+                            "name",
+                            "description"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2364,9 +2936,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_updateplatformtokenexpiration",
             "name": "update-platform-token-expiration",
-            "output": ["ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"],
-            "scopes": ["platform-token:tokens:manage"],
-            "usedModels": ["ActionInput_dynatrace_oauth_updateplatformtokenexpiration", "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updateplatformtokenexpiration",
+                "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2382,7 +2961,10 @@
                                 "description": "New expiration date as an ISO-8601 timestamp string. Example: \"2027-12-31T23:59:59Z\""
                             }
                         },
-                        "required": ["tokenId", "expirationDate"],
+                        "required": [
+                            "tokenId",
+                            "expirationDate"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_updateplatformtokenexpiration": {
@@ -2392,7 +2974,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2405,9 +2989,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_updateplatformtokenstatus",
             "name": "update-platform-token-status",
-            "output": ["ActionOutput_dynatrace_oauth_updateplatformtokenstatus"],
-            "scopes": ["platform-token:tokens:manage"],
-            "usedModels": ["ActionInput_dynatrace_oauth_updateplatformtokenstatus", "ActionOutput_dynatrace_oauth_updateplatformtokenstatus"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_updateplatformtokenstatus"
+            ],
+            "scopes": [
+                "platform-token:tokens:manage"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updateplatformtokenstatus",
+                "ActionOutput_dynatrace_oauth_updateplatformtokenstatus"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2424,11 +3015,18 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE"],
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ],
                                 "description": "The desired status of the platform token."
                             }
                         },
-                        "required": ["accountUuid", "tokenId", "status"],
+                        "required": [
+                            "accountUuid",
+                            "tokenId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_updateplatformtokenstatus": {
@@ -2438,7 +3036,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2451,9 +3051,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_updatepolicy",
             "name": "update-policy",
-            "output": ["ActionOutput_dynatrace_oauth_updatepolicy"],
-            "scopes": ["iam-policies-management"],
-            "usedModels": ["ActionInput_dynatrace_oauth_updatepolicy", "ActionOutput_dynatrace_oauth_updatepolicy"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_updatepolicy"
+            ],
+            "scopes": [
+                "iam-policies-management"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updatepolicy",
+                "ActionOutput_dynatrace_oauth_updatepolicy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2477,7 +3084,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["policyUuid"],
+                        "required": [
+                            "policyUuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_updatepolicy": {
@@ -2496,7 +3105,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uuid", "name", "statementQuery"],
+                        "required": [
+                            "uuid",
+                            "name",
+                            "statementQuery"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2509,9 +3122,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_oauth_updateserviceuser",
             "name": "update-service-user",
-            "output": ["ActionOutput_dynatrace_oauth_updateserviceuser"],
-            "scopes": ["account-idm-write"],
-            "usedModels": ["ActionInput_dynatrace_oauth_updateserviceuser", "ActionOutput_dynatrace_oauth_updateserviceuser"],
+            "output": [
+                "ActionOutput_dynatrace_oauth_updateserviceuser"
+            ],
+            "scopes": [
+                "account-idm-write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_oauth_updateserviceuser",
+                "ActionOutput_dynatrace_oauth_updateserviceuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2531,7 +3151,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uid"],
+                        "required": [
+                            "uid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_oauth_updateserviceuser": {
@@ -2547,7 +3169,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uid"],
+                        "required": [
+                            "uid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2563,12 +3187,19 @@
             "endpoints": [],
             "input": "SyncMetadata_dynatrace_oauth_accountpolicies",
             "name": "account-policies",
-            "output": ["AccountPolicy"],
+            "output": [
+                "AccountPolicy"
+            ],
             "runs": "every hour",
-            "scopes": ["iam-policies-management"],
+            "scopes": [
+                "iam-policies-management"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AccountPolicy", "SyncMetadata_dynatrace_oauth_accountpolicies"],
+            "usedModels": [
+                "AccountPolicy",
+                "SyncMetadata_dynatrace_oauth_accountpolicies"
+            ],
             "version": "1.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2598,7 +3229,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uuid", "name", "tags", "category"],
+                        "required": [
+                            "id",
+                            "uuid",
+                            "name",
+                            "tags",
+                            "category"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_dynatrace_oauth_accountpolicies": {
@@ -2622,12 +3259,18 @@
             "endpoints": [],
             "input": null,
             "name": "environments",
-            "output": ["Environment"],
+            "output": [
+                "Environment"
+            ],
             "runs": "every hour",
-            "scopes": ["account-env-read"],
+            "scopes": [
+                "account-env-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Environment"],
+            "usedModels": [
+                "Environment"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2648,7 +3291,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2662,12 +3307,18 @@
             "endpoints": [],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
-            "scopes": ["account-idm-read"],
+            "scopes": [
+                "account-idm-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2697,7 +3348,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "owner", "hidden", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "name",
+                            "owner",
+                            "hidden",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2711,12 +3369,19 @@
             "endpoints": [],
             "input": "SyncMetadata_dynatrace_oauth_platformtokens",
             "name": "platform-tokens",
-            "output": ["PlatformToken"],
+            "output": [
+                "PlatformToken"
+            ],
             "runs": "every hour",
-            "scopes": ["account-idm-read"],
+            "scopes": [
+                "account-idm-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PlatformToken", "SyncMetadata_dynatrace_oauth_platformtokens"],
+            "usedModels": [
+                "PlatformToken",
+                "SyncMetadata_dynatrace_oauth_platformtokens"
+            ],
             "version": "1.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2785,7 +3450,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "tokenId"],
+                        "required": [
+                            "id",
+                            "tokenId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_dynatrace_oauth_platformtokens": {
@@ -2800,7 +3468,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2809,12 +3479,18 @@
             "endpoints": [],
             "input": null,
             "name": "service-users",
-            "output": ["ServiceUser"],
+            "output": [
+                "ServiceUser"
+            ],
             "runs": "every hour",
-            "scopes": ["account-idm-read"],
+            "scopes": [
+                "account-idm-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ServiceUser"],
+            "usedModels": [
+                "ServiceUser"
+            ],
             "version": "1.2.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2853,12 +3529,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uid"],
+                        "required": [
+                            "id",
+                            "uid"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2867,12 +3548,18 @@
             "endpoints": [],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["account-idm-read"],
+            "scopes": [
+                "account-idm-read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2902,7 +3589,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }

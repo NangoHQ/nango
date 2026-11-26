@@ -15,12 +15,17 @@
             ],
             "input": "SyncMetadata_oracle_hcm_employees",
             "name": "employees",
-            "output": ["Employee"],
+            "output": [
+                "Employee"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Employee", "SyncMetadata_oracle_hcm_employees"],
+            "usedModels": [
+                "Employee",
+                "SyncMetadata_oracle_hcm_employees"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -77,28 +82,52 @@
                                 "type": "string"
                             },
                             "correspondenceLanguage": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bloodType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dateOfBirth": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dateOfDeath": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "countryOfBirth": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "regionOfBirth": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "townOfBirth": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "applicantNumber": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdBy": {
                                 "type": "string"
@@ -116,22 +145,37 @@
                                 "type": "object",
                                 "properties": {
                                     "addressLine1": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "addressLine2": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "townOrCity": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "region2": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "country": {
                                         "type": "string"
                                     },
                                     "postalCode": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "addressType": {
                                         "type": "string"
@@ -148,22 +192,37 @@
                                     "type": "object",
                                     "properties": {
                                         "addressLine1": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "addressLine2": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "townOrCity": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "region2": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "country": {
                                             "type": "string"
                                         },
                                         "postalCode": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "addressType": {
                                             "type": "string"
@@ -212,7 +271,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_oracle_hcm_employees": {
@@ -222,7 +283,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -237,12 +300,17 @@
             ],
             "input": "SyncMetadata_oracle_hcm_unifiedemployees",
             "name": "unified-employees",
-            "output": ["StandardEmployee"],
+            "output": [
+                "StandardEmployee"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StandardEmployee", "SyncMetadata_oracle_hcm_unifiedemployees"],
+            "usedModels": [
+                "StandardEmployee",
+                "SyncMetadata_oracle_hcm_unifiedemployees"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -281,7 +349,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "employmentType": {
@@ -413,11 +484,16 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["name", "type"],
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "addresses": {
@@ -453,7 +529,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["type"],
+                                    "required": [
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -482,7 +560,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "number"],
+                                    "required": [
+                                        "type",
+                                        "number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -507,7 +588,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "address"],
+                                    "required": [
+                                        "type",
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -547,7 +631,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

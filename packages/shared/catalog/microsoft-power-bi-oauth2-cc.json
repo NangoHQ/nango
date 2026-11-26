@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_adddatasetrows",
             "name": "add-dataset-rows",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_adddatasetrows"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_adddatasetrows", "ActionOutput_microsoft_power_bi_oauth2_cc_adddatasetrows"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_adddatasetrows"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_adddatasetrows",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_adddatasetrows"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -42,7 +49,12 @@
                                 "description": "Rows to append (max 10,000 per call, per Power BI push-dataset limits). Each row is an object mapping column names to values."
                             }
                         },
-                        "required": ["groupId", "datasetId", "tableName", "rows"],
+                        "required": [
+                            "groupId",
+                            "datasetId",
+                            "tableName",
+                            "rows"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_adddatasetrows": {
@@ -52,7 +64,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -65,9 +79,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_addworkspaceuser",
             "name": "add-workspace-user",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_addworkspaceuser"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_addworkspaceuser", "ActionOutput_microsoft_power_bi_oauth2_cc_addworkspaceuser"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_addworkspaceuser"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_addworkspaceuser",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_addworkspaceuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -84,16 +105,30 @@
                             },
                             "groupUserAccessRight": {
                                 "type": "string",
-                                "enum": ["Admin", "Member", "Contributor", "Viewer"],
+                                "enum": [
+                                    "Admin",
+                                    "Member",
+                                    "Contributor",
+                                    "Viewer"
+                                ],
                                 "description": "Access level to grant."
                             },
                             "principalType": {
                                 "type": "string",
-                                "enum": ["User", "App", "Group"],
+                                "enum": [
+                                    "User",
+                                    "App",
+                                    "Group"
+                                ],
                                 "description": "Type of principal being added."
                             }
                         },
-                        "required": ["workspaceId", "identifier", "groupUserAccessRight", "principalType"],
+                        "required": [
+                            "workspaceId",
+                            "identifier",
+                            "groupUserAccessRight",
+                            "principalType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_addworkspaceuser": {
@@ -112,7 +147,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspaceId", "identifier", "groupUserAccessRight", "principalType"],
+                        "required": [
+                            "workspaceId",
+                            "identifier",
+                            "groupUserAccessRight",
+                            "principalType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -125,9 +165,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_createdashboard",
             "name": "create-dashboard",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_createdashboard"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_createdashboard", "ActionOutput_microsoft_power_bi_oauth2_cc_createdashboard"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_createdashboard"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_createdashboard",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_createdashboard"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -145,7 +192,10 @@
                                 "description": "Name of the new dashboard. Example: \"Registry Test Dashboard\""
                             }
                         },
-                        "required": ["groupId", "name"],
+                        "required": [
+                            "groupId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_createdashboard": {
@@ -167,7 +217,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -180,9 +232,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_createpushdataset",
             "name": "create-push-dataset",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_createpushdataset"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_createpushdataset", "ActionOutput_microsoft_power_bi_oauth2_cc_createpushdataset"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_createpushdataset"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_createpushdataset",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_createpushdataset"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -217,23 +276,39 @@
                                                     },
                                                     "dataType": {
                                                         "type": "string",
-                                                        "enum": ["string", "Int64", "double", "bool", "DateTime"],
+                                                        "enum": [
+                                                            "string",
+                                                            "Int64",
+                                                            "double",
+                                                            "bool",
+                                                            "DateTime"
+                                                        ],
                                                         "description": "Column data type. Example: \"string\""
                                                     }
                                                 },
-                                                "required": ["name", "dataType"],
+                                                "required": [
+                                                    "name",
+                                                    "dataType"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Column schema for this table"
                                         }
                                     },
-                                    "required": ["name", "columns"],
+                                    "required": [
+                                        "name",
+                                        "columns"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Dataset tables with column schema"
                             }
                         },
-                        "required": ["groupId", "name", "tables"],
+                        "required": [
+                            "groupId",
+                            "name",
+                            "tables"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_createpushdataset": {
@@ -269,7 +344,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -282,9 +360,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_createworkspace",
             "name": "create-workspace",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_createworkspace"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_createworkspace", "ActionOutput_microsoft_power_bi_oauth2_cc_createworkspace"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_createworkspace"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_createworkspace",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_createworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -297,7 +382,9 @@
                                 "description": "Name of the new workspace. Example: \"Nango Test Workspace\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_createworkspace": {
@@ -319,7 +406,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -332,9 +421,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_deletedatasetrows",
             "name": "delete-dataset-rows",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_deletedatasetrows"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_deletedatasetrows", "ActionOutput_microsoft_power_bi_oauth2_cc_deletedatasetrows"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_deletedatasetrows"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_deletedatasetrows",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_deletedatasetrows"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -354,7 +450,11 @@
                                 "description": "Table name within the dataset. Example: \"SalesFact\""
                             }
                         },
-                        "required": ["workspaceId", "datasetId", "tableName"],
+                        "required": [
+                            "workspaceId",
+                            "datasetId",
+                            "tableName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_deletedatasetrows": {
@@ -373,7 +473,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "workspaceId", "datasetId", "tableName"],
+                        "required": [
+                            "success",
+                            "workspaceId",
+                            "datasetId",
+                            "tableName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -386,9 +491,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_deletedataset",
             "name": "delete-dataset",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_deletedataset"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_deletedataset", "ActionOutput_microsoft_power_bi_oauth2_cc_deletedataset"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_deletedataset"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_deletedataset",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_deletedataset"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -404,7 +516,10 @@
                                 "description": "Dataset ID. Example: \"a71c1b98-a0db-4423-a81b-5dcb48d5c8d1\""
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_deletedataset": {
@@ -414,7 +529,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -427,9 +544,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_deleteworkspace",
             "name": "delete-workspace",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_deleteworkspace"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_deleteworkspace", "ActionOutput_microsoft_power_bi_oauth2_cc_deleteworkspace"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_deleteworkspace"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_deleteworkspace",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_deleteworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -441,7 +565,9 @@
                                 "description": "Workspace ID to delete. Example: \"149ca924-4333-471b-94b5-347eca3f9938\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_deleteworkspace": {
@@ -451,7 +577,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -464,9 +592,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_executedatasetqueries",
             "name": "execute-dataset-queries",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_executedatasetqueries"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_executedatasetqueries", "ActionOutput_microsoft_power_bi_oauth2_cc_executedatasetqueries"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_executedatasetqueries"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_executedatasetqueries",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_executedatasetqueries"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -505,7 +640,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["workspaceId", "datasetId", "queries"],
+                        "required": [
+                            "workspaceId",
+                            "datasetId",
+                            "queries"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_executedatasetqueries": {
@@ -600,8 +739,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_getdatasetrefreshschedule",
             "name": "get-dataset-refresh-schedule",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_getdatasetrefreshschedule"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_getdatasetrefreshschedule"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_power_bi_oauth2_cc_getdatasetrefreshschedule",
                 "ActionOutput_microsoft_power_bi_oauth2_cc_getdatasetrefreshschedule"
@@ -621,7 +764,10 @@
                                 "description": "The dataset ID. Example: \"a71c1b98-a0db-4423-a81b-5dcb48d5c8d1\""
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_getdatasetrefreshschedule": {
@@ -649,7 +795,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["enabled"],
+                        "required": [
+                            "enabled"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -662,9 +810,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_getdataset",
             "name": "get-dataset",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_getdataset"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_getdataset", "ActionOutput_microsoft_power_bi_oauth2_cc_getdataset"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_getdataset"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_getdataset",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_getdataset"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -680,7 +835,10 @@
                                 "description": "Dataset ID. Example: \"a71c1b98-a0db-4423-a81b-5dcb48d5c8d1\""
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_getdataset": {
@@ -720,7 +878,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -733,9 +893,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_getworkspace",
             "name": "get-workspace",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_getworkspace"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_getworkspace", "ActionOutput_microsoft_power_bi_oauth2_cc_getworkspace"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_getworkspace"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_getworkspace",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_getworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -747,7 +914,9 @@
                                 "description": "The workspace (group) ID. Example: \"149ca924-4333-471b-94b5-347eca3f9938\""
                             }
                         },
-                        "required": ["workspaceId"],
+                        "required": [
+                            "workspaceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_getworkspace": {
@@ -766,16 +935,25 @@
                                 "type": "boolean"
                             },
                             "capacityId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -788,9 +966,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listdashboardtiles",
             "name": "list-dashboard-tiles",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listdashboardtiles"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listdashboardtiles", "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboardtiles"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboardtiles"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listdashboardtiles",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboardtiles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -806,7 +991,10 @@
                                 "description": "Dashboard ID. Example: \"6d523d62-67dc-4f5e-8642-4ecf1028aa89\""
                             }
                         },
-                        "required": ["groupId", "dashboardId"],
+                        "required": [
+                            "groupId",
+                            "dashboardId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboardtiles": {
@@ -842,12 +1030,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "embedUrl", "rowSpan", "colSpan"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "embedUrl",
+                                        "rowSpan",
+                                        "colSpan"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["tiles"],
+                        "required": [
+                            "tiles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -860,9 +1056,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listdashboards",
             "name": "list-dashboards",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listdashboards"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listdashboards", "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboards"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboards"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listdashboards",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboards"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -874,7 +1077,9 @@
                                 "description": "Workspace (group) ID. Example: \"149ca924-4333-471b-94b5-347eca3f9938\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listdashboards": {
@@ -901,12 +1106,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["dashboards"],
+                        "required": [
+                            "dashboards"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -919,9 +1128,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listdataflows",
             "name": "list-dataflows",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listdataflows"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listdataflows", "ActionOutput_microsoft_power_bi_oauth2_cc_listdataflows"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdataflows"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listdataflows",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdataflows"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -933,7 +1149,9 @@
                                 "description": "Workspace (group) ID. Example: \"149ca924-4333-471b-94b5-347eca3f9938\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listdataflows": {
@@ -960,12 +1178,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["objectId", "name"],
+                                    "required": [
+                                        "objectId",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -978,8 +1201,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listdatasetdatasources",
             "name": "list-dataset-datasources",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetdatasources"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetdatasources"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_power_bi_oauth2_cc_listdatasetdatasources",
                 "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetdatasources"
@@ -999,7 +1226,10 @@
                                 "description": "Dataset ID. Example: \"a71c1b98-a0db-4423-a81b-5dcb48d5c8d1\""
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetdatasources": {
@@ -1062,12 +1292,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["datasourceType"],
+                                    "required": [
+                                        "datasourceType"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["value"],
+                        "required": [
+                            "value"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1080,8 +1314,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listdatasetrefreshhistory",
             "name": "list-dataset-refresh-history",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetrefreshhistory"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetrefreshhistory"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_power_bi_oauth2_cc_listdatasetrefreshhistory",
                 "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetrefreshhistory"
@@ -1101,7 +1339,10 @@
                                 "description": "Dataset ID. Example: \"a71c1b98-a0db-4423-a81b-5dcb48d5c8d1\""
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetrefreshhistory": {
@@ -1131,10 +1372,16 @@
                                             "type": "string"
                                         },
                                         "extendedStatus": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "serviceExceptionJson": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "refreshAttempts": {
                                             "type": "array",
@@ -1154,7 +1401,10 @@
                                                         "type": "string"
                                                     },
                                                     "serviceExceptionJson": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1165,7 +1415,9 @@
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1178,9 +1430,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listdatasetusers",
             "name": "list-dataset-users",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetusers"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listdatasetusers", "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetusers"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetusers"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listdatasetusers",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1196,7 +1455,10 @@
                                 "description": "Dataset ID. Example: \"a71c1b98-a0db-4423-a81b-5dcb48d5c8d1\""
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasetusers": {
@@ -1226,12 +1488,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["identifier"],
+                                    "required": [
+                                        "identifier"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1244,9 +1510,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listdatasets",
             "name": "list-datasets",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listdatasets"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listdatasets", "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasets"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasets"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listdatasets",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasets"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1258,7 +1531,9 @@
                                 "description": "Workspace ID. Example: \"149ca924-4333-471b-94b5-347eca3f9938\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listdatasets": {
@@ -1309,12 +1584,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["datasets"],
+                        "required": [
+                            "datasets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1327,9 +1607,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listgateways",
             "name": "list-gateways",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listgateways"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listgateways", "ActionOutput_microsoft_power_bi_oauth2_cc_listgateways"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listgateways"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listgateways",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listgateways"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1374,12 +1661,16 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["gateways"],
+                        "required": [
+                            "gateways"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1392,9 +1683,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listreports",
             "name": "list-reports",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listreports"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listreports", "ActionOutput_microsoft_power_bi_oauth2_cc_listreports"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listreports"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listreports",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listreports"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1406,7 +1704,9 @@
                                 "description": "Workspace (group) ID. Example: \"149ca924-4333-471b-94b5-347eca3f9938\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listreports": {
@@ -1442,12 +1742,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["reports"],
+                        "required": [
+                            "reports"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1460,9 +1765,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listworkspaceusers",
             "name": "list-workspace-users",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaceusers"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listworkspaceusers", "ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaceusers"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaceusers"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listworkspaceusers",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaceusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1474,7 +1786,9 @@
                                 "description": "The workspace (group) ID. Example: \"149ca924-4333-471b-94b5-347eca3f9938\""
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaceusers": {
@@ -1507,12 +1821,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["accessRight", "identifier", "principalType"],
+                                    "required": [
+                                        "accessRight",
+                                        "identifier",
+                                        "principalType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1525,9 +1845,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_listworkspaces",
             "name": "list-workspaces",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaces"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_listworkspaces", "ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaces"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaces"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_listworkspaces",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_listworkspaces"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1557,21 +1884,35 @@
                                             "type": "boolean"
                                         },
                                         "capacityId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["workspaces"],
+                        "required": [
+                            "workspaces"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1584,9 +1925,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_refreshdataset",
             "name": "refresh-dataset",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_refreshdataset"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_refreshdataset", "ActionOutput_microsoft_power_bi_oauth2_cc_refreshdataset"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_refreshdataset"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_refreshdataset",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_refreshdataset"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1604,10 +1952,17 @@
                             "notifyOption": {
                                 "description": "Notification option for refresh completion. Defaults to NoNotification.",
                                 "type": "string",
-                                "enum": ["NoNotification", "MailOnFailure", "MailOnCompletion"]
+                                "enum": [
+                                    "NoNotification",
+                                    "MailOnFailure",
+                                    "MailOnCompletion"
+                                ]
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_refreshdataset": {
@@ -1617,7 +1972,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1630,9 +1987,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_takeoverdataset",
             "name": "takeover-dataset",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_takeoverdataset"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_takeoverdataset", "ActionOutput_microsoft_power_bi_oauth2_cc_takeoverdataset"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_takeoverdataset"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_takeoverdataset",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_takeoverdataset"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1648,7 +2012,10 @@
                                 "description": "Dataset ID. Example: \"a71c1b98-a0db-4423-a81b-5dcb48d5c8d1\""
                             }
                         },
-                        "required": ["groupId", "datasetId"],
+                        "required": [
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_takeoverdataset": {
@@ -1664,7 +2031,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "groupId", "datasetId"],
+                        "required": [
+                            "success",
+                            "groupId",
+                            "datasetId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1677,8 +2048,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_updatedatasetrefreshschedule",
             "name": "update-dataset-refresh-schedule",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasetrefreshschedule"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasetrefreshschedule"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_power_bi_oauth2_cc_updatedatasetrefreshschedule",
                 "ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasetrefreshschedule"
@@ -1721,7 +2096,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId", "datasetId", "enabled"],
+                        "required": [
+                            "groupId",
+                            "datasetId",
+                            "enabled"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasetrefreshschedule": {
@@ -1749,7 +2128,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["enabled"],
+                        "required": [
+                            "enabled"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1762,8 +2143,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_updatedatasettableschema",
             "name": "update-dataset-table-schema",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasettableschema"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasettableschema"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_power_bi_oauth2_cc_updatedatasettableschema",
                 "ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasettableschema"
@@ -1797,17 +2182,31 @@
                                         },
                                         "dataType": {
                                             "type": "string",
-                                            "enum": ["string", "Int64", "double", "bool", "DateTime"],
+                                            "enum": [
+                                                "string",
+                                                "Int64",
+                                                "double",
+                                                "bool",
+                                                "DateTime"
+                                            ],
                                             "description": "Column data type. Example: \"string\""
                                         }
                                     },
-                                    "required": ["name", "dataType"],
+                                    "required": [
+                                        "name",
+                                        "dataType"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "New column schema for the table"
                             }
                         },
-                        "required": ["groupId", "datasetId", "tableName", "columns"],
+                        "required": [
+                            "groupId",
+                            "datasetId",
+                            "tableName",
+                            "columns"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_updatedatasettableschema": {
@@ -1828,17 +2227,29 @@
                                         },
                                         "dataType": {
                                             "type": "string",
-                                            "enum": ["string", "Int64", "double", "bool", "DateTime"],
+                                            "enum": [
+                                                "string",
+                                                "Int64",
+                                                "double",
+                                                "bool",
+                                                "DateTime"
+                                            ],
                                             "description": "Column data type. Example: \"string\""
                                         }
                                     },
-                                    "required": ["name", "dataType"],
+                                    "required": [
+                                        "name",
+                                        "dataType"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Updated column schema"
                             }
                         },
-                        "required": ["name", "columns"],
+                        "required": [
+                            "name",
+                            "columns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1851,9 +2262,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_power_bi_oauth2_cc_updateworkspace",
             "name": "update-workspace",
-            "output": ["ActionOutput_microsoft_power_bi_oauth2_cc_updateworkspace"],
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
-            "usedModels": ["ActionInput_microsoft_power_bi_oauth2_cc_updateworkspace", "ActionOutput_microsoft_power_bi_oauth2_cc_updateworkspace"],
+            "output": [
+                "ActionOutput_microsoft_power_bi_oauth2_cc_updateworkspace"
+            ],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_power_bi_oauth2_cc_updateworkspace",
+                "ActionOutput_microsoft_power_bi_oauth2_cc_updateworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1869,7 +2287,10 @@
                                 "description": "The new name for the workspace."
                             }
                         },
-                        "required": ["workspaceId", "name"],
+                        "required": [
+                            "workspaceId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_power_bi_oauth2_cc_updateworkspace": {
@@ -1891,7 +2312,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1907,12 +2330,18 @@
             "endpoints": [],
             "input": null,
             "name": "datasets",
-            "output": ["Dataset"],
+            "output": [
+                "Dataset"
+            ],
             "runs": "every hour",
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Dataset"],
+            "usedModels": [
+                "Dataset"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1957,12 +2386,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "datasetId", "workspaceId"],
+                        "required": [
+                            "id",
+                            "datasetId",
+                            "workspaceId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1971,12 +2406,18 @@
             "endpoints": [],
             "input": null,
             "name": "workspaces",
-            "output": ["Workspace"],
+            "output": [
+                "Workspace"
+            ],
             "runs": "every hour",
-            "scopes": ["https://analysis.windows.net/powerbi/api/.default"],
+            "scopes": [
+                "https://analysis.windows.net/powerbi/api/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workspace"],
+            "usedModels": [
+                "Workspace"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2009,12 +2450,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

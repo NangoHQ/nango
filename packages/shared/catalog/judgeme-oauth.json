@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_createreview",
             "name": "create-review",
-            "output": ["ActionOutput_judgeme_oauth_createreview"],
-            "scopes": ["write_reviews"],
-            "usedModels": ["ActionInput_judgeme_oauth_createreview", "ActionOutput_judgeme_oauth_createreview"],
+            "output": [
+                "ActionOutput_judgeme_oauth_createreview"
+            ],
+            "scopes": [
+                "write_reviews"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_createreview",
+                "ActionOutput_judgeme_oauth_createreview"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -22,7 +29,11 @@
                             },
                             "platform": {
                                 "type": "string",
-                                "enum": ["shopify", "woocommerce", "bigcommerce"],
+                                "enum": [
+                                    "shopify",
+                                    "woocommerce",
+                                    "bigcommerce"
+                                ],
                                 "description": "E-commerce platform. Example: \"shopify\""
                             },
                             "reviewer_name": {
@@ -52,7 +63,16 @@
                                 "description": "The external (e.g. Shopify) product ID to attach the review to."
                             }
                         },
-                        "required": ["shop_domain", "platform", "reviewer_name", "reviewer_email", "rating", "title", "body", "external_id"],
+                        "required": [
+                            "shop_domain",
+                            "platform",
+                            "reviewer_name",
+                            "reviewer_email",
+                            "rating",
+                            "title",
+                            "body",
+                            "external_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new product review."
                     },
@@ -64,7 +84,9 @@
                                 "description": "Status message from Judge.me indicating the review is being processed."
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Response confirming the review creation request was accepted."
                     }
@@ -78,9 +100,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_judgeme_oauth_createwebhook"],
-            "scopes": ["write_settings"],
-            "usedModels": ["ActionInput_judgeme_oauth_createwebhook", "ActionOutput_judgeme_oauth_createwebhook"],
+            "output": [
+                "ActionOutput_judgeme_oauth_createwebhook"
+            ],
+            "scopes": [
+                "write_settings"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_createwebhook",
+                "ActionOutput_judgeme_oauth_createwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -89,7 +118,12 @@
                         "properties": {
                             "event": {
                                 "type": "string",
-                                "enum": ["review/created", "review/updated", "review/published", "review/unpublished"],
+                                "enum": [
+                                    "review/created",
+                                    "review/updated",
+                                    "review/published",
+                                    "review/unpublished"
+                                ],
                                 "description": "Review lifecycle event to subscribe to. Example: \"review/created\""
                             },
                             "callback_url": {
@@ -98,7 +132,10 @@
                                 "description": "The URL Judge.me will POST to when the event occurs."
                             }
                         },
-                        "required": ["event", "callback_url"],
+                        "required": [
+                            "event",
+                            "callback_url"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Judge.me webhook subscription."
                     },
@@ -133,12 +170,21 @@
                                         "description": "The callback URL Judge.me will POST to when the event occurs."
                                     }
                                 },
-                                "required": ["id", "failure_count", "key", "url"],
+                                "required": [
+                                    "id",
+                                    "failure_count",
+                                    "key",
+                                    "url"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The created webhook subscription."
                             }
                         },
-                        "required": ["shop_id", "shop_domain", "webhook"],
+                        "required": [
+                            "shop_id",
+                            "shop_domain",
+                            "webhook"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a created Judge.me webhook subscription."
                     }
@@ -152,9 +198,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_judgeme_oauth_deletewebhook"],
-            "scopes": ["write_settings"],
-            "usedModels": ["ActionInput_judgeme_oauth_deletewebhook", "ActionOutput_judgeme_oauth_deletewebhook"],
+            "output": [
+                "ActionOutput_judgeme_oauth_deletewebhook"
+            ],
+            "scopes": [
+                "write_settings"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_deletewebhook",
+                "ActionOutput_judgeme_oauth_deletewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -168,7 +221,9 @@
                                 "description": "The Judge.me internal identifier of the webhook subscription to remove. Example: 12345"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to remove a webhook subscription by its Judge.me id."
                     },
@@ -186,9 +241,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_getproductreviewwidget",
             "name": "get-product-review-widget",
-            "output": ["ActionOutput_judgeme_oauth_getproductreviewwidget"],
-            "scopes": ["read_widgets"],
-            "usedModels": ["ActionInput_judgeme_oauth_getproductreviewwidget", "ActionOutput_judgeme_oauth_getproductreviewwidget"],
+            "output": [
+                "ActionOutput_judgeme_oauth_getproductreviewwidget"
+            ],
+            "scopes": [
+                "read_widgets"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_getproductreviewwidget",
+                "ActionOutput_judgeme_oauth_getproductreviewwidget"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -205,7 +267,9 @@
                                 "description": "One or more external product IDs to fetch review widgets for (maximum 100 per call, to stay within the action output size limit)."
                             }
                         },
-                        "required": ["external_ids"],
+                        "required": [
+                            "external_ids"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for fetching product review widgets."
                     },
@@ -226,13 +290,18 @@
                                             "description": "XSS-safe, ready-to-render review widget HTML for the product."
                                         }
                                     },
-                                    "required": ["product_external_id", "widget"],
+                                    "required": [
+                                        "product_external_id",
+                                        "widget"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Review widgets for the requested products, in the same order as the input IDs."
                             }
                         },
-                        "required": ["widgets"],
+                        "required": [
+                            "widgets"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing product review widgets."
                     }
@@ -246,9 +315,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_getproduct",
             "name": "get-product",
-            "output": ["ActionOutput_judgeme_oauth_getproduct"],
-            "scopes": ["read_products"],
-            "usedModels": ["ActionInput_judgeme_oauth_getproduct", "ActionOutput_judgeme_oauth_getproduct"],
+            "output": [
+                "ActionOutput_judgeme_oauth_getproduct"
+            ],
+            "scopes": [
+                "read_products"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_getproduct",
+                "ActionOutput_judgeme_oauth_getproduct"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -262,7 +338,9 @@
                                 "description": "Judge.me internal product id. Example: 2117026531"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for fetching a single Judge.me product by its internal id"
                     },
@@ -352,7 +430,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "handle", "in_store", "product_type", "description", "vendor", "excluded", "tags"],
+                        "required": [
+                            "id",
+                            "title",
+                            "handle",
+                            "in_store",
+                            "product_type",
+                            "description",
+                            "vendor",
+                            "excluded",
+                            "tags"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Judge.me product"
                     }
@@ -366,9 +454,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_getreview",
             "name": "get-review",
-            "output": ["ActionOutput_judgeme_oauth_getreview"],
-            "scopes": ["read_reviews"],
-            "usedModels": ["ActionInput_judgeme_oauth_getreview", "ActionOutput_judgeme_oauth_getreview"],
+            "output": [
+                "ActionOutput_judgeme_oauth_getreview"
+            ],
+            "scopes": [
+                "read_reviews"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_getreview",
+                "ActionOutput_judgeme_oauth_getreview"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -382,7 +477,9 @@
                                 "description": "The Judge.me review id to fetch. Example: 1306610400"
                             }
                         },
-                        "required": ["review_id"],
+                        "required": [
+                            "review_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for fetching a single Judge.me review by its id."
                     },
@@ -430,7 +527,12 @@
                                 "description": "Whether the review is publicly visible."
                             }
                         },
-                        "required": ["id", "rating", "created_at", "published"],
+                        "required": [
+                            "id",
+                            "rating",
+                            "created_at",
+                            "published"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Judge.me review including rating, content, reviewer, and product details."
                     }
@@ -444,9 +546,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_getreviewer",
             "name": "get-reviewer",
-            "output": ["ActionOutput_judgeme_oauth_getreviewer"],
-            "scopes": ["read_reviewers"],
-            "usedModels": ["ActionInput_judgeme_oauth_getreviewer", "ActionOutput_judgeme_oauth_getreviewer"],
+            "output": [
+                "ActionOutput_judgeme_oauth_getreviewer"
+            ],
+            "scopes": [
+                "read_reviewers"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_getreviewer",
+                "ActionOutput_judgeme_oauth_getreviewer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -460,7 +569,9 @@
                                 "description": "Judge.me internal ID of the reviewer."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for fetching a single reviewer profile by id."
                     },
@@ -503,7 +614,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "email", "name", "accepts_marketing"],
+                        "required": [
+                            "id",
+                            "email",
+                            "name",
+                            "accepts_marketing"
+                        ],
                         "additionalProperties": false,
                         "description": "A single reviewer profile from Judge.me."
                     }
@@ -517,9 +633,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_getshopsettings",
             "name": "get-shop-settings",
-            "output": ["ActionOutput_judgeme_oauth_getshopsettings"],
-            "scopes": ["read_settings"],
-            "usedModels": ["ActionInput_judgeme_oauth_getshopsettings", "ActionOutput_judgeme_oauth_getshopsettings"],
+            "output": [
+                "ActionOutput_judgeme_oauth_getshopsettings"
+            ],
+            "scopes": [
+                "read_settings"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_getshopsettings",
+                "ActionOutput_judgeme_oauth_getshopsettings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -535,7 +658,9 @@
                                 "description": "Non-empty list of setting keys to fetch. Example: [\"widget_theme\", \"badge_position\"]"
                             }
                         },
-                        "required": ["setting_keys"],
+                        "required": [
+                            "setting_keys"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to fetch specific named settings for the shop."
                     },
@@ -551,7 +676,9 @@
                                 "description": "Map of requested setting keys to their values. Unrecognized keys are omitted."
                             }
                         },
-                        "required": ["settings"],
+                        "required": [
+                            "settings"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing the requested shop settings."
                     }
@@ -565,9 +692,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_listorders",
             "name": "list-orders",
-            "output": ["ActionOutput_judgeme_oauth_listorders"],
-            "scopes": ["read_orders"],
-            "usedModels": ["ActionInput_judgeme_oauth_listorders", "ActionOutput_judgeme_oauth_listorders"],
+            "output": [
+                "ActionOutput_judgeme_oauth_listorders"
+            ],
+            "scopes": [
+                "read_orders"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_listorders",
+                "ActionOutput_judgeme_oauth_listorders"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -632,7 +766,10 @@
                                         },
                                         "external_id": {
                                             "description": "External order ID from the shop platform.",
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "fulfilled_at": {
                                             "description": "Date when the order was fulfilled.",
@@ -663,7 +800,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of orders known to Judge.me for this shop."
@@ -673,7 +812,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["start_date", "end_date", "current_page", "per_page", "orders"],
+                        "required": [
+                            "start_date",
+                            "end_date",
+                            "current_page",
+                            "per_page",
+                            "orders"
+                        ],
                         "additionalProperties": false,
                         "description": "Output for listing orders from Judge.me."
                     }
@@ -687,9 +832,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_listproducts",
             "name": "list-products",
-            "output": ["ActionOutput_judgeme_oauth_listproducts"],
-            "scopes": ["read_products"],
-            "usedModels": ["ActionInput_judgeme_oauth_listproducts", "ActionOutput_judgeme_oauth_listproducts"],
+            "output": [
+                "ActionOutput_judgeme_oauth_listproducts"
+            ],
+            "scopes": [
+                "read_products"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_listproducts",
+                "ActionOutput_judgeme_oauth_listproducts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -782,7 +934,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "external_id", "title", "handle", "in_store"],
+                                    "required": [
+                                        "id",
+                                        "external_id",
+                                        "title",
+                                        "handle",
+                                        "in_store"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of products known to Judge.me for this shop."
@@ -792,7 +950,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["products"],
+                        "required": [
+                            "products"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of the list-products action."
                     }
@@ -806,9 +966,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_listreviews",
             "name": "list-reviews",
-            "output": ["ActionOutput_judgeme_oauth_listreviews"],
-            "scopes": ["read_reviews"],
-            "usedModels": ["ActionInput_judgeme_oauth_listreviews", "ActionOutput_judgeme_oauth_listreviews"],
+            "output": [
+                "ActionOutput_judgeme_oauth_listreviews"
+            ],
+            "scopes": [
+                "read_reviews"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_listreviews",
+                "ActionOutput_judgeme_oauth_listreviews"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -937,7 +1104,9 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "source": {
@@ -989,7 +1158,12 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "rating", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "rating",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of reviews for the current page"
@@ -1001,7 +1175,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["current_page", "per_page", "reviews"],
+                        "required": [
+                            "current_page",
+                            "per_page",
+                            "reviews"
+                        ],
                         "additionalProperties": false,
                         "description": "Paginated list of reviews for the shop"
                     }
@@ -1015,9 +1193,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_judgeme_oauth_listwebhooks"],
-            "scopes": ["read_settings"],
-            "usedModels": ["ActionInput_judgeme_oauth_listwebhooks", "ActionOutput_judgeme_oauth_listwebhooks"],
+            "output": [
+                "ActionOutput_judgeme_oauth_listwebhooks"
+            ],
+            "scopes": [
+                "read_settings"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_listwebhooks",
+                "ActionOutput_judgeme_oauth_listwebhooks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1060,13 +1245,22 @@
                                             "description": "Number of consecutive failed delivery attempts."
                                         }
                                     },
-                                    "required": ["id", "key", "url", "failure_count"],
+                                    "required": [
+                                        "id",
+                                        "key",
+                                        "url",
+                                        "failure_count"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Webhook subscriptions configured for the shop."
                             }
                         },
-                        "required": ["shop_id", "shop_domain", "webhooks"],
+                        "required": [
+                            "shop_id",
+                            "shop_domain",
+                            "webhooks"
+                        ],
                         "additionalProperties": false,
                         "description": "Webhook subscriptions configured for the shop."
                     }
@@ -1080,9 +1274,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_publishreview",
             "name": "publish-review",
-            "output": ["ActionOutput_judgeme_oauth_publishreview"],
-            "scopes": ["write_reviews"],
-            "usedModels": ["ActionInput_judgeme_oauth_publishreview", "ActionOutput_judgeme_oauth_publishreview"],
+            "output": [
+                "ActionOutput_judgeme_oauth_publishreview"
+            ],
+            "scopes": [
+                "write_reviews"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_publishreview",
+                "ActionOutput_judgeme_oauth_publishreview"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1096,7 +1297,9 @@
                                 "description": "Judge.me internal review ID to publish. Example: 1306611514"
                             }
                         },
-                        "required": ["review_id"],
+                        "required": [
+                            "review_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for publishing a previously hidden review."
                     },
@@ -1108,7 +1311,9 @@
                                 "description": "Confirmation message returned by Judge.me."
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Output confirming the review was published."
                     }
@@ -1122,9 +1327,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_replytoreview",
             "name": "reply-to-review",
-            "output": ["ActionOutput_judgeme_oauth_replytoreview"],
-            "scopes": ["write_reviews"],
-            "usedModels": ["ActionInput_judgeme_oauth_replytoreview", "ActionOutput_judgeme_oauth_replytoreview"],
+            "output": [
+                "ActionOutput_judgeme_oauth_replytoreview"
+            ],
+            "scopes": [
+                "write_reviews"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_replytoreview",
+                "ActionOutput_judgeme_oauth_replytoreview"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1146,7 +1358,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["review_id", "content"],
+                        "required": [
+                            "review_id",
+                            "content"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for posting a public reply to a Judge.me review."
                     },
@@ -1162,7 +1377,10 @@
                                 "description": "Provider confirmation message."
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Output confirming a public reply was posted to a Judge.me review."
                     }
@@ -1176,9 +1394,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_resolveproductbyexternalid",
             "name": "resolve-product-by-external-id",
-            "output": ["ActionOutput_judgeme_oauth_resolveproductbyexternalid"],
-            "scopes": ["read_products"],
-            "usedModels": ["ActionInput_judgeme_oauth_resolveproductbyexternalid", "ActionOutput_judgeme_oauth_resolveproductbyexternalid"],
+            "output": [
+                "ActionOutput_judgeme_oauth_resolveproductbyexternalid"
+            ],
+            "scopes": [
+                "read_products"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_resolveproductbyexternalid",
+                "ActionOutput_judgeme_oauth_resolveproductbyexternalid"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1192,7 +1417,9 @@
                                 "description": "The external platform product ID to resolve. Example: 10291926270247"
                             }
                         },
-                        "required": ["external_id"],
+                        "required": [
+                            "external_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for resolving a product by its external platform ID."
                     },
@@ -1220,7 +1447,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "external_id", "title", "handle"],
+                        "required": [
+                            "id",
+                            "external_id",
+                            "title",
+                            "handle"
+                        ],
                         "additionalProperties": false,
                         "description": "The resolved Judge.me product."
                     }
@@ -1234,9 +1466,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_sendmanualreviewrequest",
             "name": "send-manual-review-request",
-            "output": ["ActionOutput_judgeme_oauth_sendmanualreviewrequest"],
-            "scopes": ["write_orders"],
-            "usedModels": ["ActionInput_judgeme_oauth_sendmanualreviewrequest", "ActionOutput_judgeme_oauth_sendmanualreviewrequest"],
+            "output": [
+                "ActionOutput_judgeme_oauth_sendmanualreviewrequest"
+            ],
+            "scopes": [
+                "write_orders"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_sendmanualreviewrequest",
+                "ActionOutput_judgeme_oauth_sendmanualreviewrequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1282,7 +1521,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["reviewer_name", "reviewer_email", "fulfilled_at"],
+                        "required": [
+                            "reviewer_name",
+                            "reviewer_email",
+                            "fulfilled_at"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for sending a manual review request email for an order."
                     },
@@ -1294,7 +1537,9 @@
                                 "description": "Whether the manual review request was queued successfully."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of sending a manual review request email."
                     }
@@ -1308,9 +1553,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_sendprivatereviewreply",
             "name": "send-private-review-reply",
-            "output": ["ActionOutput_judgeme_oauth_sendprivatereviewreply"],
-            "scopes": ["write_reviews"],
-            "usedModels": ["ActionInput_judgeme_oauth_sendprivatereviewreply", "ActionOutput_judgeme_oauth_sendprivatereviewreply"],
+            "output": [
+                "ActionOutput_judgeme_oauth_sendprivatereviewreply"
+            ],
+            "scopes": [
+                "write_reviews"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_sendprivatereviewreply",
+                "ActionOutput_judgeme_oauth_sendprivatereviewreply"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1336,7 +1588,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email_body", "email_subject", "review_id"],
+                        "required": [
+                            "email_body",
+                            "email_subject",
+                            "review_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_judgeme_oauth_sendprivatereviewreply": {
@@ -1351,7 +1607,10 @@
                                 "description": "Judge.me internal ID of the review that was replied to."
                             }
                         },
-                        "required": ["message", "review_id"],
+                        "required": [
+                            "message",
+                            "review_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1364,9 +1623,16 @@
             "endpoint": null,
             "input": "ActionInput_judgeme_oauth_unpublishreview",
             "name": "unpublish-review",
-            "output": ["ActionOutput_judgeme_oauth_unpublishreview"],
-            "scopes": ["write_reviews"],
-            "usedModels": ["ActionInput_judgeme_oauth_unpublishreview", "ActionOutput_judgeme_oauth_unpublishreview"],
+            "output": [
+                "ActionOutput_judgeme_oauth_unpublishreview"
+            ],
+            "scopes": [
+                "write_reviews"
+            ],
+            "usedModels": [
+                "ActionInput_judgeme_oauth_unpublishreview",
+                "ActionOutput_judgeme_oauth_unpublishreview"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1380,7 +1646,9 @@
                                 "description": "Judge.me internal review ID. Example: 1306611514"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for hiding a published review from the storefront."
                     },
@@ -1392,7 +1660,9 @@
                                 "description": "Result message from the API indicating the action was performed successfully."
                             }
                         },
-                        "required": ["message"],
+                        "required": [
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Output confirming the review was hidden."
                     }
@@ -1409,12 +1679,18 @@
             "endpoints": [],
             "input": null,
             "name": "orders",
-            "output": ["Order"],
+            "output": [
+                "Order"
+            ],
             "runs": "every hour",
-            "scopes": ["read_orders"],
+            "scopes": [
+                "read_orders"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Order"],
+            "usedModels": [
+                "Order"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1455,13 +1731,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "An order known to Judge.me for the connected shop."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1470,12 +1750,18 @@
             "endpoints": [],
             "input": null,
             "name": "products",
-            "output": ["Product"],
+            "output": [
+                "Product"
+            ],
             "runs": "every hour",
-            "scopes": ["read_products"],
+            "scopes": [
+                "read_products"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Product"],
+            "usedModels": [
+                "Product"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1542,13 +1828,17 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A product known to Judge.me for the shop."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1557,12 +1847,18 @@
             "endpoints": [],
             "input": null,
             "name": "reviews",
-            "output": ["Review"],
+            "output": [
+                "Review"
+            ],
             "runs": "every hour",
-            "scopes": ["read_reviews"],
+            "scopes": [
+                "read_reviews"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Review"],
+            "usedModels": [
+                "Review"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1654,13 +1950,17 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A product or shop review left by a customer."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_recruiterflow_candidateactivitieslist",
             "name": "candidate-activities-list",
-            "output": ["ActionOutput_recruiterflow_candidateactivitieslist"],
+            "output": [
+                "ActionOutput_recruiterflow_candidateactivitieslist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_recruiterflow_candidateactivitieslist", "ActionOutput_recruiterflow_candidateactivitieslist"],
+            "usedModels": [
+                "ActionInput_recruiterflow_candidateactivitieslist",
+                "ActionOutput_recruiterflow_candidateactivitieslist"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -20,7 +25,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_recruiterflow_candidateactivitieslist": {
@@ -32,7 +39,10 @@
                                     "type": "object",
                                     "properties": {
                                         "activity_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "associated_entities": {
                                             "anyOf": [
@@ -54,7 +64,10 @@
                                                                         "type": "string"
                                                                     }
                                                                 },
-                                                                "required": ["id", "name"],
+                                                                "required": [
+                                                                    "id",
+                                                                    "name"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         },
@@ -82,7 +95,10 @@
                                                                         "type": "string"
                                                                     }
                                                                 },
-                                                                "required": ["id", "name"],
+                                                                "required": [
+                                                                    "id",
+                                                                    "name"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         },
@@ -91,7 +107,14 @@
                                                             "items": {}
                                                         }
                                                     },
-                                                    "required": ["candidates", "clients", "contacts", "deals", "jobs", "placements"],
+                                                    "required": [
+                                                        "candidates",
+                                                        "clients",
+                                                        "contacts",
+                                                        "deals",
+                                                        "jobs",
+                                                        "placements"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -100,19 +123,31 @@
                                             ]
                                         },
                                         "candidate_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "contact_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "interview_plan_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "is_custom": {
                                             "type": "boolean"
                                         },
                                         "job_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "subject": {
                                             "type": "string"
@@ -130,32 +165,56 @@
                                                     "type": "number"
                                                 },
                                                 "name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "user": {
                                             "type": "object",
                                             "properties": {
                                                 "email": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "first_name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "id": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "last_name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "name": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["email", "first_name", "id", "last_name", "name"],
+                                            "required": [
+                                                "email",
+                                                "first_name",
+                                                "id",
+                                                "last_name",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -176,7 +235,9 @@
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -189,9 +250,14 @@
             "endpoint": null,
             "input": "ActionInput_recruiterflow_candidateactivitiesstagemovements",
             "name": "candidate-activities-stage-movements",
-            "output": ["ActionOutput_recruiterflow_candidateactivitiesstagemovements"],
+            "output": [
+                "ActionOutput_recruiterflow_candidateactivitiesstagemovements"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_recruiterflow_candidateactivitiesstagemovements", "ActionOutput_recruiterflow_candidateactivitiesstagemovements"],
+            "usedModels": [
+                "ActionInput_recruiterflow_candidateactivitiesstagemovements",
+                "ActionOutput_recruiterflow_candidateactivitiesstagemovements"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -208,7 +274,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_recruiterflow_candidateactivitiesstagemovements": {
@@ -238,7 +306,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["email", "id", "name"],
+                                            "required": [
+                                                "email",
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "transitions": {
@@ -250,10 +322,16 @@
                                                         "type": "string"
                                                     },
                                                     "from": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "left": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "stage_moved_by": {
                                                         "type": "object",
@@ -268,24 +346,41 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["email", "id", "name"],
+                                                        "required": [
+                                                            "email",
+                                                            "id",
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "to": {
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["entered", "from", "left", "stage_moved_by", "to"],
+                                                "required": [
+                                                    "entered",
+                                                    "from",
+                                                    "left",
+                                                    "stage_moved_by",
+                                                    "to"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "added_by", "transitions"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "added_by",
+                                        "transitions"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -298,9 +393,14 @@
             "endpoint": null,
             "input": "ActionInput_recruiterflow_candidatescorecards",
             "name": "candidate-scorecards",
-            "output": ["ActionOutput_recruiterflow_candidatescorecards"],
+            "output": [
+                "ActionOutput_recruiterflow_candidatescorecards"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_recruiterflow_candidatescorecards", "ActionOutput_recruiterflow_candidatescorecards"],
+            "usedModels": [
+                "ActionInput_recruiterflow_candidatescorecards",
+                "ActionOutput_recruiterflow_candidatescorecards"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -314,7 +414,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "job_id"],
+                        "required": [
+                            "id",
+                            "job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_recruiterflow_candidatescorecards": {
@@ -333,7 +436,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "job": {
@@ -375,7 +481,9 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["name"],
+                                                                                "required": [
+                                                                                    "name"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             },
                                                                             "name": {
@@ -391,7 +499,13 @@
                                                                                 "type": "number"
                                                                             }
                                                                         },
-                                                                        "required": ["category", "name", "notes", "rank", "rating"],
+                                                                        "required": [
+                                                                            "category",
+                                                                            "name",
+                                                                            "notes",
+                                                                            "rank",
+                                                                            "rating"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 },
@@ -434,7 +548,12 @@
                                                                                 "type": "string"
                                                                             }
                                                                         },
-                                                                        "required": ["category_name", "id", "response", "text"],
+                                                                        "required": [
+                                                                            "category_name",
+                                                                            "id",
+                                                                            "response",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 },
@@ -466,17 +585,28 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["id", "name", "scorecard"],
+                                                "required": [
+                                                    "id",
+                                                    "name",
+                                                    "scorecard"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "stages"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "stages"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["candidate", "job"],
+                        "required": [
+                            "candidate",
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -489,9 +619,14 @@
             "endpoint": null,
             "input": "ActionInput_recruiterflow_jobpipelines",
             "name": "job-pipelines",
-            "output": ["ActionOutput_recruiterflow_jobpipelines"],
+            "output": [
+                "ActionOutput_recruiterflow_jobpipelines"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_recruiterflow_jobpipelines", "ActionOutput_recruiterflow_jobpipelines"],
+            "usedModels": [
+                "ActionInput_recruiterflow_jobpipelines",
+                "ActionOutput_recruiterflow_jobpipelines"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -502,7 +637,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["job_id"],
+                        "required": [
+                            "job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_recruiterflow_jobpipelines": {
@@ -527,12 +664,19 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "count"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "count"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["detail", "summary"],
+                        "required": [
+                            "detail",
+                            "summary"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -554,12 +698,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_candidateactivitytypes",
             "name": "candidate-activity-types",
-            "output": ["RecruiterFlowCandidateActivityType"],
+            "output": [
+                "RecruiterFlowCandidateActivityType"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowCandidateActivityType", "SyncMetadata_recruiterflow_candidateactivitytypes"],
+            "usedModels": [
+                "RecruiterFlowCandidateActivityType",
+                "SyncMetadata_recruiterflow_candidateactivitytypes"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -592,7 +741,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["category", "id", "is_archived", "is_custom", "name", "rank", "track_last_contacted", "track_last_engaged"],
+                        "required": [
+                            "category",
+                            "id",
+                            "is_archived",
+                            "is_custom",
+                            "name",
+                            "rank",
+                            "track_last_contacted",
+                            "track_last_engaged"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_candidateactivitytypes": {
@@ -617,12 +775,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_candidates",
             "name": "candidates",
-            "output": ["RecruiterFlowCandidate"],
+            "output": [
+                "RecruiterFlowCandidate"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowCandidate", "SyncMetadata_recruiterflow_candidates"],
+            "usedModels": [
+                "RecruiterFlowCandidate",
+                "SyncMetadata_recruiterflow_candidates"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -688,7 +851,10 @@
                                 "type": "string"
                             },
                             "source": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status_name": {
                                 "type": "string"
@@ -729,7 +895,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["filename", "link"],
+                                    "required": [
+                                        "filename",
+                                        "link"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -745,7 +914,10 @@
                                             "type": "string"
                                         },
                                         "client_company_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "current_stage_name": {
                                             "type": "string"
@@ -754,7 +926,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["job_id", "job_name", "client_company_name", "current_stage_name", "is_open"],
+                                    "required": [
+                                        "job_id",
+                                        "job_name",
+                                        "client_company_name",
+                                        "current_stage_name",
+                                        "is_open"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -764,7 +942,10 @@
                                     "type": "object",
                                     "properties": {},
                                     "additionalProperties": {
-                                        "type": ["string", "number"]
+                                        "type": [
+                                            "string",
+                                            "number"
+                                        ]
                                     }
                                 }
                             }
@@ -805,12 +986,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_employmenttypes",
             "name": "employment-types",
-            "output": ["RecruiterFlowEmploymentType"],
+            "output": [
+                "RecruiterFlowEmploymentType"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowEmploymentType", "SyncMetadata_recruiterflow_employmenttypes"],
+            "usedModels": [
+                "RecruiterFlowEmploymentType",
+                "SyncMetadata_recruiterflow_employmenttypes"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -825,7 +1011,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_employmenttypes": {
@@ -850,12 +1039,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_jobdepartments",
             "name": "job-departments",
-            "output": ["RecruiterFlowJobDepartment"],
+            "output": [
+                "RecruiterFlowJobDepartment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowJobDepartment", "SyncMetadata_recruiterflow_jobdepartments"],
+            "usedModels": [
+                "RecruiterFlowJobDepartment",
+                "SyncMetadata_recruiterflow_jobdepartments"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -873,7 +1067,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "count"],
+                        "required": [
+                            "id",
+                            "name",
+                            "count"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_jobdepartments": {
@@ -898,12 +1096,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_jobremotestatuses",
             "name": "job-remote-statuses",
-            "output": ["RecruiterFlowJobRemoteStatus"],
+            "output": [
+                "RecruiterFlowJobRemoteStatus"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowJobRemoteStatus", "SyncMetadata_recruiterflow_jobremotestatuses"],
+            "usedModels": [
+                "RecruiterFlowJobRemoteStatus",
+                "SyncMetadata_recruiterflow_jobremotestatuses"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -918,7 +1121,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_jobremotestatuses": {
@@ -943,12 +1149,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_jobstagenames",
             "name": "job-stage-names",
-            "output": ["RecruiterFlowLeanJobStageName"],
+            "output": [
+                "RecruiterFlowLeanJobStageName"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowLeanJobStageName", "SyncMetadata_recruiterflow_jobstagenames"],
+            "usedModels": [
+                "RecruiterFlowLeanJobStageName",
+                "SyncMetadata_recruiterflow_jobstagenames"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -963,7 +1174,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_jobstagenames": {
@@ -988,12 +1202,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_jobstatuses",
             "name": "job-statuses",
-            "output": ["RecruiterFlowJobStatus"],
+            "output": [
+                "RecruiterFlowJobStatus"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowJobStatus", "SyncMetadata_recruiterflow_jobstatuses"],
+            "usedModels": [
+                "RecruiterFlowJobStatus",
+                "SyncMetadata_recruiterflow_jobstatuses"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1011,7 +1230,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "color"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_jobstatuses": {
@@ -1036,12 +1259,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_jobs",
             "name": "jobs",
-            "output": ["RecruiterFlowJob"],
+            "output": [
+                "RecruiterFlowJob"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowJob", "SyncMetadata_recruiterflow_jobs"],
+            "usedModels": [
+                "RecruiterFlowJob",
+                "SyncMetadata_recruiterflow_jobs"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1062,7 +1290,10 @@
                                 "type": "string"
                             },
                             "company_logo_link": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locations": {
                                 "type": "array",
@@ -1092,34 +1323,55 @@
                                 "type": "string"
                             },
                             "job_type_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "experience_range_start": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "experience_range_end": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_open": {
                                 "type": "boolean"
                             },
                             "job_status_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "number_of_openings": {
                                 "type": "number"
                             },
                             "salary_range_end": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "salary_range_start": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "salary_range_currency": {
                                 "type": "string"
                             },
                             "salary_frequency": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "pay_rate_number": {
                                 "type": "string"
@@ -1140,10 +1392,16 @@
                                 "type": "string"
                             },
                             "contract_start_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "contract_end_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "work_quantum_number": {
                                 "type": "string"
@@ -1170,7 +1428,10 @@
                                 "type": "string"
                             },
                             "commission_rate": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "expected_start_date": {
                                 "type": "string"
@@ -1184,7 +1445,10 @@
                                     "type": "object",
                                     "properties": {},
                                     "additionalProperties": {
-                                        "type": ["string", "number"]
+                                        "type": [
+                                            "string",
+                                            "number"
+                                        ]
                                     }
                                 }
                             },
@@ -1232,12 +1496,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_locations",
             "name": "locations",
-            "output": ["RecruiterFlowLocation"],
+            "output": [
+                "RecruiterFlowLocation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowLocation", "SyncMetadata_recruiterflow_locations"],
+            "usedModels": [
+                "RecruiterFlowLocation",
+                "SyncMetadata_recruiterflow_locations"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1279,7 +1548,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "location_type", "location_type_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "location_type",
+                            "location_type_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_locations": {
@@ -1304,12 +1578,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_organizationlocations",
             "name": "organization-locations",
-            "output": ["RecruiterFlowOrganizationLocation"],
+            "output": [
+                "RecruiterFlowOrganizationLocation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowOrganizationLocation", "SyncMetadata_recruiterflow_organizationlocations"],
+            "usedModels": [
+                "RecruiterFlowOrganizationLocation",
+                "SyncMetadata_recruiterflow_organizationlocations"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1339,7 +1618,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_organizationlocations": {
@@ -1364,12 +1646,17 @@
             ],
             "input": "SyncMetadata_recruiterflow_users",
             "name": "users",
-            "output": ["RecruiterFlowUser"],
+            "output": [
+                "RecruiterFlowUser"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecruiterFlowUser", "SyncMetadata_recruiterflow_users"],
+            "usedModels": [
+                "RecruiterFlowUser",
+                "SyncMetadata_recruiterflow_users"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1396,10 +1683,19 @@
                                 }
                             },
                             "img_link": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "email", "first_name", "last_name", "img_link"],
+                        "required": [
+                            "id",
+                            "email",
+                            "first_name",
+                            "last_name",
+                            "img_link"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_recruiterflow_users": {

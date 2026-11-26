@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_addissuelabel",
             "name": "add-issue-label",
-            "output": ["ActionOutput_linear_addissuelabel"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_addissuelabel", "ActionOutput_linear_addissuelabel"],
+            "output": [
+                "ActionOutput_linear_addissuelabel"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_addissuelabel",
+                "ActionOutput_linear_addissuelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "The identifier of the label to add. Example: \"123e4567-e89b-12d3-a456-426614174001\""
                             }
                         },
-                        "required": ["id", "labelId"],
+                        "required": [
+                            "id",
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_addissuelabel": {
@@ -53,7 +63,9 @@
                                 }
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -66,9 +78,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_archivecycle",
             "name": "archive-cycle",
-            "output": ["ActionOutput_linear_archivecycle"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_archivecycle", "ActionOutput_linear_archivecycle"],
+            "output": [
+                "ActionOutput_linear_archivecycle"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_archivecycle",
+                "ActionOutput_linear_archivecycle"
+            ],
             "version": "1.0.4",
             "json_schema": {
                 "definitions": {
@@ -80,7 +99,9 @@
                                 "description": "The identifier of the cycle to archive. Example: \"cycle-uuid\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_archivecycle": {
@@ -108,7 +129,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "number", "success"],
+                        "required": [
+                            "id",
+                            "number",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -121,9 +146,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_archiveissue",
             "name": "archive-issue",
-            "output": ["ActionOutput_linear_archiveissue"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_archiveissue", "ActionOutput_linear_archiveissue"],
+            "output": [
+                "ActionOutput_linear_archiveissue"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_archiveissue",
+                "ActionOutput_linear_archiveissue"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -135,7 +167,9 @@
                                 "description": "The identifier of the issue to archive. Example: \"c0b0b0b0-0000-0000-0000-000000000000\" or \"TEAM-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_archiveissue": {
@@ -172,11 +206,15 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -189,9 +227,17 @@
             "endpoint": null,
             "input": "ActionInput_linear_createattachment",
             "name": "create-attachment",
-            "output": ["ActionOutput_linear_createattachment"],
-            "scopes": ["issues:create", "comments:create"],
-            "usedModels": ["ActionInput_linear_createattachment", "ActionOutput_linear_createattachment"],
+            "output": [
+                "ActionOutput_linear_createattachment"
+            ],
+            "scopes": [
+                "issues:create",
+                "comments:create"
+            ],
+            "usedModels": [
+                "ActionInput_linear_createattachment",
+                "ActionOutput_linear_createattachment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -239,7 +285,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issueId", "title", "url"],
+                        "required": [
+                            "issueId",
+                            "title",
+                            "url"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_createattachment": {
@@ -268,7 +318,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "success", "title", "url"],
+                        "required": [
+                            "id",
+                            "success",
+                            "title",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -281,9 +336,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_linear_createcomment"],
-            "scopes": ["comments:create"],
-            "usedModels": ["ActionInput_linear_createcomment", "ActionOutput_linear_createcomment"],
+            "output": [
+                "ActionOutput_linear_createcomment"
+            ],
+            "scopes": [
+                "comments:create"
+            ],
+            "usedModels": [
+                "ActionInput_linear_createcomment",
+                "ActionOutput_linear_createcomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -303,7 +365,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issueId", "body"],
+                        "required": [
+                            "issueId",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_createcomment": {
@@ -340,7 +405,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -353,9 +420,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_createcycle",
             "name": "create-cycle",
-            "output": ["ActionOutput_linear_createcycle"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_createcycle", "ActionOutput_linear_createcycle"],
+            "output": [
+                "ActionOutput_linear_createcycle"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_createcycle",
+                "ActionOutput_linear_createcycle"
+            ],
             "version": "1.0.4",
             "json_schema": {
                 "definitions": {
@@ -393,7 +467,12 @@
                                 "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
                             }
                         },
-                        "required": ["teamId", "name", "startsAt", "endsAt"],
+                        "required": [
+                            "teamId",
+                            "name",
+                            "startsAt",
+                            "endsAt"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_createcycle": {
@@ -442,11 +521,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "number"],
+                        "required": [
+                            "id",
+                            "name",
+                            "number"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -459,9 +544,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_createissuelabel",
             "name": "create-issue-label",
-            "output": ["ActionOutput_linear_createissuelabel"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_createissuelabel", "ActionOutput_linear_createissuelabel"],
+            "output": [
+                "ActionOutput_linear_createissuelabel"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_createissuelabel",
+                "ActionOutput_linear_createissuelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -486,7 +578,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_createissuelabel": {
@@ -508,7 +602,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "color"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -521,9 +619,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_createissuerelation",
             "name": "create-issue-relation",
-            "output": ["ActionOutput_linear_createissuerelation"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_createissuerelation", "ActionOutput_linear_createissuerelation"],
+            "output": [
+                "ActionOutput_linear_createissuerelation"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_createissuerelation",
+                "ActionOutput_linear_createissuerelation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -540,11 +645,21 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["blocks", "blocked_by", "duplicate", "duplicate_of", "related"],
+                                "enum": [
+                                    "blocks",
+                                    "blocked_by",
+                                    "duplicate",
+                                    "duplicate_of",
+                                    "related"
+                                ],
                                 "description": "Type of relationship between the issues."
                             }
                         },
-                        "required": ["issueId", "relatedIssueId", "type"],
+                        "required": [
+                            "issueId",
+                            "relatedIssueId",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_createissuerelation": {
@@ -569,7 +684,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -582,9 +700,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_createissue",
             "name": "create-issue",
-            "output": ["ActionOutput_linear_createissue"],
-            "scopes": ["issues:create"],
-            "usedModels": ["ActionInput_linear_createissue", "ActionOutput_linear_createissue"],
+            "output": [
+                "ActionOutput_linear_createissue"
+            ],
+            "scopes": [
+                "issues:create"
+            ],
+            "usedModels": [
+                "ActionInput_linear_createissue",
+                "ActionOutput_linear_createissue"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -633,7 +758,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId", "title"],
+                        "required": [
+                            "teamId",
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_createissue": {
@@ -675,7 +803,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -688,9 +818,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_linear_createproject"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_createproject", "ActionOutput_linear_createproject"],
+            "output": [
+                "ActionOutput_linear_createproject"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_createproject",
+                "ActionOutput_linear_createproject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -729,7 +866,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "teamIds"],
+                        "required": [
+                            "name",
+                            "teamIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_createproject": {
@@ -763,7 +903,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "lead": {
@@ -776,7 +919,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "teamIds": {
@@ -798,7 +944,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -811,9 +960,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_deleteattachment",
             "name": "delete-attachment",
-            "output": ["ActionOutput_linear_deleteattachment"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_deleteattachment", "ActionOutput_linear_deleteattachment"],
+            "output": [
+                "ActionOutput_linear_deleteattachment"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_deleteattachment",
+                "ActionOutput_linear_deleteattachment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -825,7 +981,9 @@
                                 "description": "The identifier of the attachment to delete. Example: \"f4485af5-5d5a-4baf-bb8f-d66cbf7254c8\""
                             }
                         },
-                        "required": ["attachmentId"],
+                        "required": [
+                            "attachmentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_deleteattachment": {
@@ -838,7 +996,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -851,9 +1011,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_linear_deletecomment"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_deletecomment", "ActionOutput_linear_deletecomment"],
+            "output": [
+                "ActionOutput_linear_deletecomment"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_deletecomment",
+                "ActionOutput_linear_deletecomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -865,7 +1032,9 @@
                                 "description": "The ID of the comment to delete. Example: \"abc123\""
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_deletecomment": {
@@ -875,7 +1044,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -888,9 +1059,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_deleteissuelabel",
             "name": "delete-issue-label",
-            "output": ["ActionOutput_linear_deleteissuelabel"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_deleteissuelabel", "ActionOutput_linear_deleteissuelabel"],
+            "output": [
+                "ActionOutput_linear_deleteissuelabel"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_deleteissuelabel",
+                "ActionOutput_linear_deleteissuelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -902,7 +1080,9 @@
                                 "description": "The ID of the issue label to delete. Example: \"label-uuid\""
                             }
                         },
-                        "required": ["labelId"],
+                        "required": [
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_deleteissuelabel": {
@@ -918,7 +1098,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -931,9 +1113,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_deleteissuerelation",
             "name": "delete-issue-relation",
-            "output": ["ActionOutput_linear_deleteissuerelation"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_deleteissuerelation", "ActionOutput_linear_deleteissuerelation"],
+            "output": [
+                "ActionOutput_linear_deleteissuerelation"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_deleteissuerelation",
+                "ActionOutput_linear_deleteissuerelation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -945,7 +1134,9 @@
                                 "description": "The identifier of the issue relation to delete. Example: \"abc123-def456\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_deleteissuerelation": {
@@ -961,7 +1152,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -974,9 +1167,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_deleteissue",
             "name": "delete-issue",
-            "output": ["ActionOutput_linear_deleteissue"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_deleteissue", "ActionOutput_linear_deleteissue"],
+            "output": [
+                "ActionOutput_linear_deleteissue"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_deleteissue",
+                "ActionOutput_linear_deleteissue"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -988,7 +1188,9 @@
                                 "description": "The identifier of the issue to delete. Example: \"3e03fa02-a23a-40ac-93f4-bbdfd6120caf\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_deleteissue": {
@@ -1001,7 +1203,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1014,9 +1219,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getattachment",
             "name": "get-attachment",
-            "output": ["ActionOutput_linear_getattachment"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getattachment", "ActionOutput_linear_getattachment"],
+            "output": [
+                "ActionOutput_linear_getattachment"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getattachment",
+                "ActionOutput_linear_getattachment"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1028,7 +1240,9 @@
                                 "description": "Attachment ID. Example: \"47e14163-404c-4a34-b775-5c536d67760a\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getattachment": {
@@ -1091,7 +1305,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "identifier", "title"],
+                                "required": [
+                                    "id",
+                                    "identifier",
+                                    "title"
+                                ],
                                 "additionalProperties": false
                             },
                             "originalIssue": {
@@ -1107,7 +1325,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "identifier", "title"],
+                                "required": [
+                                    "id",
+                                    "identifier",
+                                    "title"
+                                ],
                                 "additionalProperties": false
                             },
                             "creator": {
@@ -1123,7 +1345,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "externalUserCreator": {
@@ -1139,11 +1363,22 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "title", "url", "metadata", "groupBySource", "createdAt", "updatedAt", "issue"],
+                        "required": [
+                            "id",
+                            "title",
+                            "url",
+                            "metadata",
+                            "groupBySource",
+                            "createdAt",
+                            "updatedAt",
+                            "issue"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1156,9 +1391,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getcomment",
             "name": "get-comment",
-            "output": ["ActionOutput_linear_getcomment"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getcomment", "ActionOutput_linear_getcomment"],
+            "output": [
+                "ActionOutput_linear_getcomment"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getcomment",
+                "ActionOutput_linear_getcomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1170,7 +1412,9 @@
                                 "description": "Linear comment ID. Example: \"comment-id-123\""
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getcomment": {
@@ -1201,7 +1445,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "user": {
@@ -1217,11 +1463,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "resolved"],
+                        "required": [
+                            "id",
+                            "resolved"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1234,9 +1485,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getcycle",
             "name": "get-cycle",
-            "output": ["ActionOutput_linear_getcycle"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getcycle", "ActionOutput_linear_getcycle"],
+            "output": [
+                "ActionOutput_linear_getcycle"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getcycle",
+                "ActionOutput_linear_getcycle"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1248,7 +1506,9 @@
                                 "description": "The unique identifier of the Linear cycle. Example: \"cycle-id-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getcycle": {
@@ -1267,7 +1527,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "progress": {
@@ -1280,7 +1543,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1293,9 +1558,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getissuelabel",
             "name": "get-issue-label",
-            "output": ["ActionOutput_linear_getissuelabel"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getissuelabel", "ActionOutput_linear_getissuelabel"],
+            "output": [
+                "ActionOutput_linear_getissuelabel"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getissuelabel",
+                "ActionOutput_linear_getissuelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1307,7 +1579,9 @@
                                 "description": "The unique identifier of the issue label. Example: \"abc123-def456\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getissuelabel": {
@@ -1335,11 +1609,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "color", "archived"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1352,9 +1634,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getissue",
             "name": "get-issue",
-            "output": ["ActionOutput_linear_getissue"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getissue", "ActionOutput_linear_getissue"],
+            "output": [
+                "ActionOutput_linear_getissue"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getissue",
+                "ActionOutput_linear_getissue"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1366,7 +1655,9 @@
                                 "description": "Issue ID or identifier. Example: \"c7a3b3c0-0000-0000-0000-000000000000\" or \"TEAM-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getissue": {
@@ -1415,13 +1706,21 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "color": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "assignee": {
@@ -1431,13 +1730,21 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "team": {
@@ -1447,13 +1754,21 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "key": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "labels": {
@@ -1465,13 +1780,21 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "color": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1482,17 +1805,27 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "url": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1505,9 +1838,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_linear_getproject"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getproject", "ActionOutput_linear_getproject"],
+            "output": [
+                "ActionOutput_linear_getproject"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getproject",
+                "ActionOutput_linear_getproject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1519,7 +1859,9 @@
                                 "description": "The unique identifier of the Linear project. Example: \"7b277fbc-8b76-4cdc-ad25-cd735ca33d0c\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getproject": {
@@ -1550,7 +1892,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "progress": {
@@ -1572,7 +1916,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1585,9 +1931,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getteam",
             "name": "get-team",
-            "output": ["ActionOutput_linear_getteam"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getteam", "ActionOutput_linear_getteam"],
+            "output": [
+                "ActionOutput_linear_getteam"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getteam",
+                "ActionOutput_linear_getteam"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1599,7 +1952,9 @@
                                 "description": "Team ID. Example: \"team-id-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getteam": {
@@ -1635,12 +1990,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "key"],
+                        "required": [
+                            "id",
+                            "name",
+                            "key"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1653,9 +2015,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_linear_getuser"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getuser", "ActionOutput_linear_getuser"],
+            "output": [
+                "ActionOutput_linear_getuser"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getuser",
+                "ActionOutput_linear_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1667,7 +2036,9 @@
                                 "description": "Linear user ID. Example: \"usr_123abc\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getuser": {
@@ -1692,7 +2063,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "email", "admin", "active"],
+                        "required": [
+                            "id",
+                            "name",
+                            "email",
+                            "admin",
+                            "active"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1705,9 +2082,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getviewer",
             "name": "get-viewer",
-            "output": ["ActionOutput_linear_getviewer"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getviewer", "ActionOutput_linear_getviewer"],
+            "output": [
+                "ActionOutput_linear_getviewer"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getviewer",
+                "ActionOutput_linear_getviewer"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1747,11 +2131,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1764,9 +2152,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_getworkflowstate",
             "name": "get-workflow-state",
-            "output": ["ActionOutput_linear_getworkflowstate"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_getworkflowstate", "ActionOutput_linear_getworkflowstate"],
+            "output": [
+                "ActionOutput_linear_getworkflowstate"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_getworkflowstate",
+                "ActionOutput_linear_getworkflowstate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1778,7 +2173,9 @@
                                 "description": "The ID of the workflow state to retrieve. Example: \"123e4567-e89b-12d3-a456-426614174000\""
                             }
                         },
-                        "required": ["stateId"],
+                        "required": [
+                            "stateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_getworkflowstate": {
@@ -1800,7 +2197,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "type": {
@@ -1813,7 +2212,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1826,9 +2227,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listattachments",
             "name": "list-attachments",
-            "output": ["ActionOutput_linear_listattachments"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listattachments", "ActionOutput_linear_listattachments"],
+            "output": [
+                "ActionOutput_linear_listattachments"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listattachments",
+                "ActionOutput_linear_listattachments"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1854,7 +2262,10 @@
                             "orderBy": {
                                 "description": "By which field should the pagination order. Available options are createdAt (default) and updatedAt.",
                                 "type": "string",
-                                "enum": ["createdAt", "updatedAt"]
+                                "enum": [
+                                    "createdAt",
+                                    "updatedAt"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1877,19 +2288,28 @@
                                             "type": "string"
                                         },
                                         "archivedAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "title": {
                                             "type": "string"
                                         },
                                         "subtitle": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "url": {
                                             "type": "string"
                                         },
                                         "sourceType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "metadata": {
                                             "type": "object",
@@ -1902,7 +2322,10 @@
                                             "type": "boolean"
                                         },
                                         "bodyData": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "creator": {
                                             "anyOf": [
@@ -1919,7 +2342,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1942,7 +2368,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1963,7 +2392,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "identifier", "title"],
+                                            "required": [
+                                                "id",
+                                                "identifier",
+                                                "title"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "originalIssue": {
@@ -1981,7 +2414,11 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "identifier", "title"],
+                                                    "required": [
+                                                        "id",
+                                                        "identifier",
+                                                        "title"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1990,7 +2427,16 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "createdAt", "updatedAt", "title", "url", "metadata", "groupBySource", "issue"],
+                                    "required": [
+                                        "id",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "title",
+                                        "url",
+                                        "metadata",
+                                        "groupBySource",
+                                        "issue"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2001,10 +2447,15 @@
                                         "type": "boolean"
                                     },
                                     "endCursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["hasNextPage"],
+                                "required": [
+                                    "hasNextPage"
+                                ],
                                 "additionalProperties": false
                             },
                             "nextCursor": {
@@ -2012,7 +2463,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "pageInfo"],
+                        "required": [
+                            "items",
+                            "pageInfo"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2025,9 +2479,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_linear_listcomments"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listcomments", "ActionOutput_linear_listcomments"],
+            "output": [
+                "ActionOutput_linear_listcomments"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listcomments",
+                "ActionOutput_linear_listcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2095,7 +2556,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2118,7 +2581,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2135,7 +2600,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2144,10 +2611,19 @@
                                             ]
                                         },
                                         "editedAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "body", "createdAt", "updatedAt", "url"],
+                                    "required": [
+                                        "id",
+                                        "body",
+                                        "createdAt",
+                                        "updatedAt",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2161,20 +2637,32 @@
                                         "type": "boolean"
                                     },
                                     "endCursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "hasPreviousPage": {
                                         "type": "boolean"
                                     },
                                     "startCursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["hasNextPage", "hasPreviousPage"],
+                                "required": [
+                                    "hasNextPage",
+                                    "hasPreviousPage"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["items", "pageInfo"],
+                        "required": [
+                            "items",
+                            "pageInfo"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2187,9 +2675,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listcycles",
             "name": "list-cycles",
-            "output": ["ActionOutput_linear_listcycles"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listcycles", "ActionOutput_linear_listcycles"],
+            "output": [
+                "ActionOutput_linear_listcycles"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listcycles",
+                "ActionOutput_linear_listcycles"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -2261,11 +2756,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2276,14 +2775,22 @@
                                         "type": "boolean"
                                     },
                                     "endCursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["hasNextPage"],
+                                "required": [
+                                    "hasNextPage"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["nodes", "pageInfo"],
+                        "required": [
+                            "nodes",
+                            "pageInfo"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2296,9 +2803,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listissuelabels",
             "name": "list-issue-labels",
-            "output": ["ActionOutput_linear_listissuelabels"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listissuelabels", "ActionOutput_linear_listissuelabels"],
+            "output": [
+                "ActionOutput_linear_listissuelabels"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listissuelabels",
+                "ActionOutput_linear_listissuelabels"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2346,7 +2860,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdAt": {
                                             "type": "string",
@@ -2382,7 +2899,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2399,7 +2918,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2419,7 +2940,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2428,7 +2952,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name", "color"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "color"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2439,14 +2967,22 @@
                                         "type": "boolean"
                                     },
                                     "endCursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["hasNextPage"],
+                                "required": [
+                                    "hasNextPage"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["nodes", "pageInfo"],
+                        "required": [
+                            "nodes",
+                            "pageInfo"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2459,9 +2995,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listissues",
             "name": "list-issues",
-            "output": ["ActionOutput_linear_listissues"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listissues", "ActionOutput_linear_listissues"],
+            "output": [
+                "ActionOutput_linear_listissues"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listissues",
+                "ActionOutput_linear_listissues"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2511,10 +3054,16 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "priority": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "state": {
                                             "anyOf": [
@@ -2531,10 +3080,17 @@
                                                             "type": "string"
                                                         },
                                                         "color": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["id", "name", "type"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2557,7 +3113,11 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "key", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "key",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2577,10 +3137,16 @@
                                                             "type": "string"
                                                         },
                                                         "email": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2589,16 +3155,29 @@
                                             ]
                                         },
                                         "createdAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updatedAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "identifier", "title"],
+                                    "required": [
+                                        "id",
+                                        "identifier",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2612,13 +3191,22 @@
                                         "type": "boolean"
                                     },
                                     "startCursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "endCursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["hasNextPage", "hasPreviousPage"],
+                                "required": [
+                                    "hasNextPage",
+                                    "hasPreviousPage"
+                                ],
                                 "additionalProperties": false
                             },
                             "nextCursor": {
@@ -2626,7 +3214,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["issues", "pageInfo"],
+                        "required": [
+                            "issues",
+                            "pageInfo"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2639,9 +3230,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_linear_listprojects"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listprojects", "ActionOutput_linear_listprojects"],
+            "output": [
+                "ActionOutput_linear_listprojects"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listprojects",
+                "ActionOutput_linear_listprojects"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -2724,7 +3322,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "teams": {
@@ -2745,16 +3345,26 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "name", "key"],
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "key"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["nodes"],
+                                            "required": [
+                                                "nodes"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name", "state"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2762,7 +3372,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2775,9 +3387,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listteams",
             "name": "list-teams",
-            "output": ["ActionOutput_linear_listteams"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listteams", "ActionOutput_linear_listteams"],
+            "output": [
+                "ActionOutput_linear_listteams"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listteams",
+                "ActionOutput_linear_listteams"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2822,7 +3441,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2830,7 +3452,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2843,9 +3467,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_linear_listusers"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listusers", "ActionOutput_linear_listusers"],
+            "output": [
+                "ActionOutput_linear_listusers"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listusers",
+                "ActionOutput_linear_listusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2917,7 +3548,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2925,7 +3558,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2938,9 +3573,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_listworkflowstates",
             "name": "list-workflow-states",
-            "output": ["ActionOutput_linear_listworkflowstates"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_listworkflowstates", "ActionOutput_linear_listworkflowstates"],
+            "output": [
+                "ActionOutput_linear_listworkflowstates"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_listworkflowstates",
+                "ActionOutput_linear_listworkflowstates"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2991,19 +3633,34 @@
                                             "type": "string"
                                         },
                                         "color": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "position": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "createdAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updatedAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "team": {
                                             "anyOf": [
@@ -3020,7 +3677,11 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "key", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "key",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3029,7 +3690,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3037,7 +3702,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3050,9 +3717,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_removeissuelabel",
             "name": "remove-issue-label",
-            "output": ["ActionOutput_linear_removeissuelabel"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_removeissuelabel", "ActionOutput_linear_removeissuelabel"],
+            "output": [
+                "ActionOutput_linear_removeissuelabel"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_removeissuelabel",
+                "ActionOutput_linear_removeissuelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3068,7 +3742,10 @@
                                 "description": "The identifier of the label to remove. Example: \"label-uuid\""
                             }
                         },
-                        "required": ["issueId", "labelId"],
+                        "required": [
+                            "issueId",
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_removeissuelabel": {
@@ -3099,11 +3776,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success", "issueId", "labelId"],
+                        "required": [
+                            "success",
+                            "issueId",
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3116,9 +3799,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_resolvecomment",
             "name": "resolve-comment",
-            "output": ["ActionOutput_linear_resolvecomment"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_resolvecomment", "ActionOutput_linear_resolvecomment"],
+            "output": [
+                "ActionOutput_linear_resolvecomment"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_resolvecomment",
+                "ActionOutput_linear_resolvecomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3134,7 +3824,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_resolvecomment": {
@@ -3150,7 +3842,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3163,9 +3857,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_searchissues",
             "name": "search-issues",
-            "output": ["ActionOutput_linear_searchissues"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_linear_searchissues", "ActionOutput_linear_searchissues"],
+            "output": [
+                "ActionOutput_linear_searchissues"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_linear_searchissues",
+                "ActionOutput_linear_searchissues"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3187,7 +3888,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["term"],
+                        "required": [
+                            "term"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_searchissues": {
@@ -3235,7 +3938,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "state": {
@@ -3248,7 +3953,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "team": {
@@ -3264,11 +3971,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "identifier", "title"],
+                                    "required": [
+                                        "id",
+                                        "identifier",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3276,7 +3989,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3289,9 +4004,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_unarchiveissue",
             "name": "unarchive-issue",
-            "output": ["ActionOutput_linear_unarchiveissue"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_unarchiveissue", "ActionOutput_linear_unarchiveissue"],
+            "output": [
+                "ActionOutput_linear_unarchiveissue"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_unarchiveissue",
+                "ActionOutput_linear_unarchiveissue"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3303,7 +4025,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_unarchiveissue": {
@@ -3313,19 +4037,37 @@
                                 "type": "boolean"
                             },
                             "issueId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "identifier": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "archivedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["success", "issueId", "identifier", "title", "archivedAt"],
+                        "required": [
+                            "success",
+                            "issueId",
+                            "identifier",
+                            "title",
+                            "archivedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3338,9 +4080,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_unarchiveproject",
             "name": "unarchive-project",
-            "output": ["ActionOutput_linear_unarchiveproject"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_unarchiveproject", "ActionOutput_linear_unarchiveproject"],
+            "output": [
+                "ActionOutput_linear_unarchiveproject"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_unarchiveproject",
+                "ActionOutput_linear_unarchiveproject"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -3352,7 +4101,9 @@
                                 "description": "The identifier of the project to restore. Example: \"123e4567-e89b-12d3-a456-426614174000\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_unarchiveproject": {
@@ -3371,7 +4122,10 @@
                                 "type": "string"
                             },
                             "archivedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
                                 "type": "string"
@@ -3383,7 +4137,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "slugId", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "name",
+                            "slugId",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3396,9 +4156,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_unresolvecomment",
             "name": "unresolve-comment",
-            "output": ["ActionOutput_linear_unresolvecomment"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_unresolvecomment", "ActionOutput_linear_unresolvecomment"],
+            "output": [
+                "ActionOutput_linear_unresolvecomment"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_unresolvecomment",
+                "ActionOutput_linear_unresolvecomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3410,7 +4177,9 @@
                                 "description": "The identifier of the comment to unresolve. Example: \"comment-id-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_unresolvecomment": {
@@ -3429,7 +4198,11 @@
                                 "description": "The identifier of the unresolved comment."
                             }
                         },
-                        "required": ["success", "lastSyncId", "commentId"],
+                        "required": [
+                            "success",
+                            "lastSyncId",
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3442,9 +4215,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_linear_updatecomment"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_updatecomment", "ActionOutput_linear_updatecomment"],
+            "output": [
+                "ActionOutput_linear_updatecomment"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_updatecomment",
+                "ActionOutput_linear_updatecomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3460,7 +4240,10 @@
                                 "description": "The new text content for the comment."
                             }
                         },
-                        "required": ["id", "body"],
+                        "required": [
+                            "id",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_updatecomment": {
@@ -3473,7 +4256,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3486,9 +4271,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_updatecycle",
             "name": "update-cycle",
-            "output": ["ActionOutput_linear_updatecycle"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_updatecycle", "ActionOutput_linear_updatecycle"],
+            "output": [
+                "ActionOutput_linear_updatecycle"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_updatecycle",
+                "ActionOutput_linear_updatecycle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3517,10 +4309,15 @@
                             },
                             "completedAt": {
                                 "description": "The completion time of the cycle. Pass null to mark as uncompleted.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_updatecycle": {
@@ -3542,7 +4339,10 @@
                                 "type": "string"
                             },
                             "completedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
                                 "type": "string"
@@ -3598,9 +4398,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_updateissuelabel",
             "name": "update-issue-label",
-            "output": ["ActionOutput_linear_updateissuelabel"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_updateissuelabel", "ActionOutput_linear_updateissuelabel"],
+            "output": [
+                "ActionOutput_linear_updateissuelabel"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_updateissuelabel",
+                "ActionOutput_linear_updateissuelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3624,7 +4431,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_updateissuelabel": {
@@ -3637,10 +4446,16 @@
                                 "type": "string"
                             },
                             "color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
                                 "type": "string"
@@ -3649,10 +4464,16 @@
                                 "type": "string"
                             },
                             "archivedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3665,9 +4486,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_updateissuerelation",
             "name": "update-issue-relation",
-            "output": ["ActionOutput_linear_updateissuerelation"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_updateissuerelation", "ActionOutput_linear_updateissuerelation"],
+            "output": [
+                "ActionOutput_linear_updateissuerelation"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_updateissuerelation",
+                "ActionOutput_linear_updateissuerelation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3689,10 +4517,17 @@
                             "type": {
                                 "description": "The type of relation of the issue to the related issue.",
                                 "type": "string",
-                                "enum": ["blocks", "duplicate", "related", "similar"]
+                                "enum": [
+                                    "blocks",
+                                    "duplicate",
+                                    "related",
+                                    "similar"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_updateissuerelation": {
@@ -3733,7 +4568,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3746,9 +4584,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_updateissue",
             "name": "update-issue",
-            "output": ["ActionOutput_linear_updateissue"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_updateissue", "ActionOutput_linear_updateissue"],
+            "output": [
+                "ActionOutput_linear_updateissue"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_updateissue",
+                "ActionOutput_linear_updateissue"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3765,19 +4610,31 @@
                             },
                             "description": {
                                 "description": "The description of the issue in markdown format. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "priority": {
                                 "description": "The priority of the issue. 0 = no priority, 1 = urgent, 2 = high, 3 = medium, 4 = low. Pass null to clear.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "stateId": {
                                 "description": "The identifier of the workflow state to move the issue to. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "assigneeId": {
                                 "description": "The identifier of the user to assign the issue to. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "labelIds": {
                                 "description": "The identifiers of labels to attach to the issue. Pass null to clear.",
@@ -3795,10 +4652,15 @@
                             },
                             "projectId": {
                                 "description": "The identifier of the project to add the issue to. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_updateissue": {
@@ -3847,7 +4709,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3860,9 +4724,16 @@
             "endpoint": null,
             "input": "ActionInput_linear_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_linear_updateproject"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_linear_updateproject", "ActionOutput_linear_updateproject"],
+            "output": [
+                "ActionOutput_linear_updateproject"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_linear_updateproject",
+                "ActionOutput_linear_updateproject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3894,7 +4765,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_linear_updateproject": {
@@ -3925,7 +4798,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name", "type"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "targetDate": {
@@ -3947,7 +4824,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3968,12 +4848,19 @@
             ],
             "input": "SyncMetadata_linear_cycles",
             "name": "cycles",
-            "output": ["Cycle"],
+            "output": [
+                "Cycle"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Cycle", "SyncMetadata_linear_cycles"],
+            "usedModels": [
+                "Cycle",
+                "SyncMetadata_linear_cycles"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4012,7 +4899,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "number", "startsAt", "endsAt", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "number",
+                            "startsAt",
+                            "endsAt",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_linear_cycles": {
@@ -4026,7 +4920,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4040,12 +4936,19 @@
             ],
             "input": "SyncMetadata_linear_issuelabels",
             "name": "issue-labels",
-            "output": ["IssueLabel"],
+            "output": [
+                "IssueLabel"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["IssueLabel", "SyncMetadata_linear_issuelabels"],
+            "usedModels": [
+                "IssueLabel",
+                "SyncMetadata_linear_issuelabels"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4075,7 +4978,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "updatedAt"],
+                        "required": [
+                            "id",
+                            "name",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_linear_issuelabels": {
@@ -4089,7 +4996,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4103,12 +5012,18 @@
             ],
             "input": null,
             "name": "issues",
-            "output": ["Issue"],
+            "output": [
+                "Issue"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Issue"],
+            "usedModels": [
+                "Issue"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4141,7 +5056,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "assignee": {
@@ -4157,7 +5074,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "labels": {
@@ -4175,7 +5094,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4189,7 +5110,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "cycle": {
@@ -4202,7 +5125,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "updatedAt": {
@@ -4218,12 +5143,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "updatedAt"],
+                        "required": [
+                            "id",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4237,12 +5167,18 @@
             ],
             "input": null,
             "name": "milestones",
-            "output": ["Milestone"],
+            "output": [
+                "Milestone"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Milestone"],
+            "usedModels": [
+                "Milestone"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4284,16 +5220,24 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4307,12 +5251,18 @@
             ],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4345,7 +5295,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name", "type"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "progress": {
@@ -4376,7 +5330,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "teams": {
@@ -4394,17 +5350,26 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "name",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4418,12 +5383,18 @@
             ],
             "input": null,
             "name": "roadmaps",
-            "output": ["Roadmap"],
+            "output": [
+                "Roadmap"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Roadmap"],
+            "usedModels": [
+                "Roadmap"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4480,7 +5451,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "updatedAt", "createdAt", "slugId", "sortOrder", "url", "projectIds", "teamIds"],
+                        "required": [
+                            "id",
+                            "name",
+                            "updatedAt",
+                            "createdAt",
+                            "slugId",
+                            "sortOrder",
+                            "url",
+                            "projectIds",
+                            "teamIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4499,12 +5480,18 @@
             ],
             "input": null,
             "name": "teams",
-            "output": ["Team"],
+            "output": [
+                "Team"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Team"],
+            "usedModels": [
+                "Team"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4543,12 +5530,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4562,12 +5553,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4600,12 +5597,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4619,12 +5620,18 @@
             ],
             "input": null,
             "name": "workflow-states",
-            "output": ["WorkflowState"],
+            "output": [
+                "WorkflowState"
+            ],
             "runs": "every hour",
-            "scopes": ["read"],
+            "scopes": [
+                "read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["WorkflowState"],
+            "usedModels": [
+                "WorkflowState"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4663,12 +5670,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

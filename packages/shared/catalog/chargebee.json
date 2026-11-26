@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_cancelsubscription",
             "name": "cancel-subscription",
-            "output": ["ActionOutput_chargebee_cancelsubscription"],
+            "output": [
+                "ActionOutput_chargebee_cancelsubscription"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_cancelsubscription", "ActionOutput_chargebee_cancelsubscription"],
+            "usedModels": [
+                "ActionInput_chargebee_cancelsubscription",
+                "ActionOutput_chargebee_cancelsubscription"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -27,10 +32,16 @@
                             "credit_option_for_current_term_charges": {
                                 "description": "How to handle charges for the current term.",
                                 "type": "string",
-                                "enum": ["prorate", "full", "none"]
+                                "enum": [
+                                    "prorate",
+                                    "full",
+                                    "none"
+                                ]
                             }
                         },
-                        "required": ["subscription_id"],
+                        "required": [
+                            "subscription_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_cancelsubscription": {
@@ -157,7 +168,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -170,9 +184,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_createcreditnote",
             "name": "create-credit-note",
-            "output": ["ActionOutput_chargebee_createcreditnote"],
+            "output": [
+                "ActionOutput_chargebee_createcreditnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_createcreditnote", "ActionOutput_chargebee_createcreditnote"],
+            "usedModels": [
+                "ActionInput_chargebee_createcreditnote",
+                "ActionOutput_chargebee_createcreditnote"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -185,13 +204,23 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["adjustment", "refundable"],
+                                "enum": [
+                                    "adjustment",
+                                    "refundable"
+                                ],
                                 "description": "Type of credit note."
                             },
                             "reason_code": {
                                 "description": "Reason for issuing the credit note.",
                                 "type": "string",
-                                "enum": ["write_off", "subscription_change", "subscription_cancellation", "chargeback", "order_change", "other"]
+                                "enum": [
+                                    "write_off",
+                                    "subscription_change",
+                                    "subscription_cancellation",
+                                    "chargeback",
+                                    "order_change",
+                                    "other"
+                                ]
                             },
                             "total": {
                                 "description": "Total credit note amount in cents. Required if line_items is not provided.",
@@ -227,7 +256,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["reference_invoice_id", "type"],
+                        "required": [
+                            "reference_invoice_id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_createcreditnote": {
@@ -279,7 +311,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "type", "status", "deleted"],
+                        "required": [
+                            "id",
+                            "type",
+                            "status",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -292,9 +329,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_createcustomer",
             "name": "create-customer",
-            "output": ["ActionOutput_chargebee_createcustomer"],
+            "output": [
+                "ActionOutput_chargebee_createcustomer"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_createcustomer", "ActionOutput_chargebee_createcustomer"],
+            "usedModels": [
+                "ActionInput_chargebee_createcustomer",
+                "ActionOutput_chargebee_createcustomer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -320,7 +362,10 @@
                             },
                             "auto_collection": {
                                 "type": "string",
-                                "enum": ["on", "off"]
+                                "enum": [
+                                    "on",
+                                    "off"
+                                ]
                             },
                             "net_term_days": {
                                 "type": "number"
@@ -409,7 +454,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -422,9 +469,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_createitemfamily",
             "name": "create-item-family",
-            "output": ["ActionOutput_chargebee_createitemfamily"],
+            "output": [
+                "ActionOutput_chargebee_createitemfamily"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_createitemfamily", "ActionOutput_chargebee_createitemfamily"],
+            "usedModels": [
+                "ActionInput_chargebee_createitemfamily",
+                "ActionOutput_chargebee_createitemfamily"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -444,7 +496,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_createitemfamily": {
@@ -475,7 +530,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -488,9 +546,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_createitemprice",
             "name": "create-item-price",
-            "output": ["ActionOutput_chargebee_createitemprice"],
+            "output": [
+                "ActionOutput_chargebee_createitemprice"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_createitemprice", "ActionOutput_chargebee_createitemprice"],
+            "usedModels": [
+                "ActionInput_chargebee_createitemprice",
+                "ActionOutput_chargebee_createitemprice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -511,7 +574,13 @@
                             },
                             "pricing_model": {
                                 "type": "string",
-                                "enum": ["flat_fee", "per_unit", "tiered", "volume", "stairstep"],
+                                "enum": [
+                                    "flat_fee",
+                                    "per_unit",
+                                    "tiered",
+                                    "volume",
+                                    "stairstep"
+                                ],
                                 "description": "Pricing model for the item price."
                             },
                             "currency_code": {
@@ -524,7 +593,12 @@
                             },
                             "period_unit": {
                                 "type": "string",
-                                "enum": ["day", "week", "month", "year"],
+                                "enum": [
+                                    "day",
+                                    "week",
+                                    "month",
+                                    "year"
+                                ],
                                 "description": "Unit of the billing period."
                             },
                             "price": {
@@ -545,13 +619,24 @@
                             },
                             "trial_period_unit": {
                                 "type": "string",
-                                "enum": ["day", "month"]
+                                "enum": [
+                                    "day",
+                                    "month"
+                                ]
                             },
                             "is_taxable": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "item_id", "pricing_model", "currency_code", "period", "period_unit"],
+                        "required": [
+                            "id",
+                            "name",
+                            "item_id",
+                            "pricing_model",
+                            "currency_code",
+                            "period",
+                            "period_unit"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_createitemprice": {
@@ -606,7 +691,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -619,9 +706,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_createitem",
             "name": "create-item",
-            "output": ["ActionOutput_chargebee_createitem"],
-            "scopes": ["read_write"],
-            "usedModels": ["ActionInput_chargebee_createitem", "ActionOutput_chargebee_createitem"],
+            "output": [
+                "ActionOutput_chargebee_createitem"
+            ],
+            "scopes": [
+                "read_write"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_createitem",
+                "ActionOutput_chargebee_createitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -638,7 +732,11 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["plan", "addon", "charge"],
+                                "enum": [
+                                    "plan",
+                                    "addon",
+                                    "charge"
+                                ],
                                 "description": "The type of the item."
                             },
                             "item_family_id": {
@@ -666,7 +764,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "type", "item_family_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type",
+                            "item_family_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_createitem": {
@@ -680,7 +783,11 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["plan", "addon", "charge"]
+                                "enum": [
+                                    "plan",
+                                    "addon",
+                                    "charge"
+                                ]
                             },
                             "item_family_id": {
                                 "type": "string"
@@ -713,7 +820,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -726,9 +837,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_createsubscription",
             "name": "create-subscription",
-            "output": ["ActionOutput_chargebee_createsubscription"],
+            "output": [
+                "ActionOutput_chargebee_createsubscription"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_createsubscription", "ActionOutput_chargebee_createsubscription"],
+            "usedModels": [
+                "ActionInput_chargebee_createsubscription",
+                "ActionOutput_chargebee_createsubscription"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -753,7 +869,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["item_price_id"],
+                                    "required": [
+                                        "item_price_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of subscription items to create."
@@ -761,14 +879,20 @@
                             "auto_collection": {
                                 "description": "Defines whether payments need to be collected automatically. Defaults to \"off\" to skip payment requirement.",
                                 "type": "string",
-                                "enum": ["on", "off"]
+                                "enum": [
+                                    "on",
+                                    "off"
+                                ]
                             },
                             "id": {
                                 "description": "A unique identifier for the subscription. If not provided, it is autogenerated.",
                                 "type": "string"
                             }
                         },
-                        "required": ["customer_id", "subscription_items"],
+                        "required": [
+                            "customer_id",
+                            "subscription_items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_createsubscription": {
@@ -798,12 +922,19 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["item_price_id"],
+                                    "required": [
+                                        "item_price_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["id", "customer_id", "status", "deleted"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "status",
+                            "deleted"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -816,9 +947,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_deletecustomer",
             "name": "delete-customer",
-            "output": ["ActionOutput_chargebee_deletecustomer"],
+            "output": [
+                "ActionOutput_chargebee_deletecustomer"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_deletecustomer", "ActionOutput_chargebee_deletecustomer"],
+            "usedModels": [
+                "ActionInput_chargebee_deletecustomer",
+                "ActionOutput_chargebee_deletecustomer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -830,7 +966,9 @@
                                 "description": "Customer ID to delete. Example: \"AzqOd0VMyVlxMaL6\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_deletecustomer": {
@@ -855,7 +993,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -868,9 +1009,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_getcreditnote",
             "name": "get-credit-note",
-            "output": ["ActionOutput_chargebee_getcreditnote"],
+            "output": [
+                "ActionOutput_chargebee_getcreditnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_getcreditnote", "ActionOutput_chargebee_getcreditnote"],
+            "usedModels": [
+                "ActionInput_chargebee_getcreditnote",
+                "ActionOutput_chargebee_getcreditnote"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -882,7 +1028,9 @@
                                 "description": "Credit note ID. Example: \"__demo_cn__7\""
                             }
                         },
-                        "required": ["credit_note_id"],
+                        "required": [
+                            "credit_note_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_getcreditnote": {
@@ -1010,7 +1158,16 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "customer_id", "type", "status", "currency_code", "price_type", "sub_total", "deleted"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "type",
+                            "status",
+                            "currency_code",
+                            "price_type",
+                            "sub_total",
+                            "deleted"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1023,9 +1180,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_getcustomer",
             "name": "get-customer",
-            "output": ["ActionOutput_chargebee_getcustomer"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_chargebee_getcustomer", "ActionOutput_chargebee_getcustomer"],
+            "output": [
+                "ActionOutput_chargebee_getcustomer"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_getcustomer",
+                "ActionOutput_chargebee_getcustomer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1037,7 +1201,9 @@
                                 "description": "Chargebee customer ID. Example: \"AzqOd0VMyUhHQZf4\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_getcustomer": {
@@ -1065,7 +1231,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1078,9 +1246,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_getinvoice",
             "name": "get-invoice",
-            "output": ["ActionOutput_chargebee_getinvoice"],
+            "output": [
+                "ActionOutput_chargebee_getinvoice"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_getinvoice", "ActionOutput_chargebee_getinvoice"],
+            "usedModels": [
+                "ActionInput_chargebee_getinvoice",
+                "ActionOutput_chargebee_getinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1092,7 +1265,9 @@
                                 "description": "Invoice ID. Example: \"1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_getinvoice": {
@@ -1138,7 +1313,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "customer_id", "status", "recurring", "currency_code", "deleted"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "status",
+                            "recurring",
+                            "currency_code",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1151,9 +1333,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_getitemfamily",
             "name": "get-item-family",
-            "output": ["ActionOutput_chargebee_getitemfamily"],
+            "output": [
+                "ActionOutput_chargebee_getitemfamily"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_getitemfamily", "ActionOutput_chargebee_getitemfamily"],
+            "usedModels": [
+                "ActionInput_chargebee_getitemfamily",
+                "ActionOutput_chargebee_getitemfamily"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1165,7 +1352,9 @@
                                 "description": "Item family ID. Example: \"saas-plans\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_getitemfamily": {
@@ -1199,7 +1388,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1212,9 +1404,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_getitemprice",
             "name": "get-item-price",
-            "output": ["ActionOutput_chargebee_getitemprice"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_chargebee_getitemprice", "ActionOutput_chargebee_getitemprice"],
+            "output": [
+                "ActionOutput_chargebee_getitemprice"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_getitemprice",
+                "ActionOutput_chargebee_getitemprice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1226,7 +1425,9 @@
                                 "description": "The ID of the item price to retrieve. Example: \"basic-plan-monthly\""
                             }
                         },
-                        "required": ["item_price_id"],
+                        "required": [
+                            "item_price_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_getitemprice": {
@@ -1385,7 +1586,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "pricing_model", "currency_code", "created_at", "deleted"],
+                        "required": [
+                            "id",
+                            "name",
+                            "pricing_model",
+                            "currency_code",
+                            "created_at",
+                            "deleted"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1398,9 +1606,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_getitem",
             "name": "get-item",
-            "output": ["ActionOutput_chargebee_getitem"],
+            "output": [
+                "ActionOutput_chargebee_getitem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_getitem", "ActionOutput_chargebee_getitem"],
+            "usedModels": [
+                "ActionInput_chargebee_getitem",
+                "ActionOutput_chargebee_getitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1412,7 +1625,9 @@
                                 "description": "The unique identifier of the item. Example: \"basic-plan\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_getitem": {
@@ -1504,7 +1719,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1517,9 +1736,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_getsubscription",
             "name": "get-subscription",
-            "output": ["ActionOutput_chargebee_getsubscription"],
+            "output": [
+                "ActionOutput_chargebee_getsubscription"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_getsubscription", "ActionOutput_chargebee_getsubscription"],
+            "usedModels": [
+                "ActionInput_chargebee_getsubscription",
+                "ActionOutput_chargebee_getsubscription"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1531,7 +1755,9 @@
                                 "description": "Subscription ID. Example: \"AzZPdjVMyVrz9acf\""
                             }
                         },
-                        "required": ["subscription_id"],
+                        "required": [
+                            "subscription_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_getsubscription": {
@@ -1586,7 +1812,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1599,9 +1827,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listcouponsets",
             "name": "list-coupon-sets",
-            "output": ["ActionOutput_chargebee_listcouponsets"],
+            "output": [
+                "ActionOutput_chargebee_listcouponsets"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_listcouponsets", "ActionOutput_chargebee_listcouponsets"],
+            "usedModels": [
+                "ActionInput_chargebee_listcouponsets",
+                "ActionOutput_chargebee_listcouponsets"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1666,7 +1899,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "coupon_id", "name"],
+                                    "required": [
+                                        "id",
+                                        "coupon_id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1674,7 +1911,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["coupon_sets"],
+                        "required": [
+                            "coupon_sets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1687,9 +1926,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listcoupons",
             "name": "list-coupons",
-            "output": ["ActionOutput_chargebee_listcoupons"],
+            "output": [
+                "ActionOutput_chargebee_listcoupons"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_listcoupons", "ActionOutput_chargebee_listcoupons"],
+            "usedModels": [
+                "ActionInput_chargebee_listcoupons",
+                "ActionOutput_chargebee_listcoupons"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1795,7 +2039,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1803,7 +2049,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1816,9 +2064,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listcreditnotes",
             "name": "list-credit-notes",
-            "output": ["ActionOutput_chargebee_listcreditnotes"],
-            "scopes": ["read_only"],
-            "usedModels": ["ActionInput_chargebee_listcreditnotes", "ActionOutput_chargebee_listcreditnotes"],
+            "output": [
+                "ActionOutput_chargebee_listcreditnotes"
+            ],
+            "scopes": [
+                "read_only"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_listcreditnotes",
+                "ActionOutput_chargebee_listcreditnotes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1840,7 +2095,10 @@
                             "type_operator": {
                                 "description": "Operator for type filter. Example: \"is\" or \"is_not\"",
                                 "type": "string",
-                                "enum": ["is", "is_not"]
+                                "enum": [
+                                    "is",
+                                    "is_not"
+                                ]
                             },
                             "status": {
                                 "description": "Status filter value. Example: \"adjusted\", \"refunded\", \"refund_due\", or \"voided\"",
@@ -1849,7 +2107,10 @@
                             "status_operator": {
                                 "description": "Operator for status filter. Example: \"is\" or \"is_not\"",
                                 "type": "string",
-                                "enum": ["is", "is_not"]
+                                "enum": [
+                                    "is",
+                                    "is_not"
+                                ]
                             },
                             "date_gt": {
                                 "description": "Filter credit notes with date greater than this Unix timestamp (seconds).",
@@ -1905,10 +2166,16 @@
                                             "type": "string"
                                         },
                                         "subscription_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "reference_invoice_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "type": "string"
@@ -1938,10 +2205,15 @@
                                             "type": "string"
                                         },
                                         "reason_code": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1950,7 +2222,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1963,9 +2237,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listcustomers",
             "name": "list-customers",
-            "output": ["ActionOutput_chargebee_listcustomers"],
+            "output": [
+                "ActionOutput_chargebee_listcustomers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_listcustomers", "ActionOutput_chargebee_listcustomers"],
+            "usedModels": [
+                "ActionInput_chargebee_listcustomers",
+                "ActionOutput_chargebee_listcustomers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2055,7 +2334,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2063,7 +2344,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customers"],
+                        "required": [
+                            "customers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2076,9 +2359,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_chargebee_listevents"],
+            "output": [
+                "ActionOutput_chargebee_listevents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_listevents", "ActionOutput_chargebee_listevents"],
+            "usedModels": [
+                "ActionInput_chargebee_listevents",
+                "ActionOutput_chargebee_listevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2160,7 +2448,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2173,9 +2463,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listinvoices",
             "name": "list-invoices",
-            "output": ["ActionOutput_chargebee_listinvoices"],
+            "output": [
+                "ActionOutput_chargebee_listinvoices"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_listinvoices", "ActionOutput_chargebee_listinvoices"],
+            "usedModels": [
+                "ActionInput_chargebee_listinvoices",
+                "ActionOutput_chargebee_listinvoices"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2197,7 +2492,10 @@
                             "status_operator": {
                                 "description": "Status filter operator. Defaults to \"is\".",
                                 "type": "string",
-                                "enum": ["is", "is_not"]
+                                "enum": [
+                                    "is",
+                                    "is_not"
+                                ]
                             },
                             "date": {
                                 "description": "Date range filter in Unix epoch seconds.",
@@ -2266,26 +2564,51 @@
                                             "type": "string"
                                         },
                                         "subscription_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["paid", "posted", "payment_due", "not_paid", "voided", "pending"]
+                                            "enum": [
+                                                "paid",
+                                                "posted",
+                                                "payment_due",
+                                                "not_paid",
+                                                "voided",
+                                                "pending"
+                                            ]
                                         },
                                         "date": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "due_date": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "total": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "amount_due": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "amount_paid": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "currency_code": {
                                             "type": "string"
@@ -2297,13 +2620,26 @@
                                             "type": "boolean"
                                         },
                                         "updated_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "resource_version": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "customer_id", "status", "currency_code", "recurring", "deleted"],
+                                    "required": [
+                                        "id",
+                                        "customer_id",
+                                        "status",
+                                        "currency_code",
+                                        "recurring",
+                                        "deleted"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2311,7 +2647,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["invoices"],
+                        "required": [
+                            "invoices"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2324,9 +2662,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listitemfamilies",
             "name": "list-item-families",
-            "output": ["ActionOutput_chargebee_listitemfamilies"],
+            "output": [
+                "ActionOutput_chargebee_listitemfamilies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_listitemfamilies", "ActionOutput_chargebee_listitemfamilies"],
+            "usedModels": [
+                "ActionInput_chargebee_listitemfamilies",
+                "ActionOutput_chargebee_listitemfamilies"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2382,7 +2725,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "deleted"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "deleted"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2390,7 +2737,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["item_families"],
+                        "required": [
+                            "item_families"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2403,9 +2752,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listitemprices",
             "name": "list-item-prices",
-            "output": ["ActionOutput_chargebee_listitemprices"],
-            "scopes": ["read_only"],
-            "usedModels": ["ActionInput_chargebee_listitemprices", "ActionOutput_chargebee_listitemprices"],
+            "output": [
+                "ActionOutput_chargebee_listitemprices"
+            ],
+            "scopes": [
+                "read_only"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_listitemprices",
+                "ActionOutput_chargebee_listitemprices"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2427,7 +2783,10 @@
                             "item_type_operator": {
                                 "description": "Operator for item_type filter. Default: is",
                                 "type": "string",
-                                "enum": ["is", "is_not"]
+                                "enum": [
+                                    "is",
+                                    "is_not"
+                                ]
                             },
                             "currency_code": {
                                 "description": "Filter by currency code. Example: \"USD\"",
@@ -2444,7 +2803,10 @@
                             "status_operator": {
                                 "description": "Operator for status filter. Default: is",
                                 "type": "string",
-                                "enum": ["is", "is_not"]
+                                "enum": [
+                                    "is",
+                                    "is_not"
+                                ]
                             },
                             "updated_at_gt": {
                                 "description": "Filter by updated_at greater than. Unix epoch seconds.",
@@ -2542,7 +2904,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2551,7 +2915,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["list"],
+                        "required": [
+                            "list"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2564,9 +2930,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listitems",
             "name": "list-items",
-            "output": ["ActionOutput_chargebee_listitems"],
-            "scopes": ["read_only"],
-            "usedModels": ["ActionInput_chargebee_listitems", "ActionOutput_chargebee_listitems"],
+            "output": [
+                "ActionOutput_chargebee_listitems"
+            ],
+            "scopes": [
+                "read_only"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_listitems",
+                "ActionOutput_chargebee_listitems"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2588,7 +2961,11 @@
                             "type": {
                                 "description": "Filter by item type.",
                                 "type": "string",
-                                "enum": ["plan", "addon", "charge"]
+                                "enum": [
+                                    "plan",
+                                    "addon",
+                                    "charge"
+                                ]
                             },
                             "item_family_id": {
                                 "description": "Filter by item family ID. Example: \"saas-plans\"",
@@ -2597,7 +2974,11 @@
                             "status": {
                                 "description": "Filter by item status.",
                                 "type": "string",
-                                "enum": ["active", "archived", "deleted"]
+                                "enum": [
+                                    "active",
+                                    "archived",
+                                    "deleted"
+                                ]
                             },
                             "updated_at": {
                                 "description": "Filter by updated_at timestamp (Unix epoch seconds).",
@@ -2669,7 +3050,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2677,7 +3060,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2690,9 +3075,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listpaymentsources",
             "name": "list-payment-sources",
-            "output": ["ActionOutput_chargebee_listpaymentsources"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_chargebee_listpaymentsources", "ActionOutput_chargebee_listpaymentsources"],
+            "output": [
+                "ActionOutput_chargebee_listpaymentsources"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_listpaymentsources",
+                "ActionOutput_chargebee_listpaymentsources"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2730,7 +3122,10 @@
                             "type_operator": {
                                 "description": "Type filter operator. Default: is.",
                                 "type": "string",
-                                "enum": ["is", "is_not"]
+                                "enum": [
+                                    "is",
+                                    "is_not"
+                                ]
                             },
                             "limit": {
                                 "description": "Number of records per page. Max: 100.",
@@ -2741,7 +3136,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customer_id"],
+                        "required": [
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_listpaymentsources": {
@@ -2827,7 +3224,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2836,7 +3235,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2849,9 +3250,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listsubscriptions",
             "name": "list-subscriptions",
-            "output": ["ActionOutput_chargebee_listsubscriptions"],
+            "output": [
+                "ActionOutput_chargebee_listsubscriptions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_listsubscriptions", "ActionOutput_chargebee_listsubscriptions"],
+            "usedModels": [
+                "ActionInput_chargebee_listsubscriptions",
+                "ActionOutput_chargebee_listsubscriptions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2948,7 +3354,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2957,7 +3365,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2970,9 +3380,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_listtransactions",
             "name": "list-transactions",
-            "output": ["ActionOutput_chargebee_listtransactions"],
-            "scopes": ["read"],
-            "usedModels": ["ActionInput_chargebee_listtransactions", "ActionOutput_chargebee_listtransactions"],
+            "output": [
+                "ActionOutput_chargebee_listtransactions"
+            ],
+            "scopes": [
+                "read"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_listtransactions",
+                "ActionOutput_chargebee_listtransactions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3000,12 +3417,20 @@
                             "type_is": {
                                 "description": "Filter by transaction type.",
                                 "type": "string",
-                                "enum": ["payment", "refund", "payment_reversal"]
+                                "enum": [
+                                    "payment",
+                                    "refund",
+                                    "payment_reversal"
+                                ]
                             },
                             "type_is_not": {
                                 "description": "Exclude by transaction type.",
                                 "type": "string",
-                                "enum": ["payment", "refund", "payment_reversal"]
+                                "enum": [
+                                    "payment",
+                                    "refund",
+                                    "payment_reversal"
+                                ]
                             },
                             "status_is": {
                                 "description": "Filter by status.",
@@ -3065,7 +3490,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3078,9 +3505,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_updatecustomer",
             "name": "update-customer",
-            "output": ["ActionOutput_chargebee_updatecustomer"],
+            "output": [
+                "ActionOutput_chargebee_updatecustomer"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_updatecustomer", "ActionOutput_chargebee_updatecustomer"],
+            "usedModels": [
+                "ActionInput_chargebee_updatecustomer",
+                "ActionOutput_chargebee_updatecustomer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3108,7 +3540,10 @@
                             },
                             "auto_collection": {
                                 "type": "string",
-                                "enum": ["on", "off"]
+                                "enum": [
+                                    "on",
+                                    "off"
+                                ]
                             },
                             "net_term_days": {
                                 "type": "number"
@@ -3156,7 +3591,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["customer_id"],
+                        "required": [
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_updatecustomer": {
@@ -3182,7 +3619,10 @@
                             },
                             "auto_collection": {
                                 "type": "string",
-                                "enum": ["on", "off"]
+                                "enum": [
+                                    "on",
+                                    "off"
+                                ]
                             },
                             "net_term_days": {
                                 "type": "number"
@@ -3230,7 +3670,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3243,9 +3685,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_updateitemprice",
             "name": "update-item-price",
-            "output": ["ActionOutput_chargebee_updateitemprice"],
+            "output": [
+                "ActionOutput_chargebee_updateitemprice"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_updateitemprice", "ActionOutput_chargebee_updateitemprice"],
+            "usedModels": [
+                "ActionInput_chargebee_updateitemprice",
+                "ActionOutput_chargebee_updateitemprice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3262,7 +3709,10 @@
                             },
                             "description": {
                                 "description": "Description of the item price.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "price": {
                                 "description": "Price in minor units (cents). Example: 1900",
@@ -3271,7 +3721,10 @@
                             "status": {
                                 "description": "Status of the item price.",
                                 "type": "string",
-                                "enum": ["active", "archived"]
+                                "enum": [
+                                    "active",
+                                    "archived"
+                                ]
                             },
                             "tiers": {
                                 "description": "Tiered pricing details.",
@@ -3283,7 +3736,10 @@
                                             "type": "number"
                                         },
                                         "ending_unit": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "price": {
                                             "type": "number"
@@ -3293,7 +3749,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_updateitemprice": {
@@ -3310,7 +3768,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "archived", "deleted"]
+                                "enum": [
+                                    "active",
+                                    "archived",
+                                    "deleted"
+                                ]
                             },
                             "price": {
                                 "type": "number"
@@ -3334,7 +3796,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3347,9 +3811,16 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_updateitem",
             "name": "update-item",
-            "output": ["ActionOutput_chargebee_updateitem"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_chargebee_updateitem", "ActionOutput_chargebee_updateitem"],
+            "output": [
+                "ActionOutput_chargebee_updateitem"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_chargebee_updateitem",
+                "ActionOutput_chargebee_updateitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3366,7 +3837,10 @@
                             },
                             "description": {
                                 "description": "The description of the item.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_shippable": {
                                 "description": "Whether the item is shippable.",
@@ -3383,10 +3857,15 @@
                             "status": {
                                 "description": "The status of the item.",
                                 "type": "string",
-                                "enum": ["active", "archived"]
+                                "enum": [
+                                    "active",
+                                    "archived"
+                                ]
                             }
                         },
-                        "required": ["item_id"],
+                        "required": [
+                            "item_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_updateitem": {
@@ -3429,7 +3908,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3442,9 +3923,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_updatesubscription",
             "name": "update-subscription",
-            "output": ["ActionOutput_chargebee_updatesubscription"],
+            "output": [
+                "ActionOutput_chargebee_updatesubscription"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_updatesubscription", "ActionOutput_chargebee_updatesubscription"],
+            "usedModels": [
+                "ActionInput_chargebee_updatesubscription",
+                "ActionOutput_chargebee_updatesubscription"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3472,7 +3958,9 @@
                                             "maximum": 9007199254740991
                                         }
                                     },
-                                    "required": ["item_price_id"],
+                                    "required": [
+                                        "item_price_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of subscription items to set"
@@ -3486,7 +3974,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["subscription_id", "subscription_items"],
+                        "required": [
+                            "subscription_id",
+                            "subscription_items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_updatesubscription": {
@@ -3531,7 +4022,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["item_price_id"],
+                                    "required": [
+                                        "item_price_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Updated subscription items"
@@ -3567,7 +4060,12 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "status", "customer_id", "subscription_items"],
+                        "required": [
+                            "id",
+                            "status",
+                            "customer_id",
+                            "subscription_items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3580,9 +4078,14 @@
             "endpoint": null,
             "input": "ActionInput_chargebee_voidcreditnote",
             "name": "void-credit-note",
-            "output": ["ActionOutput_chargebee_voidcreditnote"],
+            "output": [
+                "ActionOutput_chargebee_voidcreditnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_chargebee_voidcreditnote", "ActionOutput_chargebee_voidcreditnote"],
+            "usedModels": [
+                "ActionInput_chargebee_voidcreditnote",
+                "ActionOutput_chargebee_voidcreditnote"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3594,7 +4097,9 @@
                                 "description": "Credit note ID. Example: \"cbnote_123\""
                             }
                         },
-                        "required": ["credit_note_id"],
+                        "required": [
+                            "credit_note_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_chargebee_voidcreditnote": {
@@ -3607,21 +4112,36 @@
                                 "type": "string"
                             },
                             "subscription_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "reference_invoice_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["adjustment", "refundable", "store"]
+                                "enum": [
+                                    "adjustment",
+                                    "refundable",
+                                    "store"
+                                ]
                             },
                             "reason_code": {
                                 "type": "string"
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["adjusted", "refunded", "refund_due", "voided"]
+                                "enum": [
+                                    "adjusted",
+                                    "refunded",
+                                    "refund_due",
+                                    "voided"
+                                ]
                             },
                             "vat_number": {
                                 "type": "string"
@@ -3631,7 +4151,10 @@
                             },
                             "price_type": {
                                 "type": "string",
-                                "enum": ["tax_exclusive", "tax_inclusive"]
+                                "enum": [
+                                    "tax_exclusive",
+                                    "tax_inclusive"
+                                ]
                             },
                             "currency_code": {
                                 "type": "string"
@@ -3665,7 +4188,11 @@
                             },
                             "channel": {
                                 "type": "string",
-                                "enum": ["web", "app_store", "play_store"]
+                                "enum": [
+                                    "web",
+                                    "app_store",
+                                    "play_store"
+                                ]
                             },
                             "sub_total": {
                                 "type": "number"
@@ -3710,7 +4237,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "customer_id", "type", "status", "price_type", "currency_code", "sub_total", "deleted"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "type",
+                            "status",
+                            "price_type",
+                            "currency_code",
+                            "sub_total",
+                            "deleted"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3726,12 +4262,16 @@
             "endpoints": [],
             "input": null,
             "name": "coupon-sets",
-            "output": ["CouponSet"],
+            "output": [
+                "CouponSet"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CouponSet"],
+            "usedModels": [
+                "CouponSet"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3765,12 +4305,18 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "coupon_id", "name"],
+                        "required": [
+                            "id",
+                            "coupon_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3779,12 +4325,16 @@
             "endpoints": [],
             "input": null,
             "name": "credit-notes",
-            "output": ["CreditNote"],
+            "output": [
+                "CreditNote"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CreditNote"],
+            "usedModels": [
+                "CreditNote"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3797,11 +4347,19 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["adjusted", "refunded", "refund_due", "voided"]
+                                "enum": [
+                                    "adjusted",
+                                    "refunded",
+                                    "refund_due",
+                                    "voided"
+                                ]
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["adjustment", "refundable"]
+                                "enum": [
+                                    "adjustment",
+                                    "refundable"
+                                ]
                             },
                             "updated_at": {
                                 "type": "number"
@@ -3825,12 +4383,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status", "type", "updated_at"],
+                        "required": [
+                            "id",
+                            "status",
+                            "type",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3839,12 +4404,16 @@
             "endpoints": [],
             "input": null,
             "name": "customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer"],
+            "usedModels": [
+                "Customer"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3874,12 +4443,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "updated_at"],
+                        "required": [
+                            "id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3888,12 +4462,16 @@
             "endpoints": [],
             "input": null,
             "name": "events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event"],
+            "usedModels": [
+                "Event"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3936,12 +4514,17 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "occurred_at"],
+                        "required": [
+                            "id",
+                            "occurred_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3950,12 +4533,16 @@
             "endpoints": [],
             "input": null,
             "name": "invoices",
-            "output": ["Invoice"],
+            "output": [
+                "Invoice"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invoice"],
+            "usedModels": [
+                "Invoice"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4096,12 +4683,20 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "customer_id", "status", "currency_code", "deleted"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "status",
+                            "currency_code",
+                            "deleted"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4110,12 +4705,16 @@
             "endpoints": [],
             "input": null,
             "name": "item-families",
-            "output": ["ItemFamily"],
+            "output": [
+                "ItemFamily"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ItemFamily"],
+            "usedModels": [
+                "ItemFamily"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4152,12 +4751,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4166,12 +4769,16 @@
             "endpoints": [],
             "input": null,
             "name": "item-prices",
-            "output": ["ItemPrice"],
+            "output": [
+                "ItemPrice"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ItemPrice"],
+            "usedModels": [
+                "ItemPrice"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4256,12 +4863,23 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "item_id", "item_type", "status", "currency_code", "updated_at", "created_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "item_id",
+                            "item_type",
+                            "status",
+                            "currency_code",
+                            "updated_at",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4270,12 +4888,16 @@
             "endpoints": [],
             "input": null,
             "name": "items",
-            "output": ["Item"],
+            "output": [
+                "Item"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Item"],
+            "usedModels": [
+                "Item"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4366,12 +4988,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4380,12 +5006,16 @@
             "endpoints": [],
             "input": null,
             "name": "subscriptions",
-            "output": ["Subscription"],
+            "output": [
+                "Subscription"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subscription"],
+            "usedModels": [
+                "Subscription"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4462,17 +5092,26 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["item_price_id"],
+                                    "required": [
+                                        "item_price_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["id", "status", "customer_id", "updated_at"],
+                        "required": [
+                            "id",
+                            "status",
+                            "customer_id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4481,12 +5120,16 @@
             "endpoints": [],
             "input": null,
             "name": "transactions",
-            "output": ["Transaction"],
+            "output": [
+                "Transaction"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Transaction"],
+            "usedModels": [
+                "Transaction"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4623,12 +5266,19 @@
                             "linked_payments": {},
                             "error_detail": {}
                         },
-                        "required": ["id", "type", "currency_code", "deleted"],
+                        "required": [
+                            "id",
+                            "type",
+                            "currency_code",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

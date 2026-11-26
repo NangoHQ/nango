@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_ring_central_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_ring_central_createcontact"],
-            "scopes": ["Contacts"],
-            "usedModels": ["ActionInput_ring_central_createcontact", "ActionOutput_ring_central_createcontact"],
+            "output": [
+                "ActionOutput_ring_central_createcontact"
+            ],
+            "scopes": [
+                "Contacts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_createcontact",
+                "ActionOutput_ring_central_createcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -50,7 +57,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -64,7 +74,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["phoneNumbers"],
+                        "required": [
+                            "phoneNumbers"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ring_central_createcontact": {
@@ -107,7 +119,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -121,7 +136,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -134,9 +151,16 @@
             "endpoint": null,
             "input": "ActionInput_ring_central_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_ring_central_createuser"],
-            "scopes": ["EditAccounts"],
-            "usedModels": ["ActionInput_ring_central_createuser", "ActionOutput_ring_central_createuser"],
+            "output": [
+                "ActionOutput_ring_central_createuser"
+            ],
+            "scopes": [
+                "EditAccounts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_createuser",
+                "ActionOutput_ring_central_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -183,7 +207,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -200,7 +227,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -229,7 +259,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type"],
+                                    "required": [
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -243,11 +275,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["department"],
+                                "required": [
+                                    "department"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["firstName", "lastName", "email", "phoneNumbers", "photos", "addresses"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumbers",
+                            "photos",
+                            "addresses"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ring_central_createuser": {
@@ -266,7 +307,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -279,9 +325,16 @@
             "endpoint": null,
             "input": "ActionInput_ring_central_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_ring_central_deleteuser"],
-            "scopes": ["EditAccounts"],
-            "usedModels": ["ActionInput_ring_central_deleteuser", "ActionOutput_ring_central_deleteuser"],
+            "output": [
+                "ActionOutput_ring_central_deleteuser"
+            ],
+            "scopes": [
+                "EditAccounts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_deleteuser",
+                "ActionOutput_ring_central_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -292,7 +345,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_ring_central_deleteuser": {
@@ -302,7 +357,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -315,9 +372,16 @@
             "endpoint": null,
             "input": "ActionInput_ring_central_getcompanyinfo",
             "name": "get-company-info",
-            "output": ["ActionOutput_ring_central_getcompanyinfo"],
-            "scopes": ["ReadAccounts"],
-            "usedModels": ["ActionInput_ring_central_getcompanyinfo", "ActionOutput_ring_central_getcompanyinfo"],
+            "output": [
+                "ActionOutput_ring_central_getcompanyinfo"
+            ],
+            "scopes": [
+                "ReadAccounts"
+            ],
+            "usedModels": [
+                "ActionInput_ring_central_getcompanyinfo",
+                "ActionOutput_ring_central_getcompanyinfo"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -349,7 +413,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "servicePlan": {
@@ -362,11 +429,17 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "name"],
+                                        "required": [
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["brand", "servicePlan"],
+                                "required": [
+                                    "brand",
+                                    "servicePlan"
+                                ],
                                 "additionalProperties": false
                             },
                             "mainNumber": {
@@ -385,7 +458,13 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "status", "serviceInfo", "operator"],
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "serviceInfo",
+                            "operator"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -407,12 +486,19 @@
             ],
             "input": "SyncMetadata_ring_central_contacts",
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every day",
-            "scopes": ["ReadContacts"],
+            "scopes": [
+                "ReadContacts"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact", "SyncMetadata_ring_central_contacts"],
+            "usedModels": [
+                "Contact",
+                "SyncMetadata_ring_central_contacts"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -457,7 +543,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -471,7 +560,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_ring_central_contacts": {
@@ -496,12 +587,19 @@
             ],
             "input": "SyncMetadata_ring_central_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
-            "scopes": ["ReadAccounts"],
+            "scopes": [
+                "ReadAccounts"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_ring_central_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_ring_central_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -522,7 +620,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_ring_central_users": {

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_addplaylistitem",
             "name": "add-playlist-item",
-            "output": ["ActionOutput_youtube_addplaylistitem"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_addplaylistitem", "ActionOutput_youtube_addplaylistitem"],
+            "output": [
+                "ActionOutput_youtube_addplaylistitem"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_addplaylistitem",
+                "ActionOutput_youtube_addplaylistitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -31,7 +38,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["playlistId", "videoId"],
+                        "required": [
+                            "playlistId",
+                            "videoId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_addplaylistitem": {
@@ -53,7 +63,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "playlistId", "videoId"],
+                        "required": [
+                            "id",
+                            "playlistId",
+                            "videoId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -66,9 +80,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_createcommentreply",
             "name": "create-comment-reply",
-            "output": ["ActionOutput_youtube_createcommentreply"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_createcommentreply", "ActionOutput_youtube_createcommentreply"],
+            "output": [
+                "ActionOutput_youtube_createcommentreply"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_createcommentreply",
+                "ActionOutput_youtube_createcommentreply"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -84,7 +105,10 @@
                                 "description": "The original text of the reply. Example: \"Thanks for watching!\""
                             }
                         },
-                        "required": ["parentId", "textOriginal"],
+                        "required": [
+                            "parentId",
+                            "textOriginal"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_createcommentreply": {
@@ -124,7 +148,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -137,9 +163,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_youtube_createcomment"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_createcomment", "ActionOutput_youtube_createcomment"],
+            "output": [
+                "ActionOutput_youtube_createcomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_createcomment",
+                "ActionOutput_youtube_createcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -160,7 +193,11 @@
                                 "description": "The text content of the comment. Example: \"Great video!\""
                             }
                         },
-                        "required": ["videoId", "channelId", "text"],
+                        "required": [
+                            "videoId",
+                            "channelId",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_createcomment": {
@@ -232,9 +269,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_createplaylist",
             "name": "create-playlist",
-            "output": ["ActionOutput_youtube_createplaylist"],
-            "scopes": ["https://www.googleapis.com/auth/youtube"],
-            "usedModels": ["ActionInput_youtube_createplaylist", "ActionOutput_youtube_createplaylist"],
+            "output": [
+                "ActionOutput_youtube_createplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_createplaylist",
+                "ActionOutput_youtube_createplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -252,10 +296,16 @@
                             "privacyStatus": {
                                 "description": "The privacy status of the playlist.",
                                 "type": "string",
-                                "enum": ["public", "unlisted", "private"]
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_createplaylist": {
@@ -274,7 +324,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -287,9 +339,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_youtube_deletecomment"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_deletecomment", "ActionOutput_youtube_deletecomment"],
+            "output": [
+                "ActionOutput_youtube_deletecomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deletecomment",
+                "ActionOutput_youtube_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -301,7 +360,9 @@
                                 "description": "The ID of the comment to delete. Example: \"UgyR8T-2e8gRcv1o0zN4AaABAg\""
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_deletecomment": {
@@ -311,7 +372,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -324,9 +387,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_deleteplaylistitem",
             "name": "delete-playlist-item",
-            "output": ["ActionOutput_youtube_deleteplaylistitem"],
-            "scopes": ["https://www.googleapis.com/auth/youtube"],
-            "usedModels": ["ActionInput_youtube_deleteplaylistitem", "ActionOutput_youtube_deleteplaylistitem"],
+            "output": [
+                "ActionOutput_youtube_deleteplaylistitem"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deleteplaylistitem",
+                "ActionOutput_youtube_deleteplaylistitem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -338,7 +408,9 @@
                                 "description": "The ID of the playlist item to delete. Example: \"PL1234567890abcdefABCDEF1234567890abcdefAB\""
                             }
                         },
-                        "required": ["playlistItemId"],
+                        "required": [
+                            "playlistItemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_deleteplaylistitem": {
@@ -349,7 +421,9 @@
                                 "description": "Whether the playlist item was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -362,9 +436,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_deleteplaylist",
             "name": "delete-playlist",
-            "output": ["ActionOutput_youtube_deleteplaylist"],
-            "scopes": ["https://www.googleapis.com/auth/youtube"],
-            "usedModels": ["ActionInput_youtube_deleteplaylist", "ActionOutput_youtube_deleteplaylist"],
+            "output": [
+                "ActionOutput_youtube_deleteplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deleteplaylist",
+                "ActionOutput_youtube_deleteplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -376,7 +457,9 @@
                                 "description": "The YouTube playlist ID to delete. Example: \"PLxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
                             }
                         },
-                        "required": ["playlistId"],
+                        "required": [
+                            "playlistId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_deleteplaylist": {
@@ -389,7 +472,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "playlistId"],
+                        "required": [
+                            "success",
+                            "playlistId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -402,9 +488,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_deletevideo",
             "name": "delete-video",
-            "output": ["ActionOutput_youtube_deletevideo"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_deletevideo", "ActionOutput_youtube_deletevideo"],
+            "output": [
+                "ActionOutput_youtube_deletevideo"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_deletevideo",
+                "ActionOutput_youtube_deletevideo"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -416,7 +509,9 @@
                                 "description": "The ID of the video to delete. Example: \"dQw4w9WgXcQ\""
                             }
                         },
-                        "required": ["videoId"],
+                        "required": [
+                            "videoId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_deletevideo": {
@@ -429,7 +524,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -442,9 +540,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_getchannel",
             "name": "get-channel",
-            "output": ["ActionOutput_youtube_getchannel"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
-            "usedModels": ["ActionInput_youtube_getchannel", "ActionOutput_youtube_getchannel"],
+            "output": [
+                "ActionOutput_youtube_getchannel"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getchannel",
+                "ActionOutput_youtube_getchannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -659,7 +764,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -672,9 +779,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_getcomment",
             "name": "get-comment",
-            "output": ["ActionOutput_youtube_getcomment"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_getcomment", "ActionOutput_youtube_getcomment"],
+            "output": [
+                "ActionOutput_youtube_getcomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getcomment",
+                "ActionOutput_youtube_getcomment"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -686,7 +800,9 @@
                                 "description": "The ID of the comment to retrieve. Example: \"UgxT9K7pHq8QfC2z3t4\""
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_getcomment": {
@@ -738,7 +854,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -751,9 +869,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_getplaylist",
             "name": "get-playlist",
-            "output": ["ActionOutput_youtube_getplaylist"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
-            "usedModels": ["ActionInput_youtube_getplaylist", "ActionOutput_youtube_getplaylist"],
+            "output": [
+                "ActionOutput_youtube_getplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getplaylist",
+                "ActionOutput_youtube_getplaylist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -765,7 +890,9 @@
                                 "description": "The ID of the YouTube playlist to retrieve. Example: \"PLxxxxxxxxxxxxxxxxxxx\""
                             }
                         },
-                        "required": ["playlistId"],
+                        "required": [
+                            "playlistId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_getplaylist": {
@@ -794,7 +921,11 @@
                             },
                             "privacyStatus": {
                                 "type": "string",
-                                "enum": ["public", "unlisted", "private"]
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
                             },
                             "thumbnails": {
                                 "type": "object",
@@ -814,12 +945,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["url"],
+                                    "required": [
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -832,9 +967,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_getvideo",
             "name": "get-video",
-            "output": ["ActionOutput_youtube_getvideo"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
-            "usedModels": ["ActionInput_youtube_getvideo", "ActionOutput_youtube_getvideo"],
+            "output": [
+                "ActionOutput_youtube_getvideo"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_getvideo",
+                "ActionOutput_youtube_getvideo"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -846,7 +988,9 @@
                                 "description": "YouTube video ID. Example: \"dQw4w9WgXcQ\""
                             }
                         },
-                        "required": ["videoId"],
+                        "required": [
+                            "videoId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_getvideo": {
@@ -905,7 +1049,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -918,9 +1064,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_listcaptions",
             "name": "list-captions",
-            "output": ["ActionOutput_youtube_listcaptions"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_listcaptions", "ActionOutput_youtube_listcaptions"],
+            "output": [
+                "ActionOutput_youtube_listcaptions"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listcaptions",
+                "ActionOutput_youtube_listcaptions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -932,7 +1085,9 @@
                                 "description": "The YouTube video ID of the video for which to return caption tracks. Example: \"dQw4w9WgXcQ\""
                             }
                         },
-                        "required": ["videoId"],
+                        "required": [
+                            "videoId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_listcaptions": {
@@ -986,7 +1141,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -995,7 +1152,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1008,9 +1167,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_listchannelplaylists",
             "name": "list-channel-playlists",
-            "output": ["ActionOutput_youtube_listchannelplaylists"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
-            "usedModels": ["ActionInput_youtube_listchannelplaylists", "ActionOutput_youtube_listchannelplaylists"],
+            "output": [
+                "ActionOutput_youtube_listchannelplaylists"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listchannelplaylists",
+                "ActionOutput_youtube_listchannelplaylists"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1030,7 +1196,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["channelId"],
+                        "required": [
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_listchannelplaylists": {
@@ -1083,12 +1251,16 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["url"],
+                                                "required": [
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1102,7 +1274,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["playlists", "totalResults"],
+                        "required": [
+                            "playlists",
+                            "totalResults"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1115,9 +1290,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_listcommentthreads",
             "name": "list-comment-threads",
-            "output": ["ActionOutput_youtube_listcommentthreads"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_listcommentthreads", "ActionOutput_youtube_listcommentthreads"],
+            "output": [
+                "ActionOutput_youtube_listcommentthreads"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listcommentthreads",
+                "ActionOutput_youtube_listcommentthreads"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1145,7 +1327,10 @@
                             "order": {
                                 "description": "Order of comment threads. time (default) or relevance.",
                                 "type": "string",
-                                "enum": ["time", "relevance"]
+                                "enum": [
+                                    "time",
+                                    "relevance"
+                                ]
                             },
                             "searchTerms": {
                                 "description": "Search terms to filter comments.",
@@ -1154,7 +1339,10 @@
                             "textFormat": {
                                 "description": "Format of comments. html (default) or plainText.",
                                 "type": "string",
-                                "enum": ["html", "plainText"]
+                                "enum": [
+                                    "html",
+                                    "plainText"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1221,12 +1409,16 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1234,7 +1426,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1247,9 +1441,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_listplaylistitems",
             "name": "list-playlist-items",
-            "output": ["ActionOutput_youtube_listplaylistitems"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
-            "usedModels": ["ActionInput_youtube_listplaylistitems", "ActionOutput_youtube_listplaylistitems"],
+            "output": [
+                "ActionOutput_youtube_listplaylistitems"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listplaylistitems",
+                "ActionOutput_youtube_listplaylistitems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1269,7 +1470,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["playlistId"],
+                        "required": [
+                            "playlistId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_listplaylistitems": {
@@ -1355,7 +1558,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The playlist items returned."
@@ -1373,7 +1578,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1386,9 +1593,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_listuploadedvideos",
             "name": "list-uploaded-videos",
-            "output": ["ActionOutput_youtube_listuploadedvideos"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
-            "usedModels": ["ActionInput_youtube_listuploadedvideos", "ActionOutput_youtube_listuploadedvideos"],
+            "output": [
+                "ActionOutput_youtube_listuploadedvideos"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_listuploadedvideos",
+                "ActionOutput_youtube_listuploadedvideos"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1442,7 +1656,13 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "title", "published_at", "channel_id", "video_id"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "published_at",
+                                        "channel_id",
+                                        "video_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1450,7 +1670,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1463,9 +1685,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_youtube_updatecomment"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_updatecomment", "ActionOutput_youtube_updatecomment"],
+            "output": [
+                "ActionOutput_youtube_updatecomment"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updatecomment",
+                "ActionOutput_youtube_updatecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1481,7 +1710,10 @@
                                 "description": "The new text content for the comment."
                             }
                         },
-                        "required": ["id", "textOriginal"],
+                        "required": [
+                            "id",
+                            "textOriginal"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_updatecomment": {
@@ -1521,7 +1753,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "authorDisplayName", "textDisplay", "textOriginal", "publishedAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "authorDisplayName",
+                            "textDisplay",
+                            "textOriginal",
+                            "publishedAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1534,9 +1773,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_updateplaylistitem",
             "name": "update-playlist-item",
-            "output": ["ActionOutput_youtube_updateplaylistitem"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_updateplaylistitem", "ActionOutput_youtube_updateplaylistitem"],
+            "output": [
+                "ActionOutput_youtube_updateplaylistitem"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updateplaylistitem",
+                "ActionOutput_youtube_updateplaylistitem"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1559,7 +1805,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["kind", "videoId"],
+                                "required": [
+                                    "kind",
+                                    "videoId"
+                                ],
                                 "additionalProperties": false
                             },
                             "position": {
@@ -1577,7 +1826,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "playlistId", "resourceId"],
+                        "required": [
+                            "id",
+                            "playlistId",
+                            "resourceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_updateplaylistitem": {
@@ -1629,7 +1882,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "playlistId", "videoId"],
+                        "required": [
+                            "id",
+                            "playlistId",
+                            "videoId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1642,9 +1899,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_updateplaylist",
             "name": "update-playlist",
-            "output": ["ActionOutput_youtube_updateplaylist"],
-            "scopes": ["https://www.googleapis.com/auth/youtube"],
-            "usedModels": ["ActionInput_youtube_updateplaylist", "ActionOutput_youtube_updateplaylist"],
+            "output": [
+                "ActionOutput_youtube_updateplaylist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updateplaylist",
+                "ActionOutput_youtube_updateplaylist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1666,10 +1930,16 @@
                             "privacyStatus": {
                                 "description": "The privacy status of the playlist.",
                                 "type": "string",
-                                "enum": ["public", "unlisted", "private"]
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_updateplaylist": {
@@ -1686,10 +1956,16 @@
                             },
                             "privacyStatus": {
                                 "type": "string",
-                                "enum": ["public", "unlisted", "private"]
+                                "enum": [
+                                    "public",
+                                    "unlisted",
+                                    "private"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1702,9 +1978,16 @@
             "endpoint": null,
             "input": "ActionInput_youtube_updatevideo",
             "name": "update-video",
-            "output": ["ActionOutput_youtube_updatevideo"],
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
-            "usedModels": ["ActionInput_youtube_updatevideo", "ActionOutput_youtube_updatevideo"],
+            "output": [
+                "ActionOutput_youtube_updatevideo"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
+            "usedModels": [
+                "ActionInput_youtube_updatevideo",
+                "ActionOutput_youtube_updatevideo"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1750,12 +2033,19 @@
                                     "privacyStatus": {
                                         "description": "The privacy status of the video.",
                                         "type": "string",
-                                        "enum": ["public", "unlisted", "private"]
+                                        "enum": [
+                                            "public",
+                                            "unlisted",
+                                            "private"
+                                        ]
                                     },
                                     "license": {
                                         "description": "The license of the video.",
                                         "type": "string",
-                                        "enum": ["youtube", "creativeCommon"]
+                                        "enum": [
+                                            "youtube",
+                                            "creativeCommon"
+                                        ]
                                     },
                                     "embeddable": {
                                         "description": "Whether the video can be embedded.",
@@ -1810,7 +2100,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_youtube_updatevideo": {
@@ -1841,7 +2133,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["title"],
+                                "required": [
+                                    "title"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
@@ -1899,7 +2193,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1920,12 +2216,18 @@
             ],
             "input": null,
             "name": "caption-tracks",
-            "output": ["CaptionTrack"],
+            "output": [
+                "CaptionTrack"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/youtube.force-ssl"],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.force-ssl"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CaptionTrack"],
+            "usedModels": [
+                "CaptionTrack"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1990,12 +2292,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "video_id", "last_updated"],
+                        "required": [
+                            "id",
+                            "video_id",
+                            "last_updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2009,12 +2317,19 @@
             ],
             "input": "SyncMetadata_youtube_channelplaylists",
             "name": "channel-playlists",
-            "output": ["ChannelPlaylist"],
+            "output": [
+                "ChannelPlaylist"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChannelPlaylist", "SyncMetadata_youtube_channelplaylists"],
+            "usedModels": [
+                "ChannelPlaylist",
+                "SyncMetadata_youtube_channelplaylists"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2059,7 +2374,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "channelId", "title", "publishedAt"],
+                        "required": [
+                            "id",
+                            "channelId",
+                            "title",
+                            "publishedAt"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_youtube_channelplaylists": {
@@ -2076,7 +2396,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2090,12 +2412,18 @@
             ],
             "input": null,
             "name": "channels",
-            "output": ["Channel"],
+            "output": [
+                "Channel"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Channel"],
+            "usedModels": [
+                "Channel"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2155,12 +2483,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2174,12 +2506,18 @@
             ],
             "input": null,
             "name": "comment-threads",
-            "output": ["CommentThread"],
+            "output": [
+                "CommentThread"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CommentThread"],
+            "usedModels": [
+                "CommentThread"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2218,7 +2556,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["displayName"],
+                                        "required": [
+                                            "displayName"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "textOriginal": {
@@ -2242,7 +2582,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "author", "textOriginal", "textDisplay", "likeCount", "publishedAt", "updatedAt"],
+                                "required": [
+                                    "id",
+                                    "author",
+                                    "textOriginal",
+                                    "textDisplay",
+                                    "likeCount",
+                                    "publishedAt",
+                                    "updatedAt"
+                                ],
                                 "additionalProperties": false
                             },
                             "replies": {
@@ -2269,7 +2617,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["displayName"],
+                                            "required": [
+                                                "displayName"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "textOriginal": {
@@ -2293,7 +2643,15 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "author", "textOriginal", "textDisplay", "likeCount", "publishedAt", "updatedAt"],
+                                    "required": [
+                                        "id",
+                                        "author",
+                                        "textOriginal",
+                                        "textDisplay",
+                                        "likeCount",
+                                        "publishedAt",
+                                        "updatedAt"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2312,12 +2670,21 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "videoId", "topLevelComment", "replies", "totalReplyCount", "etag"],
+                        "required": [
+                            "id",
+                            "videoId",
+                            "topLevelComment",
+                            "replies",
+                            "totalReplyCount",
+                            "etag"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2331,12 +2698,19 @@
             ],
             "input": "SyncMetadata_youtube_playlistitems",
             "name": "playlist-items",
-            "output": ["PlaylistItem"],
+            "output": [
+                "PlaylistItem"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PlaylistItem", "SyncMetadata_youtube_playlistitems"],
+            "usedModels": [
+                "PlaylistItem",
+                "SyncMetadata_youtube_playlistitems"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2386,7 +2760,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "playlist_id", "video_id", "position", "published_at"],
+                        "required": [
+                            "id",
+                            "playlist_id",
+                            "video_id",
+                            "position",
+                            "published_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_youtube_playlistitems": {
@@ -2403,7 +2783,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2417,12 +2799,18 @@
             ],
             "input": null,
             "name": "uploaded-videos",
-            "output": ["UploadedVideo"],
+            "output": [
+                "UploadedVideo"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/youtube.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/youtube.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UploadedVideo"],
+            "usedModels": [
+                "UploadedVideo"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2504,12 +2892,21 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "title", "description", "channelId", "publishedAt", "playlistItemId"],
+                        "required": [
+                            "id",
+                            "title",
+                            "description",
+                            "channelId",
+                            "publishedAt",
+                            "playlistItemId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

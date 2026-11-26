@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_activatetemplateversion",
             "name": "activate-template-version",
-            "output": ["ActionOutput_sendgrid_activatetemplateversion"],
-            "scopes": ["templates.versions.activate.create"],
-            "usedModels": ["ActionInput_sendgrid_activatetemplateversion", "ActionOutput_sendgrid_activatetemplateversion"],
+            "output": [
+                "ActionOutput_sendgrid_activatetemplateversion"
+            ],
+            "scopes": [
+                "templates.versions.activate.create"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_activatetemplateversion",
+                "ActionOutput_sendgrid_activatetemplateversion"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "Template version ID. Example: \"a7212169-c965-4808-b0ee-f9728250515d\""
                             }
                         },
-                        "required": ["template_id", "version_id"],
+                        "required": [
+                            "template_id",
+                            "version_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_activatetemplateversion": {
@@ -52,7 +62,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "template_id", "active"],
+                        "required": [
+                            "id",
+                            "template_id",
+                            "active"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -65,9 +79,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_addcontactstolist",
             "name": "add-contacts-to-list",
-            "output": ["ActionOutput_sendgrid_addcontactstolist"],
+            "output": [
+                "ActionOutput_sendgrid_addcontactstolist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_addcontactstolist", "ActionOutput_sendgrid_addcontactstolist"],
+            "usedModels": [
+                "ActionInput_sendgrid_addcontactstolist",
+                "ActionOutput_sendgrid_addcontactstolist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -92,13 +111,18 @@
                                             "description": "Contact email address. SendGrid upserts by email: a matching contact is added to the list, otherwise a new contact is created and added."
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Contacts to add to the list. Min 1, max 30000."
                             }
                         },
-                        "required": ["list_id", "contacts"],
+                        "required": [
+                            "list_id",
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_addcontactstolist": {
@@ -108,7 +132,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["job_id"],
+                        "required": [
+                            "job_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -121,9 +147,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_addglobalsuppressions",
             "name": "add-global-suppressions",
-            "output": ["ActionOutput_sendgrid_addglobalsuppressions"],
-            "scopes": ["asm.suppressions.write"],
-            "usedModels": ["ActionInput_sendgrid_addglobalsuppressions", "ActionOutput_sendgrid_addglobalsuppressions"],
+            "output": [
+                "ActionOutput_sendgrid_addglobalsuppressions"
+            ],
+            "scopes": [
+                "asm.suppressions.write"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_addglobalsuppressions",
+                "ActionOutput_sendgrid_addglobalsuppressions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -140,7 +173,9 @@
                                 "description": "Array of email addresses to add to the global suppression list. Example: [\"a@x.com\", \"b@x.com\"]"
                             }
                         },
-                        "required": ["recipient_emails"],
+                        "required": [
+                            "recipient_emails"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_addglobalsuppressions": {
@@ -156,7 +191,9 @@
                                 "description": "The email addresses that were added to the global suppression list"
                             }
                         },
-                        "required": ["recipient_emails"],
+                        "required": [
+                            "recipient_emails"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -169,9 +206,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_addgroupsuppressions",
             "name": "add-group-suppressions",
-            "output": ["ActionOutput_sendgrid_addgroupsuppressions"],
-            "scopes": ["asm.suppressions.write"],
-            "usedModels": ["ActionInput_sendgrid_addgroupsuppressions", "ActionOutput_sendgrid_addgroupsuppressions"],
+            "output": [
+                "ActionOutput_sendgrid_addgroupsuppressions"
+            ],
+            "scopes": [
+                "asm.suppressions.write"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_addgroupsuppressions",
+                "ActionOutput_sendgrid_addgroupsuppressions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -192,7 +236,10 @@
                                 "description": "Email addresses to add to the group suppressions. Example: [\"user@example.com\"]"
                             }
                         },
-                        "required": ["group_id", "recipient_emails"],
+                        "required": [
+                            "group_id",
+                            "recipient_emails"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_addgroupsuppressions": {
@@ -206,7 +253,9 @@
                                 "description": "The email addresses added to the unsubscribe group."
                             }
                         },
-                        "required": ["recipient_emails"],
+                        "required": [
+                            "recipient_emails"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -219,9 +268,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_createcustomfield",
             "name": "create-custom-field",
-            "output": ["ActionOutput_sendgrid_createcustomfield"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_sendgrid_createcustomfield", "ActionOutput_sendgrid_createcustomfield"],
+            "output": [
+                "ActionOutput_sendgrid_createcustomfield"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_createcustomfield",
+                "ActionOutput_sendgrid_createcustomfield"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -234,11 +290,18 @@
                             },
                             "field_type": {
                                 "type": "string",
-                                "enum": ["Text", "Number", "Date"],
+                                "enum": [
+                                    "Text",
+                                    "Number",
+                                    "Date"
+                                ],
                                 "description": "Type of the custom field."
                             }
                         },
-                        "required": ["name", "field_type"],
+                        "required": [
+                            "name",
+                            "field_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_createcustomfield": {
@@ -254,7 +317,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "field_type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "field_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -267,9 +334,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_createdynamictemplate",
             "name": "create-dynamic-template",
-            "output": ["ActionOutput_sendgrid_createdynamictemplate"],
-            "scopes": ["templates.create"],
-            "usedModels": ["ActionInput_sendgrid_createdynamictemplate", "ActionOutput_sendgrid_createdynamictemplate"],
+            "output": [
+                "ActionOutput_sendgrid_createdynamictemplate"
+            ],
+            "scopes": [
+                "templates.create"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_createdynamictemplate",
+                "ActionOutput_sendgrid_createdynamictemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -282,7 +356,9 @@
                                 "description": "The name for the new dynamic transactional template. Example: \"Welcome Email\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_createdynamictemplate": {
@@ -298,7 +374,10 @@
                             },
                             "generation": {
                                 "type": "string",
-                                "enum": ["legacy", "dynamic"],
+                                "enum": [
+                                    "legacy",
+                                    "dynamic"
+                                ],
                                 "description": "Defines the generation of the template."
                             },
                             "updated_at": {
@@ -340,13 +419,20 @@
                                         },
                                         "editor": {
                                             "type": "string",
-                                            "enum": ["code", "design"]
+                                            "enum": [
+                                                "code",
+                                                "design"
+                                            ]
                                         },
                                         "thumbnail_url": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "template_id", "active"],
+                                    "required": [
+                                        "id",
+                                        "template_id",
+                                        "active"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -358,11 +444,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["message"],
+                                "required": [
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "generation", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "generation",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -375,9 +468,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_createlist",
             "name": "create-list",
-            "output": ["ActionOutput_sendgrid_createlist"],
+            "output": [
+                "ActionOutput_sendgrid_createlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_createlist", "ActionOutput_sendgrid_createlist"],
+            "usedModels": [
+                "ActionInput_sendgrid_createlist",
+                "ActionOutput_sendgrid_createlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -391,7 +489,9 @@
                                 "description": "The name for the new contact list. Example: \"Newsletter Subscribers\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_createlist": {
@@ -412,7 +512,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -425,9 +528,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_createsegment",
             "name": "create-segment",
-            "output": ["ActionOutput_sendgrid_createsegment"],
+            "output": [
+                "ActionOutput_sendgrid_createsegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_createsegment", "ActionOutput_sendgrid_createsegment"],
+            "usedModels": [
+                "ActionInput_sendgrid_createsegment",
+                "ActionOutput_sendgrid_createsegment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -450,7 +558,10 @@
                                 }
                             }
                         },
-                        "required": ["name", "query_dsl"],
+                        "required": [
+                            "name",
+                            "query_dsl"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_createsegment": {
@@ -475,7 +586,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "query_dsl", "query_validation"],
+                        "required": [
+                            "id",
+                            "name",
+                            "query_dsl",
+                            "query_validation"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -488,9 +604,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_createsenderidentity",
             "name": "create-sender-identity",
-            "output": ["ActionOutput_sendgrid_createsenderidentity"],
+            "output": [
+                "ActionOutput_sendgrid_createsenderidentity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_createsenderidentity", "ActionOutput_sendgrid_createsenderidentity"],
+            "usedModels": [
+                "ActionInput_sendgrid_createsenderidentity",
+                "ActionOutput_sendgrid_createsenderidentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -538,7 +659,17 @@
                                 "description": "Country for CAN-SPAM compliance. Example: \"United States\""
                             }
                         },
-                        "required": ["nickname", "from_email", "from_name", "reply_to", "address", "city", "state", "zip", "country"],
+                        "required": [
+                            "nickname",
+                            "from_email",
+                            "from_name",
+                            "reply_to",
+                            "address",
+                            "city",
+                            "state",
+                            "zip",
+                            "country"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_createsenderidentity": {
@@ -578,7 +709,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "nickname", "from_email", "reply_to", "address", "city", "country", "verified"],
+                        "required": [
+                            "id",
+                            "nickname",
+                            "from_email",
+                            "reply_to",
+                            "address",
+                            "city",
+                            "country",
+                            "verified"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -591,9 +731,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_createsuppressiongroup",
             "name": "create-suppression-group",
-            "output": ["ActionOutput_sendgrid_createsuppressiongroup"],
+            "output": [
+                "ActionOutput_sendgrid_createsuppressiongroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_createsuppressiongroup", "ActionOutput_sendgrid_createsuppressiongroup"],
+            "usedModels": [
+                "ActionInput_sendgrid_createsuppressiongroup",
+                "ActionOutput_sendgrid_createsuppressiongroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -613,7 +758,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "description"],
+                        "required": [
+                            "name",
+                            "description"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_createsuppressiongroup": {
@@ -636,7 +784,12 @@
                                 "description": "Whether this is the default suppression group."
                             }
                         },
-                        "required": ["id", "name", "description", "is_default"],
+                        "required": [
+                            "id",
+                            "name",
+                            "description",
+                            "is_default"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -649,9 +802,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_createtemplateversion",
             "name": "create-template-version",
-            "output": ["ActionOutput_sendgrid_createtemplateversion"],
+            "output": [
+                "ActionOutput_sendgrid_createtemplateversion"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_createtemplateversion", "ActionOutput_sendgrid_createtemplateversion"],
+            "usedModels": [
+                "ActionInput_sendgrid_createtemplateversion",
+                "ActionOutput_sendgrid_createtemplateversion"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -685,7 +843,11 @@
                                 "maximum": 1
                             }
                         },
-                        "required": ["template_id", "name", "subject"],
+                        "required": [
+                            "template_id",
+                            "name",
+                            "subject"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_createtemplateversion": {
@@ -736,12 +898,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["message"],
+                                    "required": [
+                                        "message"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "template_id", "active", "name", "subject"],
+                        "required": [
+                            "id",
+                            "template_id",
+                            "active",
+                            "name",
+                            "subject"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -754,9 +924,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deleteblocks",
             "name": "delete-blocks",
-            "output": ["ActionOutput_sendgrid_deleteblocks"],
+            "output": [
+                "ActionOutput_sendgrid_deleteblocks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deleteblocks", "ActionOutput_sendgrid_deleteblocks"],
+            "usedModels": [
+                "ActionInput_sendgrid_deleteblocks",
+                "ActionOutput_sendgrid_deleteblocks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -785,7 +960,9 @@
                                 "description": "Whether the deletion was successful."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -798,9 +975,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletebounces",
             "name": "delete-bounces",
-            "output": ["ActionOutput_sendgrid_deletebounces"],
+            "output": [
+                "ActionOutput_sendgrid_deletebounces"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletebounces", "ActionOutput_sendgrid_deletebounces"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletebounces",
+                "ActionOutput_sendgrid_deletebounces"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -830,7 +1012,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -843,9 +1027,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletecontacts",
             "name": "delete-contacts",
-            "output": ["ActionOutput_sendgrid_deletecontacts"],
+            "output": [
+                "ActionOutput_sendgrid_deletecontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletecontacts", "ActionOutput_sendgrid_deletecontacts"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletecontacts",
+                "ActionOutput_sendgrid_deletecontacts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -874,7 +1063,9 @@
                                 "description": "The ID of the async deletion job."
                             }
                         },
-                        "required": ["job_id"],
+                        "required": [
+                            "job_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -887,9 +1078,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletecustomfield",
             "name": "delete-custom-field",
-            "output": ["ActionOutput_sendgrid_deletecustomfield"],
+            "output": [
+                "ActionOutput_sendgrid_deletecustomfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletecustomfield", "ActionOutput_sendgrid_deletecustomfield"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletecustomfield",
+                "ActionOutput_sendgrid_deletecustomfield"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -901,7 +1097,9 @@
                                 "description": "The ID of the custom field to delete. Example: \"w1_T\""
                             }
                         },
-                        "required": ["custom_field_id"],
+                        "required": [
+                            "custom_field_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletecustomfield": {
@@ -911,7 +1109,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["custom_field_id"],
+                        "required": [
+                            "custom_field_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -924,9 +1124,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletedynamictemplate",
             "name": "delete-dynamic-template",
-            "output": ["ActionOutput_sendgrid_deletedynamictemplate"],
+            "output": [
+                "ActionOutput_sendgrid_deletedynamictemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletedynamictemplate", "ActionOutput_sendgrid_deletedynamictemplate"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletedynamictemplate",
+                "ActionOutput_sendgrid_deletedynamictemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -938,7 +1143,9 @@
                                 "description": "The ID of the dynamic template to delete. Example: \"d-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\""
                             }
                         },
-                        "required": ["template_id"],
+                        "required": [
+                            "template_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletedynamictemplate": {
@@ -948,7 +1155,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -961,9 +1170,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deleteglobalsuppression",
             "name": "delete-global-suppression",
-            "output": ["ActionOutput_sendgrid_deleteglobalsuppression"],
-            "scopes": ["asm.suppressions.write"],
-            "usedModels": ["ActionInput_sendgrid_deleteglobalsuppression", "ActionOutput_sendgrid_deleteglobalsuppression"],
+            "output": [
+                "ActionOutput_sendgrid_deleteglobalsuppression"
+            ],
+            "scopes": [
+                "asm.suppressions.write"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_deleteglobalsuppression",
+                "ActionOutput_sendgrid_deleteglobalsuppression"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -975,7 +1191,9 @@
                                 "description": "Email address to remove from the global suppression list. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deleteglobalsuppression": {
@@ -985,7 +1203,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -998,9 +1218,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletegroupsuppression",
             "name": "delete-group-suppression",
-            "output": ["ActionOutput_sendgrid_deletegroupsuppression"],
+            "output": [
+                "ActionOutput_sendgrid_deletegroupsuppression"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletegroupsuppression", "ActionOutput_sendgrid_deletegroupsuppression"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletegroupsuppression",
+                "ActionOutput_sendgrid_deletegroupsuppression"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1018,7 +1243,10 @@
                                 "description": "The email address to remove from the suppression group. Example: user@example.com"
                             }
                         },
-                        "required": ["group_id", "email"],
+                        "required": [
+                            "group_id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletegroupsuppression": {
@@ -1028,7 +1256,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1041,9 +1271,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deleteinvalidemails",
             "name": "delete-invalid-emails",
-            "output": ["ActionOutput_sendgrid_deleteinvalidemails"],
+            "output": [
+                "ActionOutput_sendgrid_deleteinvalidemails"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deleteinvalidemails", "ActionOutput_sendgrid_deleteinvalidemails"],
+            "usedModels": [
+                "ActionInput_sendgrid_deleteinvalidemails",
+                "ActionOutput_sendgrid_deleteinvalidemails"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1091,9 +1326,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletelist",
             "name": "delete-list",
-            "output": ["ActionOutput_sendgrid_deletelist"],
+            "output": [
+                "ActionOutput_sendgrid_deletelist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletelist", "ActionOutput_sendgrid_deletelist"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletelist",
+                "ActionOutput_sendgrid_deletelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1109,7 +1349,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletelist": {
@@ -1119,7 +1361,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1132,9 +1376,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletesegment",
             "name": "delete-segment",
-            "output": ["ActionOutput_sendgrid_deletesegment"],
+            "output": [
+                "ActionOutput_sendgrid_deletesegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletesegment", "ActionOutput_sendgrid_deletesegment"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletesegment",
+                "ActionOutput_sendgrid_deletesegment"
+            ],
             "version": "",
             "json_schema": {
                 "definitions": {
@@ -1146,7 +1395,9 @@
                                 "description": "The ID of the segment to delete."
                             }
                         },
-                        "required": ["segment_id"],
+                        "required": [
+                            "segment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletesegment": {
@@ -1157,7 +1408,9 @@
                                 "description": "Whether the deletion was accepted."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1170,9 +1423,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletesenderidentity",
             "name": "delete-sender-identity",
-            "output": ["ActionOutput_sendgrid_deletesenderidentity"],
+            "output": [
+                "ActionOutput_sendgrid_deletesenderidentity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletesenderidentity", "ActionOutput_sendgrid_deletesenderidentity"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletesenderidentity",
+                "ActionOutput_sendgrid_deletesenderidentity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1184,7 +1442,9 @@
                                 "description": "Sender identity ID. Example: \"9389987\""
                             }
                         },
-                        "required": ["sender_id"],
+                        "required": [
+                            "sender_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletesenderidentity": {
@@ -1195,7 +1455,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1208,9 +1470,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletespamreports",
             "name": "delete-spam-reports",
-            "output": ["ActionOutput_sendgrid_deletespamreports"],
+            "output": [
+                "ActionOutput_sendgrid_deletespamreports"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_deletespamreports", "ActionOutput_sendgrid_deletespamreports"],
+            "usedModels": [
+                "ActionInput_sendgrid_deletespamreports",
+                "ActionOutput_sendgrid_deletespamreports"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1238,7 +1505,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1251,9 +1520,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletesuppressiongroup",
             "name": "delete-suppression-group",
-            "output": ["ActionOutput_sendgrid_deletesuppressiongroup"],
-            "scopes": ["asm.groups.delete"],
-            "usedModels": ["ActionInput_sendgrid_deletesuppressiongroup", "ActionOutput_sendgrid_deletesuppressiongroup"],
+            "output": [
+                "ActionOutput_sendgrid_deletesuppressiongroup"
+            ],
+            "scopes": [
+                "asm.groups.delete"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_deletesuppressiongroup",
+                "ActionOutput_sendgrid_deletesuppressiongroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1265,7 +1541,9 @@
                                 "description": "The ID of the unsubscribe group to delete. Example: 12345"
                             }
                         },
-                        "required": ["group_id"],
+                        "required": [
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletesuppressiongroup": {
@@ -1275,7 +1553,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1288,9 +1568,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_deletetemplateversion",
             "name": "delete-template-version",
-            "output": ["ActionOutput_sendgrid_deletetemplateversion"],
-            "scopes": ["templates.delete"],
-            "usedModels": ["ActionInput_sendgrid_deletetemplateversion", "ActionOutput_sendgrid_deletetemplateversion"],
+            "output": [
+                "ActionOutput_sendgrid_deletetemplateversion"
+            ],
+            "scopes": [
+                "templates.delete"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_deletetemplateversion",
+                "ActionOutput_sendgrid_deletetemplateversion"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1306,7 +1593,10 @@
                                 "description": "The ID of the version to delete. Example: a7212169-c965-4808-b0ee-f9728250515d"
                             }
                         },
-                        "required": ["template_id", "version_id"],
+                        "required": [
+                            "template_id",
+                            "version_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_deletetemplateversion": {
@@ -1317,7 +1607,9 @@
                                 "const": true
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1330,9 +1622,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_getcontactscount",
             "name": "get-contacts-count",
-            "output": ["ActionOutput_sendgrid_getcontactscount"],
+            "output": [
+                "ActionOutput_sendgrid_getcontactscount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_getcontactscount", "ActionOutput_sendgrid_getcontactscount"],
+            "usedModels": [
+                "ActionInput_sendgrid_getcontactscount",
+                "ActionOutput_sendgrid_getcontactscount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1360,7 +1657,11 @@
                                 }
                             }
                         },
-                        "required": ["contact_count", "billable_count", "identifier_counts"],
+                        "required": [
+                            "contact_count",
+                            "billable_count",
+                            "identifier_counts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1373,9 +1674,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_getdynamictemplate",
             "name": "get-dynamic-template",
-            "output": ["ActionOutput_sendgrid_getdynamictemplate"],
+            "output": [
+                "ActionOutput_sendgrid_getdynamictemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_getdynamictemplate", "ActionOutput_sendgrid_getdynamictemplate"],
+            "usedModels": [
+                "ActionInput_sendgrid_getdynamictemplate",
+                "ActionOutput_sendgrid_getdynamictemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1387,7 +1693,9 @@
                                 "description": "The ID of the dynamic template. Example: d-e6adcea686a0410aa1f6d05879bf935d"
                             }
                         },
-                        "required": ["template_id"],
+                        "required": [
+                            "template_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_getdynamictemplate": {
@@ -1401,7 +1709,10 @@
                             },
                             "generation": {
                                 "type": "string",
-                                "enum": ["legacy", "dynamic"]
+                                "enum": [
+                                    "legacy",
+                                    "dynamic"
+                                ]
                             },
                             "updated_at": {
                                 "type": "string"
@@ -1413,7 +1724,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["message"],
+                                "required": [
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             },
                             "versions": {
@@ -1450,7 +1763,10 @@
                                         },
                                         "editor": {
                                             "type": "string",
-                                            "enum": ["code", "design"]
+                                            "enum": [
+                                                "code",
+                                                "design"
+                                            ]
                                         },
                                         "thumbnail_url": {
                                             "type": "string"
@@ -1459,12 +1775,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "template_id", "active", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "template_id",
+                                        "active",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "generation", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "generation",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1477,9 +1803,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_sendgrid_getlist"],
-            "scopes": ["marketing.read"],
-            "usedModels": ["ActionInput_sendgrid_getlist", "ActionOutput_sendgrid_getlist"],
+            "output": [
+                "ActionOutput_sendgrid_getlist"
+            ],
+            "scopes": [
+                "marketing.read"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_getlist",
+                "ActionOutput_sendgrid_getlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1491,7 +1824,9 @@
                                 "description": "The ID of the list to retrieve. Example: \"fa1dbbb4-10af-42d7-b07e-d1ab501a805b\""
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_getlist": {
@@ -1525,7 +1860,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1538,9 +1875,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_getsegment",
             "name": "get-segment",
-            "output": ["ActionOutput_sendgrid_getsegment"],
+            "output": [
+                "ActionOutput_sendgrid_getsegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_getsegment", "ActionOutput_sendgrid_getsegment"],
+            "usedModels": [
+                "ActionInput_sendgrid_getsegment",
+                "ActionOutput_sendgrid_getsegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1552,7 +1894,9 @@
                                 "description": "Segment ID. Example: \"994709ee-75dd-497e-bf46-9f337eaad764\""
                             }
                         },
-                        "required": ["segment_id"],
+                        "required": [
+                            "segment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_getsegment": {
@@ -1601,7 +1945,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1614,9 +1961,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_getstats",
             "name": "get-stats",
-            "output": ["ActionOutput_sendgrid_getstats"],
-            "scopes": ["stats.read"],
-            "usedModels": ["ActionInput_sendgrid_getstats", "ActionOutput_sendgrid_getstats"],
+            "output": [
+                "ActionOutput_sendgrid_getstats"
+            ],
+            "scopes": [
+                "stats.read"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_getstats",
+                "ActionOutput_sendgrid_getstats"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1634,10 +1988,16 @@
                             "aggregated_by": {
                                 "description": "How to group the statistics. Must be either \"day\", \"week\", or \"month\".",
                                 "type": "string",
-                                "enum": ["day", "week", "month"]
+                                "enum": [
+                                    "day",
+                                    "week",
+                                    "month"
+                                ]
                             }
                         },
-                        "required": ["start_date"],
+                        "required": [
+                            "start_date"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_getstats": {
@@ -1708,7 +2068,9 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["metrics"],
+                                        "required": [
+                                            "metrics"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 }
@@ -1726,9 +2088,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listblocks",
             "name": "list-blocks",
-            "output": ["ActionOutput_sendgrid_listblocks"],
+            "output": [
+                "ActionOutput_sendgrid_listblocks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listblocks", "ActionOutput_sendgrid_listblocks"],
+            "usedModels": [
+                "ActionInput_sendgrid_listblocks",
+                "ActionOutput_sendgrid_listblocks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1786,7 +2153,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["created", "email"],
+                                    "required": [
+                                        "created",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1794,7 +2164,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1807,9 +2179,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listbounces",
             "name": "list-bounces",
-            "output": ["ActionOutput_sendgrid_listbounces"],
+            "output": [
+                "ActionOutput_sendgrid_listbounces"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listbounces", "ActionOutput_sendgrid_listbounces"],
+            "usedModels": [
+                "ActionInput_sendgrid_listbounces",
+                "ActionOutput_sendgrid_listbounces"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1867,7 +2244,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1880,9 +2259,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_sendgrid_listcontacts"],
+            "output": [
+                "ActionOutput_sendgrid_listcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listcontacts", "ActionOutput_sendgrid_listcontacts"],
+            "usedModels": [
+                "ActionInput_sendgrid_listcontacts",
+                "ActionOutput_sendgrid_listcontacts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1985,7 +2369,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1993,7 +2379,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2006,9 +2394,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listcustomfields",
             "name": "list-custom-fields",
-            "output": ["ActionOutput_sendgrid_listcustomfields"],
+            "output": [
+                "ActionOutput_sendgrid_listcustomfields"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listcustomfields", "ActionOutput_sendgrid_listcustomfields"],
+            "usedModels": [
+                "ActionInput_sendgrid_listcustomfields",
+                "ActionOutput_sendgrid_listcustomfields"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2041,7 +2434,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "field_type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "field_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2060,12 +2457,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "field_type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "field_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["custom_fields", "reserved_fields"],
+                        "required": [
+                            "custom_fields",
+                            "reserved_fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2078,9 +2482,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listdynamictemplates",
             "name": "list-dynamic-templates",
-            "output": ["ActionOutput_sendgrid_listdynamictemplates"],
-            "scopes": ["templates.read"],
-            "usedModels": ["ActionInput_sendgrid_listdynamictemplates", "ActionOutput_sendgrid_listdynamictemplates"],
+            "output": [
+                "ActionOutput_sendgrid_listdynamictemplates"
+            ],
+            "scopes": [
+                "templates.read"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_listdynamictemplates",
+                "ActionOutput_sendgrid_listdynamictemplates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2116,7 +2527,10 @@
                                         },
                                         "generation": {
                                             "type": "string",
-                                            "enum": ["legacy", "dynamic"]
+                                            "enum": [
+                                                "legacy",
+                                                "dynamic"
+                                            ]
                                         },
                                         "updated_at": {
                                             "type": "string"
@@ -2155,18 +2569,30 @@
                                                     },
                                                     "editor": {
                                                         "type": "string",
-                                                        "enum": ["code", "design"]
+                                                        "enum": [
+                                                            "code",
+                                                            "design"
+                                                        ]
                                                     },
                                                     "thumbnail_url": {
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "template_id", "active"],
+                                                "required": [
+                                                    "id",
+                                                    "template_id",
+                                                    "active"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "generation", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "generation",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2174,7 +2600,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2187,9 +2615,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listglobalsuppressions",
             "name": "list-global-suppressions",
-            "output": ["ActionOutput_sendgrid_listglobalsuppressions"],
-            "scopes": ["suppressions.read"],
-            "usedModels": ["ActionInput_sendgrid_listglobalsuppressions", "ActionOutput_sendgrid_listglobalsuppressions"],
+            "output": [
+                "ActionOutput_sendgrid_listglobalsuppressions"
+            ],
+            "scopes": [
+                "suppressions.read"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_listglobalsuppressions",
+                "ActionOutput_sendgrid_listglobalsuppressions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2233,7 +2668,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["created", "email"],
+                                    "required": [
+                                        "created",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2242,7 +2680,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2255,9 +2695,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listgroupsuppressions",
             "name": "list-group-suppressions",
-            "output": ["ActionOutput_sendgrid_listgroupsuppressions"],
-            "scopes": ["asm.groups.read"],
-            "usedModels": ["ActionInput_sendgrid_listgroupsuppressions", "ActionOutput_sendgrid_listgroupsuppressions"],
+            "output": [
+                "ActionOutput_sendgrid_listgroupsuppressions"
+            ],
+            "scopes": [
+                "asm.groups.read"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_listgroupsuppressions",
+                "ActionOutput_sendgrid_listgroupsuppressions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2269,7 +2716,9 @@
                                 "description": "The ID of the suppression group. Example: \"254514\""
                             }
                         },
-                        "required": ["group_id"],
+                        "required": [
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_listgroupsuppressions": {
@@ -2282,7 +2731,9 @@
                                 }
                             }
                         },
-                        "required": ["emails"],
+                        "required": [
+                            "emails"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2295,9 +2746,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listinvalidemails",
             "name": "list-invalid-emails",
-            "output": ["ActionOutput_sendgrid_listinvalidemails"],
+            "output": [
+                "ActionOutput_sendgrid_listinvalidemails"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listinvalidemails", "ActionOutput_sendgrid_listinvalidemails"],
+            "usedModels": [
+                "ActionInput_sendgrid_listinvalidemails",
+                "ActionOutput_sendgrid_listinvalidemails"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2348,7 +2804,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["created", "email"],
+                                    "required": [
+                                        "created",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2356,7 +2815,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2369,9 +2830,17 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_sendgrid_listlists"],
-            "scopes": ["mail.send", "marketing.read"],
-            "usedModels": ["ActionInput_sendgrid_listlists", "ActionOutput_sendgrid_listlists"],
+            "output": [
+                "ActionOutput_sendgrid_listlists"
+            ],
+            "scopes": [
+                "mail.send",
+                "marketing.read"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_listlists",
+                "ActionOutput_sendgrid_listlists"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2403,7 +2872,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2411,7 +2883,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2424,9 +2898,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listsegments",
             "name": "list-segments",
-            "output": ["ActionOutput_sendgrid_listsegments"],
-            "scopes": ["marketing.read"],
-            "usedModels": ["ActionInput_sendgrid_listsegments", "ActionOutput_sendgrid_listsegments"],
+            "output": [
+                "ActionOutput_sendgrid_listsegments"
+            ],
+            "scopes": [
+                "marketing.read"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_listsegments",
+                "ActionOutput_sendgrid_listsegments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2503,11 +2984,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["query_validation"],
+                                            "required": [
+                                                "query_validation"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "contacts_count"],
+                                    "required": [
+                                        "id",
+                                        "contacts_count"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2515,7 +3001,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2528,9 +3016,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listsenderidentities",
             "name": "list-sender-identities",
-            "output": ["ActionOutput_sendgrid_listsenderidentities"],
+            "output": [
+                "ActionOutput_sendgrid_listsenderidentities"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listsenderidentities", "ActionOutput_sendgrid_listsenderidentities"],
+            "usedModels": [
+                "ActionInput_sendgrid_listsenderidentities",
+                "ActionOutput_sendgrid_listsenderidentities"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2602,7 +3095,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "nickname", "from_email", "verified", "locked"],
+                                    "required": [
+                                        "id",
+                                        "nickname",
+                                        "from_email",
+                                        "verified",
+                                        "locked"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2610,7 +3109,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2623,9 +3124,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listspamreports",
             "name": "list-spam-reports",
-            "output": ["ActionOutput_sendgrid_listspamreports"],
+            "output": [
+                "ActionOutput_sendgrid_listspamreports"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listspamreports", "ActionOutput_sendgrid_listspamreports"],
+            "usedModels": [
+                "ActionInput_sendgrid_listspamreports",
+                "ActionOutput_sendgrid_listspamreports"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2672,7 +3178,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["created", "email", "ip"],
+                                    "required": [
+                                        "created",
+                                        "email",
+                                        "ip"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2680,7 +3190,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2693,9 +3205,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_listsuppressiongroups",
             "name": "list-suppression-groups",
-            "output": ["ActionOutput_sendgrid_listsuppressiongroups"],
+            "output": [
+                "ActionOutput_sendgrid_listsuppressiongroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_listsuppressiongroups", "ActionOutput_sendgrid_listsuppressiongroups"],
+            "usedModels": [
+                "ActionInput_sendgrid_listsuppressiongroups",
+                "ActionOutput_sendgrid_listsuppressiongroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2722,7 +3239,10 @@
                                             "type": "string"
                                         },
                                         "last_email_sent_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_default": {
                                             "type": "boolean"
@@ -2731,12 +3251,17 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2749,9 +3274,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_removecontactsfromlist",
             "name": "remove-contacts-from-list",
-            "output": ["ActionOutput_sendgrid_removecontactsfromlist"],
+            "output": [
+                "ActionOutput_sendgrid_removecontactsfromlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_removecontactsfromlist", "ActionOutput_sendgrid_removecontactsfromlist"],
+            "usedModels": [
+                "ActionInput_sendgrid_removecontactsfromlist",
+                "ActionOutput_sendgrid_removecontactsfromlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2771,7 +3301,10 @@
                                 "description": "The contact IDs to remove from the list. Example: [\"c6491580-2f4a-4339-8812-eb1f86aae6dd\"]"
                             }
                         },
-                        "required": ["list_id", "contact_ids"],
+                        "required": [
+                            "list_id",
+                            "contact_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_removecontactsfromlist": {
@@ -2793,9 +3326,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_resendsenderverification",
             "name": "resend-sender-verification",
-            "output": ["ActionOutput_sendgrid_resendsenderverification"],
-            "scopes": ["sender_verification"],
-            "usedModels": ["ActionInput_sendgrid_resendsenderverification", "ActionOutput_sendgrid_resendsenderverification"],
+            "output": [
+                "ActionOutput_sendgrid_resendsenderverification"
+            ],
+            "scopes": [
+                "sender_verification"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_resendsenderverification",
+                "ActionOutput_sendgrid_resendsenderverification"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2807,7 +3347,9 @@
                                 "description": "The ID of the sender identity to resend verification for. Example: \"9389986\""
                             }
                         },
-                        "required": ["sender_id"],
+                        "required": [
+                            "sender_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_resendsenderverification": {
@@ -2817,7 +3359,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2830,9 +3374,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_searchcontacts",
             "name": "search-contacts",
-            "output": ["ActionOutput_sendgrid_searchcontacts"],
+            "output": [
+                "ActionOutput_sendgrid_searchcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_searchcontacts", "ActionOutput_sendgrid_searchcontacts"],
+            "usedModels": [
+                "ActionInput_sendgrid_searchcontacts",
+                "ActionOutput_sendgrid_searchcontacts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2844,7 +3393,9 @@
                                 "description": "An SGQL search string. Example: \"email LIKE '%example.com%'\""
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_searchcontacts": {
@@ -2941,7 +3492,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2949,7 +3502,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["contacts", "contact_count"],
+                        "required": [
+                            "contacts",
+                            "contact_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2962,9 +3518,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_sendmail",
             "name": "send-mail",
-            "output": ["ActionOutput_sendgrid_sendmail"],
-            "scopes": ["mail.send"],
-            "usedModels": ["ActionInput_sendgrid_sendmail", "ActionOutput_sendgrid_sendmail"],
+            "output": [
+                "ActionOutput_sendgrid_sendmail"
+            ],
+            "scopes": [
+                "mail.send"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_sendmail",
+                "ActionOutput_sendgrid_sendmail"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2992,7 +3555,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["email"],
+                                                "required": [
+                                                    "email"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3010,7 +3575,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["email"],
+                                                "required": [
+                                                    "email"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3028,7 +3595,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["email"],
+                                                "required": [
+                                                    "email"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3073,7 +3642,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["to"],
+                                    "required": [
+                                        "to"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3089,7 +3660,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["email"],
+                                "required": [
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "reply_to": {
@@ -3104,7 +3677,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["email"],
+                                "required": [
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "reply_to_list": {
@@ -3121,7 +3696,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3140,7 +3717,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3165,7 +3745,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["content", "filename"],
+                                    "required": [
+                                        "content",
+                                        "filename"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3225,7 +3808,9 @@
                                         }
                                     }
                                 },
-                                "required": ["group_id"],
+                                "required": [
+                                    "group_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "ip_pool_name": {
@@ -3246,7 +3831,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["email"],
+                                        "required": [
+                                            "email"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "bypass_list_management": {
@@ -3382,7 +3969,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["personalizations", "from"],
+                        "required": [
+                            "personalizations",
+                            "from"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_sendmail": {
@@ -3395,7 +3985,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accepted"],
+                        "required": [
+                            "accepted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3408,9 +4000,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_updatedynamictemplate",
             "name": "update-dynamic-template",
-            "output": ["ActionOutput_sendgrid_updatedynamictemplate"],
+            "output": [
+                "ActionOutput_sendgrid_updatedynamictemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_updatedynamictemplate", "ActionOutput_sendgrid_updatedynamictemplate"],
+            "usedModels": [
+                "ActionInput_sendgrid_updatedynamictemplate",
+                "ActionOutput_sendgrid_updatedynamictemplate"
+            ],
             "version": "",
             "json_schema": {
                 "definitions": {
@@ -3427,7 +4024,10 @@
                                 "description": "The new name for the transactional template."
                             }
                         },
-                        "required": ["templateId", "name"],
+                        "required": [
+                            "templateId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_updatedynamictemplate": {
@@ -3441,7 +4041,10 @@
                             },
                             "generation": {
                                 "type": "string",
-                                "enum": ["legacy", "dynamic"]
+                                "enum": [
+                                    "legacy",
+                                    "dynamic"
+                                ]
                             },
                             "updated_at": {
                                 "type": "string"
@@ -3453,7 +4056,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["message"],
+                                "required": [
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             },
                             "versions": {
@@ -3490,18 +4095,31 @@
                                         },
                                         "editor": {
                                             "type": "string",
-                                            "enum": ["code", "design"]
+                                            "enum": [
+                                                "code",
+                                                "design"
+                                            ]
                                         },
                                         "thumbnail_url": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "template_id", "active", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "template_id",
+                                        "active",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "generation", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "generation",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3514,9 +4132,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_updatesegment",
             "name": "update-segment",
-            "output": ["ActionOutput_sendgrid_updatesegment"],
+            "output": [
+                "ActionOutput_sendgrid_updatesegment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_updatesegment", "ActionOutput_sendgrid_updatesegment"],
+            "usedModels": [
+                "ActionInput_sendgrid_updatesegment",
+                "ActionOutput_sendgrid_updatesegment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3538,7 +4161,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["segment_id"],
+                        "required": [
+                            "segment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_updatesegment": {
@@ -3586,10 +4211,15 @@
                                         "type": "string"
                                     },
                                     "error_message": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["query_validation"],
+                                "required": [
+                                    "query_validation"
+                                ],
                                 "additionalProperties": false
                             },
                             "refreshes_used": {
@@ -3606,7 +4236,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "query_dsl"],
+                        "required": [
+                            "id",
+                            "name",
+                            "query_dsl"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3619,9 +4253,17 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_updatesenderidentity",
             "name": "update-sender-identity",
-            "output": ["ActionOutput_sendgrid_updatesenderidentity"],
-            "scopes": ["mail.send", "sender_verification"],
-            "usedModels": ["ActionInput_sendgrid_updatesenderidentity", "ActionOutput_sendgrid_updatesenderidentity"],
+            "output": [
+                "ActionOutput_sendgrid_updatesenderidentity"
+            ],
+            "scopes": [
+                "mail.send",
+                "sender_verification"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_updatesenderidentity",
+                "ActionOutput_sendgrid_updatesenderidentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3666,7 +4308,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sender_id"],
+                        "required": [
+                            "sender_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_updatesenderidentity": {
@@ -3715,7 +4359,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "nickname", "from_email", "reply_to", "address", "city", "country", "verified"],
+                        "required": [
+                            "id",
+                            "nickname",
+                            "from_email",
+                            "reply_to",
+                            "address",
+                            "city",
+                            "country",
+                            "verified"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3728,9 +4381,16 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_updatesuppressiongroup",
             "name": "update-suppression-group",
-            "output": ["ActionOutput_sendgrid_updatesuppressiongroup"],
-            "scopes": ["asm.groups.update"],
-            "usedModels": ["ActionInput_sendgrid_updatesuppressiongroup", "ActionOutput_sendgrid_updatesuppressiongroup"],
+            "output": [
+                "ActionOutput_sendgrid_updatesuppressiongroup"
+            ],
+            "scopes": [
+                "asm.groups.update"
+            ],
+            "usedModels": [
+                "ActionInput_sendgrid_updatesuppressiongroup",
+                "ActionOutput_sendgrid_updatesuppressiongroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3750,7 +4410,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["group_id"],
+                        "required": [
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_updatesuppressiongroup": {
@@ -3775,7 +4437,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3788,9 +4453,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_updatetemplateversion",
             "name": "update-template-version",
-            "output": ["ActionOutput_sendgrid_updatetemplateversion"],
+            "output": [
+                "ActionOutput_sendgrid_updatetemplateversion"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_updatetemplateversion", "ActionOutput_sendgrid_updatetemplateversion"],
+            "usedModels": [
+                "ActionInput_sendgrid_updatetemplateversion",
+                "ActionOutput_sendgrid_updatetemplateversion"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3840,7 +4510,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["template_id", "version_id"],
+                        "required": [
+                            "template_id",
+                            "version_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_updatetemplateversion": {
@@ -3883,7 +4556,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "template_id"],
+                        "required": [
+                            "id",
+                            "template_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3896,9 +4572,14 @@
             "endpoint": null,
             "input": "ActionInput_sendgrid_upsertcontacts",
             "name": "upsert-contacts",
-            "output": ["ActionOutput_sendgrid_upsertcontacts"],
+            "output": [
+                "ActionOutput_sendgrid_upsertcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_sendgrid_upsertcontacts", "ActionOutput_sendgrid_upsertcontacts"],
+            "usedModels": [
+                "ActionInput_sendgrid_upsertcontacts",
+                "ActionOutput_sendgrid_upsertcontacts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3991,7 +4672,9 @@
                                 "description": "Contacts to upsert. Min 1, max 30000."
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_sendgrid_upsertcontacts": {
@@ -4054,12 +4737,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["message"],
+                                    "required": [
+                                        "message"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["job_id", "status"],
+                        "required": [
+                            "job_id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4075,12 +4763,16 @@
             "endpoints": [],
             "input": null,
             "name": "bounces",
-            "output": ["Bounce"],
+            "output": [
+                "Bounce"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Bounce"],
+            "usedModels": [
+                "Bounce"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4104,12 +4796,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "created"],
+                        "required": [
+                            "id",
+                            "email",
+                            "created"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4118,12 +4816,16 @@
             "endpoints": [],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4217,7 +4919,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4231,12 +4935,16 @@
             "endpoints": [],
             "input": null,
             "name": "global-suppressions",
-            "output": ["GlobalSuppression"],
+            "output": [
+                "GlobalSuppression"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GlobalSuppression"],
+            "usedModels": [
+                "GlobalSuppression"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4256,12 +4964,17 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4270,12 +4983,16 @@
             "endpoints": [],
             "input": null,
             "name": "lists",
-            "output": ["List"],
+            "output": [
+                "List"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["List"],
+            "usedModels": [
+                "List"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4296,12 +5013,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4310,12 +5032,16 @@
             "endpoints": [],
             "input": null,
             "name": "segments",
-            "output": ["Segment"],
+            "output": [
+                "Segment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Segment"],
+            "usedModels": [
+                "Segment"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4373,11 +5099,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["query_validation"],
+                                "required": [
+                                    "query_validation"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4391,12 +5122,16 @@
             "endpoints": [],
             "input": null,
             "name": "sender-identities",
-            "output": ["SenderIdentity"],
+            "output": [
+                "SenderIdentity"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SenderIdentity"],
+            "usedModels": [
+                "SenderIdentity"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4447,12 +5182,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4461,12 +5200,16 @@
             "endpoints": [],
             "input": null,
             "name": "stats",
-            "output": ["Stat"],
+            "output": [
+                "Stat"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Stat"],
+            "usedModels": [
+                "Stat"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4535,12 +5278,18 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "date", "metrics"],
+                        "required": [
+                            "id",
+                            "date",
+                            "metrics"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4549,12 +5298,16 @@
             "endpoints": [],
             "input": null,
             "name": "templates",
-            "output": ["Template"],
+            "output": [
+                "Template"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Template"],
+            "usedModels": [
+                "Template"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4613,17 +5366,23 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

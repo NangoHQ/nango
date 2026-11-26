@@ -14,12 +14,20 @@
             ],
             "input": "SyncMetadata_kustomer_conversations",
             "name": "conversations",
-            "output": ["KustomerConversation"],
+            "output": [
+                "KustomerConversation"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["org.user.conversation.read", "org.permission.conversation.read"],
+            "scopes": [
+                "org.user.conversation.read",
+                "org.permission.conversation.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["KustomerConversation", "SyncMetadata_kustomer_conversations"],
+            "usedModels": [
+                "KustomerConversation",
+                "SyncMetadata_kustomer_conversations"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -49,7 +57,13 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["type", "id", "attributes", "relationships", "links"],
+                        "required": [
+                            "type",
+                            "id",
+                            "attributes",
+                            "relationships",
+                            "links"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_kustomer_conversations": {

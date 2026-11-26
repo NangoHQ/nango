@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_keeper_scim_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_keeper_scim_createuser"],
+            "output": [
+                "ActionOutput_keeper_scim_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_keeper_scim_createuser", "ActionOutput_keeper_scim_createuser"],
+            "usedModels": [
+                "ActionInput_keeper_scim_createuser",
+                "ActionOutput_keeper_scim_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -56,7 +61,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -81,7 +89,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -110,7 +121,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type"],
+                                    "required": [
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -118,7 +131,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName", "email", "phoneNumbers", "photos", "addresses"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumbers",
+                            "photos",
+                            "addresses"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_keeper_scim_createuser": {
@@ -137,7 +157,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -150,9 +175,14 @@
             "endpoint": null,
             "input": "ActionInput_keeper_scim_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_keeper_scim_deleteuser"],
+            "output": [
+                "ActionOutput_keeper_scim_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_keeper_scim_deleteuser", "ActionOutput_keeper_scim_deleteuser"],
+            "usedModels": [
+                "ActionInput_keeper_scim_deleteuser",
+                "ActionOutput_keeper_scim_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -163,7 +193,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_keeper_scim_deleteuser": {
@@ -173,7 +205,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -195,12 +229,17 @@
             ],
             "input": "SyncMetadata_keeper_scim_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_keeper_scim_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_keeper_scim_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -221,7 +260,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_keeper_scim_users": {

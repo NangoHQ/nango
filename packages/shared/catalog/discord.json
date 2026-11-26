@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_addguildmemberrole",
             "name": "add-guild-member-role",
-            "output": ["ActionOutput_discord_addguildmemberrole"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_addguildmemberrole", "ActionOutput_discord_addguildmemberrole"],
+            "output": [
+                "ActionOutput_discord_addguildmemberrole"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_addguildmemberrole",
+                "ActionOutput_discord_addguildmemberrole"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,11 @@
                                 "description": "Role ID. Example: \"111222333444555666\""
                             }
                         },
-                        "required": ["guildId", "userId", "roleId"],
+                        "required": [
+                            "guildId",
+                            "userId",
+                            "roleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_addguildmemberrole": {
@@ -39,7 +50,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -52,9 +65,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_createchannel",
             "name": "create-channel",
-            "output": ["ActionOutput_discord_createchannel"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_createchannel", "ActionOutput_discord_createchannel"],
+            "output": [
+                "ActionOutput_discord_createchannel"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_createchannel",
+                "ActionOutput_discord_createchannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -109,7 +129,10 @@
                             },
                             "rtcRegion": {
                                 "description": "Channel voice region id, automatic when set to null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "videoQualityMode": {
                                 "description": "Camera video quality mode (1 for auto, 2 for 720p).",
@@ -141,7 +164,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["guildId", "name"],
+                        "required": [
+                            "guildId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_createchannel": {
@@ -204,7 +230,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -217,9 +246,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_createmessage",
             "name": "create-message",
-            "output": ["ActionOutput_discord_createmessage"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_createmessage", "ActionOutput_discord_createmessage"],
+            "output": [
+                "ActionOutput_discord_createmessage"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_createmessage",
+                "ActionOutput_discord_createmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -259,7 +295,11 @@
                                         "type": "array",
                                         "items": {
                                             "type": "string",
-                                            "enum": ["roles", "users", "everyone"]
+                                            "enum": [
+                                                "roles",
+                                                "users",
+                                                "everyone"
+                                            ]
                                         }
                                     },
                                     "roles": {
@@ -297,11 +337,15 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["message_id"],
+                                "required": [
+                                    "message_id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["channelId"],
+                        "required": [
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_createmessage": {
@@ -341,7 +385,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "channelId", "authorId", "authorUsername", "content", "timestamp"],
+                        "required": [
+                            "id",
+                            "channelId",
+                            "authorId",
+                            "authorUsername",
+                            "content",
+                            "timestamp"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -354,9 +405,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_createreaction",
             "name": "create-reaction",
-            "output": ["ActionOutput_discord_createreaction"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_createreaction", "ActionOutput_discord_createreaction"],
+            "output": [
+                "ActionOutput_discord_createreaction"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_createreaction",
+                "ActionOutput_discord_createreaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -376,7 +434,11 @@
                                 "description": "Emoji to add as a reaction. Can be a unicode emoji (e.g., \"👍\") or custom emoji format (e.g., \"emoji_name:emoji_id\"). Example: \"👍\" or \"custom_emoji:123456789\""
                             }
                         },
-                        "required": ["channel_id", "message_id", "emoji"],
+                        "required": [
+                            "channel_id",
+                            "message_id",
+                            "emoji"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_createreaction": {
@@ -395,7 +457,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "channel_id", "message_id", "emoji"],
+                        "required": [
+                            "success",
+                            "channel_id",
+                            "message_id",
+                            "emoji"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -408,9 +475,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_createrole",
             "name": "create-role",
-            "output": ["ActionOutput_discord_createrole"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_createrole", "ActionOutput_discord_createrole"],
+            "output": [
+                "ActionOutput_discord_createrole"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_createrole",
+                "ActionOutput_discord_createrole"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -469,7 +543,9 @@
                                         ]
                                     }
                                 },
-                                "required": ["primary_color"],
+                                "required": [
+                                    "primary_color"
+                                ],
                                 "additionalProperties": false
                             },
                             "hoist": {
@@ -478,18 +554,27 @@
                             },
                             "icon": {
                                 "description": "The role's icon image data (if the guild has ROLE_ICONS feature)",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "unicode_emoji": {
                                 "description": "The role's unicode emoji as a standard emoji (if the guild has ROLE_ICONS feature)",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mentionable": {
                                 "description": "Whether the role should be mentionable. Default: false",
                                 "type": "boolean"
                             }
                         },
-                        "required": ["guildId", "name"],
+                        "required": [
+                            "guildId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_createrole": {
@@ -539,7 +624,11 @@
                                         ]
                                     }
                                 },
-                                "required": ["primary_color", "secondary_color", "tertiary_color"],
+                                "required": [
+                                    "primary_color",
+                                    "secondary_color",
+                                    "tertiary_color"
+                                ],
                                 "additionalProperties": false
                             },
                             "hoist": {
@@ -595,7 +684,18 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "name", "color", "colors", "hoist", "position", "permissions", "managed", "mentionable", "flags"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "colors",
+                            "hoist",
+                            "position",
+                            "permissions",
+                            "managed",
+                            "mentionable",
+                            "flags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -608,9 +708,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_createthreadfrommessage",
             "name": "create-thread-from-message",
-            "output": ["ActionOutput_discord_createthreadfrommessage"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_createthreadfrommessage", "ActionOutput_discord_createthreadfrommessage"],
+            "output": [
+                "ActionOutput_discord_createthreadfrommessage"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_createthreadfrommessage",
+                "ActionOutput_discord_createthreadfrommessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -659,7 +766,11 @@
                                 "maximum": 21600
                             }
                         },
-                        "required": ["channel_id", "message_id", "name"],
+                        "required": [
+                            "channel_id",
+                            "message_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_createthreadfrommessage": {
@@ -727,11 +838,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["archived", "auto_archive_duration"],
+                                "required": [
+                                    "archived",
+                                    "auto_archive_duration"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "name"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -744,9 +862,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_discord_createwebhook"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_createwebhook", "ActionOutput_discord_createwebhook"],
+            "output": [
+                "ActionOutput_discord_createwebhook"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_createwebhook",
+                "ActionOutput_discord_createwebhook"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -765,10 +890,15 @@
                             },
                             "avatar": {
                                 "description": "Optional base64-encoded image data for the webhook avatar. Example: \"data:image/png;base64,iVBORw0KGgo...\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_createwebhook": {
@@ -801,7 +931,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -814,9 +947,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_deletechannel",
             "name": "delete-channel",
-            "output": ["ActionOutput_discord_deletechannel"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_deletechannel", "ActionOutput_discord_deletechannel"],
+            "output": [
+                "ActionOutput_discord_deletechannel"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_deletechannel",
+                "ActionOutput_discord_deletechannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -828,7 +968,9 @@
                                 "description": "The ID of the channel to delete. Example: \"41771983423143937\""
                             }
                         },
-                        "required": ["channelId"],
+                        "required": [
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_deletechannel": {
@@ -850,7 +992,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type", "deleted"],
+                        "required": [
+                            "id",
+                            "type",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -863,9 +1009,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_deleteguild",
             "name": "delete-guild",
-            "output": ["ActionOutput_discord_deleteguild"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_deleteguild", "ActionOutput_discord_deleteguild"],
+            "output": [
+                "ActionOutput_discord_deleteguild"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_deleteguild",
+                "ActionOutput_discord_deleteguild"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -877,7 +1030,9 @@
                                 "description": "The ID of the guild for the bot to leave."
                             }
                         },
-                        "required": ["guild_id"],
+                        "required": [
+                            "guild_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_deleteguild": {
@@ -892,7 +1047,10 @@
                                 "description": "The ID of the guild that was left"
                             }
                         },
-                        "required": ["success", "guild_id"],
+                        "required": [
+                            "success",
+                            "guild_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -905,9 +1063,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_deleteguildmember",
             "name": "delete-guild-member",
-            "output": ["ActionOutput_discord_deleteguildmember"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_deleteguildmember", "ActionOutput_discord_deleteguildmember"],
+            "output": [
+                "ActionOutput_discord_deleteguildmember"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_deleteguildmember",
+                "ActionOutput_discord_deleteguildmember"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -923,7 +1088,10 @@
                                 "description": "User ID of the member to delete. Example: \"987654321098765432\""
                             }
                         },
-                        "required": ["guild_id", "user_id"],
+                        "required": [
+                            "guild_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_deleteguildmember": {
@@ -936,7 +1104,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -949,9 +1120,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_deletemessage",
             "name": "delete-message",
-            "output": ["ActionOutput_discord_deletemessage"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_deletemessage", "ActionOutput_discord_deletemessage"],
+            "output": [
+                "ActionOutput_discord_deletemessage"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_deletemessage",
+                "ActionOutput_discord_deletemessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -967,7 +1145,10 @@
                                 "description": "Message ID to delete. Example: \"9876543210987654321\""
                             }
                         },
-                        "required": ["channelId", "messageId"],
+                        "required": [
+                            "channelId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_deletemessage": {
@@ -985,7 +1166,11 @@
                                 "description": "Channel ID where the message was deleted"
                             }
                         },
-                        "required": ["success", "messageId", "channelId"],
+                        "required": [
+                            "success",
+                            "messageId",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -998,9 +1183,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_deletereaction",
             "name": "delete-reaction",
-            "output": ["ActionOutput_discord_deletereaction"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_deletereaction", "ActionOutput_discord_deletereaction"],
+            "output": [
+                "ActionOutput_discord_deletereaction"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_deletereaction",
+                "ActionOutput_discord_deletereaction"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1020,7 +1212,11 @@
                                 "description": "The emoji to remove. Provide the raw emoji character or name:id for custom emojis. Example: \"👍\" or \"emojiName:123456789\""
                             }
                         },
-                        "required": ["channel_id", "message_id", "emoji"],
+                        "required": [
+                            "channel_id",
+                            "message_id",
+                            "emoji"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_deletereaction": {
@@ -1030,7 +1226,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1043,9 +1241,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_deleterole",
             "name": "delete-role",
-            "output": ["ActionOutput_discord_deleterole"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_deleterole", "ActionOutput_discord_deleterole"],
+            "output": [
+                "ActionOutput_discord_deleterole"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_deleterole",
+                "ActionOutput_discord_deleterole"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1061,7 +1266,10 @@
                                 "description": "The ID of the role to delete. Example: \"9876543210987654321\""
                             }
                         },
-                        "required": ["guildId", "roleId"],
+                        "required": [
+                            "guildId",
+                            "roleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_deleterole": {
@@ -1080,7 +1288,11 @@
                                 "description": "Whether the deletion was successful"
                             }
                         },
-                        "required": ["id", "name", "success"],
+                        "required": [
+                            "id",
+                            "name",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1093,9 +1305,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_discord_deletewebhook"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_deletewebhook", "ActionOutput_discord_deletewebhook"],
+            "output": [
+                "ActionOutput_discord_deletewebhook"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_deletewebhook",
+                "ActionOutput_discord_deletewebhook"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1107,7 +1326,9 @@
                                 "description": "The ID of the webhook to delete. Example: \"223704706495545344\""
                             }
                         },
-                        "required": ["webhookId"],
+                        "required": [
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_deletewebhook": {
@@ -1122,7 +1343,10 @@
                                 "description": "The ID of the deleted webhook"
                             }
                         },
-                        "required": ["success", "webhookId"],
+                        "required": [
+                            "success",
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1135,9 +1359,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_getchannel",
             "name": "get-channel",
-            "output": ["ActionOutput_discord_getchannel"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_getchannel", "ActionOutput_discord_getchannel"],
+            "output": [
+                "ActionOutput_discord_getchannel"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_getchannel",
+                "ActionOutput_discord_getchannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1149,7 +1380,9 @@
                                 "description": "The ID of the channel to retrieve. Example: \"41771983423143937\""
                             }
                         },
-                        "required": ["channelId"],
+                        "required": [
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_getchannel": {
@@ -1261,7 +1494,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1274,9 +1510,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_getguildmember",
             "name": "get-guild-member",
-            "output": ["ActionOutput_discord_getguildmember"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_getguildmember", "ActionOutput_discord_getguildmember"],
+            "output": [
+                "ActionOutput_discord_getguildmember"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_getguildmember",
+                "ActionOutput_discord_getguildmember"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1292,7 +1535,10 @@
                                 "description": "The ID of the user. Example: \"73193882359173120\""
                             }
                         },
-                        "required": ["guild_id", "user_id"],
+                        "required": [
+                            "guild_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_getguildmember": {
@@ -1313,10 +1559,16 @@
                                                 "type": "string"
                                             },
                                             "global_name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "avatar": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "bot": {
                                                 "type": "boolean"
@@ -1328,10 +1580,16 @@
                                                 "type": "boolean"
                                             },
                                             "banner": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "accent_color": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "locale": {
                                                 "type": "string"
@@ -1340,7 +1598,10 @@
                                                 "type": "boolean"
                                             },
                                             "email": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "flags": {
                                                 "type": "number"
@@ -1368,7 +1629,11 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["id", "username", "discriminator"],
+                                        "required": [
+                                            "id",
+                                            "username",
+                                            "discriminator"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1377,13 +1642,22 @@
                                 ]
                             },
                             "nick": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "avatar": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "banner": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "roles": {
                                 "type": "array",
@@ -1392,10 +1666,16 @@
                                 }
                             },
                             "joined_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "premium_since": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deaf": {
                                 "type": "boolean"
@@ -1413,7 +1693,10 @@
                                 "type": "string"
                             },
                             "communication_disabled_until": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "avatar_decoration_data": {
                                 "anyOf": [
@@ -1432,7 +1715,12 @@
                                 ]
                             }
                         },
-                        "required": ["roles", "deaf", "mute", "flags"],
+                        "required": [
+                            "roles",
+                            "deaf",
+                            "mute",
+                            "flags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1445,9 +1733,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_getguild",
             "name": "get-guild",
-            "output": ["ActionOutput_discord_getguild"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_getguild", "ActionOutput_discord_getguild"],
+            "output": [
+                "ActionOutput_discord_getguild"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_getguild",
+                "ActionOutput_discord_getguild"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1459,7 +1754,9 @@
                                 "description": "Guild ID (snowflake). Example: \"197038439483310086\""
                             }
                         },
-                        "required": ["guildId"],
+                        "required": [
+                            "guildId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_getguild": {
@@ -1477,9 +1774,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_getmessage",
             "name": "get-message",
-            "output": ["ActionOutput_discord_getmessage"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_getmessage", "ActionOutput_discord_getmessage"],
+            "output": [
+                "ActionOutput_discord_getmessage"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_getmessage",
+                "ActionOutput_discord_getmessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1495,7 +1799,10 @@
                                 "description": "The ID of the message to retrieve. Example: \"1234567890123456789\""
                             }
                         },
-                        "required": ["channelId", "messageId"],
+                        "required": [
+                            "channelId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_getmessage": {
@@ -1532,7 +1839,10 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "username"],
+                                "required": [
+                                    "id",
+                                    "username"
+                                ],
                                 "additionalProperties": false
                             },
                             "content": {
@@ -1573,7 +1883,10 @@
                                 "items": {}
                             },
                             "nonce": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "pinned": {
                                 "type": "boolean"
@@ -1614,7 +1927,13 @@
                             "roleSubscriptionData": {},
                             "resolved": {}
                         },
-                        "required": ["id", "channelId", "author", "content", "timestamp"],
+                        "required": [
+                            "id",
+                            "channelId",
+                            "author",
+                            "content",
+                            "timestamp"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1627,9 +1946,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_getrole",
             "name": "get-role",
-            "output": ["ActionOutput_discord_getrole"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_getrole", "ActionOutput_discord_getrole"],
+            "output": [
+                "ActionOutput_discord_getrole"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_getrole",
+                "ActionOutput_discord_getrole"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1645,7 +1971,10 @@
                                 "description": "Role ID (snowflake). Example: \"41771983423143937\""
                             }
                         },
-                        "required": ["guild_id", "role_id"],
+                        "required": [
+                            "guild_id",
+                            "role_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_getrole": {
@@ -1673,14 +2002,22 @@
                                     },
                                     "secondary_color": {
                                         "description": "The secondary color for the role",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "tertiary_color": {
                                         "description": "The tertiary color for the role",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["primary_color"],
+                                "required": [
+                                    "primary_color"
+                                ],
                                 "additionalProperties": false
                             },
                             "hoist": {
@@ -1747,7 +2084,17 @@
                                 "description": "Role flags combined as a bitfield"
                             }
                         },
-                        "required": ["id", "name", "color", "hoist", "position", "permissions", "managed", "mentionable", "flags"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "hoist",
+                            "position",
+                            "permissions",
+                            "managed",
+                            "mentionable",
+                            "flags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1760,9 +2107,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_getwebhook",
             "name": "get-webhook",
-            "output": ["ActionOutput_discord_getwebhook"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_getwebhook", "ActionOutput_discord_getwebhook"],
+            "output": [
+                "ActionOutput_discord_getwebhook"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_getwebhook",
+                "ActionOutput_discord_getwebhook"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1774,7 +2128,9 @@
                                 "description": "The ID of the webhook to retrieve. Example: \"123456789012345678\""
                             }
                         },
-                        "required": ["webhookId"],
+                        "required": [
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_getwebhook": {
@@ -1834,7 +2190,11 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "username", "discriminator"],
+                                "required": [
+                                    "id",
+                                    "username",
+                                    "discriminator"
+                                ],
                                 "additionalProperties": false
                             },
                             "url": {
@@ -1842,7 +2202,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1855,9 +2218,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_listchannels",
             "name": "list-channels",
-            "output": ["ActionOutput_discord_listchannels"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_listchannels", "ActionOutput_discord_listchannels"],
+            "output": [
+                "ActionOutput_discord_listchannels"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_listchannels",
+                "ActionOutput_discord_listchannels"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1869,7 +2239,9 @@
                                 "description": "Guild (server) ID to list channels from. Example: \"41771983423143937\""
                             }
                         },
-                        "required": ["guild_id"],
+                        "required": [
+                            "guild_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_listchannels": {
@@ -1893,16 +2265,25 @@
                                             "type": "number"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "topic": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "nsfw": {
                                             "type": "boolean"
                                         },
                                         "last_message_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "bitrate": {
                                             "type": "number"
@@ -1918,7 +2299,10 @@
                                             "items": {}
                                         },
                                         "icon": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "owner_id": {
                                             "type": "string"
@@ -1930,13 +2314,22 @@
                                             "type": "boolean"
                                         },
                                         "parent_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_pin_timestamp": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "rtc_region": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "video_quality_mode": {
                                             "type": "number"
@@ -1964,12 +2357,17 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["channels"],
+                        "required": [
+                            "channels"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1982,9 +2380,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_listguildmembers",
             "name": "list-guild-members",
-            "output": ["ActionOutput_discord_listguildmembers"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_listguildmembers", "ActionOutput_discord_listguildmembers"],
+            "output": [
+                "ActionOutput_discord_listguildmembers"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_listguildmembers",
+                "ActionOutput_discord_listguildmembers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2006,7 +2411,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["guild_id"],
+                        "required": [
+                            "guild_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_listguildmembers": {
@@ -2042,7 +2449,11 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["id", "username", "discriminator"],
+                                            "required": [
+                                                "id",
+                                                "username",
+                                                "discriminator"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "nick": {
@@ -2085,7 +2496,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["roles", "deaf", "mute", "flags"],
+                                    "required": [
+                                        "roles",
+                                        "deaf",
+                                        "mute",
+                                        "flags"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2093,7 +2509,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2106,9 +2524,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_listguilds",
             "name": "list-guilds",
-            "output": ["ActionOutput_discord_listguilds"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_listguilds", "ActionOutput_discord_listguilds"],
+            "output": [
+                "ActionOutput_discord_listguilds"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_listguilds",
+                "ActionOutput_discord_listguilds"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2146,7 +2571,10 @@
                                         },
                                         "icon": {
                                             "description": "Icon hash or null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "owner": {
                                             "type": "boolean",
@@ -2172,7 +2600,13 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "icon", "owner", "features"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "icon",
+                                        "owner",
+                                        "features"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of guilds."
@@ -2182,7 +2616,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2195,9 +2631,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_listmessages",
             "name": "list-messages",
-            "output": ["ActionOutput_discord_listmessages"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_listmessages", "ActionOutput_discord_listmessages"],
+            "output": [
+                "ActionOutput_discord_listmessages"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_listmessages",
+                "ActionOutput_discord_listmessages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2227,7 +2670,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["channel_id"],
+                        "required": [
+                            "channel_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_listmessages": {
@@ -2266,7 +2711,9 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["username"],
+                                            "required": [
+                                                "username"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "content": {
@@ -2325,7 +2772,12 @@
                                                         "maximum": 9007199254740991
                                                     }
                                                 },
-                                                "required": ["id", "filename", "size", "url"],
+                                                "required": [
+                                                    "id",
+                                                    "filename",
+                                                    "size",
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2356,7 +2808,10 @@
                                 "description": "Whether more messages are available"
                             }
                         },
-                        "required": ["messages", "has_more"],
+                        "required": [
+                            "messages",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2369,9 +2824,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_listroles",
             "name": "list-roles",
-            "output": ["ActionOutput_discord_listroles"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_listroles", "ActionOutput_discord_listroles"],
+            "output": [
+                "ActionOutput_discord_listroles"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_listroles",
+                "ActionOutput_discord_listroles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2383,7 +2845,9 @@
                                 "description": "Guild ID to list roles from. Example: \"123456789012345678\""
                             }
                         },
-                        "required": ["guild_id"],
+                        "required": [
+                            "guild_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_listroles": {
@@ -2410,13 +2874,21 @@
                                                     "type": "number"
                                                 },
                                                 "secondary_color": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "tertiary_color": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["primary_color"],
+                                            "required": [
+                                                "primary_color"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "hoist": {
@@ -2468,12 +2940,24 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "color", "hoist", "position", "permissions", "managed", "mentionable", "flags"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "color",
+                                        "hoist",
+                                        "position",
+                                        "permissions",
+                                        "managed",
+                                        "mentionable",
+                                        "flags"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["roles"],
+                        "required": [
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2486,9 +2970,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_discord_listwebhooks"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_listwebhooks", "ActionOutput_discord_listwebhooks"],
+            "output": [
+                "ActionOutput_discord_listwebhooks"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_listwebhooks",
+                "ActionOutput_discord_listwebhooks"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2500,7 +2991,9 @@
                                 "description": "Discord channel ID. Example: \"1504364254634180618\""
                             }
                         },
-                        "required": ["channelId"],
+                        "required": [
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_listwebhooks": {
@@ -2526,16 +3019,25 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "avatar": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "token": {
                                             "type": "string"
                                         },
                                         "application_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "user": {
                                             "type": "object",
@@ -2550,13 +3052,20 @@
                                                     "type": "string"
                                                 },
                                                 "avatar": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "bot": {
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["id", "username", "discriminator"],
+                                            "required": [
+                                                "id",
+                                                "username",
+                                                "discriminator"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "source_guild": {
@@ -2569,10 +3078,16 @@
                                                     "type": "string"
                                                 },
                                                 "icon": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "source_channel": {
@@ -2585,19 +3100,27 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "url": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["webhooks"],
+                        "required": [
+                            "webhooks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2610,9 +3133,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_removeguildmemberrole",
             "name": "remove-guild-member-role",
-            "output": ["ActionOutput_discord_removeguildmemberrole"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_removeguildmemberrole", "ActionOutput_discord_removeguildmemberrole"],
+            "output": [
+                "ActionOutput_discord_removeguildmemberrole"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_removeguildmemberrole",
+                "ActionOutput_discord_removeguildmemberrole"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2632,7 +3162,11 @@
                                 "description": "Role ID to remove from the member. Example: \"456789123\""
                             }
                         },
-                        "required": ["guild_id", "user_id", "role_id"],
+                        "required": [
+                            "guild_id",
+                            "user_id",
+                            "role_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_removeguildmemberrole": {
@@ -2651,7 +3185,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "guild_id", "user_id", "role_id"],
+                        "required": [
+                            "success",
+                            "guild_id",
+                            "user_id",
+                            "role_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2664,9 +3203,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_updatechannel",
             "name": "update-channel",
-            "output": ["ActionOutput_discord_updatechannel"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_updatechannel", "ActionOutput_discord_updatechannel"],
+            "output": [
+                "ActionOutput_discord_updatechannel"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_updatechannel",
+                "ActionOutput_discord_updatechannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2750,13 +3296,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type", "allow", "deny"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "allow",
+                                        "deny"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "parent_id": {
                                 "description": "ID of the parent category for a channel.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "default_auto_archive_duration": {
                                 "description": "Default duration that the clients use (not the API) for newly created threads in the channel.",
@@ -2771,7 +3325,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["channel_id"],
+                        "required": [
+                            "channel_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_updatechannel": {
@@ -2816,7 +3372,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type", "allow", "deny"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "allow",
+                                        "deny"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2858,7 +3419,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2871,9 +3435,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_updateguildmember",
             "name": "update-guild-member",
-            "output": ["ActionOutput_discord_updateguildmember"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_updateguildmember", "ActionOutput_discord_updateguildmember"],
+            "output": [
+                "ActionOutput_discord_updateguildmember"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_updateguildmember",
+                "ActionOutput_discord_updateguildmember"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2890,7 +3461,10 @@
                             },
                             "nick": {
                                 "description": "Value to set user's nickname to",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "roles": {
                                 "anyOf": [
@@ -2908,30 +3482,48 @@
                             },
                             "mute": {
                                 "description": "Whether the user is muted in voice channels",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "deaf": {
                                 "description": "Whether the user is deafened in voice channels",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "channel_id": {
                                 "description": "ID of channel to move user to (if they are connected to voice)",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "communication_disabled_until": {
                                 "description": "ISO8601 timestamp when the user's timeout will expire (up to 28 days in the future), or null to remove timeout",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "flags": {
                                 "description": "Guild member flags",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "reason": {
                                 "description": "Optional reason for the audit log",
                                 "type": "string"
                             }
                         },
-                        "required": ["guild_id", "user_id"],
+                        "required": [
+                            "guild_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_updateguildmember": {
@@ -2975,7 +3567,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id", "roles", "deaf", "mute", "flags"],
+                        "required": [
+                            "user_id",
+                            "roles",
+                            "deaf",
+                            "mute",
+                            "flags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2988,9 +3586,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_updateguild",
             "name": "update-guild",
-            "output": ["ActionOutput_discord_updateguild"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_updateguild", "ActionOutput_discord_updateguild"],
+            "output": [
+                "ActionOutput_discord_updateguild"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_updateguild",
+                "ActionOutput_discord_updateguild"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3009,7 +3614,10 @@
                             },
                             "region": {
                                 "description": "Guild voice region id (deprecated)",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "verification_level": {
                                 "anyOf": [
@@ -3052,7 +3660,10 @@
                             },
                             "afk_channel_id": {
                                 "description": "ID of the AFK channel",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "afk_timeout": {
                                 "description": "AFK timeout in seconds (60, 300, 900, 1800, 3600)",
@@ -3062,7 +3673,10 @@
                             },
                             "icon": {
                                 "description": "Base64 1024x1024 png/jpeg/gif image for the guild icon",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "owner_id": {
                                 "description": "ID of the guild owner",
@@ -3070,19 +3684,31 @@
                             },
                             "splash": {
                                 "description": "Base64 16:9 png/jpeg image for the guild splash",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "discovery_splash": {
                                 "description": "Base64 16:9 png/jpeg image for the guild discovery splash",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "banner": {
                                 "description": "Base64 16:9 png/jpeg image for the guild banner",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "system_channel_id": {
                                 "description": "ID of the channel where guild notices are posted",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "system_channel_flags": {
                                 "description": "System channel flags",
@@ -3092,15 +3718,24 @@
                             },
                             "rules_channel_id": {
                                 "description": "ID of the channel where Community guilds display rules",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "public_updates_channel_id": {
                                 "description": "ID of the channel where admins/moderators receive notices",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "preferred_locale": {
                                 "description": "Preferred locale for Community guilds (e.g., \"en-US\")",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "features": {
                                 "description": "Enabled guild features",
@@ -3111,7 +3746,10 @@
                             },
                             "description": {
                                 "description": "Guild description",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "premium_progress_bar_enabled": {
                                 "description": "Whether the boost progress bar should be enabled",
@@ -3119,10 +3757,15 @@
                             },
                             "safety_alerts_channel_id": {
                                 "description": "ID of the channel where safety alerts are received",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["guild_id"],
+                        "required": [
+                            "guild_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_updateguild": {
@@ -3138,23 +3781,38 @@
                             },
                             "icon": {
                                 "description": "Icon hash",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
                                 "description": "Guild description",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "splash": {
                                 "description": "Splash hash",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "discovery_splash": {
                                 "description": "Discovery splash hash",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "banner": {
                                 "description": "Banner hash",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "owner_id": {
                                 "type": "string",
@@ -3162,7 +3820,10 @@
                             },
                             "afk_channel_id": {
                                 "description": "AFK channel ID",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "afk_timeout": {
                                 "type": "number",
@@ -3182,7 +3843,10 @@
                             },
                             "system_channel_id": {
                                 "description": "System channel ID",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "system_channel_flags": {
                                 "type": "number",
@@ -3190,11 +3854,17 @@
                             },
                             "rules_channel_id": {
                                 "description": "Rules channel ID",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "public_updates_channel_id": {
                                 "description": "Public updates channel ID",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "preferred_locale": {
                                 "type": "string",
@@ -3213,7 +3883,10 @@
                             },
                             "safety_alerts_channel_id": {
                                 "description": "Safety alerts channel ID",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -3251,9 +3924,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_updatemessage",
             "name": "update-message",
-            "output": ["ActionOutput_discord_updatemessage"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_updatemessage", "ActionOutput_discord_updatemessage"],
+            "output": [
+                "ActionOutput_discord_updatemessage"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_updatemessage",
+                "ActionOutput_discord_updatemessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3310,7 +3990,10 @@
                                 }
                             }
                         },
-                        "required": ["channel_id", "message_id"],
+                        "required": [
+                            "channel_id",
+                            "message_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_updatemessage": {
@@ -3368,7 +4051,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "channel_id"],
+                        "required": [
+                            "id",
+                            "channel_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3381,9 +4067,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_updaterole",
             "name": "update-role",
-            "output": ["ActionOutput_discord_updaterole"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_updaterole", "ActionOutput_discord_updaterole"],
+            "output": [
+                "ActionOutput_discord_updaterole"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_updaterole",
+                "ActionOutput_discord_updaterole"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3419,10 +4112,16 @@
                                         "type": "number"
                                     },
                                     "secondary_color": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "tertiary_color": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -3433,18 +4132,27 @@
                             },
                             "icon": {
                                 "description": "The role's icon image (if the guild has the ROLE_ICONS feature)",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "unicodeEmoji": {
                                 "description": "The role's unicode emoji as a standard emoji (if the guild has the ROLE_ICONS feature)",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mentionable": {
                                 "description": "Whether the role should be mentionable",
                                 "type": "boolean"
                             }
                         },
-                        "required": ["guildId", "roleId"],
+                        "required": [
+                            "guildId",
+                            "roleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_updaterole": {
@@ -3470,13 +4178,23 @@
                                         "type": "number"
                                     },
                                     "secondary_color": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "tertiary_color": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["primary_color", "secondary_color", "tertiary_color"],
+                                "required": [
+                                    "primary_color",
+                                    "secondary_color",
+                                    "tertiary_color"
+                                ],
                                 "additionalProperties": false
                             },
                             "hoist": {
@@ -3485,11 +4203,17 @@
                             },
                             "icon": {
                                 "description": "Role icon hash",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "unicode_emoji": {
                                 "description": "Role unicode emoji",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "position": {
                                 "type": "number",
@@ -3537,7 +4261,17 @@
                                 "description": "Role flags combined as a bitfield"
                             }
                         },
-                        "required": ["id", "name", "color", "hoist", "position", "permissions", "managed", "mentionable", "flags"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "hoist",
+                            "position",
+                            "permissions",
+                            "managed",
+                            "mentionable",
+                            "flags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3550,9 +4284,16 @@
             "endpoint": null,
             "input": "ActionInput_discord_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_discord_updatewebhook"],
-            "scopes": ["bot"],
-            "usedModels": ["ActionInput_discord_updatewebhook", "ActionOutput_discord_updatewebhook"],
+            "output": [
+                "ActionOutput_discord_updatewebhook"
+            ],
+            "scopes": [
+                "bot"
+            ],
+            "usedModels": [
+                "ActionInput_discord_updatewebhook",
+                "ActionOutput_discord_updatewebhook"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3569,14 +4310,19 @@
                             },
                             "avatar": {
                                 "description": "The base64-encoded image data for the webhook avatar, or null to remove.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "channel_id": {
                                 "description": "The new channel ID to move the webhook to.",
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discord_updatewebhook": {
@@ -3625,11 +4371,18 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["id", "username", "discriminator"],
+                                "required": [
+                                    "id",
+                                    "username",
+                                    "discriminator"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3650,12 +4403,18 @@
             ],
             "input": null,
             "name": "channels",
-            "output": ["Channel"],
+            "output": [
+                "Channel"
+            ],
             "runs": "every hour",
-            "scopes": ["bot"],
+            "scopes": [
+                "bot"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Channel"],
+            "usedModels": [
+                "Channel"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3706,7 +4465,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3725,12 +4487,18 @@
             ],
             "input": null,
             "name": "guild-members",
-            "output": ["GuildMember"],
+            "output": [
+                "GuildMember"
+            ],
             "runs": "every hour",
-            "scopes": ["bot"],
+            "scopes": [
+                "bot"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GuildMember"],
+            "usedModels": [
+                "GuildMember"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3787,12 +4555,23 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "guild_id", "user_id", "username", "roles", "deaf", "mute", "flags"],
+                        "required": [
+                            "id",
+                            "guild_id",
+                            "user_id",
+                            "username",
+                            "roles",
+                            "deaf",
+                            "mute",
+                            "flags"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3806,12 +4585,18 @@
             ],
             "input": null,
             "name": "guilds",
-            "output": ["Guild"],
+            "output": [
+                "Guild"
+            ],
             "runs": "every hour",
-            "scopes": ["bot"],
+            "scopes": [
+                "bot"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Guild"],
+            "usedModels": [
+                "Guild"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3826,7 +4611,10 @@
                                 "type": "string"
                             },
                             "icon": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "owner": {
                                 "type": "boolean"
@@ -3844,12 +4632,18 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "icon"],
+                        "required": [
+                            "id",
+                            "name",
+                            "icon"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3863,12 +4657,19 @@
             ],
             "input": "SyncMetadata_discord_messages",
             "name": "messages",
-            "output": ["Message"],
+            "output": [
+                "Message"
+            ],
             "runs": "every hour",
-            "scopes": ["bot"],
+            "scopes": [
+                "bot"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Message", "SyncMetadata_discord_messages"],
+            "usedModels": [
+                "Message",
+                "SyncMetadata_discord_messages"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3901,7 +4702,15 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "channel_id", "author_id", "author_username", "content", "timestamp", "type"],
+                        "required": [
+                            "id",
+                            "channel_id",
+                            "author_id",
+                            "author_username",
+                            "content",
+                            "timestamp",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discord_messages": {
@@ -3914,12 +4723,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["botToken", "channelId"],
+                        "required": [
+                            "botToken",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3933,12 +4747,19 @@
             ],
             "input": "SyncMetadata_discord_roles",
             "name": "roles",
-            "output": ["Role"],
+            "output": [
+                "Role"
+            ],
             "runs": "every hour",
-            "scopes": ["bot"],
+            "scopes": [
+                "bot"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Role", "SyncMetadata_discord_roles"],
+            "usedModels": [
+                "Role",
+                "SyncMetadata_discord_roles"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3962,13 +4783,21 @@
                                         "type": "number"
                                     },
                                     "secondary_color": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "tertiary_color": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["primary_color"],
+                                "required": [
+                                    "primary_color"
+                                ],
                                 "additionalProperties": false
                             },
                             "hoist": {
@@ -3996,7 +4825,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discord_roles": {
@@ -4009,7 +4841,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["botToken", "guildId"],
+                        "required": [
+                            "botToken",
+                            "guildId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4028,12 +4863,19 @@
             ],
             "input": "SyncMetadata_discord_webhooks",
             "name": "webhooks",
-            "output": ["Webhook"],
+            "output": [
+                "Webhook"
+            ],
             "runs": "every hour",
-            "scopes": ["bot"],
+            "scopes": [
+                "bot"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webhook", "SyncMetadata_discord_webhooks"],
+            "usedModels": [
+                "Webhook",
+                "SyncMetadata_discord_webhooks"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4083,7 +4925,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discord_webhooks": {
@@ -4096,7 +4941,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["botToken", "channelId"],
+                        "required": [
+                            "botToken",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     }
                 }

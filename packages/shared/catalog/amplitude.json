@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_batchevents",
             "name": "batch-events",
-            "output": ["ActionOutput_amplitude_batchevents"],
+            "output": [
+                "ActionOutput_amplitude_batchevents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_batchevents", "ActionOutput_amplitude_batchevents"],
+            "usedModels": [
+                "ActionInput_amplitude_batchevents",
+                "ActionOutput_amplitude_batchevents"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -145,13 +150,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["event_type"],
+                                    "required": [
+                                        "event_type"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Events to upload. Max 2000 events per request."
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_batchevents": {
@@ -170,7 +179,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["code"],
+                        "required": [
+                            "code"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -183,9 +194,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_bulkupdateannotationcategories",
             "name": "bulk-update-annotation-categories",
-            "output": ["ActionOutput_amplitude_bulkupdateannotationcategories"],
+            "output": [
+                "ActionOutput_amplitude_bulkupdateannotationcategories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_bulkupdateannotationcategories", "ActionOutput_amplitude_bulkupdateannotationcategories"],
+            "usedModels": [
+                "ActionInput_amplitude_bulkupdateannotationcategories",
+                "ActionOutput_amplitude_bulkupdateannotationcategories"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -204,7 +220,10 @@
                                 "description": "A list of annotation IDs to update. Example: [12345, 67890]"
                             }
                         },
-                        "required": ["category_id", "annotation_ids"],
+                        "required": [
+                            "category_id",
+                            "annotation_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_bulkupdateannotationcategories": {
@@ -222,7 +241,10 @@
                                     "type": "string"
                                 },
                                 "details": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "category": {
                                     "type": "object",
@@ -234,17 +256,28 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "category"],
+                                    "required": [
+                                        "id",
+                                        "category"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "end": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "chart_id": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 }
                             },
-                            "required": ["id"],
+                            "required": [
+                                "id"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -258,9 +291,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createannotationcategory",
             "name": "create-annotation-category",
-            "output": ["ActionOutput_amplitude_createannotationcategory"],
+            "output": [
+                "ActionOutput_amplitude_createannotationcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createannotationcategory", "ActionOutput_amplitude_createannotationcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_createannotationcategory",
+                "ActionOutput_amplitude_createannotationcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -272,7 +310,9 @@
                                 "description": "The name of the annotation category. Example: \"Releases\""
                             }
                         },
-                        "required": ["category"],
+                        "required": [
+                            "category"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_createannotationcategory": {
@@ -287,7 +327,10 @@
                                 "description": "The name of the annotation category."
                             }
                         },
-                        "required": ["id", "category"],
+                        "required": [
+                            "id",
+                            "category"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -300,9 +343,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createannotation",
             "name": "create-annotation",
-            "output": ["ActionOutput_amplitude_createannotation"],
+            "output": [
+                "ActionOutput_amplitude_createannotation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createannotation", "ActionOutput_amplitude_createannotation"],
+            "usedModels": [
+                "ActionInput_amplitude_createannotation",
+                "ActionOutput_amplitude_createannotation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -334,7 +382,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["label", "start"],
+                        "required": [
+                            "label",
+                            "start"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_createannotation": {
@@ -359,7 +410,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "end": {
@@ -372,7 +425,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "start", "label"],
+                        "required": [
+                            "id",
+                            "start",
+                            "label"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -385,9 +442,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createeventcategory",
             "name": "create-event-category",
-            "output": ["ActionOutput_amplitude_createeventcategory"],
+            "output": [
+                "ActionOutput_amplitude_createeventcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createeventcategory", "ActionOutput_amplitude_createeventcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_createeventcategory",
+                "ActionOutput_amplitude_createeventcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -399,7 +461,9 @@
                                 "description": "Name of the event category. Example: \"Registration\""
                             }
                         },
-                        "required": ["category_name"],
+                        "required": [
+                            "category_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_createeventcategory": {
@@ -412,7 +476,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -425,9 +492,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createeventproperty",
             "name": "create-event-property",
-            "output": ["ActionOutput_amplitude_createeventproperty"],
+            "output": [
+                "ActionOutput_amplitude_createeventproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createeventproperty", "ActionOutput_amplitude_createeventproperty"],
+            "usedModels": [
+                "ActionInput_amplitude_createeventproperty",
+                "ActionOutput_amplitude_createeventproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -449,7 +521,13 @@
                             "type": {
                                 "description": "The event property's data type. Acceptable values are string, number, boolean, enum, and any.",
                                 "type": "string",
-                                "enum": ["string", "number", "boolean", "enum", "any"]
+                                "enum": [
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "enum",
+                                    "any"
+                                ]
                             },
                             "regex": {
                                 "description": "Regular expression for pattern matching. Only applicable to the string type.",
@@ -476,7 +554,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_property"],
+                        "required": [
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_createeventproperty": {
@@ -492,7 +572,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "event_property"],
+                        "required": [
+                            "success",
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -505,9 +588,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createeventtype",
             "name": "create-event-type",
-            "output": ["ActionOutput_amplitude_createeventtype"],
+            "output": [
+                "ActionOutput_amplitude_createeventtype"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createeventtype", "ActionOutput_amplitude_createeventtype"],
+            "usedModels": [
+                "ActionInput_amplitude_createeventtype",
+                "ActionOutput_amplitude_createeventtype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -555,7 +643,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_createeventtype": {
@@ -568,7 +658,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "event_type"],
+                        "required": [
+                            "success",
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -581,9 +674,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createrelease",
             "name": "create-release",
-            "output": ["ActionOutput_amplitude_createrelease"],
+            "output": [
+                "ActionOutput_amplitude_createrelease"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createrelease", "ActionOutput_amplitude_createrelease"],
+            "usedModels": [
+                "ActionInput_amplitude_createrelease",
+                "ActionOutput_amplitude_createrelease"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -626,7 +724,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["version", "release_start", "title"],
+                        "required": [
+                            "version",
+                            "release_start",
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_createrelease": {
@@ -684,11 +786,23 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["created", "last_modified"],
+                                "required": [
+                                    "created",
+                                    "last_modified"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "app_id", "org_id", "version", "release_start", "type", "title", "chart_visibility"],
+                        "required": [
+                            "id",
+                            "app_id",
+                            "org_id",
+                            "version",
+                            "release_start",
+                            "type",
+                            "title",
+                            "chart_visibility"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -701,9 +815,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createuserdeletionjob",
             "name": "create-user-deletion-job",
-            "output": ["ActionOutput_amplitude_createuserdeletionjob"],
+            "output": [
+                "ActionOutput_amplitude_createuserdeletionjob"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createuserdeletionjob", "ActionOutput_amplitude_createuserdeletionjob"],
+            "usedModels": [
+                "ActionInput_amplitude_createuserdeletionjob",
+                "ActionOutput_amplitude_createuserdeletionjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -770,7 +889,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["amplitude_id", "requested_on_day", "requester"],
+                                    "required": [
+                                        "amplitude_id",
+                                        "requested_on_day",
+                                        "requester"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -781,16 +904,25 @@
                                 }
                             },
                             "app": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "invalid_ids": {
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["day", "status"],
+                        "required": [
+                            "day",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -803,9 +935,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_createuserproperty",
             "name": "create-user-property",
-            "output": ["ActionOutput_amplitude_createuserproperty"],
+            "output": [
+                "ActionOutput_amplitude_createuserproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_createuserproperty", "ActionOutput_amplitude_createuserproperty"],
+            "usedModels": [
+                "ActionInput_amplitude_createuserproperty",
+                "ActionOutput_amplitude_createuserproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -823,7 +960,13 @@
                             "type": {
                                 "description": "Data type of the user property.",
                                 "type": "string",
-                                "enum": ["string", "number", "boolean", "enum", "any"]
+                                "enum": [
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "enum",
+                                    "any"
+                                ]
                             },
                             "regex": {
                                 "description": "Regular expression for pattern matching. Only applicable to the string type.",
@@ -846,7 +989,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_property"],
+                        "required": [
+                            "user_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_createuserproperty": {
@@ -856,7 +1001,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -869,9 +1016,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_deleteannotationcategory",
             "name": "delete-annotation-category",
-            "output": ["ActionOutput_amplitude_deleteannotationcategory"],
+            "output": [
+                "ActionOutput_amplitude_deleteannotationcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_deleteannotationcategory", "ActionOutput_amplitude_deleteannotationcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_deleteannotationcategory",
+                "ActionOutput_amplitude_deleteannotationcategory"
+            ],
             "version": "0.0.1",
             "json_schema": {
                 "definitions": {
@@ -883,7 +1035,9 @@
                                 "description": "The ID of the annotation category to delete"
                             }
                         },
-                        "required": ["categoryId"],
+                        "required": [
+                            "categoryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_deleteannotationcategory": {
@@ -893,7 +1047,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -906,9 +1062,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_deleteannotation",
             "name": "delete-annotation",
-            "output": ["ActionOutput_amplitude_deleteannotation"],
+            "output": [
+                "ActionOutput_amplitude_deleteannotation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_deleteannotation", "ActionOutput_amplitude_deleteannotation"],
+            "usedModels": [
+                "ActionInput_amplitude_deleteannotation",
+                "ActionOutput_amplitude_deleteannotation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -920,7 +1081,9 @@
                                 "description": "The ID of the annotation to delete. Example: 12345"
                             }
                         },
-                        "required": ["annotation_id"],
+                        "required": [
+                            "annotation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_deleteannotation": {
@@ -930,7 +1093,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -943,9 +1108,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_deleteeventcategory",
             "name": "delete-event-category",
-            "output": ["ActionOutput_amplitude_deleteeventcategory"],
+            "output": [
+                "ActionOutput_amplitude_deleteeventcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_deleteeventcategory", "ActionOutput_amplitude_deleteeventcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_deleteeventcategory",
+                "ActionOutput_amplitude_deleteeventcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -957,7 +1127,9 @@
                                 "description": "Event category ID. Example: \"123\""
                             }
                         },
-                        "required": ["category_id"],
+                        "required": [
+                            "category_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_deleteeventcategory": {
@@ -967,7 +1139,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -980,9 +1154,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_deleteeventproperty",
             "name": "delete-event-property",
-            "output": ["ActionOutput_amplitude_deleteeventproperty"],
+            "output": [
+                "ActionOutput_amplitude_deleteeventproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_deleteeventproperty", "ActionOutput_amplitude_deleteeventproperty"],
+            "usedModels": [
+                "ActionInput_amplitude_deleteeventproperty",
+                "ActionOutput_amplitude_deleteeventproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -998,7 +1177,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_property"],
+                        "required": [
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_deleteeventproperty": {
@@ -1008,7 +1189,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1021,9 +1204,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_deleteeventtype",
             "name": "delete-event-type",
-            "output": ["ActionOutput_amplitude_deleteeventtype"],
+            "output": [
+                "ActionOutput_amplitude_deleteeventtype"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_deleteeventtype", "ActionOutput_amplitude_deleteeventtype"],
+            "usedModels": [
+                "ActionInput_amplitude_deleteeventtype",
+                "ActionOutput_amplitude_deleteeventtype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1035,7 +1223,9 @@
                                 "description": "The name of the event type to delete. Example: \"Play Song\""
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_deleteeventtype": {
@@ -1045,7 +1235,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1058,9 +1250,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_deleteuserfromdeletionjob",
             "name": "delete-user-from-deletion-job",
-            "output": ["ActionOutput_amplitude_deleteuserfromdeletionjob"],
+            "output": [
+                "ActionOutput_amplitude_deleteuserfromdeletionjob"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_deleteuserfromdeletionjob", "ActionOutput_amplitude_deleteuserfromdeletionjob"],
+            "usedModels": [
+                "ActionInput_amplitude_deleteuserfromdeletionjob",
+                "ActionOutput_amplitude_deleteuserfromdeletionjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1076,7 +1273,10 @@
                                 "description": "The day the deletion job is scheduled for. Format: YYYY-MM-DD. Example: \"2024-01-15\""
                             }
                         },
-                        "required": ["amplitude_id", "job_start_day"],
+                        "required": [
+                            "amplitude_id",
+                            "job_start_day"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_deleteuserfromdeletionjob": {
@@ -1095,7 +1295,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["amplitude_id"],
+                        "required": [
+                            "amplitude_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1108,9 +1310,17 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_deleteuserproperty",
             "name": "delete-user-property",
-            "output": ["ActionOutput_amplitude_deleteuserproperty"],
-            "scopes": ["read:taxonomy", "write:taxonomy"],
-            "usedModels": ["ActionInput_amplitude_deleteuserproperty", "ActionOutput_amplitude_deleteuserproperty"],
+            "output": [
+                "ActionOutput_amplitude_deleteuserproperty"
+            ],
+            "scopes": [
+                "read:taxonomy",
+                "write:taxonomy"
+            ],
+            "usedModels": [
+                "ActionInput_amplitude_deleteuserproperty",
+                "ActionOutput_amplitude_deleteuserproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1122,7 +1332,9 @@
                                 "description": "The user property name to delete. Prefix custom user properties with gp:. Example: \"gp:my_custom_property\""
                             }
                         },
-                        "required": ["user_property"],
+                        "required": [
+                            "user_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_deleteuserproperty": {
@@ -1132,7 +1344,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1145,9 +1359,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_downloadcohort",
             "name": "download-cohort",
-            "output": ["ActionOutput_amplitude_downloadcohort"],
+            "output": [
+                "ActionOutput_amplitude_downloadcohort"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_downloadcohort", "ActionOutput_amplitude_downloadcohort"],
+            "usedModels": [
+                "ActionInput_amplitude_downloadcohort",
+                "ActionOutput_amplitude_downloadcohort"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1159,7 +1378,9 @@
                                 "description": "The ID of the cohort to download. Example: \"abc123\""
                             }
                         },
-                        "required": ["cohort_id"],
+                        "required": [
+                            "cohort_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_downloadcohort": {
@@ -1185,7 +1406,9 @@
                                 }
                             }
                         },
-                        "required": ["cohort"],
+                        "required": [
+                            "cohort"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1198,9 +1421,16 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_exportevents",
             "name": "export-events",
-            "output": ["ActionOutput_amplitude_exportevents"],
-            "scopes": ["api_key"],
-            "usedModels": ["ActionInput_amplitude_exportevents", "ActionOutput_amplitude_exportevents"],
+            "output": [
+                "ActionOutput_amplitude_exportevents"
+            ],
+            "scopes": [
+                "api_key"
+            ],
+            "usedModels": [
+                "ActionInput_amplitude_exportevents",
+                "ActionOutput_amplitude_exportevents"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1220,7 +1450,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["start", "end"],
+                        "required": [
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_exportevents": {
@@ -1386,7 +1619,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["start", "end", "events", "total_returned"],
+                        "required": [
+                            "start",
+                            "end",
+                            "events",
+                            "total_returned"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1399,9 +1637,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getactiveusercounts",
             "name": "get-active-user-counts",
-            "output": ["ActionOutput_amplitude_getactiveusercounts"],
+            "output": [
+                "ActionOutput_amplitude_getactiveusercounts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getactiveusercounts", "ActionOutput_amplitude_getactiveusercounts"],
+            "usedModels": [
+                "ActionInput_amplitude_getactiveusercounts",
+                "ActionOutput_amplitude_getactiveusercounts"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1419,7 +1662,10 @@
                             "m": {
                                 "description": "Metric to retrieve: \"active\" for active users or \"new\" for new users. Defaults to \"active\".",
                                 "type": "string",
-                                "enum": ["active", "new"]
+                                "enum": [
+                                    "active",
+                                    "new"
+                                ]
                             },
                             "i": {
                                 "description": "Interval granularity: 1 for daily, 7 for weekly, or 30 for monthly counts. Defaults to 1.",
@@ -1493,7 +1739,12 @@
                                                         "description": "List of string values to filter the property by."
                                                     }
                                                 },
-                                                "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                                "required": [
+                                                    "subprop_type",
+                                                    "subprop_key",
+                                                    "subprop_op",
+                                                    "subprop_value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1518,7 +1769,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["start", "end"],
+                        "required": [
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving active or new user counts over a date range."
                     },
@@ -1550,7 +1804,9 @@
                                                     "description": "Zero-based index of the segment in the chart control panel."
                                                 }
                                             },
-                                            "required": ["segmentIndex"],
+                                            "required": [
+                                                "segmentIndex"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -1565,7 +1821,11 @@
                                 "description": "Date strings in YYYY-MM-DD format, one for each date in the requested range."
                             }
                         },
-                        "required": ["series", "seriesMeta", "xValues"],
+                        "required": [
+                            "series",
+                            "seriesMeta",
+                            "xValues"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing active or new user counts over the requested date range."
                     }
@@ -1579,9 +1839,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getannotationcategory",
             "name": "get-annotation-category",
-            "output": ["ActionOutput_amplitude_getannotationcategory"],
+            "output": [
+                "ActionOutput_amplitude_getannotationcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getannotationcategory", "ActionOutput_amplitude_getannotationcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_getannotationcategory",
+                "ActionOutput_amplitude_getannotationcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1593,7 +1858,9 @@
                                 "description": "The ID of the annotation category to retrieve. Example: 12345"
                             }
                         },
-                        "required": ["category_id"],
+                        "required": [
+                            "category_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_getannotationcategory": {
@@ -1608,7 +1875,10 @@
                                 "description": "The name of the category."
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1621,9 +1891,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getannotation",
             "name": "get-annotation",
-            "output": ["ActionOutput_amplitude_getannotation"],
+            "output": [
+                "ActionOutput_amplitude_getannotation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getannotation", "ActionOutput_amplitude_getannotation"],
+            "usedModels": [
+                "ActionInput_amplitude_getannotation",
+                "ActionOutput_amplitude_getannotation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1632,10 +1907,15 @@
                         "properties": {
                             "annotation_id": {
                                 "description": "Annotation ID. Example: 12345",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["annotation_id"],
+                        "required": [
+                            "annotation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_getannotation": {
@@ -1663,7 +1943,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "category"],
+                                "required": [
+                                    "id",
+                                    "category"
+                                ],
                                 "additionalProperties": false
                             },
                             "end": {
@@ -1673,7 +1956,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "start", "label"],
+                        "required": [
+                            "id",
+                            "start",
+                            "label"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1686,9 +1973,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getaveragesessionlength",
             "name": "get-average-session-length",
-            "output": ["ActionOutput_amplitude_getaveragesessionlength"],
+            "output": [
+                "ActionOutput_amplitude_getaveragesessionlength"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getaveragesessionlength", "ActionOutput_amplitude_getaveragesessionlength"],
+            "usedModels": [
+                "ActionInput_amplitude_getaveragesessionlength",
+                "ActionOutput_amplitude_getaveragesessionlength"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1704,7 +1996,10 @@
                                 "description": "Last date included in data series, formatted YYYYMMDD. Example: \"20240107\""
                             }
                         },
-                        "required": ["start", "end"],
+                        "required": [
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to get average session length per day for a date range."
                     },
@@ -1725,13 +2020,18 @@
                                             "description": "Average session length in seconds for this date."
                                         }
                                     },
-                                    "required": ["date", "average_session_length_seconds"],
+                                    "required": [
+                                        "date",
+                                        "average_session_length_seconds"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Average session length per day for the requested range."
                             }
                         },
-                        "required": ["daily_values"],
+                        "required": [
+                            "daily_values"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing the average session length in seconds for each day in the requested range."
                     }
@@ -1745,9 +2045,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getcohort",
             "name": "get-cohort",
-            "output": ["ActionOutput_amplitude_getcohort"],
+            "output": [
+                "ActionOutput_amplitude_getcohort"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getcohort", "ActionOutput_amplitude_getcohort"],
+            "usedModels": [
+                "ActionInput_amplitude_getcohort",
+                "ActionOutput_amplitude_getcohort"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1759,7 +2064,9 @@
                                 "description": "Cohort ID. Example: \"abc123\""
                             }
                         },
-                        "required": ["cohortId"],
+                        "required": [
+                            "cohortId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_getcohort": {
@@ -1775,13 +2082,19 @@
                                         "type": "string"
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "finished": {
                                         "type": "boolean"
                                     },
                                     "size": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "appId": {
                                         "type": "number"
@@ -1793,13 +2106,22 @@
                                         "type": "boolean"
                                     },
                                     "createdAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastMod": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastComputed": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "type": {
                                         "type": "string"
@@ -1833,19 +2155,34 @@
                                         ]
                                     },
                                     "view_count": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "popularity": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "last_viewed": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "chart_id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "edit_id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "is_predictive": {
                                         "type": "boolean"
@@ -1854,7 +2191,10 @@
                                         "type": "boolean"
                                     },
                                     "location_id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "shortcut_ids": {
                                         "type": "array",
@@ -1864,11 +2204,17 @@
                                     },
                                     "definition": {}
                                 },
-                                "required": ["id", "name", "finished"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "finished"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["cohort"],
+                        "required": [
+                            "cohort"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1881,9 +2227,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_geteventcategory",
             "name": "get-event-category",
-            "output": ["ActionOutput_amplitude_geteventcategory"],
+            "output": [
+                "ActionOutput_amplitude_geteventcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_geteventcategory", "ActionOutput_amplitude_geteventcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_geteventcategory",
+                "ActionOutput_amplitude_geteventcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1895,7 +2246,9 @@
                                 "description": "Name of the event category. Example: \"Conversion\""
                             }
                         },
-                        "required": ["category_name"],
+                        "required": [
+                            "category_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_geteventcategory": {
@@ -1908,7 +2261,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1921,9 +2277,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_geteventproperty",
             "name": "get-event-property",
-            "output": ["ActionOutput_amplitude_geteventproperty"],
+            "output": [
+                "ActionOutput_amplitude_geteventproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_geteventproperty", "ActionOutput_amplitude_geteventproperty"],
+            "usedModels": [
+                "ActionInput_amplitude_geteventproperty",
+                "ActionOutput_amplitude_geteventproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1939,7 +2300,9 @@
                                 "description": "The event property name. Example: \"Shared\""
                             }
                         },
-                        "required": ["event_property"],
+                        "required": [
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_geteventproperty": {
@@ -1949,19 +2312,34 @@
                                 "type": "string"
                             },
                             "event_type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "regex": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "enum_values": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_array_type": {
                                 "type": "boolean"
@@ -1979,7 +2357,9 @@
                                 }
                             }
                         },
-                        "required": ["event_property"],
+                        "required": [
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1992,9 +2372,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_geteventsegmentation",
             "name": "get-event-segmentation",
-            "output": ["ActionOutput_amplitude_geteventsegmentation"],
+            "output": [
+                "ActionOutput_amplitude_geteventsegmentation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_geteventsegmentation", "ActionOutput_amplitude_geteventsegmentation"],
+            "usedModels": [
+                "ActionInput_amplitude_geteventsegmentation",
+                "ActionOutput_amplitude_geteventsegmentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2016,7 +2401,10 @@
                                             "properties": {
                                                 "subprop_type": {
                                                     "type": "string",
-                                                    "enum": ["event", "user"],
+                                                    "enum": [
+                                                        "event",
+                                                        "user"
+                                                    ],
                                                     "description": "Type of property to filter on"
                                                 },
                                                 "subprop_key": {
@@ -2035,7 +2423,12 @@
                                                     "description": "Values to filter the property by"
                                                 }
                                             },
-                                            "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                            "required": [
+                                                "subprop_type",
+                                                "subprop_key",
+                                                "subprop_op",
+                                                "subprop_value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2047,7 +2440,10 @@
                                             "properties": {
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["event", "user"],
+                                                    "enum": [
+                                                        "event",
+                                                        "user"
+                                                    ],
                                                     "description": "Type of property to group by"
                                                 },
                                                 "value": {
@@ -2055,12 +2451,17 @@
                                                     "description": "Property name to group by"
                                                 }
                                             },
-                                            "required": ["type", "value"],
+                                            "required": [
+                                                "type",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["event_type"],
+                                "required": [
+                                    "event_type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Primary event definition to query metrics for"
                             },
@@ -2080,7 +2481,10 @@
                                             "properties": {
                                                 "subprop_type": {
                                                     "type": "string",
-                                                    "enum": ["event", "user"],
+                                                    "enum": [
+                                                        "event",
+                                                        "user"
+                                                    ],
                                                     "description": "Type of property to filter on"
                                                 },
                                                 "subprop_key": {
@@ -2099,7 +2503,12 @@
                                                     "description": "Values to filter the property by"
                                                 }
                                             },
-                                            "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                            "required": [
+                                                "subprop_type",
+                                                "subprop_key",
+                                                "subprop_op",
+                                                "subprop_value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2111,7 +2520,10 @@
                                             "properties": {
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["event", "user"],
+                                                    "enum": [
+                                                        "event",
+                                                        "user"
+                                                    ],
                                                     "description": "Type of property to group by"
                                                 },
                                                 "value": {
@@ -2119,12 +2531,17 @@
                                                     "description": "Property name to group by"
                                                 }
                                             },
-                                            "required": ["type", "value"],
+                                            "required": [
+                                                "type",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["event_type"],
+                                "required": [
+                                    "event_type"
+                                ],
                                 "additionalProperties": false
                             },
                             "start": {
@@ -2138,7 +2555,16 @@
                             "m": {
                                 "description": "Metric type. Defaults to uniques.",
                                 "type": "string",
-                                "enum": ["uniques", "totals", "pct_dau", "average", "histogram", "sums", "value_avg", "formula"]
+                                "enum": [
+                                    "uniques",
+                                    "totals",
+                                    "pct_dau",
+                                    "average",
+                                    "histogram",
+                                    "sums",
+                                    "value_avg",
+                                    "formula"
+                                ]
                             },
                             "i": {
                                 "description": "Interval: -300000 for real-time, -3600000 for hourly, 1 for daily, 7 for weekly, 30 for monthly. Defaults to 1.",
@@ -2191,7 +2617,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["prop", "op", "values"],
+                                    "required": [
+                                        "prop",
+                                        "op",
+                                        "values"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2202,7 +2632,10 @@
                             "n": {
                                 "description": "User type to consider: any or active",
                                 "type": "string",
-                                "enum": ["any", "active"]
+                                "enum": [
+                                    "any",
+                                    "active"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of group-by values to return. Default 100, max 1000.",
@@ -2221,7 +2654,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["e", "start", "end"],
+                        "required": [
+                            "e",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for querying Amplitude event segmentation metrics"
                     },
@@ -2245,7 +2682,10 @@
                                         "description": "Labels for each group in series. A plain segment/group-by value (e.g. a property value) when grouping, or a numeric group index (e.g. 0) when there is no group-by.",
                                         "type": "array",
                                         "items": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         }
                                     },
                                     "seriesCollapsed": {
@@ -2261,7 +2701,9 @@
                                                         "description": "Collapsed metric value for the group"
                                                     }
                                                 },
-                                                "required": ["value"],
+                                                "required": [
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
@@ -2274,12 +2716,17 @@
                                         "description": "Date strings in YYYY-MM-DD format, one for each date in the range"
                                     }
                                 },
-                                "required": ["series", "xValues"],
+                                "required": [
+                                    "series",
+                                    "xValues"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Event segmentation result data"
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false,
                         "description": "Response from the Amplitude event segmentation endpoint"
                     }
@@ -2293,9 +2740,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_geteventtype",
             "name": "get-event-type",
-            "output": ["ActionOutput_amplitude_geteventtype"],
+            "output": [
+                "ActionOutput_amplitude_geteventtype"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_geteventtype", "ActionOutput_amplitude_geteventtype"],
+            "usedModels": [
+                "ActionInput_amplitude_geteventtype",
+                "ActionOutput_amplitude_geteventtype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2307,7 +2759,9 @@
                                 "description": "The event type name to retrieve. Example: \"Purchase\""
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_geteventtype": {
@@ -2323,7 +2777,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "description": {
@@ -2360,7 +2816,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2373,9 +2831,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_geteventssummary",
             "name": "get-events-summary",
-            "output": ["ActionOutput_amplitude_geteventssummary"],
+            "output": [
+                "ActionOutput_amplitude_geteventssummary"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_geteventssummary", "ActionOutput_amplitude_geteventssummary"],
+            "usedModels": [
+                "ActionInput_amplitude_geteventssummary",
+                "ActionOutput_amplitude_geteventssummary"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2430,13 +2893,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of tracked events for the current week."
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "Summary of current week's tracked events with totals, uniques, and %DAU."
                     }
@@ -2450,9 +2917,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getfunnelanalysis",
             "name": "get-funnel-analysis",
-            "output": ["ActionOutput_amplitude_getfunnelanalysis"],
+            "output": [
+                "ActionOutput_amplitude_getfunnelanalysis"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getfunnelanalysis", "ActionOutput_amplitude_getfunnelanalysis"],
+            "usedModels": [
+                "ActionInput_amplitude_getfunnelanalysis",
+                "ActionOutput_amplitude_getfunnelanalysis"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2495,7 +2967,12 @@
                                                         "description": "A list of values to filter the event property by."
                                                     }
                                                 },
-                                                "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                                "required": [
+                                                    "subprop_type",
+                                                    "subprop_key",
+                                                    "subprop_op",
+                                                    "subprop_value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2507,7 +2984,10 @@
                                                 "properties": {
                                                     "type": {
                                                         "type": "string",
-                                                        "enum": ["event", "user"],
+                                                        "enum": [
+                                                            "event",
+                                                            "user"
+                                                        ],
                                                         "description": "Either event or user."
                                                     },
                                                     "value": {
@@ -2515,12 +2995,17 @@
                                                         "description": "The property name."
                                                     }
                                                 },
-                                                "required": ["type", "value"],
+                                                "required": [
+                                                    "type",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["event_type"],
+                                    "required": [
+                                        "event_type"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "A list of event definitions for each funnel step. At least 2 steps are required."
@@ -2536,7 +3021,11 @@
                             "mode": {
                                 "description": "The mode to run the funnel in: ordered for events in the given order, unordered for events in any order, and sequential for events in the given order with no other events between.",
                                 "type": "string",
-                                "enum": ["ordered", "unordered", "sequential"]
+                                "enum": [
+                                    "ordered",
+                                    "unordered",
+                                    "sequential"
+                                ]
                             },
                             "cs": {
                                 "description": "The conversion window in seconds. Defaults to 2592000 (30 days).",
@@ -2545,7 +3034,10 @@
                             "n": {
                                 "description": "Either new or active to specify which set of users to consider in the funnel.",
                                 "type": "string",
-                                "enum": ["new", "active"]
+                                "enum": [
+                                    "new",
+                                    "active"
+                                ]
                             },
                             "s": {
                                 "description": "Segment definitions to filter users based on their properties or behaviors.",
@@ -2602,7 +3094,12 @@
                                                         "description": "A list of values to filter the event property by."
                                                     }
                                                 },
-                                                "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                                "required": [
+                                                    "subprop_type",
+                                                    "subprop_key",
+                                                    "subprop_op",
+                                                    "subprop_value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2619,7 +3116,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["prop", "op", "values"],
+                                    "required": [
+                                        "prop",
+                                        "op",
+                                        "values"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2636,7 +3137,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["events", "start", "end"],
+                        "required": [
+                            "events",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for querying funnel drop-off and conversion rates across a sequence of events."
                     },
@@ -2864,7 +3369,9 @@
                                 "description": "An array of funnel analysis results, one per group."
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false,
                         "description": "Funnel analysis output containing drop-off, conversion, and timing data per group."
                     }
@@ -2878,9 +3385,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getgroupproperty",
             "name": "get-group-property",
-            "output": ["ActionOutput_amplitude_getgroupproperty"],
+            "output": [
+                "ActionOutput_amplitude_getgroupproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getgroupproperty", "ActionOutput_amplitude_getgroupproperty"],
+            "usedModels": [
+                "ActionInput_amplitude_getgroupproperty",
+                "ActionOutput_amplitude_getgroupproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2896,7 +3408,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["group_property"],
+                        "required": [
+                            "group_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_getgroupproperty": {
@@ -2933,7 +3447,11 @@
                                 }
                             }
                         },
-                        "required": ["group_property", "is_array_type", "is_hidden"],
+                        "required": [
+                            "group_property",
+                            "is_array_type",
+                            "is_hidden"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2946,9 +3464,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getrealtimeactiveusers",
             "name": "get-realtime-active-users",
-            "output": ["ActionOutput_amplitude_getrealtimeactiveusers"],
+            "output": [
+                "ActionOutput_amplitude_getrealtimeactiveusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getrealtimeactiveusers", "ActionOutput_amplitude_getrealtimeactiveusers"],
+            "usedModels": [
+                "ActionInput_amplitude_getrealtimeactiveusers",
+                "ActionOutput_amplitude_getrealtimeactiveusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2979,13 +3502,19 @@
                                             "description": "Active user count for yesterday at this interval."
                                         }
                                     },
-                                    "required": ["time", "today_count", "yesterday_count"],
+                                    "required": [
+                                        "time",
+                                        "today_count",
+                                        "yesterday_count"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Active user counts at 5-minute intervals for today and yesterday."
                             }
                         },
-                        "required": ["data_points"],
+                        "required": [
+                            "data_points"
+                        ],
                         "additionalProperties": false,
                         "description": "Realtime active user counts at 5-minute granularity for today and yesterday."
                     }
@@ -2999,9 +3528,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getretentionanalysis",
             "name": "get-retention-analysis",
-            "output": ["ActionOutput_amplitude_getretentionanalysis"],
+            "output": [
+                "ActionOutput_amplitude_getretentionanalysis"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getretentionanalysis", "ActionOutput_amplitude_getretentionanalysis"],
+            "usedModels": [
+                "ActionInput_amplitude_getretentionanalysis",
+                "ActionOutput_amplitude_getretentionanalysis"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3041,7 +3575,12 @@
                                                     "description": "Values to filter by."
                                                 }
                                             },
-                                            "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                            "required": [
+                                                "subprop_type",
+                                                "subprop_key",
+                                                "subprop_op",
+                                                "subprop_value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3060,12 +3599,17 @@
                                                     "description": "Property name to group by."
                                                 }
                                             },
-                                            "required": ["type", "value"],
+                                            "required": [
+                                                "type",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["event_type"],
+                                "required": [
+                                    "event_type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The starting event that defines the retention cohort. Maps to the `se` query parameter."
                             },
@@ -3102,7 +3646,12 @@
                                                     "description": "Values to filter by."
                                                 }
                                             },
-                                            "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                            "required": [
+                                                "subprop_type",
+                                                "subprop_key",
+                                                "subprop_op",
+                                                "subprop_value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -3121,12 +3670,17 @@
                                                     "description": "Property name to group by."
                                                 }
                                             },
-                                            "required": ["type", "value"],
+                                            "required": [
+                                                "type",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["event_type"],
+                                "required": [
+                                    "event_type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The returning event that defines retention. Maps to the `re` query parameter."
                             },
@@ -3141,7 +3695,11 @@
                             "retentionMode": {
                                 "description": "Retention calculation mode. Defaults to `n-day`. `rolling` implies unbounded retention.",
                                 "type": "string",
-                                "enum": ["n-day", "rolling", "bracket"]
+                                "enum": [
+                                    "n-day",
+                                    "rolling",
+                                    "bracket"
+                                ]
                             },
                             "bracketBounds": {
                                 "description": "Bracket bounds as a JSON array of day ranges. Required when `retentionMode` is `bracket`. Example: `[[0,4]]`.",
@@ -3219,7 +3777,12 @@
                                                         "description": "Values to filter by."
                                                     }
                                                 },
-                                                "required": ["subprop_type", "subprop_key", "subprop_op", "subprop_value"],
+                                                "required": [
+                                                    "subprop_type",
+                                                    "subprop_key",
+                                                    "subprop_op",
+                                                    "subprop_value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3236,7 +3799,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["prop", "op", "values"],
+                                    "required": [
+                                        "prop",
+                                        "op",
+                                        "values"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3245,7 +3812,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["startEvent", "returnEvent", "startDate", "endDate"],
+                        "required": [
+                            "startEvent",
+                            "returnEvent",
+                            "startDate",
+                            "endDate"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for the retention analysis query."
                     },
@@ -3288,10 +3860,17 @@
                                                         },
                                                         "retainedSetId": {
                                                             "description": "Identifier for the retained user set, when available.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["count", "outof", "incomplete"],
+                                                    "required": [
+                                                        "count",
+                                                        "outof",
+                                                        "incomplete"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -3316,16 +3895,27 @@
                                                     },
                                                     "retainedSetId": {
                                                         "description": "Identifier for the retained user set, when available.",
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["count", "outof", "incomplete"],
+                                                "required": [
+                                                    "count",
+                                                    "outof",
+                                                    "incomplete"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "Aggregated retention data across all cohorts."
                                         }
                                     },
-                                    "required": ["dates", "values", "combined"],
+                                    "required": [
+                                        "dates",
+                                        "values",
+                                        "combined"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Retention series, one element per segment."
@@ -3349,7 +3939,10 @@
                                 "description": "Metadata labels for each segment and event combination."
                             }
                         },
-                        "required": ["series", "seriesMeta"],
+                        "required": [
+                            "series",
+                            "seriesMeta"
+                        ],
                         "additionalProperties": false,
                         "description": "Retention analysis results from Amplitude."
                     }
@@ -3363,9 +3956,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getrevenueltv",
             "name": "get-revenue-ltv",
-            "output": ["ActionOutput_amplitude_getrevenueltv"],
+            "output": [
+                "ActionOutput_amplitude_getrevenueltv"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getrevenueltv", "ActionOutput_amplitude_getrevenueltv"],
+            "usedModels": [
+                "ActionInput_amplitude_getrevenueltv",
+                "ActionOutput_amplitude_getrevenueltv"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3432,7 +4030,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["start", "end"],
+                        "required": [
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for retrieving revenue LTV metrics."
                     },
@@ -3485,14 +4086,20 @@
                                             "description": "Map of date strings to LTV metric objects containing r1d through r90d, count, paid, and total_amount."
                                         }
                                     },
-                                    "required": ["dates", "values"],
+                                    "required": [
+                                        "dates",
+                                        "values"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single series of LTV data with dates and per-date values."
                                 },
                                 "description": "Array of LTV data series, one per group or segment."
                             }
                         },
-                        "required": ["seriesLabels", "series"],
+                        "required": [
+                            "seriesLabels",
+                            "series"
+                        ],
                         "additionalProperties": false,
                         "description": "Revenue lifetime value metrics for new users over the requested date range."
                     }
@@ -3506,9 +4113,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getsessionlengthdistribution",
             "name": "get-session-length-distribution",
-            "output": ["ActionOutput_amplitude_getsessionlengthdistribution"],
+            "output": [
+                "ActionOutput_amplitude_getsessionlengthdistribution"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getsessionlengthdistribution", "ActionOutput_amplitude_getsessionlengthdistribution"],
+            "usedModels": [
+                "ActionInput_amplitude_getsessionlengthdistribution",
+                "ActionOutput_amplitude_getsessionlengthdistribution"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3526,7 +4138,11 @@
                             "timeHistogramConfigBinTimeUnit": {
                                 "description": "Time unit for custom bucket sizes. Omit to use Amplitude default bins.",
                                 "type": "string",
-                                "enum": ["hours", "minutes", "seconds"]
+                                "enum": [
+                                    "hours",
+                                    "minutes",
+                                    "seconds"
+                                ]
                             },
                             "timeHistogramConfigBinMin": {
                                 "description": "Minimum value for custom bucketing, as a number. Must be provided with timeHistogramConfigBinTimeUnit and timeHistogramConfigBinMax.",
@@ -3541,7 +4157,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["start", "end"],
+                        "required": [
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for retrieving the session length distribution for a date range."
                     },
@@ -3566,7 +4185,10 @@
                                 "description": "An array of session length interval strings (buckets), formatted as \"[bucketStartInSeconds]s-[bucketEndInSeconds]s\"."
                             }
                         },
-                        "required": ["series", "xValues"],
+                        "required": [
+                            "series",
+                            "xValues"
+                        ],
                         "additionalProperties": false,
                         "description": "Session length distribution response with session counts per predefined length bucket."
                     }
@@ -3580,9 +4202,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getsessionsperuser",
             "name": "get-sessions-per-user",
-            "output": ["ActionOutput_amplitude_getsessionsperuser"],
+            "output": [
+                "ActionOutput_amplitude_getsessionsperuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getsessionsperuser", "ActionOutput_amplitude_getsessionsperuser"],
+            "usedModels": [
+                "ActionInput_amplitude_getsessionsperuser",
+                "ActionOutput_amplitude_getsessionsperuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3598,7 +4225,10 @@
                                 "description": "Last date included in data series, formatted YYYYMMDD. Example: \"20221004\""
                             }
                         },
-                        "required": ["start", "end"],
+                        "required": [
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for getting the average number of sessions per user per day."
                     },
@@ -3646,7 +4276,11 @@
                                 "description": "Date strings for each date in the specified range. The live API returns ISO 8601 datetime strings such as \"2025-09-23T00:00:00\"."
                             }
                         },
-                        "required": ["series", "seriesMeta", "xValues"],
+                        "required": [
+                            "series",
+                            "seriesMeta",
+                            "xValues"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing average sessions per user data for the requested date range."
                     }
@@ -3660,9 +4294,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getuseractivity",
             "name": "get-user-activity",
-            "output": ["ActionOutput_amplitude_getuseractivity"],
+            "output": [
+                "ActionOutput_amplitude_getuseractivity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getuseractivity", "ActionOutput_amplitude_getuseractivity"],
+            "usedModels": [
+                "ActionInput_amplitude_getuseractivity",
+                "ActionOutput_amplitude_getuseractivity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3685,10 +4324,15 @@
                             "direction": {
                                 "description": "Direction to query events: 'earliest' for the user's earliest events, or 'latest' for the most recent. Defaults to 'latest'.",
                                 "type": "string",
-                                "enum": ["earliest", "latest"]
+                                "enum": [
+                                    "earliest",
+                                    "latest"
+                                ]
                             }
                         },
-                        "required": ["user"],
+                        "required": [
+                            "user"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a user's event history and summary by Amplitude ID."
                     },
@@ -3701,11 +4345,17 @@
                                 "properties": {
                                     "user_id": {
                                         "description": "User ID.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "canonical_amplitude_id": {
                                         "description": "Canonical Amplitude ID.",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "merged_amplitude_ids": {
                                         "description": "Merged Amplitude IDs.",
@@ -3723,79 +4373,138 @@
                                     },
                                     "num_events": {
                                         "description": "Total number of events.",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "num_sessions": {
                                         "description": "Total number of sessions.",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "usage_time": {
                                         "description": "Total usage time in milliseconds.",
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "first_used": {
                                         "description": "First seen date (YYYY-MM-DD).",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "last_used": {
                                         "description": "Last seen date (YYYY-MM-DD).",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "purchases": {
                                         "description": "Number of purchases.",
-                                        "type": ["number", "string", "null"]
+                                        "type": [
+                                            "number",
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "revenue": {
                                         "description": "Total revenue.",
-                                        "type": ["number", "string", "null"]
+                                        "type": [
+                                            "number",
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "platform": {
                                         "description": "Platform.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "os": {
                                         "description": "Operating system.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "version": {
                                         "description": "App version.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "device": {
                                         "description": "Device name.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "device_type": {
                                         "description": "Device type.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "carrier": {
                                         "description": "Carrier.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "country": {
                                         "description": "Country.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "region": {
                                         "description": "Region.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "city": {
                                         "description": "City.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "dma": {
                                         "description": "Designated market area.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "language": {
                                         "description": "Language.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "start_version": {
                                         "description": "Start version.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "device_ids": {
                                         "description": "Device IDs associated with the user.",
@@ -3819,11 +4528,19 @@
                                                 "properties": {
                                                     "lat": {
                                                         "description": "Latitude of the last known location.",
-                                                        "type": ["number", "string", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "lng": {
                                                         "description": "Longitude of the last known location.",
-                                                        "type": ["number", "string", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": {}
@@ -3874,9 +4591,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getusercomposition",
             "name": "get-user-composition",
-            "output": ["ActionOutput_amplitude_getusercomposition"],
+            "output": [
+                "ActionOutput_amplitude_getusercomposition"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_getusercomposition", "ActionOutput_amplitude_getusercomposition"],
+            "usedModels": [
+                "ActionInput_amplitude_getusercomposition",
+                "ActionOutput_amplitude_getusercomposition"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3896,7 +4618,11 @@
                                 "description": "The property to get the composition of. For built-in Amplitude properties use values like version, country, city, region, DMA, language, platform, os, device, start_version, or paying. For custom-defined user properties format as gp:name. For group properties format as gp:group_type:property."
                             }
                         },
-                        "required": ["start", "end", "p"],
+                        "required": [
+                            "start",
+                            "end",
+                            "p"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to query the distribution of users across values of a user or group property."
                     },
@@ -3921,13 +4647,19 @@
                                             "description": "The number of unique users who had this property value in the specified date range."
                                         }
                                     },
-                                    "required": ["value", "count"],
+                                    "required": [
+                                        "value",
+                                        "count"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The distribution of users across values of the property."
                             }
                         },
-                        "required": ["property", "distribution"],
+                        "required": [
+                            "property",
+                            "distribution"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing the user property and the distribution of users across its values."
                     }
@@ -3941,9 +4673,16 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getuserdeletionjobs",
             "name": "get-user-deletion-jobs",
-            "output": ["ActionOutput_amplitude_getuserdeletionjobs"],
-            "scopes": ["deletion_jobs:read"],
-            "usedModels": ["ActionInput_amplitude_getuserdeletionjobs", "ActionOutput_amplitude_getuserdeletionjobs"],
+            "output": [
+                "ActionOutput_amplitude_getuserdeletionjobs"
+            ],
+            "scopes": [
+                "deletion_jobs:read"
+            ],
+            "usedModels": [
+                "ActionInput_amplitude_getuserdeletionjobs",
+                "ActionOutput_amplitude_getuserdeletionjobs"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3959,7 +4698,10 @@
                                 "description": "Last day included in the query range, formatted YYYY-MM-DD. Example: \"2024-01-31\""
                             }
                         },
-                        "required": ["start_day", "end_day"],
+                        "required": [
+                            "start_day",
+                            "end_day"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_getuserdeletionjobs": {
@@ -3991,7 +4733,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amplitude_id"],
+                                        "required": [
+                                            "amplitude_id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -4008,13 +4752,19 @@
                                     }
                                 },
                                 "app": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 },
                                 "active_scrub_done_date": {
                                     "type": "string"
                                 }
                             },
-                            "required": ["day", "status"],
+                            "required": [
+                                "day",
+                                "status"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -4028,9 +4778,16 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_getuserproperty",
             "name": "get-user-property",
-            "output": ["ActionOutput_amplitude_getuserproperty"],
-            "scopes": ["api_key"],
-            "usedModels": ["ActionInput_amplitude_getuserproperty", "ActionOutput_amplitude_getuserproperty"],
+            "output": [
+                "ActionOutput_amplitude_getuserproperty"
+            ],
+            "scopes": [
+                "api_key"
+            ],
+            "usedModels": [
+                "ActionInput_amplitude_getuserproperty",
+                "ActionOutput_amplitude_getuserproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4046,7 +4803,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["user_property"],
+                        "required": [
+                            "user_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_getuserproperty": {
@@ -4083,7 +4842,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["user_property"],
+                        "required": [
+                            "user_property"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4096,9 +4857,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_groupidentify",
             "name": "group-identify",
-            "output": ["ActionOutput_amplitude_groupidentify"],
+            "output": [
+                "ActionOutput_amplitude_groupidentify"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_groupidentify", "ActionOutput_amplitude_groupidentify"],
+            "usedModels": [
+                "ActionInput_amplitude_groupidentify",
+                "ActionOutput_amplitude_groupidentify"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4121,7 +4887,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["group_type", "group_value"],
+                        "required": [
+                            "group_type",
+                            "group_value"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_groupidentify": {
@@ -4131,7 +4900,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4144,9 +4915,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_identifyuser",
             "name": "identify-user",
-            "output": ["ActionOutput_amplitude_identifyuser"],
+            "output": [
+                "ActionOutput_amplitude_identifyuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_identifyuser", "ActionOutput_amplitude_identifyuser"],
+            "usedModels": [
+                "ActionInput_amplitude_identifyuser",
+                "ActionOutput_amplitude_identifyuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4188,7 +4964,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4201,9 +4979,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listannotationcategories",
             "name": "list-annotation-categories",
-            "output": ["ActionOutput_amplitude_listannotationcategories"],
+            "output": [
+                "ActionOutput_amplitude_listannotationcategories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listannotationcategories", "ActionOutput_amplitude_listannotationcategories"],
+            "usedModels": [
+                "ActionInput_amplitude_listannotationcategories",
+                "ActionOutput_amplitude_listannotationcategories"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4236,7 +5019,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4244,7 +5029,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["categories"],
+                        "required": [
+                            "categories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4257,9 +5044,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listannotations",
             "name": "list-annotations",
-            "output": ["ActionOutput_amplitude_listannotations"],
+            "output": [
+                "ActionOutput_amplitude_listannotations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listannotations", "ActionOutput_amplitude_listannotations"],
+            "usedModels": [
+                "ActionInput_amplitude_listannotations",
+                "ActionOutput_amplitude_listannotations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4322,7 +5114,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "end": {
@@ -4335,7 +5129,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "start", "label"],
+                                    "required": [
+                                        "id",
+                                        "start",
+                                        "label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4346,7 +5144,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["items", "has_more"],
+                        "required": [
+                            "items",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4359,9 +5160,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listcohorts",
             "name": "list-cohorts",
-            "output": ["ActionOutput_amplitude_listcohorts"],
+            "output": [
+                "ActionOutput_amplitude_listcohorts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listcohorts", "ActionOutput_amplitude_listcohorts"],
+            "usedModels": [
+                "ActionInput_amplitude_listcohorts",
+                "ActionOutput_amplitude_listcohorts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4476,12 +5282,21 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "appId", "archived", "published", "type"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "appId",
+                                        "archived",
+                                        "published",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["cohorts"],
+                        "required": [
+                            "cohorts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4494,9 +5309,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listeventcategories",
             "name": "list-event-categories",
-            "output": ["ActionOutput_amplitude_listeventcategories"],
+            "output": [
+                "ActionOutput_amplitude_listeventcategories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listeventcategories", "ActionOutput_amplitude_listeventcategories"],
+            "usedModels": [
+                "ActionInput_amplitude_listeventcategories",
+                "ActionOutput_amplitude_listeventcategories"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4529,7 +5349,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4537,7 +5360,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["categories"],
+                        "required": [
+                            "categories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4550,9 +5375,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listeventproperties",
             "name": "list-event-properties",
-            "output": ["ActionOutput_amplitude_listeventproperties"],
+            "output": [
+                "ActionOutput_amplitude_listeventproperties"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listeventproperties", "ActionOutput_amplitude_listeventproperties"],
+            "usedModels": [
+                "ActionInput_amplitude_listeventproperties",
+                "ActionOutput_amplitude_listeventproperties"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4618,7 +5448,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["event_property", "is_array_type"],
+                                    "required": [
+                                        "event_property",
+                                        "is_array_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4626,7 +5459,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4639,9 +5474,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listeventtypes",
             "name": "list-event-types",
-            "output": ["ActionOutput_amplitude_listeventtypes"],
+            "output": [
+                "ActionOutput_amplitude_listeventtypes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listeventtypes", "ActionOutput_amplitude_listeventtypes"],
+            "usedModels": [
+                "ActionInput_amplitude_listeventtypes",
+                "ActionOutput_amplitude_listeventtypes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4685,25 +5525,46 @@
                                             ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "display_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_active": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "is_hidden_from_dropdowns": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "is_hidden_from_persona_results": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "is_hidden_from_pathfinder": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "is_hidden_from_timeline": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "tags": {
                                             "anyOf": [
@@ -4719,18 +5580,28 @@
                                             ]
                                         },
                                         "owner": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["event_type"],
+                                    "required": [
+                                        "event_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4743,9 +5614,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listgroupproperties",
             "name": "list-group-properties",
-            "output": ["ActionOutput_amplitude_listgroupproperties"],
+            "output": [
+                "ActionOutput_amplitude_listgroupproperties"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listgroupproperties", "ActionOutput_amplitude_listgroupproperties"],
+            "usedModels": [
+                "ActionInput_amplitude_listgroupproperties",
+                "ActionOutput_amplitude_listgroupproperties"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4774,16 +5650,28 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "enum_values": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "regex": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_array_type": {
                                             "type": "boolean"
@@ -4798,12 +5686,16 @@
                                             }
                                         }
                                     },
-                                    "required": ["group_property"],
+                                    "required": [
+                                        "group_property"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4816,9 +5708,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_listuserproperties",
             "name": "list-user-properties",
-            "output": ["ActionOutput_amplitude_listuserproperties"],
+            "output": [
+                "ActionOutput_amplitude_listuserproperties"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_listuserproperties", "ActionOutput_amplitude_listuserproperties"],
+            "usedModels": [
+                "ActionInput_amplitude_listuserproperties",
+                "ActionOutput_amplitude_listuserproperties"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4854,16 +5751,28 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "enum_values": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "regex": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_array_type": {
                                             "type": "boolean"
@@ -4899,7 +5808,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4912,9 +5823,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_querychart",
             "name": "query-chart",
-            "output": ["ActionOutput_amplitude_querychart"],
+            "output": [
+                "ActionOutput_amplitude_querychart"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_querychart", "ActionOutput_amplitude_querychart"],
+            "usedModels": [
+                "ActionInput_amplitude_querychart",
+                "ActionOutput_amplitude_querychart"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4926,7 +5842,9 @@
                                 "description": "The saved chart ID to query. Found in the chart URL in the Amplitude web app. Example: \"abc123\"."
                             }
                         },
-                        "required": ["chart_id"],
+                        "required": [
+                            "chart_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to query an Amplitude chart by its saved chart ID."
                     },
@@ -4982,9 +5900,16 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_restoreeventproperty",
             "name": "restore-event-property",
-            "output": ["ActionOutput_amplitude_restoreeventproperty"],
-            "scopes": ["api_key"],
-            "usedModels": ["ActionInput_amplitude_restoreeventproperty", "ActionOutput_amplitude_restoreeventproperty"],
+            "output": [
+                "ActionOutput_amplitude_restoreeventproperty"
+            ],
+            "scopes": [
+                "api_key"
+            ],
+            "usedModels": [
+                "ActionInput_amplitude_restoreeventproperty",
+                "ActionOutput_amplitude_restoreeventproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5000,7 +5925,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_property"],
+                        "required": [
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_restoreeventproperty": {
@@ -5016,7 +5943,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "event_property"],
+                        "required": [
+                            "success",
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5029,9 +5959,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_restoreeventtype",
             "name": "restore-event-type",
-            "output": ["ActionOutput_amplitude_restoreeventtype"],
+            "output": [
+                "ActionOutput_amplitude_restoreeventtype"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_restoreeventtype", "ActionOutput_amplitude_restoreeventtype"],
+            "usedModels": [
+                "ActionInput_amplitude_restoreeventtype",
+                "ActionOutput_amplitude_restoreeventtype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5043,7 +5978,9 @@
                                 "description": "The event type to restore. Example: \"Purchase\""
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_restoreeventtype": {
@@ -5056,7 +5993,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "event_type"],
+                        "required": [
+                            "success",
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5069,9 +6009,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_restoreuserproperty",
             "name": "restore-user-property",
-            "output": ["ActionOutput_amplitude_restoreuserproperty"],
+            "output": [
+                "ActionOutput_amplitude_restoreuserproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_restoreuserproperty", "ActionOutput_amplitude_restoreuserproperty"],
+            "usedModels": [
+                "ActionInput_amplitude_restoreuserproperty",
+                "ActionOutput_amplitude_restoreuserproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5083,7 +6028,9 @@
                                 "description": "The user property name. Prefix custom user properties with gp:."
                             }
                         },
-                        "required": ["user_property"],
+                        "required": [
+                            "user_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_restoreuserproperty": {
@@ -5123,7 +6070,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5136,9 +6085,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_searchusers",
             "name": "search-users",
-            "output": ["ActionOutput_amplitude_searchusers"],
+            "output": [
+                "ActionOutput_amplitude_searchusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_searchusers", "ActionOutput_amplitude_searchusers"],
+            "usedModels": [
+                "ActionInput_amplitude_searchusers",
+                "ActionOutput_amplitude_searchusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5150,7 +6104,9 @@
                                 "description": "Amplitude ID, Device ID, User ID, or User ID prefix to search for. Example: \"myusername\" or \"356893043036\""
                             }
                         },
-                        "required": ["user"],
+                        "required": [
+                            "user"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for searching Amplitude users by identifier."
                     },
@@ -5171,7 +6127,10 @@
                                             "description": "The Amplitude ID of the matching user."
                                         }
                                     },
-                                    "required": ["user_id", "amplitude_id"],
+                                    "required": [
+                                        "user_id",
+                                        "amplitude_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of matching users. Empty when no users are found."
@@ -5181,7 +6140,10 @@
                                 "description": "The match type that yielded the result, e.g. \"match_user_or_device_id\" or \"nomatch\"."
                             }
                         },
-                        "required": ["matches", "type"],
+                        "required": [
+                            "matches",
+                            "type"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of an Amplitude user search, including matched users and the match type."
                     }
@@ -5195,9 +6157,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_trackevent",
             "name": "track-event",
-            "output": ["ActionOutput_amplitude_trackevent"],
+            "output": [
+                "ActionOutput_amplitude_trackevent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_trackevent", "ActionOutput_amplitude_trackevent"],
+            "usedModels": [
+                "ActionInput_amplitude_trackevent",
+                "ActionOutput_amplitude_trackevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5245,7 +6212,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_trackevent": {
@@ -5264,7 +6233,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["code", "server_upload_time", "payload_size_bytes", "events_ingested"],
+                        "required": [
+                            "code",
+                            "server_upload_time",
+                            "payload_size_bytes",
+                            "events_ingested"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5277,9 +6251,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_updateannotationcategory",
             "name": "update-annotation-category",
-            "output": ["ActionOutput_amplitude_updateannotationcategory"],
+            "output": [
+                "ActionOutput_amplitude_updateannotationcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_updateannotationcategory", "ActionOutput_amplitude_updateannotationcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_updateannotationcategory",
+                "ActionOutput_amplitude_updateannotationcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5295,7 +6274,10 @@
                                 "description": "The new name for the annotation category. Example: \"Updated Category Name\""
                             }
                         },
-                        "required": ["category_id", "category"],
+                        "required": [
+                            "category_id",
+                            "category"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_updateannotationcategory": {
@@ -5308,7 +6290,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "category"],
+                        "required": [
+                            "id",
+                            "category"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5321,9 +6306,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_updateannotation",
             "name": "update-annotation",
-            "output": ["ActionOutput_amplitude_updateannotation"],
+            "output": [
+                "ActionOutput_amplitude_updateannotation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_updateannotation", "ActionOutput_amplitude_updateannotation"],
+            "usedModels": [
+                "ActionInput_amplitude_updateannotation",
+                "ActionOutput_amplitude_updateannotation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5348,7 +6338,10 @@
                             },
                             "chart_id": {
                                 "description": "The ID of the chart to annotate. Set to null to make the annotation global.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "details": {
                                 "description": "Details for the annotation.",
@@ -5356,10 +6349,15 @@
                             },
                             "end": {
                                 "description": "Timestamp for the end of the annotation in ISO 8601 format. Set to null to remove the end time. Example: \"2026-06-16T23:59:59+00:00\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["annotation_id"],
+                        "required": [
+                            "annotation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_updateannotation": {
@@ -5387,7 +6385,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "category"],
+                                "required": [
+                                    "id",
+                                    "category"
+                                ],
                                 "additionalProperties": false
                             },
                             "end": {
@@ -5397,7 +6398,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "start", "label", "category"],
+                        "required": [
+                            "id",
+                            "start",
+                            "label",
+                            "category"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5410,9 +6416,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_updateeventcategory",
             "name": "update-event-category",
-            "output": ["ActionOutput_amplitude_updateeventcategory"],
+            "output": [
+                "ActionOutput_amplitude_updateeventcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_updateeventcategory", "ActionOutput_amplitude_updateeventcategory"],
+            "usedModels": [
+                "ActionInput_amplitude_updateeventcategory",
+                "ActionOutput_amplitude_updateeventcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5428,7 +6439,10 @@
                                 "description": "The new name of the category. Example: \"Updated Category\""
                             }
                         },
-                        "required": ["category_id", "category_name"],
+                        "required": [
+                            "category_id",
+                            "category_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_updateeventcategory": {
@@ -5438,7 +6452,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5451,9 +6467,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_updateeventproperty",
             "name": "update-event-property",
-            "output": ["ActionOutput_amplitude_updateeventproperty"],
+            "output": [
+                "ActionOutput_amplitude_updateeventproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_updateeventproperty", "ActionOutput_amplitude_updateeventproperty"],
+            "usedModels": [
+                "ActionInput_amplitude_updateeventproperty",
+                "ActionOutput_amplitude_updateeventproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5471,7 +6492,10 @@
                             "override_scope": {
                                 "description": "Determines how Amplitude acts on this event property. Only applicable when event_type is present.",
                                 "type": "string",
-                                "enum": ["override", "shared"]
+                                "enum": [
+                                    "override",
+                                    "shared"
+                                ]
                             },
                             "new_event_property_value": {
                                 "description": "The new name of the event property.",
@@ -5484,7 +6508,13 @@
                             "type": {
                                 "description": "The event property's data type.",
                                 "type": "string",
-                                "enum": ["string", "number", "boolean", "enum", "any"]
+                                "enum": [
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "enum",
+                                    "any"
+                                ]
                             },
                             "regex": {
                                 "description": "Regular expression for pattern matching. Only applicable to the string type.",
@@ -5511,7 +6541,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_property"],
+                        "required": [
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_updateeventproperty": {
@@ -5522,7 +6554,9 @@
                                 "description": "Whether the update succeeded."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5535,9 +6569,14 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_updateeventtype",
             "name": "update-event-type",
-            "output": ["ActionOutput_amplitude_updateeventtype"],
+            "output": [
+                "ActionOutput_amplitude_updateeventtype"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_amplitude_updateeventtype", "ActionOutput_amplitude_updateeventtype"],
+            "usedModels": [
+                "ActionInput_amplitude_updateeventtype",
+                "ActionOutput_amplitude_updateeventtype"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5593,7 +6632,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_updateeventtype": {
@@ -5642,7 +6683,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["event_type"],
+                        "required": [
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5655,9 +6698,16 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_updategroupproperty",
             "name": "update-group-property",
-            "output": ["ActionOutput_amplitude_updategroupproperty"],
-            "scopes": ["taxonomy"],
-            "usedModels": ["ActionInput_amplitude_updategroupproperty", "ActionOutput_amplitude_updategroupproperty"],
+            "output": [
+                "ActionOutput_amplitude_updategroupproperty"
+            ],
+            "scopes": [
+                "taxonomy"
+            ],
+            "usedModels": [
+                "ActionInput_amplitude_updategroupproperty",
+                "ActionOutput_amplitude_updategroupproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5709,7 +6759,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["group_property"],
+                        "required": [
+                            "group_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_updategroupproperty": {
@@ -5727,12 +6779,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["message"],
+                                    "required": [
+                                        "message"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5745,9 +6801,17 @@
             "endpoint": null,
             "input": "ActionInput_amplitude_updateuserproperty",
             "name": "update-user-property",
-            "output": ["ActionOutput_amplitude_updateuserproperty"],
-            "scopes": ["read", "write"],
-            "usedModels": ["ActionInput_amplitude_updateuserproperty", "ActionOutput_amplitude_updateuserproperty"],
+            "output": [
+                "ActionOutput_amplitude_updateuserproperty"
+            ],
+            "scopes": [
+                "read",
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_amplitude_updateuserproperty",
+                "ActionOutput_amplitude_updateuserproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5769,7 +6833,13 @@
                             "type": {
                                 "description": "The user property's data type.",
                                 "type": "string",
-                                "enum": ["string", "number", "boolean", "enum", "any"]
+                                "enum": [
+                                    "string",
+                                    "number",
+                                    "boolean",
+                                    "enum",
+                                    "any"
+                                ]
                             },
                             "regex": {
                                 "description": "Regular expression or custom regex used for pattern matching.",
@@ -5792,7 +6862,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_property"],
+                        "required": [
+                            "user_property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_amplitude_updateuserproperty": {
@@ -5802,7 +6874,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5823,12 +6897,16 @@
             ],
             "input": null,
             "name": "annotation-categories",
-            "output": ["AnnotationCategory"],
+            "output": [
+                "AnnotationCategory"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AnnotationCategory"],
+            "usedModels": [
+                "AnnotationCategory"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5843,7 +6921,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5862,12 +6942,17 @@
             ],
             "input": "SyncMetadata_amplitude_annotations",
             "name": "annotations",
-            "output": ["Annotation"],
+            "output": [
+                "Annotation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Annotation", "SyncMetadata_amplitude_annotations"],
+            "usedModels": [
+                "Annotation",
+                "SyncMetadata_amplitude_annotations"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5900,7 +6985,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "start", "label"],
+                        "required": [
+                            "id",
+                            "start",
+                            "label"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_amplitude_annotations": {
@@ -5937,12 +7026,16 @@
             ],
             "input": null,
             "name": "cohort-members",
-            "output": ["CohortMember"],
+            "output": [
+                "CohortMember"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CohortMember"],
+            "usedModels": [
+                "CohortMember"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5969,12 +7062,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "cohortId"],
+                        "required": [
+                            "id",
+                            "cohortId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5988,12 +7086,16 @@
             ],
             "input": null,
             "name": "cohorts",
-            "output": ["Cohort"],
+            "output": [
+                "Cohort"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Cohort"],
+            "usedModels": [
+                "Cohort"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6106,7 +7208,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6125,12 +7230,16 @@
             ],
             "input": null,
             "name": "event-categories",
-            "output": ["EventCategory"],
+            "output": [
+                "EventCategory"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EventCategory"],
+            "usedModels": [
+                "EventCategory"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6145,7 +7254,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6164,12 +7275,16 @@
             ],
             "input": null,
             "name": "event-properties",
-            "output": ["EventProperty"],
+            "output": [
+                "EventProperty"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EventProperty"],
+            "usedModels": [
+                "EventProperty"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6217,7 +7332,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "event_property"],
+                        "required": [
+                            "id",
+                            "event_property"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6236,12 +7354,17 @@
             ],
             "input": "SyncMetadata_amplitude_eventtypes",
             "name": "event-types",
-            "output": ["EventType"],
+            "output": [
+                "EventType"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EventType", "SyncMetadata_amplitude_eventtypes"],
+            "usedModels": [
+                "EventType",
+                "SyncMetadata_amplitude_eventtypes"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6305,7 +7428,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "event_type"],
+                        "required": [
+                            "id",
+                            "event_type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_amplitude_eventtypes": {
@@ -6334,12 +7460,16 @@
             ],
             "input": null,
             "name": "events-export",
-            "output": ["EventExport"],
+            "output": [
+                "EventExport"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EventExport"],
+            "usedModels": [
+                "EventExport"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6381,12 +7511,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6400,12 +7534,16 @@
             ],
             "input": null,
             "name": "group-properties",
-            "output": ["GroupProperty"],
+            "output": [
+                "GroupProperty"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GroupProperty"],
+            "usedModels": [
+                "GroupProperty"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6447,7 +7585,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "group_property"],
+                        "required": [
+                            "id",
+                            "group_property"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6466,12 +7607,16 @@
             ],
             "input": null,
             "name": "user-properties",
-            "output": ["UserProperty"],
+            "output": [
+                "UserProperty"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserProperty"],
+            "usedModels": [
+                "UserProperty"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6513,7 +7658,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "user_property", "is_array_type", "is_hidden"],
+                        "required": [
+                            "id",
+                            "user_property",
+                            "is_array_type",
+                            "is_hidden"
+                        ],
                         "additionalProperties": false
                     }
                 }

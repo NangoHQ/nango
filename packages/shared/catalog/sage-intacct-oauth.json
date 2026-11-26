@@ -15,12 +15,22 @@
             ],
             "input": "SyncMetadata_sage_intacct_oauth_accounts",
             "name": "accounts",
-            "output": ["Account"],
+            "output": [
+                "Account"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["offline_access", "openid", "sage/ai-agents", "token-exchange"],
+            "scopes": [
+                "offline_access",
+                "openid",
+                "sage/ai-agents",
+                "token-exchange"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Account", "SyncMetadata_sage_intacct_oauth_accounts"],
+            "usedModels": [
+                "Account",
+                "SyncMetadata_sage_intacct_oauth_accounts"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -71,7 +81,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["created_date_time", "modified_date_time", "created_by", "modified_by"],
+                                "required": [
+                                    "created_date_time",
+                                    "modified_date_time",
+                                    "created_by",
+                                    "modified_by"
+                                ],
                                 "additionalProperties": false
                             }
                         },

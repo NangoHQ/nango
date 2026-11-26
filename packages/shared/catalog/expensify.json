@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_expensify_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_expensify_createuser"],
+            "output": [
+                "ActionOutput_expensify_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_expensify_createuser", "ActionOutput_expensify_createuser"],
+            "usedModels": [
+                "ActionInput_expensify_createuser",
+                "ActionOutput_expensify_createuser"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -26,7 +31,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_expensify_createuser": {
@@ -36,16 +45,27 @@
                                 "type": "string"
                             },
                             "firstName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -58,9 +78,14 @@
             "endpoint": null,
             "input": "ActionInput_expensify_disableuser",
             "name": "disable-user",
-            "output": ["ActionOutput_expensify_disableuser"],
+            "output": [
+                "ActionOutput_expensify_disableuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_expensify_disableuser", "ActionOutput_expensify_disableuser"],
+            "usedModels": [
+                "ActionInput_expensify_disableuser",
+                "ActionOutput_expensify_disableuser"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -74,7 +99,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_expensify_disableuser": {
@@ -84,7 +112,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -97,9 +127,14 @@
             "endpoint": null,
             "input": "ActionInput_expensify_listpolicies",
             "name": "list-policies",
-            "output": ["ActionOutput_expensify_listpolicies"],
+            "output": [
+                "ActionOutput_expensify_listpolicies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_expensify_listpolicies", "ActionOutput_expensify_listpolicies"],
+            "usedModels": [
+                "ActionInput_expensify_listpolicies",
+                "ActionOutput_expensify_listpolicies"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -217,7 +252,9 @@
                                 }
                             }
                         },
-                        "required": ["policies"],
+                        "required": [
+                            "policies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -239,12 +276,17 @@
             ],
             "input": "SyncMetadata_expensify_users",
             "name": "users",
-            "output": ["ExpsensifyNullableUser"],
+            "output": [
+                "ExpsensifyNullableUser"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ExpsensifyNullableUser", "SyncMetadata_expensify_users"],
+            "usedModels": [
+                "ExpsensifyNullableUser",
+                "SyncMetadata_expensify_users"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -256,16 +298,27 @@
                                 "type": "string"
                             },
                             "firstName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_expensify_users": {

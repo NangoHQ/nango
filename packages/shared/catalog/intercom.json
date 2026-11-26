@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_attachcontacttocompany",
             "name": "attach-contact-to-company",
-            "output": ["ActionOutput_intercom_attachcontacttocompany"],
+            "output": [
+                "ActionOutput_intercom_attachcontacttocompany"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_attachcontacttocompany", "ActionOutput_intercom_attachcontacttocompany"],
+            "usedModels": [
+                "ActionInput_intercom_attachcontacttocompany",
+                "ActionOutput_intercom_attachcontacttocompany"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -25,7 +30,10 @@
                                 "description": "The unique identifier for the company. Example: \"5f3e2e3c5f3e2e3c5f3e2e3d\""
                             }
                         },
-                        "required": ["contact_id", "company_id"],
+                        "required": [
+                            "contact_id",
+                            "company_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_attachcontacttocompany": {
@@ -36,7 +44,9 @@
                                 "description": "The unique identifier for the company that was attached."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -49,9 +59,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_closeconversation",
             "name": "close-conversation",
-            "output": ["ActionOutput_intercom_closeconversation"],
+            "output": [
+                "ActionOutput_intercom_closeconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_closeconversation", "ActionOutput_intercom_closeconversation"],
+            "usedModels": [
+                "ActionInput_intercom_closeconversation",
+                "ActionOutput_intercom_closeconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -67,7 +82,10 @@
                                 "description": "The ID of the admin who is closing the conversation. Example: \"456\""
                             }
                         },
-                        "required": ["conversation_id", "admin_id"],
+                        "required": [
+                            "conversation_id",
+                            "admin_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_closeconversation": {
@@ -82,7 +100,10 @@
                                 "description": "The ID of the closed conversation"
                             }
                         },
-                        "required": ["success", "conversation_id"],
+                        "required": [
+                            "success",
+                            "conversation_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -95,9 +116,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_createarticle",
             "name": "create-article",
-            "output": ["ActionOutput_intercom_createarticle"],
+            "output": [
+                "ActionOutput_intercom_createarticle"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_createarticle", "ActionOutput_intercom_createarticle"],
+            "usedModels": [
+                "ActionInput_intercom_createarticle",
+                "ActionOutput_intercom_createarticle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -119,7 +145,10 @@
                             "state": {
                                 "description": "Whether the article will be published or will be a draft. Defaults to draft.",
                                 "type": "string",
-                                "enum": ["draft", "published"]
+                                "enum": [
+                                    "draft",
+                                    "published"
+                                ]
                             },
                             "description": {
                                 "description": "The description of the article. Example: \"Description of the Article\"",
@@ -132,10 +161,17 @@
                             "parent_type": {
                                 "description": "The type of parent, which can either be a collection or section. Example: \"collection\"",
                                 "type": "string",
-                                "enum": ["collection", "section"]
+                                "enum": [
+                                    "collection",
+                                    "section"
+                                ]
                             }
                         },
-                        "required": ["title", "body", "author_id"],
+                        "required": [
+                            "title",
+                            "body",
+                            "author_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_createarticle": {
@@ -167,7 +203,10 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["draft", "published"],
+                                "enum": [
+                                    "draft",
+                                    "published"
+                                ],
                                 "description": "Whether the article is published or is a draft."
                             },
                             "created_at": {
@@ -191,7 +230,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "workspace_id", "title", "author_id", "state", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "workspace_id",
+                            "title",
+                            "author_id",
+                            "state",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -204,9 +251,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_createcompany",
             "name": "create-company",
-            "output": ["ActionOutput_intercom_createcompany"],
+            "output": [
+                "ActionOutput_intercom_createcompany"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_createcompany", "ActionOutput_intercom_createcompany"],
+            "usedModels": [
+                "ActionInput_intercom_createcompany",
+                "ActionOutput_intercom_createcompany"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -253,7 +305,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name", "company_id"],
+                        "required": [
+                            "name",
+                            "company_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_createcompany": {
@@ -316,7 +371,13 @@
                                 "description": "The last time the company was updated (Unix timestamp)."
                             }
                         },
-                        "required": ["id", "company_id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "company_id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -329,9 +390,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_intercom_createcontact"],
+            "output": [
+                "ActionOutput_intercom_createcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_createcontact", "ActionOutput_intercom_createcontact"],
+            "usedModels": [
+                "ActionInput_intercom_createcontact",
+                "ActionOutput_intercom_createcontact"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -370,7 +436,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["role"],
+                        "required": [
+                            "role"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_createcontact": {
@@ -418,7 +486,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "role"],
+                        "required": [
+                            "id",
+                            "role"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -431,9 +502,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_createconversation",
             "name": "create-conversation",
-            "output": ["ActionOutput_intercom_createconversation"],
+            "output": [
+                "ActionOutput_intercom_createconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_createconversation", "ActionOutput_intercom_createconversation"],
+            "usedModels": [
+                "ActionInput_intercom_createconversation",
+                "ActionOutput_intercom_createconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -445,14 +521,21 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["admin", "contact", "user"]
+                                        "enum": [
+                                            "admin",
+                                            "contact",
+                                            "user"
+                                        ]
                                     },
                                     "id": {
                                         "type": "string",
                                         "description": "The ID of the admin, contact, or user"
                                     }
                                 },
-                                "required": ["type", "id"],
+                                "required": [
+                                    "type",
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The admin or contact starting the conversation"
                             },
@@ -465,7 +548,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["from", "body"],
+                        "required": [
+                            "from",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_createconversation": {
@@ -487,13 +573,24 @@
                             },
                             "message_type": {
                                 "type": "string",
-                                "enum": ["email", "inapp", "facebook", "twitter"]
+                                "enum": [
+                                    "email",
+                                    "inapp",
+                                    "facebook",
+                                    "twitter"
+                                ]
                             },
                             "subject": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "conversation_id", "created_at", "body", "message_type"],
+                        "required": [
+                            "id",
+                            "conversation_id",
+                            "created_at",
+                            "body",
+                            "message_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -506,9 +603,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_createnote",
             "name": "create-note",
-            "output": ["ActionOutput_intercom_createnote"],
+            "output": [
+                "ActionOutput_intercom_createnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_createnote", "ActionOutput_intercom_createnote"],
+            "usedModels": [
+                "ActionInput_intercom_createnote",
+                "ActionOutput_intercom_createnote"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -528,7 +630,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contact_id", "body"],
+                        "required": [
+                            "contact_id",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_createnote": {
@@ -559,7 +664,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "created_at", "body"],
+                        "required": [
+                            "id",
+                            "type",
+                            "created_at",
+                            "body"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -572,9 +682,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_createtag",
             "name": "create-tag",
-            "output": ["ActionOutput_intercom_createtag"],
+            "output": [
+                "ActionOutput_intercom_createtag"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_createtag", "ActionOutput_intercom_createtag"],
+            "usedModels": [
+                "ActionInput_intercom_createtag",
+                "ActionOutput_intercom_createtag"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -586,7 +701,9 @@
                                 "description": "The name of the tag to create. Example: \"Premium Customers\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_createtag": {
@@ -601,7 +718,10 @@
                                 "description": "The name of the created tag"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -614,9 +734,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_deletearticle",
             "name": "delete-article",
-            "output": ["ActionOutput_intercom_deletearticle"],
+            "output": [
+                "ActionOutput_intercom_deletearticle"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_deletearticle", "ActionOutput_intercom_deletearticle"],
+            "usedModels": [
+                "ActionInput_intercom_deletearticle",
+                "ActionOutput_intercom_deletearticle"
+            ],
             "version": "0.0.2",
             "json_schema": {
                 "definitions": {
@@ -628,7 +753,9 @@
                                 "description": "The unique identifier of the article to delete"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_deletearticle": {
@@ -643,7 +770,10 @@
                                 "description": "The ID of the deleted article"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -656,9 +786,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_deletecompany",
             "name": "delete-company",
-            "output": ["ActionOutput_intercom_deletecompany"],
+            "output": [
+                "ActionOutput_intercom_deletecompany"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_deletecompany", "ActionOutput_intercom_deletecompany"],
+            "usedModels": [
+                "ActionInput_intercom_deletecompany",
+                "ActionOutput_intercom_deletecompany"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -670,7 +805,9 @@
                                 "description": "The unique identifier of the company. Example: \"5a250dd6\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_deletecompany": {
@@ -683,7 +820,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -696,9 +835,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_intercom_deletecontact"],
+            "output": [
+                "ActionOutput_intercom_deletecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_deletecontact", "ActionOutput_intercom_deletecontact"],
+            "usedModels": [
+                "ActionInput_intercom_deletecontact",
+                "ActionOutput_intercom_deletecontact"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -710,7 +854,9 @@
                                 "description": "The unique identifier for the contact to delete. Example: \"5f3c8b3e8f0e3c0001a2b3c4\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_deletecontact": {
@@ -723,7 +869,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -736,9 +884,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_detachcontactfromcompany",
             "name": "detach-contact-from-company",
-            "output": ["ActionOutput_intercom_detachcontactfromcompany"],
+            "output": [
+                "ActionOutput_intercom_detachcontactfromcompany"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_detachcontactfromcompany", "ActionOutput_intercom_detachcontactfromcompany"],
+            "usedModels": [
+                "ActionInput_intercom_detachcontactfromcompany",
+                "ActionOutput_intercom_detachcontactfromcompany"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -754,7 +907,10 @@
                                 "description": "The unique identifier for the company. Example: \"63d2a3f8e8a1b2c3d4e5f6h8\""
                             }
                         },
-                        "required": ["contact_id", "company_id"],
+                        "required": [
+                            "contact_id",
+                            "company_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_detachcontactfromcompany": {
@@ -770,7 +926,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "contact_id", "company_id"],
+                        "required": [
+                            "success",
+                            "contact_id",
+                            "company_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -783,9 +943,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_getadmin",
             "name": "get-admin",
-            "output": ["ActionOutput_intercom_getadmin"],
+            "output": [
+                "ActionOutput_intercom_getadmin"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_getadmin", "ActionOutput_intercom_getadmin"],
+            "usedModels": [
+                "ActionInput_intercom_getadmin",
+                "ActionOutput_intercom_getadmin"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -797,7 +962,9 @@
                                 "description": "The unique identifier of the admin. Example: \"12345\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_getadmin": {
@@ -846,7 +1013,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -859,9 +1029,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_getarticle",
             "name": "get-article",
-            "output": ["ActionOutput_intercom_getarticle"],
+            "output": [
+                "ActionOutput_intercom_getarticle"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_getarticle", "ActionOutput_intercom_getarticle"],
+            "usedModels": [
+                "ActionInput_intercom_getarticle",
+                "ActionOutput_intercom_getarticle"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -873,7 +1048,9 @@
                                 "description": "The unique identifier of the article. Example: \"123456\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_getarticle": {
@@ -913,7 +1090,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "workspace_id", "title", "state", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "workspace_id",
+                            "title",
+                            "state",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -926,9 +1111,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_getcompany",
             "name": "get-company",
-            "output": ["ActionOutput_intercom_getcompany"],
+            "output": [
+                "ActionOutput_intercom_getcompany"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_getcompany", "ActionOutput_intercom_getcompany"],
+            "usedModels": [
+                "ActionInput_intercom_getcompany",
+                "ActionOutput_intercom_getcompany"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -940,7 +1130,9 @@
                                 "description": "The unique identifier for the company which is given by Intercom. Example: \"5f4d3c1c-7b1b-4d7d-a97e-6095715c6632\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_getcompany": {
@@ -993,7 +1185,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1006,9 +1200,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_intercom_getcontact"],
+            "output": [
+                "ActionOutput_intercom_getcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_getcontact", "ActionOutput_intercom_getcontact"],
+            "usedModels": [
+                "ActionInput_intercom_getcontact",
+                "ActionOutput_intercom_getcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1021,7 +1220,9 @@
                                 "description": "The unique identifier for the contact. Example: \"5f5c4a1c7c9c4a0001f7e1a2\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_getcontact": {
@@ -1038,7 +1239,10 @@
                             },
                             "role": {
                                 "type": "string",
-                                "enum": ["user", "lead"]
+                                "enum": [
+                                    "user",
+                                    "lead"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -1047,7 +1251,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1060,9 +1266,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_getconversation",
             "name": "get-conversation",
-            "output": ["ActionOutput_intercom_getconversation"],
+            "output": [
+                "ActionOutput_intercom_getconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_getconversation", "ActionOutput_intercom_getconversation"],
+            "usedModels": [
+                "ActionInput_intercom_getconversation",
+                "ActionOutput_intercom_getconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1076,10 +1287,15 @@
                             "display_as": {
                                 "description": "Format for conversation parts content. Use \"plaintext\" for plain text or \"html\" for HTML formatted content.",
                                 "type": "string",
-                                "enum": ["plaintext", "html"]
+                                "enum": [
+                                    "plaintext",
+                                    "html"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_getconversation": {
@@ -1092,7 +1308,10 @@
                                 "type": "string"
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -1101,30 +1320,49 @@
                                 "type": "number"
                             },
                             "waiting_since": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "snoozed_until": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "open": {
                                 "type": "boolean"
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["open", "closed", "snoozed"]
+                                "enum": [
+                                    "open",
+                                    "closed",
+                                    "snoozed"
+                                ]
                             },
                             "read": {
                                 "type": "boolean"
                             },
                             "priority": {
                                 "type": "string",
-                                "enum": ["priority", "not_priority"]
+                                "enum": [
+                                    "priority",
+                                    "not_priority"
+                                ]
                             },
                             "admin_assignee_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "team_assignee_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "assignee": {
                                 "anyOf": [
@@ -1144,7 +1382,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -1162,7 +1402,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "id"],
+                                "required": [
+                                    "type",
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "contacts": {
@@ -1183,12 +1426,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "id"],
+                                            "required": [
+                                                "type",
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
                                 },
-                                "required": ["contacts"],
+                                "required": [
+                                    "contacts"
+                                ],
                                 "additionalProperties": {}
                             },
                             "source": {
@@ -1206,10 +1454,16 @@
                                                 "type": "string"
                                             },
                                             "subject": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "body": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "author": {
                                                 "type": "object",
@@ -1234,7 +1488,10 @@
                                                 "items": {}
                                             },
                                             "url": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "redacted": {
                                                 "type": "boolean"
@@ -1268,7 +1525,10 @@
                                                     "type": "string"
                                                 },
                                                 "body": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "created_at": {
                                                     "type": "number"
@@ -1310,7 +1570,10 @@
                                                     "items": {}
                                                 }
                                             },
-                                            "required": ["id", "created_at"],
+                                            "required": [
+                                                "id",
+                                                "created_at"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1318,7 +1581,10 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["conversation_parts", "total_count"],
+                                "required": [
+                                    "conversation_parts",
+                                    "total_count"
+                                ],
                                 "additionalProperties": {}
                             },
                             "tags": {
@@ -1335,11 +1601,17 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["tags"],
+                                "required": [
+                                    "tags"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1352,9 +1624,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listadmins",
             "name": "list-admins",
-            "output": ["ActionOutput_intercom_listadmins"],
+            "output": [
+                "ActionOutput_intercom_listadmins"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listadmins", "ActionOutput_intercom_listadmins"],
+            "usedModels": [
+                "ActionInput_intercom_listadmins",
+                "ActionOutput_intercom_listadmins"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1434,7 +1711,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of admins in the workspace."
@@ -1454,7 +1734,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["admins"],
+                        "required": [
+                            "admins"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1467,9 +1749,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listarticles",
             "name": "list-articles",
-            "output": ["ActionOutput_intercom_listarticles"],
+            "output": [
+                "ActionOutput_intercom_listarticles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listarticles", "ActionOutput_intercom_listarticles"],
+            "usedModels": [
+                "ActionInput_intercom_listarticles",
+                "ActionOutput_intercom_listarticles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1517,7 +1804,10 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["published", "draft"]
+                                            "enum": [
+                                                "published",
+                                                "draft"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "number"
@@ -1544,7 +1834,15 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "workspace_id", "title", "author_id", "state", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "workspace_id",
+                                        "title",
+                                        "author_id",
+                                        "state",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1555,7 +1853,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total_count"],
+                        "required": [
+                            "items",
+                            "total_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1568,9 +1869,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listcompanies",
             "name": "list-companies",
-            "output": ["ActionOutput_intercom_listcompanies"],
+            "output": [
+                "ActionOutput_intercom_listcompanies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listcompanies", "ActionOutput_intercom_listcompanies"],
+            "usedModels": [
+                "ActionInput_intercom_listcompanies",
+                "ActionOutput_intercom_listcompanies"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1600,7 +1906,10 @@
                                             "type": "string"
                                         },
                                         "id": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -1609,13 +1918,19 @@
                                             "type": "string"
                                         },
                                         "app_id": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "plan": {
                                             "type": "object",
                                             "properties": {
                                                 "id": {
-                                                    "type": ["string", "number"]
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
                                                 },
                                                 "name": {
                                                     "type": "string"
@@ -1624,31 +1939,58 @@
                                             "additionalProperties": false
                                         },
                                         "monthly_spend": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "session_count": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "user_count": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "size": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "website": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "industry": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "remote_created_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "tags": {
                                             "type": "object",
@@ -1677,7 +2019,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1685,7 +2029,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["companies"],
+                        "required": [
+                            "companies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1698,9 +2044,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listcompanycontacts",
             "name": "list-company-contacts",
-            "output": ["ActionOutput_intercom_listcompanycontacts"],
+            "output": [
+                "ActionOutput_intercom_listcompanycontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listcompanycontacts", "ActionOutput_intercom_listcompanycontacts"],
+            "usedModels": [
+                "ActionInput_intercom_listcompanycontacts",
+                "ActionOutput_intercom_listcompanycontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1722,7 +2073,9 @@
                                 "maximum": 150
                             }
                         },
-                        "required": ["company_id"],
+                        "required": [
+                            "company_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_listcompanycontacts": {
@@ -1741,7 +2094,10 @@
                                         },
                                         "role": {
                                             "type": "string",
-                                            "enum": ["user", "lead"]
+                                            "enum": [
+                                                "user",
+                                                "lead"
+                                            ]
                                         },
                                         "email": {
                                             "type": "string"
@@ -1759,7 +2115,13 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "type", "role", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "role",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1767,7 +2129,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1780,9 +2144,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_intercom_listcontacts"],
+            "output": [
+                "ActionOutput_intercom_listcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listcontacts", "ActionOutput_intercom_listcontacts"],
+            "usedModels": [
+                "ActionInput_intercom_listcontacts",
+                "ActionOutput_intercom_listcontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1818,7 +2187,10 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "workspace_id": {
                                             "type": "string"
@@ -1836,16 +2208,28 @@
                                             ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "owner_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "has_hard_bounced": {
                                             "type": "boolean"
@@ -1863,37 +2247,70 @@
                                             "type": "number"
                                         },
                                         "signed_up_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "last_seen_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "last_replied_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "last_contacted_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "last_email_opened_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "last_email_clicked_at": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "language_override": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "browser": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "browser_version": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "browser_language": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "os": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "custom_attributes": {
                                             "type": "object",
@@ -1903,7 +2320,14 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["type", "id", "workspace_id", "role", "created_at", "updated_at"],
+                                    "required": [
+                                        "type",
+                                        "id",
+                                        "workspace_id",
+                                        "role",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1914,7 +2338,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contacts", "total_count"],
+                        "required": [
+                            "contacts",
+                            "total_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1927,9 +2354,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listconversations",
             "name": "list-conversations",
-            "output": ["ActionOutput_intercom_listconversations"],
+            "output": [
+                "ActionOutput_intercom_listconversations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listconversations", "ActionOutput_intercom_listconversations"],
+            "usedModels": [
+                "ActionInput_intercom_listconversations",
+                "ActionOutput_intercom_listconversations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1946,7 +2378,11 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["open", "closed", "snoozed"]
+                                "enum": [
+                                    "open",
+                                    "closed",
+                                    "snoozed"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -1970,7 +2406,11 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["open", "closed", "snoozed"]
+                                            "enum": [
+                                                "open",
+                                                "closed",
+                                                "snoozed"
+                                            ]
                                         },
                                         "title": {
                                             "type": "string"
@@ -2025,7 +2465,12 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "created_at", "updated_at", "state"],
+                                    "required": [
+                                        "id",
+                                        "created_at",
+                                        "updated_at",
+                                        "state"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2033,7 +2478,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["conversations"],
+                        "required": [
+                            "conversations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2046,9 +2493,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listhelpcentercollections",
             "name": "list-help-center-collections",
-            "output": ["ActionOutput_intercom_listhelpcentercollections"],
+            "output": [
+                "ActionOutput_intercom_listhelpcentercollections"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listhelpcentercollections", "ActionOutput_intercom_listhelpcentercollections"],
+            "usedModels": [
+                "ActionInput_intercom_listhelpcentercollections",
+                "ActionOutput_intercom_listhelpcentercollections"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2096,7 +2548,12 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2107,7 +2564,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["collections", "has_more"],
+                        "required": [
+                            "collections",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2120,9 +2580,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listnotes",
             "name": "list-notes",
-            "output": ["ActionOutput_intercom_listnotes"],
+            "output": [
+                "ActionOutput_intercom_listnotes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listnotes", "ActionOutput_intercom_listnotes"],
+            "usedModels": [
+                "ActionInput_intercom_listnotes",
+                "ActionOutput_intercom_listnotes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2144,7 +2609,9 @@
                                 "maximum": 150
                             }
                         },
-                        "required": ["contact_id"],
+                        "required": [
+                            "contact_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_listnotes": {
@@ -2177,7 +2644,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2185,7 +2654,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["notes"],
+                        "required": [
+                            "notes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2198,9 +2669,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_listtags",
             "name": "list-tags",
-            "output": ["ActionOutput_intercom_listtags"],
+            "output": [
+                "ActionOutput_intercom_listtags"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_listtags", "ActionOutput_intercom_listtags"],
+            "usedModels": [
+                "ActionInput_intercom_listtags",
+                "ActionOutput_intercom_listtags"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2247,7 +2723,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2255,7 +2734,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2268,9 +2749,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_mergecontacts",
             "name": "merge-contacts",
-            "output": ["ActionOutput_intercom_mergecontacts"],
+            "output": [
+                "ActionOutput_intercom_mergecontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_mergecontacts", "ActionOutput_intercom_mergecontacts"],
+            "usedModels": [
+                "ActionInput_intercom_mergecontacts",
+                "ActionOutput_intercom_mergecontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2286,7 +2772,10 @@
                                 "description": "The ID of the user contact to merge into. Example: \"66c1b0a6c1234567890fedcba\""
                             }
                         },
-                        "required": ["from", "into"],
+                        "required": [
+                            "from",
+                            "into"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_mergecontacts": {
@@ -2297,7 +2786,11 @@
                             },
                             "role": {
                                 "type": "string",
-                                "enum": ["user", "lead", "admin"]
+                                "enum": [
+                                    "user",
+                                    "lead",
+                                    "admin"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -2330,7 +2823,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "role", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "role",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2343,9 +2841,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_reopenconversation",
             "name": "reopen-conversation",
-            "output": ["ActionOutput_intercom_reopenconversation"],
+            "output": [
+                "ActionOutput_intercom_reopenconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_reopenconversation", "ActionOutput_intercom_reopenconversation"],
+            "usedModels": [
+                "ActionInput_intercom_reopenconversation",
+                "ActionOutput_intercom_reopenconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2361,7 +2864,10 @@
                                 "description": "The admin ID who is reopening the conversation. Example: \"87654321\""
                             }
                         },
-                        "required": ["conversation_id", "admin_id"],
+                        "required": [
+                            "conversation_id",
+                            "admin_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_reopenconversation": {
@@ -2377,7 +2883,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "conversation_id"],
+                        "required": [
+                            "success",
+                            "conversation_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2390,9 +2899,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_replytoconversation",
             "name": "reply-to-conversation",
-            "output": ["ActionOutput_intercom_replytoconversation"],
+            "output": [
+                "ActionOutput_intercom_replytoconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_replytoconversation", "ActionOutput_intercom_replytoconversation"],
+            "usedModels": [
+                "ActionInput_intercom_replytoconversation",
+                "ActionOutput_intercom_replytoconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2405,12 +2919,18 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["admin", "user"],
+                                "enum": [
+                                    "admin",
+                                    "user"
+                                ],
                                 "description": "The type of reply: \"admin\" for admin replies, \"user\" for contact replies."
                             },
                             "message_type": {
                                 "type": "string",
-                                "enum": ["comment", "note"],
+                                "enum": [
+                                    "comment",
+                                    "note"
+                                ],
                                 "description": "The message type: \"comment\" for replies, \"note\" for internal admin notes."
                             },
                             "body": {
@@ -2433,7 +2953,12 @@
                                 }
                             }
                         },
-                        "required": ["conversation_id", "type", "message_type", "body"],
+                        "required": [
+                            "conversation_id",
+                            "type",
+                            "message_type",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_replytoconversation": {
@@ -2463,7 +2988,10 @@
                                             "type": "string"
                                         },
                                         "body": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "number"
@@ -2478,12 +3006,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2496,9 +3028,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_searchcontacts",
             "name": "search-contacts",
-            "output": ["ActionOutput_intercom_searchcontacts"],
+            "output": [
+                "ActionOutput_intercom_searchcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_searchcontacts", "ActionOutput_intercom_searchcontacts"],
+            "usedModels": [
+                "ActionInput_intercom_searchcontacts",
+                "ActionOutput_intercom_searchcontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2515,7 +3052,18 @@
                                     },
                                     "operator": {
                                         "type": "string",
-                                        "enum": ["=", "!=", ">", "<", "~", "!~", "IN", "NIN", "AND", "OR"],
+                                        "enum": [
+                                            "=",
+                                            "!=",
+                                            ">",
+                                            "<",
+                                            "~",
+                                            "!~",
+                                            "IN",
+                                            "NIN",
+                                            "AND",
+                                            "OR"
+                                        ],
                                         "description": "Comparison operator."
                                     },
                                     "value": {
@@ -2537,7 +3085,11 @@
                                         "description": "Value to compare against."
                                     }
                                 },
-                                "required": ["field", "operator", "value"],
+                                "required": [
+                                    "field",
+                                    "operator",
+                                    "value"
+                                ],
                                 "additionalProperties": false
                             },
                             "cursor": {
@@ -2566,7 +3118,10 @@
                                         },
                                         "role": {
                                             "type": "string",
-                                            "enum": ["user", "lead"]
+                                            "enum": [
+                                                "user",
+                                                "lead"
+                                            ]
                                         },
                                         "email": {
                                             "type": "string"
@@ -2587,7 +3142,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "role"],
+                                    "required": [
+                                        "id",
+                                        "role"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2595,7 +3153,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2608,9 +3168,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_searchconversations",
             "name": "search-conversations",
-            "output": ["ActionOutput_intercom_searchconversations"],
+            "output": [
+                "ActionOutput_intercom_searchconversations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_searchconversations", "ActionOutput_intercom_searchconversations"],
+            "usedModels": [
+                "ActionInput_intercom_searchconversations",
+                "ActionOutput_intercom_searchconversations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2643,7 +3208,10 @@
                                             {
                                                 "type": "array",
                                                 "items": {
-                                                    "type": ["string", "number"]
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
                                                 }
                                             }
                                         ]
@@ -2663,7 +3231,9 @@
                                 "maximum": 150
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_searchconversations": {
@@ -2683,7 +3253,10 @@
                                             "description": "The conversation ID"
                                         },
                                         "title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "description": "Unix timestamp of creation time",
@@ -2695,11 +3268,17 @@
                                         },
                                         "waiting_since": {
                                             "description": "Unix timestamp when customer started waiting",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "snoozed_until": {
                                             "description": "Unix timestamp when snooze ends",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "open": {
                                             "description": "Whether the conversation is open",
@@ -2708,7 +3287,11 @@
                                         "state": {
                                             "description": "Conversation state",
                                             "type": "string",
-                                            "enum": ["open", "closed", "snoozed"]
+                                            "enum": [
+                                                "open",
+                                                "closed",
+                                                "snoozed"
+                                            ]
                                         },
                                         "read": {
                                             "description": "Whether the conversation has been read",
@@ -2717,18 +3300,29 @@
                                         "priority": {
                                             "description": "Priority status",
                                             "type": "string",
-                                            "enum": ["priority", "not_priority"]
+                                            "enum": [
+                                                "priority",
+                                                "not_priority"
+                                            ]
                                         },
                                         "admin_assignee_id": {
                                             "description": "ID of assigned admin",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "team_assignee_id": {
                                             "description": "ID of assigned team",
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "List of matching conversations"
@@ -2742,7 +3336,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["conversations", "total_count"],
+                        "required": [
+                            "conversations",
+                            "total_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2755,9 +3352,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_sendmessage",
             "name": "send-message",
-            "output": ["ActionOutput_intercom_sendmessage"],
+            "output": [
+                "ActionOutput_intercom_sendmessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_sendmessage", "ActionOutput_intercom_sendmessage"],
+            "usedModels": [
+                "ActionInput_intercom_sendmessage",
+                "ActionOutput_intercom_sendmessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2766,7 +3368,10 @@
                         "properties": {
                             "message_type": {
                                 "type": "string",
-                                "enum": ["email", "inapp"],
+                                "enum": [
+                                    "email",
+                                    "inapp"
+                                ],
                                 "description": "Type of message to send: \"email\" or \"inapp\"."
                             },
                             "subject": {
@@ -2789,7 +3394,10 @@
                                         "description": "ID of the admin sending the message."
                                     }
                                 },
-                                "required": ["type", "id"],
+                                "required": [
+                                    "type",
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The admin sending the message."
                             },
@@ -2798,14 +3406,20 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["contact", "user"]
+                                        "enum": [
+                                            "contact",
+                                            "user"
+                                        ]
                                     },
                                     "id": {
                                         "type": "string",
                                         "description": "ID of the contact or user receiving the message."
                                     }
                                 },
-                                "required": ["type", "id"],
+                                "required": [
+                                    "type",
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The recipient contact or user."
                             },
@@ -2814,7 +3428,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["message_type", "body", "from", "to"],
+                        "required": [
+                            "message_type",
+                            "body",
+                            "from",
+                            "to"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_sendmessage": {
@@ -2828,7 +3447,10 @@
                             },
                             "message_type": {
                                 "type": "string",
-                                "enum": ["email", "inapp"]
+                                "enum": [
+                                    "email",
+                                    "inapp"
+                                ]
                             },
                             "subject": {
                                 "type": "string"
@@ -2850,7 +3472,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "id"],
+                                "required": [
+                                    "type",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "to": {
@@ -2863,14 +3488,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "id"],
+                                "required": [
+                                    "type",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2883,9 +3513,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_snoozeconversation",
             "name": "snooze-conversation",
-            "output": ["ActionOutput_intercom_snoozeconversation"],
+            "output": [
+                "ActionOutput_intercom_snoozeconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_snoozeconversation", "ActionOutput_intercom_snoozeconversation"],
+            "usedModels": [
+                "ActionInput_intercom_snoozeconversation",
+                "ActionOutput_intercom_snoozeconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2905,7 +3540,11 @@
                                 "description": "Unix timestamp (seconds) when the conversation should be unsnoozed. Example: 1704067200"
                             }
                         },
-                        "required": ["conversation_id", "admin_id", "snoozed_until"],
+                        "required": [
+                            "conversation_id",
+                            "admin_id",
+                            "snoozed_until"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_snoozeconversation": {
@@ -2927,7 +3566,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "state", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "state",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2940,9 +3584,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_tagcompanies",
             "name": "tag-companies",
-            "output": ["ActionOutput_intercom_tagcompanies"],
+            "output": [
+                "ActionOutput_intercom_tagcompanies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_tagcompanies", "ActionOutput_intercom_tagcompanies"],
+            "usedModels": [
+                "ActionInput_intercom_tagcompanies",
+                "ActionOutput_intercom_tagcompanies"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2973,7 +3622,10 @@
                                 "description": "Array of companies to tag with their IDs"
                             }
                         },
-                        "required": ["name", "companies"],
+                        "required": [
+                            "name",
+                            "companies"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_tagcompanies": {
@@ -3007,7 +3659,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3020,9 +3676,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_tagcontacts",
             "name": "tag-contacts",
-            "output": ["ActionOutput_intercom_tagcontacts"],
+            "output": [
+                "ActionOutput_intercom_tagcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_tagcontacts", "ActionOutput_intercom_tagcontacts"],
+            "usedModels": [
+                "ActionInput_intercom_tagcontacts",
+                "ActionOutput_intercom_tagcontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3052,7 +3713,10 @@
                                 "description": "Array of contacts to tag, each with id or email"
                             }
                         },
-                        "required": ["name", "users"],
+                        "required": [
+                            "name",
+                            "users"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_tagcontacts": {
@@ -3085,12 +3749,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3103,9 +3773,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_tagconversation",
             "name": "tag-conversation",
-            "output": ["ActionOutput_intercom_tagconversation"],
+            "output": [
+                "ActionOutput_intercom_tagconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_tagconversation", "ActionOutput_intercom_tagconversation"],
+            "usedModels": [
+                "ActionInput_intercom_tagconversation",
+                "ActionOutput_intercom_tagconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3125,7 +3800,11 @@
                                 "description": "The unique identifier for the admin applying the tag. Example: \"789\""
                             }
                         },
-                        "required": ["conversation_id", "tag_id", "admin_id"],
+                        "required": [
+                            "conversation_id",
+                            "tag_id",
+                            "admin_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_tagconversation": {
@@ -3138,7 +3817,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3151,9 +3833,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_untagcontacts",
             "name": "untag-contacts",
-            "output": ["ActionOutput_intercom_untagcontacts"],
+            "output": [
+                "ActionOutput_intercom_untagcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_untagcontacts", "ActionOutput_intercom_untagcontacts"],
+            "usedModels": [
+                "ActionInput_intercom_untagcontacts",
+                "ActionOutput_intercom_untagcontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3185,7 +3872,10 @@
                                 "description": "Array of contacts to untag, each with either id or email"
                             }
                         },
-                        "required": ["tag_name", "contacts"],
+                        "required": [
+                            "tag_name",
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_untagcontacts": {
@@ -3216,7 +3906,11 @@
                                 "description": "Contacts that were untagged"
                             }
                         },
-                        "required": ["tag_id", "tag_name", "untagged_contacts"],
+                        "required": [
+                            "tag_id",
+                            "tag_name",
+                            "untagged_contacts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3229,9 +3923,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_untagconversation",
             "name": "untag-conversation",
-            "output": ["ActionOutput_intercom_untagconversation"],
+            "output": [
+                "ActionOutput_intercom_untagconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_untagconversation", "ActionOutput_intercom_untagconversation"],
+            "usedModels": [
+                "ActionInput_intercom_untagconversation",
+                "ActionOutput_intercom_untagconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3251,7 +3950,11 @@
                                 "description": "The ID of the admin performing the untag operation. Example: \"789\""
                             }
                         },
-                        "required": ["conversation_id", "tag_id", "admin_id"],
+                        "required": [
+                            "conversation_id",
+                            "tag_id",
+                            "admin_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_untagconversation": {
@@ -3262,7 +3965,9 @@
                                 "description": "Whether the tag was successfully removed"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3275,9 +3980,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_updatearticle",
             "name": "update-article",
-            "output": ["ActionOutput_intercom_updatearticle"],
+            "output": [
+                "ActionOutput_intercom_updatearticle"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_updatearticle", "ActionOutput_intercom_updatearticle"],
+            "usedModels": [
+                "ActionInput_intercom_updatearticle",
+                "ActionOutput_intercom_updatearticle"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3294,11 +4004,17 @@
                             },
                             "description": {
                                 "description": "The description of the article.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "body": {
                                 "description": "The body of the article in HTML.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "description": "Whether the article is published or draft.",
@@ -3319,7 +4035,10 @@
                             },
                             "parent_id": {
                                 "description": "The id of the article's parent collection or section.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "parent_type": {
                                 "description": "The type of parent, which can either be a collection or section.",
@@ -3342,7 +4061,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_updatearticle": {
@@ -3412,7 +4133,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "workspace_id", "title", "author_id", "state", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "workspace_id",
+                            "title",
+                            "author_id",
+                            "state",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3425,9 +4154,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_updatecompany",
             "name": "update-company",
-            "output": ["ActionOutput_intercom_updatecompany"],
+            "output": [
+                "ActionOutput_intercom_updatecompany"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_updatecompany", "ActionOutput_intercom_updatecompany"],
+            "usedModels": [
+                "ActionInput_intercom_updatecompany",
+                "ActionOutput_intercom_updatecompany"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3470,7 +4204,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_updatecompany": {
@@ -3510,7 +4246,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3523,9 +4261,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_intercom_updatecontact"],
+            "output": [
+                "ActionOutput_intercom_updatecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_updatecontact", "ActionOutput_intercom_updatecontact"],
+            "usedModels": [
+                "ActionInput_intercom_updatecontact",
+                "ActionOutput_intercom_updatecontact"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3539,10 +4282,16 @@
                                 "type": "string"
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "role": {
                                 "type": "string"
@@ -3562,7 +4311,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_updatecontact": {
@@ -3578,10 +4329,16 @@
                                 "type": "string"
                             },
                             "phone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "role": {
                                 "type": "string"
@@ -3607,7 +4364,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "type", "email", "phone", "name", "role", "custom_attributes", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "email",
+                            "phone",
+                            "name",
+                            "role",
+                            "custom_attributes",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3620,9 +4387,14 @@
             "endpoint": null,
             "input": "ActionInput_intercom_updateconversation",
             "name": "update-conversation",
-            "output": ["ActionOutput_intercom_updateconversation"],
+            "output": [
+                "ActionOutput_intercom_updateconversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_intercom_updateconversation", "ActionOutput_intercom_updateconversation"],
+            "usedModels": [
+                "ActionInput_intercom_updateconversation",
+                "ActionOutput_intercom_updateconversation"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3643,7 +4415,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_intercom_updateconversation": {
@@ -3657,7 +4431,11 @@
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["open", "closed", "snoozed"]
+                                "enum": [
+                                    "open",
+                                    "closed",
+                                    "snoozed"
+                                ]
                             },
                             "read": {
                                 "type": "boolean"
@@ -3676,7 +4454,13 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "state", "read", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "state",
+                            "read",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3697,12 +4481,16 @@
             ],
             "input": null,
             "name": "admins",
-            "output": ["Admin"],
+            "output": [
+                "Admin"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Admin"],
+            "usedModels": [
+                "Admin"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3732,7 +4520,10 @@
                                 "type": "boolean"
                             },
                             "away_status_reason_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "has_inbox_seat": {
                                 "type": "boolean"
@@ -3775,12 +4566,16 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3794,12 +4589,16 @@
             ],
             "input": null,
             "name": "articles",
-            "output": ["Article"],
+            "output": [
+                "Article"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Article"],
+            "usedModels": [
+                "Article"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3820,17 +4619,26 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "body": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "author_id": {
                                 "type": "number"
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["published", "draft"]
+                                "enum": [
+                                    "published",
+                                    "draft"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -3839,10 +4647,16 @@
                                 "type": "number"
                             },
                             "url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "parent_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "parent_ids": {
                                 "type": "array",
@@ -3854,7 +4668,10 @@
                                 "anyOf": [
                                     {
                                         "type": "string",
-                                        "enum": ["collection", "section"]
+                                        "enum": [
+                                            "collection",
+                                            "section"
+                                        ]
                                     },
                                     {
                                         "type": "null"
@@ -3902,12 +4719,16 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3921,12 +4742,16 @@
             ],
             "input": null,
             "name": "companies",
-            "output": ["Company"],
+            "output": [
+                "Company"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Company"],
+            "usedModels": [
+                "Company"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3959,7 +4784,10 @@
                                 "type": "number"
                             },
                             "plan": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "size": {
                                 "type": "number"
@@ -3971,12 +4799,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3990,12 +4822,16 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4008,7 +4844,10 @@
                             },
                             "role": {
                                 "type": "string",
-                                "enum": ["user", "lead"]
+                                "enum": [
+                                    "user",
+                                    "lead"
+                                ]
                             },
                             "email": {
                                 "type": "string"
@@ -4044,12 +4883,19 @@
                                 }
                             }
                         },
-                        "required": ["id", "role", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "role",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4063,12 +4909,16 @@
             ],
             "input": null,
             "name": "conversation-parts",
-            "output": ["ConversationPart"],
+            "output": [
+                "ConversationPart"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ConversationPart"],
+            "usedModels": [
+                "ConversationPart"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4086,7 +4936,10 @@
                                 "type": "string"
                             },
                             "body": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -4100,12 +4953,17 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "conversation_id"],
+                        "required": [
+                            "id",
+                            "conversation_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4119,12 +4977,16 @@
             ],
             "input": null,
             "name": "conversations",
-            "output": ["Conversation"],
+            "output": [
+                "Conversation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Conversation"],
+            "usedModels": [
+                "Conversation"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4136,11 +4998,18 @@
                                 "type": "string"
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
                                 "type": "string",
-                                "enum": ["open", "closed", "snoozed"]
+                                "enum": [
+                                    "open",
+                                    "closed",
+                                    "snoozed"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -4149,10 +5018,16 @@
                                 "type": "number"
                             },
                             "waiting_since": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "snoozed_until": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "open": {
                                 "type": "boolean"
@@ -4164,10 +5039,16 @@
                                 "type": "string"
                             },
                             "admin_assignee_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "team_assignee_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "tags": {
                                 "anyOf": [
@@ -4186,12 +5067,17 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": {}
                                                 }
                                             }
                                         },
-                                        "required": ["tags"],
+                                        "required": [
+                                            "tags"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -4330,12 +5216,16 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4349,12 +5239,16 @@
             ],
             "input": null,
             "name": "help-center-collections",
-            "output": ["Collection"],
+            "output": [
+                "Collection"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Collection"],
+            "usedModels": [
+                "Collection"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4384,12 +5278,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4403,12 +5301,16 @@
             ],
             "input": null,
             "name": "segments",
-            "output": ["Segment"],
+            "output": [
+                "Segment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Segment"],
+            "usedModels": [
+                "Segment"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4438,12 +5340,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4457,12 +5364,16 @@
             ],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4486,12 +5397,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

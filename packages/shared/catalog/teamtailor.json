@@ -14,12 +14,19 @@
             ],
             "input": "SyncMetadata_teamtailor_candidates",
             "name": "candidates",
-            "output": ["TeamtailorCandidate"],
+            "output": [
+                "TeamtailorCandidate"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["Admin"],
+            "scopes": [
+                "Admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TeamtailorCandidate", "SyncMetadata_teamtailor_candidates"],
+            "usedModels": [
+                "TeamtailorCandidate",
+                "SyncMetadata_teamtailor_candidates"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -40,7 +47,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["self"],
+                                "required": [
+                                    "self"
+                                ],
                                 "additionalProperties": false
                             },
                             "attributes": {
@@ -167,11 +176,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "department": {
@@ -187,11 +201,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "role": {
@@ -207,11 +226,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "regions": {
@@ -227,11 +251,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "job_applications": {
@@ -247,11 +276,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "questions": {
@@ -267,11 +301,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "answers": {
@@ -287,11 +326,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "locations": {
@@ -307,11 +351,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "uploads": {
@@ -327,11 +376,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "custom_field_values": {
@@ -347,11 +401,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "partner_results": {
@@ -367,11 +426,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["self", "related"],
+                                                "required": [
+                                                    "self",
+                                                    "related"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["links"],
+                                        "required": [
+                                            "links"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -391,7 +455,13 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "links", "attributes", "relationships"],
+                        "required": [
+                            "id",
+                            "type",
+                            "links",
+                            "attributes",
+                            "relationships"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_teamtailor_candidates": {

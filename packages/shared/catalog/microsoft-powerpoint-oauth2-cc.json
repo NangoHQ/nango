@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_copypresentation",
             "name": "copy-presentation",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_copypresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_copypresentation",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -37,7 +44,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_copypresentation": {
@@ -64,7 +74,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -77,9 +89,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_createpresentation",
             "name": "create-presentation",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_createpresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_createpresentation",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -103,7 +122,11 @@
                                 "description": "Base64-encoded raw .pptx file bytes."
                             }
                         },
-                        "required": ["driveId", "filename", "content"],
+                        "required": [
+                            "driveId",
+                            "filename",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_createpresentation": {
@@ -128,7 +151,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -141,9 +167,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_createsharinglink",
             "name": "create-sharing-link",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_createsharinglink", "ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_createsharinglink",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -160,16 +193,27 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["view", "edit"],
+                                "enum": [
+                                    "view",
+                                    "edit"
+                                ],
                                 "description": "The type of sharing link to create."
                             },
                             "scope": {
                                 "type": "string",
-                                "enum": ["organization", "anonymous"],
+                                "enum": [
+                                    "organization",
+                                    "anonymous"
+                                ],
                                 "description": "The scope of the sharing link."
                             }
                         },
-                        "required": ["driveId", "itemId", "type", "scope"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "type",
+                            "scope"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_createsharinglink": {
@@ -212,7 +256,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -225,9 +271,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_deletepresentation",
             "name": "delete-presentation",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_deletepresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_deletepresentation",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -243,7 +296,10 @@
                                 "description": "Item ID of the presentation. Example: \"01RFYLAY...\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_deletepresentation": {
@@ -253,7 +309,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -266,8 +324,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf",
             "name": "get-presentation-as-pdf",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf"],
-            "scopes": ["Files.Read.All"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf",
                 "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf"
@@ -287,7 +349,10 @@
                                 "description": "Item ID of the presentation. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationaspdf": {
@@ -304,7 +369,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -317,8 +384,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationcontent",
             "name": "get-presentation-content",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationcontent"],
-            "scopes": ["Files.Read.All"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationcontent"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentationcontent",
                 "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationcontent"
@@ -338,7 +409,10 @@
                                 "description": "Item ID. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentationcontent": {
@@ -349,7 +423,9 @@
                                 "description": "Base64-encoded .pptx content"
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -362,9 +438,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentation",
             "name": "get-presentation",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation"],
-            "scopes": ["Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_getpresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_getpresentation",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -380,7 +463,10 @@
                                 "description": "The ID of the driveItem representing the presentation. Example: \"01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_getpresentation": {
@@ -393,19 +479,34 @@
                                 "type": "string"
                             },
                             "size": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "webUrl": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastModifiedDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "file": {
                                 "type": "object",
@@ -475,7 +576,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -488,9 +592,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getsitedrive",
             "name": "get-site-drive",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_getsitedrive", "ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_getsitedrive",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -502,7 +613,9 @@
                                 "description": "SharePoint site ID. Example: \"nangodevelopers.sharepoint.com,4c97403e-1663-4673-90fa-d2f8690b4510,29d15734-3d19-43f6-976b-43ece3ff81a8\""
                             }
                         },
-                        "required": ["siteId"],
+                        "required": [
+                            "siteId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_getsitedrive": {
@@ -527,7 +640,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "driveType", "webUrl"],
+                        "required": [
+                            "id",
+                            "name",
+                            "driveType",
+                            "webUrl"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -540,9 +658,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_getuserdrive",
             "name": "get-user-drive",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive"],
-            "scopes": ["Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_getuserdrive", "ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_getuserdrive",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -554,7 +679,9 @@
                                 "description": "User ID or user principal name. Example: \"test_api@nango.dev\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_getuserdrive": {
@@ -588,7 +715,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -601,8 +730,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions",
             "name": "list-presentation-permissions",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions"],
-            "scopes": ["Files.Read.All"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions",
                 "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions"
@@ -622,7 +755,10 @@
                                 "description": "The ID of the presentation item. Example: 01RFYLAYBX27CGEGAJH5HZMVYI6Y3NGGYJ"
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationpermissions": {
@@ -916,12 +1052,16 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["permissions"],
+                        "required": [
+                            "permissions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -934,8 +1074,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails",
             "name": "list-presentation-thumbnails",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails"],
-            "scopes": ["Files.Read.All"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails",
                 "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails"
@@ -955,7 +1099,10 @@
                                 "description": "Item ID of the presentation. Example: \"01RFYLAY...\""
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationthumbnails": {
@@ -979,12 +1126,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["thumbnails"],
+                        "required": [
+                            "thumbnails"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -997,8 +1148,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationversions",
             "name": "list-presentation-versions",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationversions"],
-            "scopes": ["Files.Read.All"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationversions"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentationversions",
                 "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationversions"
@@ -1022,7 +1177,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentationversions": {
@@ -1061,7 +1219,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1070,7 +1230,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["versions"],
+                        "required": [
+                            "versions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1083,9 +1245,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentations",
             "name": "list-presentations",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations"],
-            "scopes": ["Files.Read.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_listpresentations", "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations"
+            ],
+            "scopes": [
+                "Files.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_listpresentations",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1105,7 +1274,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["drive_id"],
+                        "required": [
+                            "drive_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_listpresentations": {
@@ -1147,7 +1318,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1155,7 +1329,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1168,9 +1344,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listsites",
             "name": "list-sites",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listsites"],
-            "scopes": ["Sites.Read.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_listsites", "ActionOutput_microsoft_powerpoint_oauth2_cc_listsites"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listsites"
+            ],
+            "scopes": [
+                "Sites.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_listsites",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listsites"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1227,7 +1410,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1236,7 +1421,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sites"],
+                        "required": [
+                            "sites"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1249,9 +1436,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_listusers"],
-            "scopes": ["User.Read.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_listusers", "ActionOutput_microsoft_powerpoint_oauth2_cc_listusers"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listusers"
+            ],
+            "scopes": [
+                "User.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_listusers",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1302,7 +1496,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1310,7 +1506,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1323,9 +1521,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_movepresentation",
             "name": "move-presentation",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation"],
-            "scopes": ["Files.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_powerpoint_oauth2_cc_movepresentation", "ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_powerpoint_oauth2_cc_movepresentation",
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1345,7 +1550,11 @@
                                 "description": "Item ID of the destination folder. Example: \"01RFYLAY...\""
                             }
                         },
-                        "required": ["driveId", "itemId", "destinationFolderId"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "destinationFolderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_movepresentation": {
@@ -1394,7 +1603,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1407,8 +1618,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent",
             "name": "update-presentation-content",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent"],
-            "scopes": ["Files.ReadWrite.All"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent",
                 "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent"
@@ -1436,7 +1651,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["driveId", "itemId", "content"],
+                        "required": [
+                            "driveId",
+                            "itemId",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationcontent": {
@@ -1461,7 +1680,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1474,8 +1696,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata",
             "name": "update-presentation-metadata",
-            "output": ["ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata"],
-            "scopes": ["Files.ReadWrite.All"],
+            "output": [
+                "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata"
+            ],
+            "scopes": [
+                "Files.ReadWrite.All"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata",
                 "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata"
@@ -1500,10 +1726,16 @@
                             },
                             "description": {
                                 "description": "New description for the presentation. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["driveId", "itemId"],
+                        "required": [
+                            "driveId",
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_powerpoint_oauth2_cc_updatepresentationmetadata": {
@@ -1531,7 +1763,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1547,12 +1782,19 @@
             "endpoints": [],
             "input": "SyncMetadata_microsoft_powerpoint_oauth2_cc_presentations",
             "name": "presentations",
-            "output": ["Presentation"],
+            "output": [
+                "Presentation"
+            ],
             "runs": "every hour",
-            "scopes": ["Files.Read.All"],
+            "scopes": [
+                "Files.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Presentation", "SyncMetadata_microsoft_powerpoint_oauth2_cc_presentations"],
+            "usedModels": [
+                "Presentation",
+                "SyncMetadata_microsoft_powerpoint_oauth2_cc_presentations"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1597,7 +1839,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_microsoft_powerpoint_oauth2_cc_presentations": {
@@ -1607,12 +1851,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["drive_id"],
+                        "required": [
+                            "drive_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

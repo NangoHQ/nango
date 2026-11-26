@@ -11,9 +11,14 @@
             },
             "input": "ActionInput_discogs_addordermessage",
             "name": "add-order-message",
-            "output": ["ActionOutput_discogs_addordermessage"],
+            "output": [
+                "ActionOutput_discogs_addordermessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_addordermessage", "ActionOutput_discogs_addordermessage"],
+            "usedModels": [
+                "ActionInput_discogs_addordermessage",
+                "ActionOutput_discogs_addordermessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -43,7 +48,10 @@
                                 ]
                             }
                         },
-                        "required": ["order_id", "message"],
+                        "required": [
+                            "order_id",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_addordermessage": {
@@ -67,9 +75,14 @@
             },
             "input": "ActionInput_discogs_addtocollection",
             "name": "add-to-collection",
-            "output": ["ActionOutput_discogs_addtocollection"],
+            "output": [
+                "ActionOutput_discogs_addtocollection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_addtocollection", "ActionOutput_discogs_addtocollection"],
+            "usedModels": [
+                "ActionInput_discogs_addtocollection",
+                "ActionOutput_discogs_addtocollection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -87,7 +100,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["folder_id", "release_id"],
+                        "required": [
+                            "folder_id",
+                            "release_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_addtocollection": {
@@ -111,9 +127,14 @@
             },
             "input": "ActionInput_discogs_addtowantlist",
             "name": "add-to-wantlist",
-            "output": ["ActionOutput_discogs_addtowantlist"],
+            "output": [
+                "ActionOutput_discogs_addtowantlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_addtowantlist", "ActionOutput_discogs_addtowantlist"],
+            "usedModels": [
+                "ActionInput_discogs_addtowantlist",
+                "ActionOutput_discogs_addtowantlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -134,7 +155,9 @@
                                 "maximum": 5
                             }
                         },
-                        "required": ["release_id"],
+                        "required": [
+                            "release_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_addtowantlist": {
@@ -158,9 +181,14 @@
             },
             "input": "ActionInput_discogs_createcollectionfolder",
             "name": "create-collection-folder",
-            "output": ["ActionOutput_discogs_createcollectionfolder"],
+            "output": [
+                "ActionOutput_discogs_createcollectionfolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_createcollectionfolder", "ActionOutput_discogs_createcollectionfolder"],
+            "usedModels": [
+                "ActionInput_discogs_createcollectionfolder",
+                "ActionOutput_discogs_createcollectionfolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -171,7 +199,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_createcollectionfolder": {
@@ -195,9 +225,14 @@
             },
             "input": "ActionInput_discogs_createlisting",
             "name": "create-listing",
-            "output": ["ActionOutput_discogs_createlisting"],
+            "output": [
+                "ActionOutput_discogs_createlisting"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_createlisting", "ActionOutput_discogs_createlisting"],
+            "usedModels": [
+                "ActionInput_discogs_createlisting",
+                "ActionOutput_discogs_createlisting"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -249,7 +284,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["For Sale", "Draft"]
+                                "enum": [
+                                    "For Sale",
+                                    "Draft"
+                                ]
                             },
                             "external_id": {
                                 "type": "string"
@@ -264,7 +302,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["release_id", "condition", "price"],
+                        "required": [
+                            "release_id",
+                            "condition",
+                            "price"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_createlisting": {
@@ -277,7 +319,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["listing_id", "resource_url"],
+                        "required": [
+                            "listing_id",
+                            "resource_url"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -294,9 +339,14 @@
             },
             "input": "ActionInput_discogs_deletecollectionfolder",
             "name": "delete-collection-folder",
-            "output": ["ActionOutput_discogs_deletecollectionfolder"],
+            "output": [
+                "ActionOutput_discogs_deletecollectionfolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_deletecollectionfolder", "ActionOutput_discogs_deletecollectionfolder"],
+            "usedModels": [
+                "ActionInput_discogs_deletecollectionfolder",
+                "ActionOutput_discogs_deletecollectionfolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -309,7 +359,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["folder_id"],
+                        "required": [
+                            "folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_deletecollectionfolder": {
@@ -319,7 +371,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -336,9 +390,14 @@
             },
             "input": "ActionInput_discogs_deletelisting",
             "name": "delete-listing",
-            "output": ["ActionOutput_discogs_deletelisting"],
+            "output": [
+                "ActionOutput_discogs_deletelisting"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_deletelisting", "ActionOutput_discogs_deletelisting"],
+            "usedModels": [
+                "ActionInput_discogs_deletelisting",
+                "ActionOutput_discogs_deletelisting"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -351,7 +410,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["listing_id"],
+                        "required": [
+                            "listing_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_deletelisting": {
@@ -361,7 +422,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -378,9 +441,14 @@
             },
             "input": "ActionInput_discogs_exportinventory",
             "name": "export-inventory",
-            "output": ["ActionOutput_discogs_exportinventory"],
+            "output": [
+                "ActionOutput_discogs_exportinventory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_exportinventory", "ActionOutput_discogs_exportinventory"],
+            "usedModels": [
+                "ActionInput_discogs_exportinventory",
+                "ActionOutput_discogs_exportinventory"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -410,9 +478,14 @@
             },
             "input": "ActionInput_discogs_getartist",
             "name": "get-artist",
-            "output": ["ActionOutput_discogs_getartist"],
+            "output": [
+                "ActionOutput_discogs_getartist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getartist", "ActionOutput_discogs_getartist"],
+            "usedModels": [
+                "ActionInput_discogs_getartist",
+                "ActionOutput_discogs_getartist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -425,7 +498,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["artist_id"],
+                        "required": [
+                            "artist_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getartist": {
@@ -468,7 +543,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "resource_url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "resource_url"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -485,9 +564,14 @@
             },
             "input": "ActionInput_discogs_getcollectionvalue",
             "name": "get-collection-value",
-            "output": ["ActionOutput_discogs_getcollectionvalue"],
+            "output": [
+                "ActionOutput_discogs_getcollectionvalue"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getcollectionvalue", "ActionOutput_discogs_getcollectionvalue"],
+            "usedModels": [
+                "ActionInput_discogs_getcollectionvalue",
+                "ActionOutput_discogs_getcollectionvalue"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -509,7 +593,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["minimum", "median", "maximum"],
+                        "required": [
+                            "minimum",
+                            "median",
+                            "maximum"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -526,9 +614,14 @@
             },
             "input": "ActionInput_discogs_getfee",
             "name": "get-fee",
-            "output": ["ActionOutput_discogs_getfee"],
+            "output": [
+                "ActionOutput_discogs_getfee"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getfee", "ActionOutput_discogs_getfee"],
+            "usedModels": [
+                "ActionInput_discogs_getfee",
+                "ActionOutput_discogs_getfee"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -541,10 +634,25 @@
                             },
                             "currency": {
                                 "type": "string",
-                                "enum": ["USD", "GBP", "EUR", "CAD", "AUD", "JPY", "CHF", "MXN", "BRL", "NZD", "SEK", "ZAR"]
+                                "enum": [
+                                    "USD",
+                                    "GBP",
+                                    "EUR",
+                                    "CAD",
+                                    "AUD",
+                                    "JPY",
+                                    "CHF",
+                                    "MXN",
+                                    "BRL",
+                                    "NZD",
+                                    "SEK",
+                                    "ZAR"
+                                ]
                             }
                         },
-                        "required": ["price"],
+                        "required": [
+                            "price"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getfee": {
@@ -557,7 +665,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["value", "currency"],
+                        "required": [
+                            "value",
+                            "currency"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -574,9 +685,14 @@
             },
             "input": "ActionInput_discogs_getinventoryexport",
             "name": "get-inventory-export",
-            "output": ["ActionOutput_discogs_getinventoryexport"],
+            "output": [
+                "ActionOutput_discogs_getinventoryexport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getinventoryexport", "ActionOutput_discogs_getinventoryexport"],
+            "usedModels": [
+                "ActionInput_discogs_getinventoryexport",
+                "ActionOutput_discogs_getinventoryexport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -589,7 +705,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["export_id"],
+                        "required": [
+                            "export_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getinventoryexport": {
@@ -613,9 +731,14 @@
             },
             "input": "ActionInput_discogs_getinventoryexports",
             "name": "get-inventory-exports",
-            "output": ["ActionOutput_discogs_getinventoryexports"],
+            "output": [
+                "ActionOutput_discogs_getinventoryexports"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getinventoryexports", "ActionOutput_discogs_getinventoryexports"],
+            "usedModels": [
+                "ActionInput_discogs_getinventoryexports",
+                "ActionOutput_discogs_getinventoryexports"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -650,7 +773,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -667,9 +792,14 @@
             },
             "input": "ActionInput_discogs_getlabel",
             "name": "get-label",
-            "output": ["ActionOutput_discogs_getlabel"],
+            "output": [
+                "ActionOutput_discogs_getlabel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getlabel", "ActionOutput_discogs_getlabel"],
+            "usedModels": [
+                "ActionInput_discogs_getlabel",
+                "ActionOutput_discogs_getlabel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -682,7 +812,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["label_id"],
+                        "required": [
+                            "label_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getlabel": {
@@ -733,7 +865,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -750,11 +885,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "resource_url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "resource_url"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -771,9 +913,14 @@
             },
             "input": "ActionInput_discogs_getlisting",
             "name": "get-listing",
-            "output": ["ActionOutput_discogs_getlisting"],
+            "output": [
+                "ActionOutput_discogs_getlisting"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getlisting", "ActionOutput_discogs_getlisting"],
+            "usedModels": [
+                "ActionInput_discogs_getlisting",
+                "ActionOutput_discogs_getlisting"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -786,7 +933,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["listing_id"],
+                        "required": [
+                            "listing_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getlisting": {
@@ -810,9 +959,14 @@
             },
             "input": "ActionInput_discogs_getmaster",
             "name": "get-master",
-            "output": ["ActionOutput_discogs_getmaster"],
+            "output": [
+                "ActionOutput_discogs_getmaster"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getmaster", "ActionOutput_discogs_getmaster"],
+            "usedModels": [
+                "ActionInput_discogs_getmaster",
+                "ActionOutput_discogs_getmaster"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -825,7 +979,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["master_id"],
+                        "required": [
+                            "master_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getmaster": {
@@ -849,9 +1005,14 @@
             },
             "input": "ActionInput_discogs_getordermessages",
             "name": "get-order-messages",
-            "output": ["ActionOutput_discogs_getordermessages"],
+            "output": [
+                "ActionOutput_discogs_getordermessages"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getordermessages", "ActionOutput_discogs_getordermessages"],
+            "usedModels": [
+                "ActionInput_discogs_getordermessages",
+                "ActionOutput_discogs_getordermessages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -862,7 +1023,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getordermessages": {
@@ -879,7 +1042,9 @@
                                 }
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -896,9 +1061,14 @@
             },
             "input": "ActionInput_discogs_getorder",
             "name": "get-order",
-            "output": ["ActionOutput_discogs_getorder"],
+            "output": [
+                "ActionOutput_discogs_getorder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getorder", "ActionOutput_discogs_getorder"],
+            "usedModels": [
+                "ActionInput_discogs_getorder",
+                "ActionOutput_discogs_getorder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -909,7 +1079,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getorder": {
@@ -933,9 +1105,14 @@
             },
             "input": "ActionInput_discogs_getpricesuggestions",
             "name": "get-price-suggestions",
-            "output": ["ActionOutput_discogs_getpricesuggestions"],
+            "output": [
+                "ActionOutput_discogs_getpricesuggestions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getpricesuggestions", "ActionOutput_discogs_getpricesuggestions"],
+            "usedModels": [
+                "ActionInput_discogs_getpricesuggestions",
+                "ActionOutput_discogs_getpricesuggestions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -948,7 +1125,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["release_id"],
+                        "required": [
+                            "release_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getpricesuggestions": {
@@ -972,9 +1151,14 @@
             },
             "input": "ActionInput_discogs_getrelease",
             "name": "get-release",
-            "output": ["ActionOutput_discogs_getrelease"],
+            "output": [
+                "ActionOutput_discogs_getrelease"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_getrelease", "ActionOutput_discogs_getrelease"],
+            "usedModels": [
+                "ActionInput_discogs_getrelease",
+                "ActionOutput_discogs_getrelease"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -987,7 +1171,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["release_id"],
+                        "required": [
+                            "release_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_getrelease": {
@@ -1011,9 +1197,14 @@
             },
             "input": "ActionInput_discogs_removefromcollection",
             "name": "remove-from-collection",
-            "output": ["ActionOutput_discogs_removefromcollection"],
+            "output": [
+                "ActionOutput_discogs_removefromcollection"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_removefromcollection", "ActionOutput_discogs_removefromcollection"],
+            "usedModels": [
+                "ActionInput_discogs_removefromcollection",
+                "ActionOutput_discogs_removefromcollection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1036,7 +1227,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["folder_id", "release_id", "instance_id"],
+                        "required": [
+                            "folder_id",
+                            "release_id",
+                            "instance_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_removefromcollection": {
@@ -1046,7 +1241,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1063,9 +1260,14 @@
             },
             "input": "ActionInput_discogs_removefromwantlist",
             "name": "remove-from-wantlist",
-            "output": ["ActionOutput_discogs_removefromwantlist"],
+            "output": [
+                "ActionOutput_discogs_removefromwantlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_removefromwantlist", "ActionOutput_discogs_removefromwantlist"],
+            "usedModels": [
+                "ActionInput_discogs_removefromwantlist",
+                "ActionOutput_discogs_removefromwantlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1078,7 +1280,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["release_id"],
+                        "required": [
+                            "release_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_removefromwantlist": {
@@ -1088,7 +1292,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1105,9 +1311,14 @@
             },
             "input": "ActionInput_discogs_search",
             "name": "search",
-            "output": ["ActionOutput_discogs_search"],
+            "output": [
+                "ActionOutput_discogs_search"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_search", "ActionOutput_discogs_search"],
+            "usedModels": [
+                "ActionInput_discogs_search",
+                "ActionOutput_discogs_search"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1119,7 +1330,12 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["release", "master", "artist", "label"]
+                                "enum": [
+                                    "release",
+                                    "master",
+                                    "artist",
+                                    "label"
+                                ]
                             },
                             "title": {
                                 "type": "string"
@@ -1209,14 +1425,21 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["page", "pages", "per_page", "items"],
+                                "required": [
+                                    "page",
+                                    "pages",
+                                    "per_page",
+                                    "items"
+                                ],
                                 "additionalProperties": false
                             },
                             "next_cursor": {
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1233,9 +1456,14 @@
             },
             "input": "ActionInput_discogs_updatecollectionfolder",
             "name": "update-collection-folder",
-            "output": ["ActionOutput_discogs_updatecollectionfolder"],
+            "output": [
+                "ActionOutput_discogs_updatecollectionfolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_updatecollectionfolder", "ActionOutput_discogs_updatecollectionfolder"],
+            "usedModels": [
+                "ActionInput_discogs_updatecollectionfolder",
+                "ActionOutput_discogs_updatecollectionfolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1251,7 +1479,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folder_id", "name"],
+                        "required": [
+                            "folder_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_updatecollectionfolder": {
@@ -1275,9 +1506,14 @@
             },
             "input": "ActionInput_discogs_updatelisting",
             "name": "update-listing",
-            "output": ["ActionOutput_discogs_updatelisting"],
+            "output": [
+                "ActionOutput_discogs_updatelisting"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_updatelisting", "ActionOutput_discogs_updatelisting"],
+            "usedModels": [
+                "ActionInput_discogs_updatelisting",
+                "ActionOutput_discogs_updatelisting"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1320,7 +1556,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["listing_id"],
+                        "required": [
+                            "listing_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_updatelisting": {
@@ -1344,9 +1582,14 @@
             },
             "input": "ActionInput_discogs_updateorderstatus",
             "name": "update-order-status",
-            "output": ["ActionOutput_discogs_updateorderstatus"],
+            "output": [
+                "ActionOutput_discogs_updateorderstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discogs_updateorderstatus", "ActionOutput_discogs_updateorderstatus"],
+            "usedModels": [
+                "ActionInput_discogs_updateorderstatus",
+                "ActionOutput_discogs_updateorderstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1373,7 +1616,10 @@
                                 ]
                             }
                         },
-                        "required": ["order_id", "status"],
+                        "required": [
+                            "order_id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discogs_updateorderstatus": {
@@ -1407,12 +1653,18 @@
             ],
             "input": null,
             "name": "collection",
-            "output": ["CollectionFolder", "CollectionItem"],
+            "output": [
+                "CollectionFolder",
+                "CollectionItem"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CollectionFolder", "CollectionItem"],
+            "usedModels": [
+                "CollectionFolder",
+                "CollectionItem"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1436,7 +1688,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "folder_id", "name"],
+                        "required": [
+                            "id",
+                            "folder_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "CollectionItem": {
@@ -1468,7 +1724,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "folder_id", "instance_id"],
+                        "required": [
+                            "id",
+                            "folder_id",
+                            "instance_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1488,12 +1748,17 @@
             ],
             "input": "SyncMetadata_discogs_contributions",
             "name": "contributions",
-            "output": ["Contribution"],
+            "output": [
+                "Contribution"
+            ],
             "runs": "every week",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contribution", "SyncMetadata_discogs_contributions"],
+            "usedModels": [
+                "Contribution",
+                "SyncMetadata_discogs_contributions"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1562,7 +1827,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "release_id"],
+                        "required": [
+                            "id",
+                            "release_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discogs_contributions": {
@@ -1587,12 +1855,16 @@
             ],
             "input": null,
             "name": "inventory",
-            "output": ["InventoryListing"],
+            "output": [
+                "InventoryListing"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["InventoryListing"],
+            "usedModels": [
+                "InventoryListing"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1630,7 +1902,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["value", "currency"],
+                                        "required": [
+                                            "value",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -1658,7 +1933,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "listing_id"],
+                        "required": [
+                            "id",
+                            "listing_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1683,12 +1961,18 @@
             ],
             "input": null,
             "name": "lists",
-            "output": ["UserList", "ListItem"],
+            "output": [
+                "UserList",
+                "ListItem"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["UserList", "ListItem"],
+            "usedModels": [
+                "UserList",
+                "ListItem"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1721,7 +2005,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "list_id", "name"],
+                        "required": [
+                            "id",
+                            "list_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ListItem": {
@@ -1761,7 +2049,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "list_id", "item_id", "type", "position"],
+                        "required": [
+                            "id",
+                            "list_id",
+                            "item_id",
+                            "type",
+                            "position"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1781,12 +2075,17 @@
             ],
             "input": "SyncMetadata_discogs_orders",
             "name": "orders",
-            "output": ["Order"],
+            "output": [
+                "Order"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Order", "SyncMetadata_discogs_orders"],
+            "usedModels": [
+                "Order",
+                "SyncMetadata_discogs_orders"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1832,7 +2131,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["value", "currency"],
+                                        "required": [
+                                            "value",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
@@ -1854,7 +2156,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "order_id"],
+                        "required": [
+                            "id",
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discogs_orders": {
@@ -1879,12 +2184,16 @@
             ],
             "input": null,
             "name": "profile",
-            "output": ["Profile"],
+            "output": [
+                "Profile"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Profile"],
+            "usedModels": [
+                "Profile"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1953,7 +2262,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "username"],
+                        "required": [
+                            "id",
+                            "username"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1973,12 +2285,17 @@
             ],
             "input": "SyncMetadata_discogs_submissions",
             "name": "submissions",
-            "output": ["Submission"],
+            "output": [
+                "Submission"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Submission", "SyncMetadata_discogs_submissions"],
+            "usedModels": [
+                "Submission",
+                "SyncMetadata_discogs_submissions"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1991,7 +2308,11 @@
                             },
                             "entity_type": {
                                 "type": "string",
-                                "enum": ["artist", "label", "release"]
+                                "enum": [
+                                    "artist",
+                                    "label",
+                                    "release"
+                                ]
                             },
                             "entity_id": {
                                 "type": "number"
@@ -2018,7 +2339,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "entity_type", "entity_id"],
+                        "required": [
+                            "id",
+                            "entity_type",
+                            "entity_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discogs_submissions": {
@@ -2043,12 +2368,16 @@
             ],
             "input": null,
             "name": "wantlist",
-            "output": ["WantlistItem"],
+            "output": [
+                "WantlistItem"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["WantlistItem"],
+            "usedModels": [
+                "WantlistItem"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2079,7 +2408,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "release_id"],
+                        "required": [
+                            "id",
+                            "release_id"
+                        ],
                         "additionalProperties": false
                     }
                 }

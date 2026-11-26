@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_splitwise_createcomment"],
+            "output": [
+                "ActionOutput_splitwise_createcomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_createcomment", "ActionOutput_splitwise_createcomment"],
+            "usedModels": [
+                "ActionInput_splitwise_createcomment",
+                "ActionOutput_splitwise_createcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -25,7 +30,10 @@
                                 "description": "Comment content. Example: \"Does this include the delivery fee?\""
                             }
                         },
-                        "required": ["expense_id", "content"],
+                        "required": [
+                            "expense_id",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_createcomment": {
@@ -74,11 +82,20 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "content", "comment_type", "relation_type", "relation_id", "created_at"],
+                        "required": [
+                            "id",
+                            "content",
+                            "comment_type",
+                            "relation_type",
+                            "relation_id",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -91,9 +108,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_createexpense",
             "name": "create-expense",
-            "output": ["ActionOutput_splitwise_createexpense"],
+            "output": [
+                "ActionOutput_splitwise_createexpense"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_createexpense", "ActionOutput_splitwise_createexpense"],
+            "usedModels": [
+                "ActionInput_splitwise_createexpense",
+                "ActionOutput_splitwise_createexpense"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -130,7 +152,10 @@
                             },
                             "details": {
                                 "description": "Notes for the expense",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "split_equally": {
                                 "description": "If true, split equally among group members (requires group_id)",
@@ -166,12 +191,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["user_id", "paid_share", "owed_share"],
+                                    "required": [
+                                        "user_id",
+                                        "paid_share",
+                                        "owed_share"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["cost", "description", "group_id"],
+                        "required": [
+                            "cost",
+                            "description",
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_createexpense": {
@@ -225,7 +258,10 @@
                                 "type": "boolean"
                             },
                             "repeat_interval": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email_reminder": {
                                 "type": "boolean"
@@ -243,10 +279,16 @@
                                 ]
                             },
                             "next_repeat": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "details": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "comments_count": {
                                 "type": "integer",
@@ -284,7 +326,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -326,7 +372,9 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -369,7 +417,9 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -378,7 +428,10 @@
                                 ]
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deleted_by": {
                                 "anyOf": [
@@ -412,7 +465,9 @@
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -432,17 +487,26 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "receipt": {
                                 "type": "object",
                                 "properties": {
                                     "large": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "original": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -490,16 +554,27 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["user_id", "paid_share", "owed_share"],
+                                    "required": [
+                                        "user_id",
+                                        "paid_share",
+                                        "owed_share"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "description", "cost", "currency_code"],
+                        "required": [
+                            "id",
+                            "description",
+                            "cost",
+                            "currency_code"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -512,9 +587,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_createfriend",
             "name": "create-friend",
-            "output": ["ActionOutput_splitwise_createfriend"],
+            "output": [
+                "ActionOutput_splitwise_createfriend"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_createfriend", "ActionOutput_splitwise_createfriend"],
+            "usedModels": [
+                "ActionInput_splitwise_createfriend",
+                "ActionOutput_splitwise_createfriend"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -536,7 +616,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_email", "user_first_name"],
+                        "required": [
+                            "user_email",
+                            "user_first_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_createfriend": {
@@ -599,7 +682,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["group_id", "balance"],
+                                    "required": [
+                                        "group_id",
+                                        "balance"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -622,7 +708,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -635,9 +723,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_creategroup",
             "name": "create-group",
-            "output": ["ActionOutput_splitwise_creategroup"],
+            "output": [
+                "ActionOutput_splitwise_creategroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_creategroup", "ActionOutput_splitwise_creategroup"],
+            "usedModels": [
+                "ActionInput_splitwise_creategroup",
+                "ActionOutput_splitwise_creategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -651,7 +744,14 @@
                             "group_type": {
                                 "description": "What is the group used for?",
                                 "type": "string",
-                                "enum": ["home", "trip", "couple", "other", "apartment", "house"]
+                                "enum": [
+                                    "home",
+                                    "trip",
+                                    "couple",
+                                    "other",
+                                    "apartment",
+                                    "house"
+                                ]
                             },
                             "simplify_by_default": {
                                 "description": "Turn on simplify debts?",
@@ -681,7 +781,9 @@
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_creategroup": {
@@ -711,16 +813,28 @@
                                             "type": "number"
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "registration_status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "picture": {
                                             "anyOf": [
@@ -745,7 +859,10 @@
                                             ]
                                         },
                                         "custom_picture": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "balance": {
                                             "anyOf": [
@@ -761,7 +878,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["currency_code", "amount"],
+                                                        "required": [
+                                                            "currency_code",
+                                                            "amount"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -771,7 +891,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -793,7 +915,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount",
+                                        "currency_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -815,7 +942,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount",
+                                        "currency_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -823,7 +955,10 @@
                                 "type": "object",
                                 "properties": {
                                     "original": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "xxlarge": {
                                         "type": "string"
@@ -862,7 +997,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -875,9 +1013,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_splitwise_deletecomment"],
+            "output": [
+                "ActionOutput_splitwise_deletecomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_deletecomment", "ActionOutput_splitwise_deletecomment"],
+            "usedModels": [
+                "ActionInput_splitwise_deletecomment",
+                "ActionOutput_splitwise_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -889,7 +1032,9 @@
                                 "description": "Comment ID to delete. Example: 79800950"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_deletecomment": {
@@ -941,7 +1086,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -954,9 +1101,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_deleteexpense",
             "name": "delete-expense",
-            "output": ["ActionOutput_splitwise_deleteexpense"],
+            "output": [
+                "ActionOutput_splitwise_deleteexpense"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_deleteexpense", "ActionOutput_splitwise_deleteexpense"],
+            "usedModels": [
+                "ActionInput_splitwise_deleteexpense",
+                "ActionOutput_splitwise_deleteexpense"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -968,7 +1120,9 @@
                                 "description": "ID of the expense to delete. Example: 51023"
                             }
                         },
-                        "required": ["expense_id"],
+                        "required": [
+                            "expense_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_deleteexpense": {
@@ -984,7 +1138,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success", "expense_id", "archived"],
+                        "required": [
+                            "success",
+                            "expense_id",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -997,9 +1155,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_deletefriend",
             "name": "delete-friend",
-            "output": ["ActionOutput_splitwise_deletefriend"],
+            "output": [
+                "ActionOutput_splitwise_deletefriend"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_deletefriend", "ActionOutput_splitwise_deletefriend"],
+            "usedModels": [
+                "ActionInput_splitwise_deletefriend",
+                "ActionOutput_splitwise_deletefriend"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1011,7 +1174,9 @@
                                 "description": "User ID of the friend to delete. Example: 12345"
                             }
                         },
-                        "required": ["friend_id"],
+                        "required": [
+                            "friend_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_deletefriend": {
@@ -1024,7 +1189,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1037,9 +1204,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_deletegroup",
             "name": "delete-group",
-            "output": ["ActionOutput_splitwise_deletegroup"],
+            "output": [
+                "ActionOutput_splitwise_deletegroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_deletegroup", "ActionOutput_splitwise_deletegroup"],
+            "usedModels": [
+                "ActionInput_splitwise_deletegroup",
+                "ActionOutput_splitwise_deletegroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1051,7 +1223,9 @@
                                 "description": "Group ID to delete. Example: 321"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_deletegroup": {
@@ -1061,7 +1235,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1074,9 +1250,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_splitwise_getcurrentuser"],
+            "output": [
+                "ActionOutput_splitwise_getcurrentuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_getcurrentuser", "ActionOutput_splitwise_getcurrentuser"],
+            "usedModels": [
+                "ActionInput_splitwise_getcurrentuser",
+                "ActionOutput_splitwise_getcurrentuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1143,7 +1324,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "first_name", "last_name", "email", "registration_status", "custom_picture"],
+                        "required": [
+                            "id",
+                            "first_name",
+                            "last_name",
+                            "email",
+                            "registration_status",
+                            "custom_picture"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1156,9 +1344,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_getexpense",
             "name": "get-expense",
-            "output": ["ActionOutput_splitwise_getexpense"],
+            "output": [
+                "ActionOutput_splitwise_getexpense"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_getexpense", "ActionOutput_splitwise_getexpense"],
+            "usedModels": [
+                "ActionInput_splitwise_getexpense",
+                "ActionOutput_splitwise_getexpense"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1170,7 +1363,9 @@
                                 "description": "Expense ID. Example: 51023"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_getexpense": {
@@ -1183,31 +1378,49 @@
                                 "type": "string"
                             },
                             "details": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date": {
                                 "type": "string"
                             },
                             "repeat_interval": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "currency_code": {
                                 "type": "string"
                             },
                             "category_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "id": {
                                 "type": "number"
                             },
                             "group_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "friendship_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "expense_bundle_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "repeats": {
                                 "type": "boolean"
@@ -1224,7 +1437,10 @@
                                 ]
                             },
                             "next_repeat": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "comments_count": {
                                 "type": "number"
@@ -1250,7 +1466,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1294,7 +1514,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "updated_at": {
@@ -1337,11 +1559,16 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "deleted_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deleted_by": {
                                 "anyOf": [
@@ -1382,7 +1609,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -1400,20 +1629,32 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "receipt": {
                                 "type": "object",
                                 "properties": {
                                     "large": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "original": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["large", "original"],
+                                "required": [
+                                    "large",
+                                    "original"
+                                ],
                                 "additionalProperties": false
                             },
                             "users": {
@@ -1443,7 +1684,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "user_id": {
@@ -1459,7 +1702,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["user_id", "paid_share", "owed_share", "net_balance"],
+                                    "required": [
+                                        "user_id",
+                                        "paid_share",
+                                        "owed_share",
+                                        "net_balance"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1487,7 +1735,10 @@
                                             "type": "string"
                                         },
                                         "deleted_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "user": {
                                             "type": "object",
@@ -1511,16 +1762,25 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["cost", "description", "date", "id"],
+                        "required": [
+                            "cost",
+                            "description",
+                            "date",
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1533,9 +1793,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_getfriend",
             "name": "get-friend",
-            "output": ["ActionOutput_splitwise_getfriend"],
+            "output": [
+                "ActionOutput_splitwise_getfriend"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_getfriend", "ActionOutput_splitwise_getfriend"],
+            "usedModels": [
+                "ActionInput_splitwise_getfriend",
+                "ActionOutput_splitwise_getfriend"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1547,7 +1812,9 @@
                                 "description": "User ID of the friend. Example: 123"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_getfriend": {
@@ -1606,12 +1873,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency_code", "amount"],
+                                                "required": [
+                                                    "currency_code",
+                                                    "amount"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["group_id", "balance"],
+                                    "required": [
+                                        "group_id",
+                                        "balance"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1627,7 +1900,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["currency_code", "amount"],
+                                    "required": [
+                                        "currency_code",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1635,7 +1911,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1648,9 +1926,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_getgroup",
             "name": "get-group",
-            "output": ["ActionOutput_splitwise_getgroup"],
+            "output": [
+                "ActionOutput_splitwise_getgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_getgroup", "ActionOutput_splitwise_getgroup"],
+            "usedModels": [
+                "ActionInput_splitwise_getgroup",
+                "ActionOutput_splitwise_getgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1662,7 +1945,9 @@
                                 "description": "Group ID. Example: 321"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_getgroup": {
@@ -1692,16 +1977,28 @@
                                             "type": "number"
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "registration_status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "picture": {
                                             "anyOf": [
@@ -1709,13 +2006,22 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "small": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "medium": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "large": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1726,7 +2032,10 @@
                                             ]
                                         },
                                         "custom_picture": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "balance": {
                                             "type": "array",
@@ -1740,12 +2049,17 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency_code", "amount"],
+                                                "required": [
+                                                    "currency_code",
+                                                    "amount"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1767,7 +2081,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount",
+                                        "currency_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1789,7 +2108,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount",
+                                        "currency_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1797,7 +2121,10 @@
                                 "type": "object",
                                 "properties": {
                                     "original": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "xxlarge": {
                                         "type": "string"
@@ -1836,7 +2163,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1849,9 +2179,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_listcategories",
             "name": "list-categories",
-            "output": ["ActionOutput_splitwise_listcategories"],
+            "output": [
+                "ActionOutput_splitwise_listcategories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_listcategories", "ActionOutput_splitwise_listcategories"],
+            "usedModels": [
+                "ActionInput_splitwise_listcategories",
+                "ActionOutput_splitwise_listcategories"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1922,17 +2257,25 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["categories"],
+                        "required": [
+                            "categories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1945,9 +2288,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_splitwise_listcomments"],
+            "output": [
+                "ActionOutput_splitwise_listcomments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_listcomments", "ActionOutput_splitwise_listcomments"],
+            "usedModels": [
+                "ActionInput_splitwise_listcomments",
+                "ActionOutput_splitwise_listcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1959,7 +2307,9 @@
                                 "description": "Expense ID. Example: 855870953"
                             }
                         },
-                        "required": ["expense_id"],
+                        "required": [
+                            "expense_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_listcomments": {
@@ -2013,16 +2363,23 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "content"],
+                                    "required": [
+                                        "id",
+                                        "content"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2035,9 +2392,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_listcurrencies",
             "name": "list-currencies",
-            "output": ["ActionOutput_splitwise_listcurrencies"],
+            "output": [
+                "ActionOutput_splitwise_listcurrencies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_listcurrencies", "ActionOutput_splitwise_listcurrencies"],
+            "usedModels": [
+                "ActionInput_splitwise_listcurrencies",
+                "ActionOutput_splitwise_listcurrencies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2061,12 +2423,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["currency_code"],
+                                    "required": [
+                                        "currency_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["currencies"],
+                        "required": [
+                            "currencies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2079,9 +2445,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_listexpenses",
             "name": "list-expenses",
-            "output": ["ActionOutput_splitwise_listexpenses"],
+            "output": [
+                "ActionOutput_splitwise_listexpenses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_listexpenses", "ActionOutput_splitwise_listexpenses"],
+            "usedModels": [
+                "ActionInput_splitwise_listexpenses",
+                "ActionOutput_splitwise_listexpenses"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2222,7 +2593,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "updated_at": {
@@ -2259,7 +2632,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "deleted_at": {
@@ -2296,7 +2671,9 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "category": {
@@ -2369,7 +2746,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2377,7 +2756,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["expenses"],
+                        "required": [
+                            "expenses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2390,9 +2771,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_listfriends",
             "name": "list-friends",
-            "output": ["ActionOutput_splitwise_listfriends"],
+            "output": [
+                "ActionOutput_splitwise_listfriends"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_listfriends", "ActionOutput_splitwise_listfriends"],
+            "usedModels": [
+                "ActionInput_splitwise_listfriends",
+                "ActionOutput_splitwise_listfriends"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2462,12 +2848,18 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["currency_code", "amount"],
+                                                            "required": [
+                                                                "currency_code",
+                                                                "amount"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     }
                                                 },
-                                                "required": ["group_id", "balance"],
+                                                "required": [
+                                                    "group_id",
+                                                    "balance"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2483,7 +2875,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency_code", "amount"],
+                                                "required": [
+                                                    "currency_code",
+                                                    "amount"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2491,12 +2886,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["friends"],
+                        "required": [
+                            "friends"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2509,9 +2908,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_splitwise_listgroups"],
+            "output": [
+                "ActionOutput_splitwise_listgroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_listgroups", "ActionOutput_splitwise_listgroups"],
+            "usedModels": [
+                "ActionInput_splitwise_listgroups",
+                "ActionOutput_splitwise_listgroups"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2535,7 +2939,10 @@
                                             "type": "string"
                                         },
                                         "group_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "updated_at": {
                                             "type": "string"
@@ -2552,16 +2959,28 @@
                                                         "type": "number"
                                                     },
                                                     "first_name": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "last_name": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "email": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "registration_status": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "picture": {
                                                         "anyOf": [
@@ -2569,13 +2988,22 @@
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "small": {
-                                                                        "type": ["string", "null"]
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "medium": {
-                                                                        "type": ["string", "null"]
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "large": {
-                                                                        "type": ["string", "null"]
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
                                                                 "additionalProperties": false
@@ -2586,7 +3014,10 @@
                                                         ]
                                                     },
                                                     "custom_picture": {
-                                                        "type": ["boolean", "null"]
+                                                        "type": [
+                                                            "boolean",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "balance": {
                                                         "type": "array",
@@ -2604,7 +3035,9 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2654,7 +3087,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "original": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "xxlarge": {
                                                     "type": "string"
@@ -2693,12 +3129,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2711,9 +3151,14 @@
             "endpoint": null,
             "input": "ActionInput_splitwise_updateexpense",
             "name": "update-expense",
-            "output": ["ActionOutput_splitwise_updateexpense"],
+            "output": [
+                "ActionOutput_splitwise_updateexpense"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_splitwise_updateexpense", "ActionOutput_splitwise_updateexpense"],
+            "usedModels": [
+                "ActionInput_splitwise_updateexpense",
+                "ActionOutput_splitwise_updateexpense"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2734,7 +3179,10 @@
                             },
                             "details": {
                                 "description": "Also known as \"notes.\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date": {
                                 "description": "The date and time the expense took place. Example: \"2012-05-02T13:00:00Z\"",
@@ -2743,7 +3191,13 @@
                             "repeat_interval": {
                                 "description": "How often the expense repeats.",
                                 "type": "string",
-                                "enum": ["never", "weekly", "fortnightly", "monthly", "yearly"]
+                                "enum": [
+                                    "never",
+                                    "weekly",
+                                    "fortnightly",
+                                    "monthly",
+                                    "yearly"
+                                ]
                             },
                             "currency_code": {
                                 "description": "A currency code. Must be in the list from get_currencies. Example: \"USD\"",
@@ -2792,7 +3246,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_splitwise_updateexpense": {
@@ -2838,7 +3294,10 @@
                                 "type": "boolean"
                             },
                             "email_reminder_in_advance": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "next_repeat": {
                                 "type": "string"
@@ -2867,7 +3326,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2881,16 +3344,28 @@
                                         "type": "number"
                                     },
                                     "first_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "last_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "registration_status": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "picture": {
                                         "anyOf": [
@@ -2915,10 +3390,15 @@
                                         ]
                                     },
                                     "custom_picture": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "updated_at": {
@@ -2931,16 +3411,28 @@
                                         "type": "number"
                                     },
                                     "first_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "last_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "registration_status": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "picture": {
                                         "anyOf": [
@@ -2965,10 +3457,15 @@
                                         ]
                                     },
                                     "custom_picture": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "deleted_at": {
@@ -2981,16 +3478,28 @@
                                         "type": "number"
                                     },
                                     "first_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "last_name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "registration_status": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "picture": {
                                         "anyOf": [
@@ -3015,14 +3524,24 @@
                                         ]
                                     },
                                     "custom_picture": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "cost", "description", "date"],
+                        "required": [
+                            "id",
+                            "cost",
+                            "description",
+                            "date"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3043,12 +3562,16 @@
             ],
             "input": null,
             "name": "comments",
-            "output": ["Comment"],
+            "output": [
+                "Comment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Comment"],
+            "usedModels": [
+                "Comment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3090,12 +3613,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3109,12 +3636,16 @@
             ],
             "input": null,
             "name": "expenses",
-            "output": ["Expense"],
+            "output": [
+                "Expense"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Expense"],
+            "usedModels": [
+                "Expense"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3191,7 +3722,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3235,7 +3770,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "receipt": {
@@ -3271,12 +3809,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3290,12 +3832,16 @@
             ],
             "input": null,
             "name": "friends",
-            "output": ["Friend"],
+            "output": [
+                "Friend"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Friend"],
+            "usedModels": [
+                "Friend"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3348,7 +3894,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["currency_code", "amount"],
+                                    "required": [
+                                        "currency_code",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3372,12 +3921,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency_code", "amount"],
+                                                "required": [
+                                                    "currency_code",
+                                                    "amount"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["group_id", "balance"],
+                                    "required": [
+                                        "group_id",
+                                        "balance"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3385,7 +3940,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "updated_at"],
+                        "required": [
+                            "id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3404,12 +3962,16 @@
             ],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3444,7 +4006,10 @@
                                             "type": "string"
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
                                             "type": "string"
@@ -3482,12 +4047,17 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["currency_code", "amount"],
+                                                "required": [
+                                                    "currency_code",
+                                                    "amount"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3509,7 +4079,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount",
+                                        "currency_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3531,7 +4106,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["from", "to", "amount", "currency_code"],
+                                    "required": [
+                                        "from",
+                                        "to",
+                                        "amount",
+                                        "currency_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3539,7 +4119,10 @@
                                 "type": "object",
                                 "properties": {
                                     "original": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "xxlarge": {
                                         "type": "string"
@@ -3578,7 +4161,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

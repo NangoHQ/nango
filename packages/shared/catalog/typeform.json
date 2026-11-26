@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_createform",
             "name": "create-form",
-            "output": ["ActionOutput_typeform_createform"],
-            "scopes": ["forms:write"],
-            "usedModels": ["ActionInput_typeform_createform", "ActionOutput_typeform_createform"],
+            "output": [
+                "ActionOutput_typeform_createform"
+            ],
+            "scopes": [
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createform",
+                "ActionOutput_typeform_createform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -35,7 +42,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ref", "title", "type"],
+                                    "required": [
+                                        "ref",
+                                        "title",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Array of field objects to use in the form. Each field must include type, title, and ref."
@@ -48,7 +59,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["href"],
+                                "required": [
+                                    "href"
+                                ],
                                 "additionalProperties": false
                             },
                             "theme": {
@@ -59,7 +72,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["href"],
+                                "required": [
+                                    "href"
+                                ],
                                 "additionalProperties": false
                             },
                             "settings": {
@@ -93,7 +108,10 @@
                                 }
                             }
                         },
-                        "required": ["title", "fields"],
+                        "required": [
+                            "title",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_createform": {
@@ -161,7 +179,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["href"],
+                                "required": [
+                                    "href"
+                                ],
                                 "additionalProperties": false
                             },
                             "workspace": {
@@ -171,7 +191,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["href"],
+                                "required": [
+                                    "href"
+                                ],
                                 "additionalProperties": false
                             },
                             "_links": {
@@ -193,7 +215,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -206,9 +231,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_createimage",
             "name": "create-image",
-            "output": ["ActionOutput_typeform_createimage"],
-            "scopes": ["images:write"],
-            "usedModels": ["ActionInput_typeform_createimage", "ActionOutput_typeform_createimage"],
+            "output": [
+                "ActionOutput_typeform_createimage"
+            ],
+            "scopes": [
+                "images:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createimage",
+                "ActionOutput_typeform_createimage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -230,7 +262,12 @@
                             "upload_source": {
                                 "description": "Source of the image upload.",
                                 "type": "string",
-                                "enum": ["user_upload", "stock_image", "stock_icon", "unknown"]
+                                "enum": [
+                                    "user_upload",
+                                    "stock_image",
+                                    "stock_icon",
+                                    "unknown"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -264,10 +301,18 @@
                             },
                             "upload_source": {
                                 "type": "string",
-                                "enum": ["user_upload", "stock_image", "stock_icon", "unknown"]
+                                "enum": [
+                                    "user_upload",
+                                    "stock_image",
+                                    "stock_icon",
+                                    "unknown"
+                                ]
                             }
                         },
-                        "required": ["id", "src"],
+                        "required": [
+                            "id",
+                            "src"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -280,9 +325,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_createtheme",
             "name": "create-theme",
-            "output": ["ActionOutput_typeform_createtheme"],
-            "scopes": ["themes:write"],
-            "usedModels": ["ActionInput_typeform_createtheme", "ActionOutput_typeform_createtheme"],
+            "output": [
+                "ActionOutput_typeform_createtheme"
+            ],
+            "scopes": [
+                "themes:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createtheme",
+                "ActionOutput_typeform_createtheme"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -317,7 +369,12 @@
                                         "description": "Color the theme will apply to the background. Example: \"#000000\""
                                     }
                                 },
-                                "required": ["question", "answer", "button", "background"],
+                                "required": [
+                                    "question",
+                                    "answer",
+                                    "button",
+                                    "background"
+                                ],
                                 "additionalProperties": false
                             },
                             "fields": {
@@ -332,7 +389,10 @@
                                         "description": "Fields font size. Example: \"medium\""
                                     }
                                 },
-                                "required": ["alignment", "font_size"],
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
                                 "additionalProperties": false
                             },
                             "screens": {
@@ -347,7 +407,10 @@
                                         "description": "Screens font size. Example: \"small\""
                                     }
                                 },
-                                "required": ["alignment", "font_size"],
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
                                 "additionalProperties": false
                             },
                             "background": {
@@ -373,7 +436,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "font", "colors", "fields", "screens"],
+                        "required": [
+                            "name",
+                            "font",
+                            "colors",
+                            "fields",
+                            "screens"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_createtheme": {
@@ -406,7 +475,12 @@
                                         "description": "Color the theme will apply to the background. Example: \"#000000\""
                                     }
                                 },
-                                "required": ["question", "answer", "button", "background"],
+                                "required": [
+                                    "question",
+                                    "answer",
+                                    "button",
+                                    "background"
+                                ],
                                 "additionalProperties": false
                             },
                             "fields": {
@@ -421,7 +495,10 @@
                                         "description": "Fields font size. Example: \"medium\""
                                     }
                                 },
-                                "required": ["alignment", "font_size"],
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
                                 "additionalProperties": false
                             },
                             "screens": {
@@ -436,7 +513,10 @@
                                         "description": "Screens font size. Example: \"small\""
                                     }
                                 },
-                                "required": ["alignment", "font_size"],
+                                "required": [
+                                    "alignment",
+                                    "font_size"
+                                ],
                                 "additionalProperties": false
                             },
                             "visibility": {
@@ -471,7 +551,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "font", "colors", "fields", "screens", "visibility"],
+                        "required": [
+                            "id",
+                            "name",
+                            "font",
+                            "colors",
+                            "fields",
+                            "screens",
+                            "visibility"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -484,9 +572,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_typeform_createwebhook"],
-            "scopes": ["webhooks:write"],
-            "usedModels": ["ActionInput_typeform_createwebhook", "ActionOutput_typeform_createwebhook"],
+            "output": [
+                "ActionOutput_typeform_createwebhook"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createwebhook",
+                "ActionOutput_typeform_createwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -524,7 +619,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["form_id", "tag", "url", "enabled", "event_types"],
+                        "required": [
+                            "form_id",
+                            "tag",
+                            "url",
+                            "enabled",
+                            "event_types"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_createwebhook": {
@@ -567,7 +668,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["created_at", "enabled", "event_types", "form_id", "id", "tag", "updated_at", "url"],
+                        "required": [
+                            "created_at",
+                            "enabled",
+                            "event_types",
+                            "form_id",
+                            "id",
+                            "tag",
+                            "updated_at",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -580,9 +690,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_createworkspace",
             "name": "create-workspace",
-            "output": ["ActionOutput_typeform_createworkspace"],
-            "scopes": ["workspaces:write"],
-            "usedModels": ["ActionInput_typeform_createworkspace", "ActionOutput_typeform_createworkspace"],
+            "output": [
+                "ActionOutput_typeform_createworkspace"
+            ],
+            "scopes": [
+                "workspaces:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_createworkspace",
+                "ActionOutput_typeform_createworkspace"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -595,7 +712,9 @@
                                 "description": "Workspace name. Example: \"My Workspace\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_createworkspace": {
@@ -643,7 +762,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "email", "name"],
+                                            "required": [
+                                                "id",
+                                                "email",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "account_member_id": {
@@ -719,7 +842,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -732,9 +858,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_deleteform",
             "name": "delete-form",
-            "output": ["ActionOutput_typeform_deleteform"],
-            "scopes": ["forms:write"],
-            "usedModels": ["ActionInput_typeform_deleteform", "ActionOutput_typeform_deleteform"],
+            "output": [
+                "ActionOutput_typeform_deleteform"
+            ],
+            "scopes": [
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteform",
+                "ActionOutput_typeform_deleteform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -746,7 +879,9 @@
                                 "description": "Form ID to delete. Example: \"tlGO1VrX\""
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_deleteform": {
@@ -760,7 +895,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "form_id"],
+                        "required": [
+                            "success",
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -773,9 +911,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_deleteimage",
             "name": "delete-image",
-            "output": ["ActionOutput_typeform_deleteimage"],
-            "scopes": ["images:write"],
-            "usedModels": ["ActionInput_typeform_deleteimage", "ActionOutput_typeform_deleteimage"],
+            "output": [
+                "ActionOutput_typeform_deleteimage"
+            ],
+            "scopes": [
+                "images:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteimage",
+                "ActionOutput_typeform_deleteimage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -787,7 +932,9 @@
                                 "description": "The image ID to delete. Example: \"pshDCOusAapn\""
                             }
                         },
-                        "required": ["image_id"],
+                        "required": [
+                            "image_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_deleteimage": {
@@ -797,7 +944,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -810,9 +959,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_deleteresponses",
             "name": "delete-responses",
-            "output": ["ActionOutput_typeform_deleteresponses"],
-            "scopes": ["responses:write"],
-            "usedModels": ["ActionInput_typeform_deleteresponses", "ActionOutput_typeform_deleteresponses"],
+            "output": [
+                "ActionOutput_typeform_deleteresponses"
+            ],
+            "scopes": [
+                "responses:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteresponses",
+                "ActionOutput_typeform_deleteresponses"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -831,7 +987,10 @@
                                 "description": "Array of response IDs to delete. Up to 1000 IDs per call."
                             }
                         },
-                        "required": ["form_id", "response_ids"],
+                        "required": [
+                            "form_id",
+                            "response_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_deleteresponses": {
@@ -841,7 +1000,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -854,9 +1015,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_deletetheme",
             "name": "delete-theme",
-            "output": ["ActionOutput_typeform_deletetheme"],
-            "scopes": ["themes:write"],
-            "usedModels": ["ActionInput_typeform_deletetheme", "ActionOutput_typeform_deletetheme"],
+            "output": [
+                "ActionOutput_typeform_deletetheme"
+            ],
+            "scopes": [
+                "themes:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deletetheme",
+                "ActionOutput_typeform_deletetheme"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -868,7 +1036,9 @@
                                 "description": "Theme ID. Example: \"I3NkUFrI\""
                             }
                         },
-                        "required": ["theme_id"],
+                        "required": [
+                            "theme_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_deletetheme": {
@@ -878,7 +1048,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["theme_id"],
+                        "required": [
+                            "theme_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -891,9 +1063,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_typeform_deletewebhook"],
-            "scopes": ["webhooks:write"],
-            "usedModels": ["ActionInput_typeform_deletewebhook", "ActionOutput_typeform_deletewebhook"],
+            "output": [
+                "ActionOutput_typeform_deletewebhook"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deletewebhook",
+                "ActionOutput_typeform_deletewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -909,7 +1088,10 @@
                                 "description": "Unique name for the webhook. Example: \"my-webhook\""
                             }
                         },
-                        "required": ["formId", "tag"],
+                        "required": [
+                            "formId",
+                            "tag"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_deletewebhook": {
@@ -919,7 +1101,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -932,9 +1116,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_deleteworkspace",
             "name": "delete-workspace",
-            "output": ["ActionOutput_typeform_deleteworkspace"],
-            "scopes": ["workspaces:write"],
-            "usedModels": ["ActionInput_typeform_deleteworkspace", "ActionOutput_typeform_deleteworkspace"],
+            "output": [
+                "ActionOutput_typeform_deleteworkspace"
+            ],
+            "scopes": [
+                "workspaces:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_deleteworkspace",
+                "ActionOutput_typeform_deleteworkspace"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -946,7 +1137,9 @@
                                 "description": "Workspace ID to delete. Example: \"BFvknD\""
                             }
                         },
-                        "required": ["workspace_id"],
+                        "required": [
+                            "workspace_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_deleteworkspace": {
@@ -959,7 +1152,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "workspace_id"],
+                        "required": [
+                            "success",
+                            "workspace_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -972,9 +1168,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_getform",
             "name": "get-form",
-            "output": ["ActionOutput_typeform_getform"],
-            "scopes": ["forms:read"],
-            "usedModels": ["ActionInput_typeform_getform", "ActionOutput_typeform_getform"],
+            "output": [
+                "ActionOutput_typeform_getform"
+            ],
+            "scopes": [
+                "forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getform",
+                "ActionOutput_typeform_getform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -986,7 +1189,9 @@
                                 "description": "The unique ID of the form. Example: \"WMpBq4vc\""
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_getform": {
@@ -1008,7 +1213,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["href"],
+                                "required": [
+                                    "href"
+                                ],
                                 "additionalProperties": {}
                             },
                             "theme": {
@@ -1018,7 +1225,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["href"],
+                                "required": [
+                                    "href"
+                                ],
                                 "additionalProperties": {}
                             },
                             "_links": {
@@ -1082,7 +1291,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1095,9 +1306,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_getimage",
             "name": "get-image",
-            "output": ["ActionOutput_typeform_getimage"],
-            "scopes": ["images:read"],
-            "usedModels": ["ActionInput_typeform_getimage", "ActionOutput_typeform_getimage"],
+            "output": [
+                "ActionOutput_typeform_getimage"
+            ],
+            "scopes": [
+                "images:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getimage",
+                "ActionOutput_typeform_getimage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1109,7 +1327,9 @@
                                 "description": "Unique ID for the image to retrieve. Example: \"pshDCOusAapn\""
                             }
                         },
-                        "required": ["image_id"],
+                        "required": [
+                            "image_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_getimage": {
@@ -1140,7 +1360,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "src", "file_name", "width", "height", "media_type", "has_alpha", "avg_color"],
+                        "required": [
+                            "id",
+                            "src",
+                            "file_name",
+                            "width",
+                            "height",
+                            "media_type",
+                            "has_alpha",
+                            "avg_color"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1153,9 +1382,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_gettheme",
             "name": "get-theme",
-            "output": ["ActionOutput_typeform_gettheme"],
-            "scopes": ["themes:read"],
-            "usedModels": ["ActionInput_typeform_gettheme", "ActionOutput_typeform_gettheme"],
+            "output": [
+                "ActionOutput_typeform_gettheme"
+            ],
+            "scopes": [
+                "themes:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_gettheme",
+                "ActionOutput_typeform_gettheme"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1167,7 +1403,9 @@
                                 "description": "Unique ID for the theme. Example: \"I3NkUFrI\""
                             }
                         },
-                        "required": ["theme_id"],
+                        "required": [
+                            "theme_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_gettheme": {
@@ -1257,7 +1495,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1270,9 +1511,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_getwebhook",
             "name": "get-webhook",
-            "output": ["ActionOutput_typeform_getwebhook"],
-            "scopes": ["webhooks:read"],
-            "usedModels": ["ActionInput_typeform_getwebhook", "ActionOutput_typeform_getwebhook"],
+            "output": [
+                "ActionOutput_typeform_getwebhook"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getwebhook",
+                "ActionOutput_typeform_getwebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1288,7 +1536,10 @@
                                 "description": "Unique name for the webhook. Example: \"phoenix\""
                             }
                         },
-                        "required": ["form_id", "tag"],
+                        "required": [
+                            "form_id",
+                            "tag"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_getwebhook": {
@@ -1331,7 +1582,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["created_at", "enabled", "event_types", "form_id", "id", "tag", "updated_at", "url", "verify_ssl"],
+                        "required": [
+                            "created_at",
+                            "enabled",
+                            "event_types",
+                            "form_id",
+                            "id",
+                            "tag",
+                            "updated_at",
+                            "url",
+                            "verify_ssl"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1344,9 +1605,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_getworkspace",
             "name": "get-workspace",
-            "output": ["ActionOutput_typeform_getworkspace"],
-            "scopes": ["workspaces:read"],
-            "usedModels": ["ActionInput_typeform_getworkspace", "ActionOutput_typeform_getworkspace"],
+            "output": [
+                "ActionOutput_typeform_getworkspace"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_getworkspace",
+                "ActionOutput_typeform_getworkspace"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1358,7 +1626,9 @@
                                 "description": "Workspace ID. Example: \"wCjDgv\""
                             }
                         },
-                        "required": ["workspace_id"],
+                        "required": [
+                            "workspace_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_getworkspace": {
@@ -1398,7 +1668,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1411,9 +1683,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_listforms",
             "name": "list-forms",
-            "output": ["ActionOutput_typeform_listforms"],
-            "scopes": ["forms:read"],
-            "usedModels": ["ActionInput_typeform_listforms", "ActionOutput_typeform_listforms"],
+            "output": [
+                "ActionOutput_typeform_listforms"
+            ],
+            "scopes": [
+                "forms:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listforms",
+                "ActionOutput_typeform_listforms"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1438,11 +1717,17 @@
                             },
                             "sort_by": {
                                 "type": "string",
-                                "enum": ["created_at", "last_updated_at"]
+                                "enum": [
+                                    "created_at",
+                                    "last_updated_at"
+                                ]
                             },
                             "order_by": {
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             },
                             "is_public": {
                                 "type": "boolean"
@@ -1534,12 +1819,18 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["total_items", "page_count", "items"],
+                        "required": [
+                            "total_items",
+                            "page_count",
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1552,9 +1843,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_listimages",
             "name": "list-images",
-            "output": ["ActionOutput_typeform_listimages"],
-            "scopes": ["images:read"],
-            "usedModels": ["ActionInput_typeform_listimages", "ActionOutput_typeform_listimages"],
+            "output": [
+                "ActionOutput_typeform_listimages"
+            ],
+            "scopes": [
+                "images:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listimages",
+                "ActionOutput_typeform_listimages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1593,12 +1891,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "file_name", "src"],
+                                    "required": [
+                                        "id",
+                                        "file_name",
+                                        "src"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1611,9 +1915,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_listresponses",
             "name": "list-responses",
-            "output": ["ActionOutput_typeform_listresponses"],
-            "scopes": ["responses:read"],
-            "usedModels": ["ActionInput_typeform_listresponses", "ActionOutput_typeform_listresponses"],
+            "output": [
+                "ActionOutput_typeform_listresponses"
+            ],
+            "scopes": [
+                "responses:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listresponses",
+                "ActionOutput_typeform_listresponses"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1674,7 +1985,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_listresponses": {
@@ -1731,14 +2044,20 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "type"],
+                                                        "required": [
+                                                            "id",
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "type": {
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["field", "type"],
+                                                "required": [
+                                                    "field",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1768,12 +2087,19 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["key", "type"],
+                                                "required": [
+                                                    "key",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         }
                                     },
-                                    "required": ["landing_id", "token", "landed_at"],
+                                    "required": [
+                                        "landing_id",
+                                        "token",
+                                        "landed_at"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1781,7 +2107,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["total_items", "page_count", "items"],
+                        "required": [
+                            "total_items",
+                            "page_count",
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1794,9 +2124,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_listthemes",
             "name": "list-themes",
-            "output": ["ActionOutput_typeform_listthemes"],
-            "scopes": ["themes:read"],
-            "usedModels": ["ActionInput_typeform_listthemes", "ActionOutput_typeform_listthemes"],
+            "output": [
+                "ActionOutput_typeform_listthemes"
+            ],
+            "scopes": [
+                "themes:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listthemes",
+                "ActionOutput_typeform_listthemes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1905,7 +2242,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1919,7 +2258,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "page_count", "total_items"],
+                        "required": [
+                            "items",
+                            "page_count",
+                            "total_items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1932,9 +2275,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_typeform_listwebhooks"],
-            "scopes": ["webhooks:read"],
-            "usedModels": ["ActionInput_typeform_listwebhooks", "ActionOutput_typeform_listwebhooks"],
+            "output": [
+                "ActionOutput_typeform_listwebhooks"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listwebhooks",
+                "ActionOutput_typeform_listwebhooks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1946,7 +2296,9 @@
                                 "description": "Unique ID for the form. Example: \"WMpBq4vc\""
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_listwebhooks": {
@@ -1994,12 +2346,24 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["created_at", "enabled", "event_types", "form_id", "id", "tag", "updated_at", "url", "verify_ssl"],
+                                    "required": [
+                                        "created_at",
+                                        "enabled",
+                                        "event_types",
+                                        "form_id",
+                                        "id",
+                                        "tag",
+                                        "updated_at",
+                                        "url",
+                                        "verify_ssl"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2012,9 +2376,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_listworkspaces",
             "name": "list-workspaces",
-            "output": ["ActionOutput_typeform_listworkspaces"],
-            "scopes": ["workspaces:read"],
-            "usedModels": ["ActionInput_typeform_listworkspaces", "ActionOutput_typeform_listworkspaces"],
+            "output": [
+                "ActionOutput_typeform_listworkspaces"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_listworkspaces",
+                "ActionOutput_typeform_listworkspaces"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2122,7 +2493,12 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["account_id", "id", "name", "shared"],
+                                    "required": [
+                                        "account_id",
+                                        "id",
+                                        "name",
+                                        "shared"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2136,7 +2512,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "total_items", "page_count"],
+                        "required": [
+                            "items",
+                            "total_items",
+                            "page_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2149,9 +2529,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_patchform",
             "name": "patch-form",
-            "output": ["ActionOutput_typeform_patchform"],
-            "scopes": ["forms:write"],
-            "usedModels": ["ActionInput_typeform_patchform", "ActionOutput_typeform_patchform"],
+            "output": [
+                "ActionOutput_typeform_patchform"
+            ],
+            "scopes": [
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_patchform",
+                "ActionOutput_typeform_patchform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2180,13 +2567,19 @@
                                             "description": "New value for the operation"
                                         }
                                     },
-                                    "required": ["op", "path"],
+                                    "required": [
+                                        "op",
+                                        "path"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "JSON Patch operations array per RFC 6902"
                             }
                         },
-                        "required": ["form_id", "operations"],
+                        "required": [
+                            "form_id",
+                            "operations"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_patchform": {
@@ -2199,7 +2592,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "form_id"],
+                        "required": [
+                            "success",
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2212,9 +2608,17 @@
             "endpoint": null,
             "input": "ActionInput_typeform_updateform",
             "name": "update-form",
-            "output": ["ActionOutput_typeform_updateform"],
-            "scopes": ["forms:read", "forms:write"],
-            "usedModels": ["ActionInput_typeform_updateform", "ActionOutput_typeform_updateform"],
+            "output": [
+                "ActionOutput_typeform_updateform"
+            ],
+            "scopes": [
+                "forms:read",
+                "forms:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_updateform",
+                "ActionOutput_typeform_updateform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2230,7 +2634,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["form_id"],
+                        "required": [
+                            "form_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_updateform": {
@@ -2311,7 +2717,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2324,9 +2733,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_updatetheme",
             "name": "update-theme",
-            "output": ["ActionOutput_typeform_updatetheme"],
-            "scopes": ["themes:write"],
-            "usedModels": ["ActionInput_typeform_updatetheme", "ActionOutput_typeform_updatetheme"],
+            "output": [
+                "ActionOutput_typeform_updatetheme"
+            ],
+            "scopes": [
+                "themes:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_updatetheme",
+                "ActionOutput_typeform_updatetheme"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2414,7 +2830,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["theme_id"],
+                        "required": [
+                            "theme_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_updatetheme": {
@@ -2501,7 +2919,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2514,9 +2934,16 @@
             "endpoint": null,
             "input": "ActionInput_typeform_updateworkspace",
             "name": "update-workspace",
-            "output": ["ActionOutput_typeform_updateworkspace"],
-            "scopes": ["workspaces:write"],
-            "usedModels": ["ActionInput_typeform_updateworkspace", "ActionOutput_typeform_updateworkspace"],
+            "output": [
+                "ActionOutput_typeform_updateworkspace"
+            ],
+            "scopes": [
+                "workspaces:write"
+            ],
+            "usedModels": [
+                "ActionInput_typeform_updateworkspace",
+                "ActionOutput_typeform_updateworkspace"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2547,7 +2974,11 @@
                                                     "description": "New workspace name. Example: \"Marketing workspace\""
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -2555,7 +2986,10 @@
                                             "properties": {
                                                 "op": {
                                                     "type": "string",
-                                                    "enum": ["add", "remove"]
+                                                    "enum": [
+                                                        "add",
+                                                        "remove"
+                                                    ]
                                                 },
                                                 "path": {
                                                     "type": "string",
@@ -2573,11 +3007,17 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["email"],
+                                                    "required": [
+                                                        "email"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["op", "path", "value"],
+                                            "required": [
+                                                "op",
+                                                "path",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -2585,7 +3025,10 @@
                                 "description": "JSON Patch operations Typeform supports for workspaces. Example: [{ op: \"replace\", path: \"/name\", value: \"New name\" }] or [{ op: \"add\", path: \"/members\", value: { email: \"jane@example.com\", role: \"owner\" } }]"
                             }
                         },
-                        "required": ["workspace_id", "operations"],
+                        "required": [
+                            "workspace_id",
+                            "operations"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_typeform_updateworkspace": {
@@ -2595,7 +3038,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2611,12 +3056,18 @@
             "endpoints": [],
             "input": null,
             "name": "forms",
-            "output": ["Form"],
+            "output": [
+                "Form"
+            ],
             "runs": "every hour",
-            "scopes": ["forms:read"],
+            "scopes": [
+                "forms:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Form"],
+            "usedModels": [
+                "Form"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2688,12 +3139,19 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "title", "created_at", "last_updated_at"],
+                        "required": [
+                            "id",
+                            "title",
+                            "created_at",
+                            "last_updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2702,12 +3160,18 @@
             "endpoints": [],
             "input": null,
             "name": "images",
-            "output": ["Image"],
+            "output": [
+                "Image"
+            ],
             "runs": "every hour",
-            "scopes": ["images:read"],
+            "scopes": [
+                "images:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Image"],
+            "usedModels": [
+                "Image"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2737,7 +3201,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2751,12 +3217,18 @@
             "endpoints": [],
             "input": null,
             "name": "responses",
-            "output": ["Response"],
+            "output": [
+                "Response"
+            ],
             "runs": "every hour",
-            "scopes": ["responses:read"],
+            "scopes": [
+                "responses:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Response"],
+            "usedModels": [
+                "Response"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2824,12 +3296,19 @@
                                 }
                             }
                         },
-                        "required": ["id", "form_id", "token", "landing_id"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "token",
+                            "landing_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2838,12 +3317,18 @@
             "endpoints": [],
             "input": null,
             "name": "themes",
-            "output": ["Theme"],
+            "output": [
+                "Theme"
+            ],
             "runs": "every hour",
-            "scopes": ["themes:read"],
+            "scopes": [
+                "themes:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Theme"],
+            "usedModels": [
+                "Theme"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2933,12 +3418,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2947,12 +3436,19 @@
             "endpoints": [],
             "input": null,
             "name": "webhooks",
-            "output": ["Webhook"],
+            "output": [
+                "Webhook"
+            ],
             "runs": "every hour",
-            "scopes": ["forms:read", "webhooks:read"],
+            "scopes": [
+                "forms:read",
+                "webhooks:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webhook"],
+            "usedModels": [
+                "Webhook"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2997,12 +3493,20 @@
                                 }
                             }
                         },
-                        "required": ["id", "form_id", "tag", "url", "enabled"],
+                        "required": [
+                            "id",
+                            "form_id",
+                            "tag",
+                            "url",
+                            "enabled"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3011,12 +3515,18 @@
             "endpoints": [],
             "input": null,
             "name": "workspaces",
-            "output": ["Workspace"],
+            "output": [
+                "Workspace"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read"],
+            "scopes": [
+                "workspaces:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workspace"],
+            "usedModels": [
+                "Workspace"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3046,12 +3556,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

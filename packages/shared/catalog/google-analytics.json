@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_archiveconversionevent",
             "name": "archive-conversion-event",
-            "output": ["ActionOutput_google_analytics_archiveconversionevent"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.edit"],
-            "usedModels": ["ActionInput_google_analytics_archiveconversionevent", "ActionOutput_google_analytics_archiveconversionevent"],
+            "output": [
+                "ActionOutput_google_analytics_archiveconversionevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_archiveconversionevent",
+                "ActionOutput_google_analytics_archiveconversionevent"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "Conversion event numeric ID. Example: \"67890\""
                             }
                         },
-                        "required": ["property_id", "conversion_event_id"],
+                        "required": [
+                            "property_id",
+                            "conversion_event_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_archiveconversionevent": {
@@ -39,7 +49,10 @@
                                 "description": "Resource name of the archived conversion event."
                             }
                         },
-                        "required": ["success", "name"],
+                        "required": [
+                            "success",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -52,9 +65,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_batchrunreports",
             "name": "batch-run-reports",
-            "output": ["ActionOutput_google_analytics_batchrunreports"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
-            "usedModels": ["ActionInput_google_analytics_batchrunreports", "ActionOutput_google_analytics_batchrunreports"],
+            "output": [
+                "ActionOutput_google_analytics_batchrunreports"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_batchrunreports",
+                "ActionOutput_google_analytics_batchrunreports"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -81,7 +101,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name"],
+                                                "required": [
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -94,7 +116,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name"],
+                                                "required": [
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -110,7 +134,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["startDate", "endDate"],
+                                                "required": [
+                                                    "startDate",
+                                                    "endDate"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -131,7 +158,10 @@
                                 }
                             }
                         },
-                        "required": ["property", "requests"],
+                        "required": [
+                            "property",
+                            "requests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_batchrunreports": {
@@ -329,7 +359,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["reports"],
+                        "required": [
+                            "reports"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -342,9 +374,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_createconversionevent",
             "name": "create-conversion-event",
-            "output": ["ActionOutput_google_analytics_createconversionevent"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.edit"],
-            "usedModels": ["ActionInput_google_analytics_createconversionevent", "ActionOutput_google_analytics_createconversionevent"],
+            "output": [
+                "ActionOutput_google_analytics_createconversionevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_createconversionevent",
+                "ActionOutput_google_analytics_createconversionevent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -374,11 +413,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["value", "currencyCode"],
+                                "required": [
+                                    "value",
+                                    "currencyCode"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["propertyId", "eventName"],
+                        "required": [
+                            "propertyId",
+                            "eventName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_createconversionevent": {
@@ -412,11 +457,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["value", "currencyCode"],
+                                "required": [
+                                    "value",
+                                    "currencyCode"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["name", "eventName"],
+                        "required": [
+                            "name",
+                            "eventName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -429,9 +480,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_createdatastream",
             "name": "create-data-stream",
-            "output": ["ActionOutput_google_analytics_createdatastream"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.edit"],
-            "usedModels": ["ActionInput_google_analytics_createdatastream", "ActionOutput_google_analytics_createdatastream"],
+            "output": [
+                "ActionOutput_google_analytics_createdatastream"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_createdatastream",
+                "ActionOutput_google_analytics_createdatastream"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -460,12 +518,19 @@
                                                 "description": "Domain name of the web app being measured. Example: \"https://www.example.com\""
                                             }
                                         },
-                                        "required": ["default_uri"],
+                                        "required": [
+                                            "default_uri"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Data specific to web streams. Required when type is WEB_DATA_STREAM."
                                     }
                                 },
-                                "required": ["property_id", "display_name", "type", "web_stream_data"],
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type",
+                                    "web_stream_data"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -491,12 +556,19 @@
                                                 "description": "The package name for the app being measured. Example: \"com.example.myandroidapp\""
                                             }
                                         },
-                                        "required": ["package_name"],
+                                        "required": [
+                                            "package_name"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Data specific to Android app streams. Required when type is ANDROID_APP_DATA_STREAM."
                                     }
                                 },
-                                "required": ["property_id", "display_name", "type", "android_app_stream_data"],
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type",
+                                    "android_app_stream_data"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -522,12 +594,19 @@
                                                 "description": "The Apple App Store Bundle ID for the app. Example: \"com.example.myiosapp\""
                                             }
                                         },
-                                        "required": ["bundle_id"],
+                                        "required": [
+                                            "bundle_id"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Data specific to iOS app streams. Required when type is IOS_APP_DATA_STREAM."
                                     }
                                 },
-                                "required": ["property_id", "display_name", "type", "ios_app_stream_data"],
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type",
+                                    "ios_app_stream_data"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -546,7 +625,11 @@
                                         "const": "DATA_STREAM_TYPE_UNSPECIFIED"
                                     }
                                 },
-                                "required": ["property_id", "display_name", "type"],
+                                "required": [
+                                    "property_id",
+                                    "display_name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -559,7 +642,12 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["DATA_STREAM_TYPE_UNSPECIFIED", "WEB_DATA_STREAM", "ANDROID_APP_DATA_STREAM", "IOS_APP_DATA_STREAM"]
+                                "enum": [
+                                    "DATA_STREAM_TYPE_UNSPECIFIED",
+                                    "WEB_DATA_STREAM",
+                                    "ANDROID_APP_DATA_STREAM",
+                                    "IOS_APP_DATA_STREAM"
+                                ]
                             },
                             "displayName": {
                                 "type": "string"
@@ -622,9 +710,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_createproperty",
             "name": "create-property",
-            "output": ["ActionOutput_google_analytics_createproperty"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.edit"],
-            "usedModels": ["ActionInput_google_analytics_createproperty", "ActionOutput_google_analytics_createproperty"],
+            "output": [
+                "ActionOutput_google_analytics_createproperty"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_createproperty",
+                "ActionOutput_google_analytics_createproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -660,7 +755,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["parent", "displayName", "timeZone"],
+                        "required": [
+                            "parent",
+                            "displayName",
+                            "timeZone"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_createproperty": {
@@ -702,7 +801,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "parent", "displayName"],
+                        "required": [
+                            "name",
+                            "parent",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -715,9 +818,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_getmetadata",
             "name": "get-metadata",
-            "output": ["ActionOutput_google_analytics_getmetadata"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
-            "usedModels": ["ActionInput_google_analytics_getmetadata", "ActionOutput_google_analytics_getmetadata"],
+            "output": [
+                "ActionOutput_google_analytics_getmetadata"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_getmetadata",
+                "ActionOutput_google_analytics_getmetadata"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -729,7 +839,9 @@
                                 "description": "GA4 property ID. Use \"0\" for universal metadata. Example: \"123456789\""
                             }
                         },
-                        "required": ["propertyId"],
+                        "required": [
+                            "propertyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_getmetadata": {
@@ -762,7 +874,12 @@
                                             }
                                         }
                                     },
-                                    "required": ["apiName", "uiName", "description", "category"],
+                                    "required": [
+                                        "apiName",
+                                        "uiName",
+                                        "description",
+                                        "category"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -793,12 +910,22 @@
                                             }
                                         }
                                     },
-                                    "required": ["apiName", "uiName", "description", "type", "category"],
+                                    "required": [
+                                        "apiName",
+                                        "uiName",
+                                        "description",
+                                        "type",
+                                        "category"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name", "dimensions", "metrics"],
+                        "required": [
+                            "name",
+                            "dimensions",
+                            "metrics"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -811,9 +938,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_runpivotreport",
             "name": "run-pivot-report",
-            "output": ["ActionOutput_google_analytics_runpivotreport"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
-            "usedModels": ["ActionInput_google_analytics_runpivotreport", "ActionOutput_google_analytics_runpivotreport"],
+            "output": [
+                "ActionOutput_google_analytics_runpivotreport"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_runpivotreport",
+                "ActionOutput_google_analytics_runpivotreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -905,7 +1039,9 @@
                                 }
                             }
                         },
-                        "required": ["property"],
+                        "required": [
+                            "property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_runpivotreport": {
@@ -991,9 +1127,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_runrealtimereport",
             "name": "run-realtime-report",
-            "output": ["ActionOutput_google_analytics_runrealtimereport"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
-            "usedModels": ["ActionInput_google_analytics_runrealtimereport", "ActionOutput_google_analytics_runrealtimereport"],
+            "output": [
+                "ActionOutput_google_analytics_runrealtimereport"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_runrealtimereport",
+                "ActionOutput_google_analytics_runrealtimereport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1084,7 +1227,9 @@
                                 }
                             }
                         },
-                        "required": ["property"],
+                        "required": [
+                            "property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_runrealtimereport": {
@@ -1285,9 +1430,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_runreport",
             "name": "run-report",
-            "output": ["ActionOutput_google_analytics_runreport"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
-            "usedModels": ["ActionInput_google_analytics_runreport", "ActionOutput_google_analytics_runreport"],
+            "output": [
+                "ActionOutput_google_analytics_runreport"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_runreport",
+                "ActionOutput_google_analytics_runreport"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1307,7 +1459,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1320,7 +1474,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1336,7 +1492,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["startDate", "endDate"],
+                                    "required": [
+                                        "startDate",
+                                        "endDate"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1362,7 +1521,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["dimensionName"],
+                                            "required": [
+                                                "dimensionName"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "metric": {
@@ -1372,7 +1533,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["metricName"],
+                                            "required": [
+                                                "metricName"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "desc": {
@@ -1386,7 +1549,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["property"],
+                        "required": [
+                            "property"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_runreport": {
@@ -1567,9 +1732,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_updatedatastream",
             "name": "update-data-stream",
-            "output": ["ActionOutput_google_analytics_updatedatastream"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.edit"],
-            "usedModels": ["ActionInput_google_analytics_updatedatastream", "ActionOutput_google_analytics_updatedatastream"],
+            "output": [
+                "ActionOutput_google_analytics_updatedatastream"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_updatedatastream",
+                "ActionOutput_google_analytics_updatedatastream"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1604,7 +1776,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["propertyId", "dataStreamId"],
+                        "required": [
+                            "propertyId",
+                            "dataStreamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_updatedatastream": {
@@ -1665,7 +1840,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1678,9 +1855,16 @@
             "endpoint": null,
             "input": "ActionInput_google_analytics_updateproperty",
             "name": "update-property",
-            "output": ["ActionOutput_google_analytics_updateproperty"],
-            "scopes": ["https://www.googleapis.com/auth/analytics.edit"],
-            "usedModels": ["ActionInput_google_analytics_updateproperty", "ActionOutput_google_analytics_updateproperty"],
+            "output": [
+                "ActionOutput_google_analytics_updateproperty"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.edit"
+            ],
+            "usedModels": [
+                "ActionInput_google_analytics_updateproperty",
+                "ActionOutput_google_analytics_updateproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1708,7 +1892,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_analytics_updateproperty": {
@@ -1736,7 +1922,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1757,12 +1945,18 @@
             ],
             "input": null,
             "name": "accounts",
-            "output": ["Account"],
+            "output": [
+                "Account"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Account"],
+            "usedModels": [
+                "Account"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1795,12 +1989,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1814,12 +2012,18 @@
             ],
             "input": null,
             "name": "audiences",
-            "output": ["Audience"],
+            "output": [
+                "Audience"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Audience"],
+            "usedModels": [
+                "Audience"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1862,12 +2066,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1881,12 +2089,18 @@
             ],
             "input": null,
             "name": "conversion-events",
-            "output": ["KeyEvent"],
+            "output": [
+                "KeyEvent"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["KeyEvent"],
+            "usedModels": [
+                "KeyEvent"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1928,12 +2142,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1947,12 +2165,18 @@
             ],
             "input": null,
             "name": "data-streams",
-            "output": ["DataStream"],
+            "output": [
+                "DataStream"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DataStream"],
+            "usedModels": [
+                "DataStream"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1994,12 +2218,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "propertyId"],
+                        "required": [
+                            "id",
+                            "propertyId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2013,12 +2242,18 @@
             ],
             "input": null,
             "name": "properties",
-            "output": ["Property"],
+            "output": [
+                "Property"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/analytics.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/analytics.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Property"],
+            "usedModels": [
+                "Property"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2057,12 +2292,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

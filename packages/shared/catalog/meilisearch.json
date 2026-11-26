@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_meilisearch_adddocuments",
             "name": "add-documents",
-            "output": ["ActionOutput_meilisearch_adddocuments"],
-            "scopes": ["documents.add"],
-            "usedModels": ["ActionInput_meilisearch_adddocuments", "ActionOutput_meilisearch_adddocuments"],
+            "output": [
+                "ActionOutput_meilisearch_adddocuments"
+            ],
+            "scopes": [
+                "documents.add"
+            ],
+            "usedModels": [
+                "ActionInput_meilisearch_adddocuments",
+                "ActionOutput_meilisearch_adddocuments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -37,7 +44,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexUid", "documents"],
+                        "required": [
+                            "indexUid",
+                            "documents"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_meilisearch_adddocuments": {
@@ -47,7 +57,10 @@
                                 "type": "number"
                             },
                             "indexUid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -59,7 +72,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskUid", "indexUid", "status", "type", "enqueuedAt"],
+                        "required": [
+                            "taskUid",
+                            "indexUid",
+                            "status",
+                            "type",
+                            "enqueuedAt"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -72,9 +91,16 @@
             "endpoint": null,
             "input": "ActionInput_meilisearch_deletedocuments",
             "name": "delete-documents",
-            "output": ["ActionOutput_meilisearch_deletedocuments"],
-            "scopes": ["documents.delete"],
-            "usedModels": ["ActionInput_meilisearch_deletedocuments", "ActionOutput_meilisearch_deletedocuments"],
+            "output": [
+                "ActionOutput_meilisearch_deletedocuments"
+            ],
+            "scopes": [
+                "documents.delete"
+            ],
+            "usedModels": [
+                "ActionInput_meilisearch_deletedocuments",
+                "ActionOutput_meilisearch_deletedocuments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -90,7 +116,10 @@
                                 "minItems": 1,
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 }
                             },
                             "filter": {
@@ -118,7 +147,9 @@
                                 ]
                             }
                         },
-                        "required": ["indexUid"],
+                        "required": [
+                            "indexUid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_meilisearch_deletedocuments": {
@@ -128,7 +159,10 @@
                                 "type": "number"
                             },
                             "indexUid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -140,7 +174,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskUid", "indexUid", "status", "type", "enqueuedAt"],
+                        "required": [
+                            "taskUid",
+                            "indexUid",
+                            "status",
+                            "type",
+                            "enqueuedAt"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -153,9 +193,16 @@
             "endpoint": null,
             "input": "ActionInput_meilisearch_generatetenanttoken",
             "name": "generate-tenant-token",
-            "output": ["ActionOutput_meilisearch_generatetenanttoken"],
-            "scopes": ["keys.get"],
-            "usedModels": ["ActionInput_meilisearch_generatetenanttoken", "ActionOutput_meilisearch_generatetenanttoken"],
+            "output": [
+                "ActionOutput_meilisearch_generatetenanttoken"
+            ],
+            "scopes": [
+                "keys.get"
+            ],
+            "usedModels": [
+                "ActionInput_meilisearch_generatetenanttoken",
+                "ActionOutput_meilisearch_generatetenanttoken"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -218,7 +265,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["searchRules"],
+                        "required": [
+                            "searchRules"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_meilisearch_generatetenanttoken": {
@@ -231,7 +280,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["token", "expiresAt"],
+                        "required": [
+                            "token",
+                            "expiresAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -244,9 +296,16 @@
             "endpoint": null,
             "input": "ActionInput_meilisearch_getdocuments",
             "name": "get-documents",
-            "output": ["ActionOutput_meilisearch_getdocuments"],
-            "scopes": ["documents.get"],
-            "usedModels": ["ActionInput_meilisearch_getdocuments", "ActionOutput_meilisearch_getdocuments"],
+            "output": [
+                "ActionOutput_meilisearch_getdocuments"
+            ],
+            "scopes": [
+                "documents.get"
+            ],
+            "usedModels": [
+                "ActionInput_meilisearch_getdocuments",
+                "ActionOutput_meilisearch_getdocuments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -261,7 +320,10 @@
                                 "description": "Specific document ids to fetch.",
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 }
                             },
                             "filter": {
@@ -305,7 +367,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["indexUid"],
+                        "required": [
+                            "indexUid"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_meilisearch_getdocuments": {
@@ -331,7 +395,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["results", "total", "limit", "offset"],
+                        "required": [
+                            "results",
+                            "total",
+                            "limit",
+                            "offset"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -344,9 +413,16 @@
             "endpoint": null,
             "input": "ActionInput_meilisearch_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_meilisearch_gettask"],
-            "scopes": ["tasks.get"],
-            "usedModels": ["ActionInput_meilisearch_gettask", "ActionOutput_meilisearch_gettask"],
+            "output": [
+                "ActionOutput_meilisearch_gettask"
+            ],
+            "scopes": [
+                "tasks.get"
+            ],
+            "usedModels": [
+                "ActionInput_meilisearch_gettask",
+                "ActionOutput_meilisearch_gettask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -360,7 +436,9 @@
                                 "description": "Uid of the async task returned by a write operation."
                             }
                         },
-                        "required": ["taskUid"],
+                        "required": [
+                            "taskUid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_meilisearch_gettask": {
@@ -370,7 +448,10 @@
                                 "type": "number"
                             },
                             "indexUid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -390,13 +471,25 @@
                                 "type": "string"
                             },
                             "startedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "finishedAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["uid", "indexUid", "status", "type", "enqueuedAt"],
+                        "required": [
+                            "uid",
+                            "indexUid",
+                            "status",
+                            "type",
+                            "enqueuedAt"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -409,9 +502,16 @@
             "endpoint": null,
             "input": "ActionInput_meilisearch_searchdocuments",
             "name": "search-documents",
-            "output": ["ActionOutput_meilisearch_searchdocuments"],
-            "scopes": ["search"],
-            "usedModels": ["ActionInput_meilisearch_searchdocuments", "ActionOutput_meilisearch_searchdocuments"],
+            "output": [
+                "ActionOutput_meilisearch_searchdocuments"
+            ],
+            "scopes": [
+                "search"
+            ],
+            "usedModels": [
+                "ActionInput_meilisearch_searchdocuments",
+                "ActionOutput_meilisearch_searchdocuments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -479,7 +579,9 @@
                                 }
                             }
                         },
-                        "required": ["indexUid"],
+                        "required": [
+                            "indexUid"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_meilisearch_searchdocuments": {
@@ -511,7 +613,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["hits"],
+                        "required": [
+                            "hits"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -524,9 +628,16 @@
             "endpoint": null,
             "input": "ActionInput_meilisearch_updatedocuments",
             "name": "update-documents",
-            "output": ["ActionOutput_meilisearch_updatedocuments"],
-            "scopes": ["documents.add"],
-            "usedModels": ["ActionInput_meilisearch_updatedocuments", "ActionOutput_meilisearch_updatedocuments"],
+            "output": [
+                "ActionOutput_meilisearch_updatedocuments"
+            ],
+            "scopes": [
+                "documents.add"
+            ],
+            "usedModels": [
+                "ActionInput_meilisearch_updatedocuments",
+                "ActionOutput_meilisearch_updatedocuments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -554,7 +665,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["indexUid", "documents"],
+                        "required": [
+                            "indexUid",
+                            "documents"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_meilisearch_updatedocuments": {
@@ -564,7 +678,10 @@
                                 "type": "number"
                             },
                             "indexUid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -576,7 +693,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["taskUid", "indexUid", "status", "type", "enqueuedAt"],
+                        "required": [
+                            "taskUid",
+                            "indexUid",
+                            "status",
+                            "type",
+                            "enqueuedAt"
+                        ],
                         "additionalProperties": {}
                     }
                 }

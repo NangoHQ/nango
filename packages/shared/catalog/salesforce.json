@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_compositebatchrequest",
             "name": "composite-batch-request",
-            "output": ["ActionOutput_salesforce_compositebatchrequest"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_compositebatchrequest", "ActionOutput_salesforce_compositebatchrequest"],
+            "output": [
+                "ActionOutput_salesforce_compositebatchrequest"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_compositebatchrequest",
+                "ActionOutput_salesforce_compositebatchrequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -33,7 +40,13 @@
                                     "properties": {
                                         "method": {
                                             "type": "string",
-                                            "enum": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+                                            "enum": [
+                                                "GET",
+                                                "POST",
+                                                "PUT",
+                                                "PATCH",
+                                                "DELETE"
+                                            ],
                                             "description": "HTTP method for the subrequest. Example: \"GET\""
                                         },
                                         "url": {
@@ -57,13 +70,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["method", "url"],
+                                    "required": [
+                                        "method",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of subrequests to execute (1-25 requests)"
                             }
                         },
-                        "required": ["batchRequests"],
+                        "required": [
+                            "batchRequests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_compositebatchrequest": {
@@ -86,13 +104,19 @@
                                             "description": "Response body from this subrequest, which varies by endpoint"
                                         }
                                     },
-                                    "required": ["statusCode", "result"],
+                                    "required": [
+                                        "statusCode",
+                                        "result"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Results for each subrequest in the order they were submitted"
                             }
                         },
-                        "required": ["hasErrors", "results"],
+                        "required": [
+                            "hasErrors",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -105,9 +129,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_compositegraphrequest",
             "name": "composite-graph-request",
-            "output": ["ActionOutput_salesforce_compositegraphrequest"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_compositegraphrequest", "ActionOutput_salesforce_compositegraphrequest"],
+            "output": [
+                "ActionOutput_salesforce_compositegraphrequest"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_compositegraphrequest",
+                "ActionOutput_salesforce_compositegraphrequest"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -159,12 +190,19 @@
                                                         "additionalProperties": {}
                                                     }
                                                 },
-                                                "required": ["method", "url", "referenceId"],
+                                                "required": [
+                                                    "method",
+                                                    "url",
+                                                    "referenceId"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["graphId", "compositeRequest"],
+                                    "required": [
+                                        "graphId",
+                                        "compositeRequest"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -172,7 +210,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["graphs"],
+                        "required": [
+                            "graphs"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_compositegraphrequest": {
@@ -207,24 +247,36 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["body", "httpStatusCode", "referenceId"],
+                                                        "required": [
+                                                            "body",
+                                                            "httpStatusCode",
+                                                            "referenceId"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["compositeResponse"],
+                                            "required": [
+                                                "compositeResponse"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "isSuccessful": {
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["graphId", "graphResponse", "isSuccessful"],
+                                    "required": [
+                                        "graphId",
+                                        "graphResponse",
+                                        "isSuccessful"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["graphs"],
+                        "required": [
+                            "graphs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -237,9 +289,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_compositerequest",
             "name": "composite-request",
-            "output": ["ActionOutput_salesforce_compositerequest"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_compositerequest", "ActionOutput_salesforce_compositerequest"],
+            "output": [
+                "ActionOutput_salesforce_compositerequest"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_compositerequest",
+                "ActionOutput_salesforce_compositerequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -276,12 +335,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["method", "url", "referenceId"],
+                                    "required": [
+                                        "method",
+                                        "url",
+                                        "referenceId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["subrequests"],
+                        "required": [
+                            "subrequests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_compositerequest": {
@@ -300,12 +365,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["httpStatusCode", "referenceId"],
+                                    "required": [
+                                        "httpStatusCode",
+                                        "referenceId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["compositeResponse"],
+                        "required": [
+                            "compositeResponse"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -318,9 +388,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_createrecord",
             "name": "create-record",
-            "output": ["ActionOutput_salesforce_createrecord"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_createrecord", "ActionOutput_salesforce_createrecord"],
+            "output": [
+                "ActionOutput_salesforce_createrecord"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_createrecord",
+                "ActionOutput_salesforce_createrecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -341,7 +418,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["sObject", "record"],
+                        "required": [
+                            "sObject",
+                            "record"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_createrecord": {
@@ -358,7 +438,11 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "success", "errors"],
+                        "required": [
+                            "id",
+                            "success",
+                            "errors"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -371,9 +455,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_createsobjectcollection",
             "name": "create-sobject-collection",
-            "output": ["ActionOutput_salesforce_createsobjectcollection"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_createsobjectcollection", "ActionOutput_salesforce_createsobjectcollection"],
+            "output": [
+                "ActionOutput_salesforce_createsobjectcollection"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_createsobjectcollection",
+                "ActionOutput_salesforce_createsobjectcollection"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -397,11 +488,15 @@
                                                     "description": "The sObject type for this record. Example: \"Account\", \"Contact\", \"Opportunity\""
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["attributes"],
+                                    "required": [
+                                        "attributes"
+                                    ],
                                     "additionalProperties": {},
                                     "description": "An sObject record. Must include attributes.type. Additional fields depend on the sObject type."
                                 },
@@ -412,7 +507,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_createsobjectcollection": {
@@ -453,18 +550,25 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["statusCode", "message"],
+                                                "required": [
+                                                    "statusCode",
+                                                    "message"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["success"],
+                                    "required": [
+                                        "success"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of SaveResult objects corresponding to each input record, in the same order."
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -477,9 +581,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_deleterecord",
             "name": "delete-record",
-            "output": ["ActionOutput_salesforce_deleterecord"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_deleterecord", "ActionOutput_salesforce_deleterecord"],
+            "output": [
+                "ActionOutput_salesforce_deleterecord"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_deleterecord",
+                "ActionOutput_salesforce_deleterecord"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -499,7 +610,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sobject", "recordId"],
+                        "required": [
+                            "sobject",
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_deleterecord": {
@@ -512,7 +626,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -525,9 +642,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_deletesobjectcollection",
             "name": "delete-sobject-collection",
-            "output": ["ActionOutput_salesforce_deletesobjectcollection"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_deletesobjectcollection", "ActionOutput_salesforce_deletesobjectcollection"],
+            "output": [
+                "ActionOutput_salesforce_deletesobjectcollection"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_deletesobjectcollection",
+                "ActionOutput_salesforce_deletesobjectcollection"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -554,7 +678,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["sObjectName", "ids"],
+                        "required": [
+                            "sObjectName",
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_deletesobjectcollection": {
@@ -589,18 +716,25 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["statusCode", "message"],
+                                                "required": [
+                                                    "statusCode",
+                                                    "message"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["success"],
+                                    "required": [
+                                        "success"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Results for each record deletion."
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -613,9 +747,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_describeglobal",
             "name": "describe-global",
-            "output": ["ActionOutput_salesforce_describeglobal"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_describeglobal", "ActionOutput_salesforce_describeglobal"],
+            "output": [
+                "ActionOutput_salesforce_describeglobal"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_describeglobal",
+                "ActionOutput_salesforce_describeglobal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -659,7 +800,10 @@
                                         },
                                         "keyPrefix": {
                                             "description": "Record ID prefix for this sObject type.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "labelPlural": {
                                             "type": "string",
@@ -741,13 +885,26 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["name", "label", "custom", "createable", "deletable", "updateable", "queryable", "searchable"],
+                                    "required": [
+                                        "name",
+                                        "label",
+                                        "custom",
+                                        "createable",
+                                        "deletable",
+                                        "updateable",
+                                        "queryable",
+                                        "searchable"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of available sObject types and their metadata."
                             }
                         },
-                        "required": ["encoding", "max_batch_size", "sobjects"],
+                        "required": [
+                            "encoding",
+                            "max_batch_size",
+                            "sobjects"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -760,9 +917,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_describesobject",
             "name": "describe-sobject",
-            "output": ["ActionOutput_salesforce_describesobject"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_describesobject", "ActionOutput_salesforce_describesobject"],
+            "output": [
+                "ActionOutput_salesforce_describesobject"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_describesobject",
+                "ActionOutput_salesforce_describesobject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -778,7 +942,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sObject"],
+                        "required": [
+                            "sObject"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_describesobject": {
@@ -823,7 +989,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "label", "type"],
+                                    "required": [
+                                        "name",
+                                        "label",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -863,7 +1033,12 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["recordTypeId", "name", "active", "available"],
+                                    "required": [
+                                        "recordTypeId",
+                                        "name",
+                                        "active",
+                                        "available"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -880,7 +1055,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "label", "labelPlural", "fields"],
+                        "required": [
+                            "name",
+                            "label",
+                            "labelPlural",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -893,9 +1073,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_salesforce_getcurrentuser"],
-            "scopes": ["openid"],
-            "usedModels": ["ActionInput_salesforce_getcurrentuser", "ActionOutput_salesforce_getcurrentuser"],
+            "output": [
+                "ActionOutput_salesforce_getcurrentuser"
+            ],
+            "scopes": [
+                "openid"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_getcurrentuser",
+                "ActionOutput_salesforce_getcurrentuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -956,7 +1143,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id", "organization_id"],
+                        "required": [
+                            "user_id",
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -969,9 +1159,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_getlimits",
             "name": "get-limits",
-            "output": ["ActionOutput_salesforce_getlimits"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_getlimits", "ActionOutput_salesforce_getlimits"],
+            "output": [
+                "ActionOutput_salesforce_getlimits"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_getlimits",
+                "ActionOutput_salesforce_getlimits"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -995,7 +1192,10 @@
                                     "type": "number"
                                 }
                             },
-                            "required": ["max", "remaining"],
+                            "required": [
+                                "max",
+                                "remaining"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -1009,9 +1209,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_getquickactiondefaults",
             "name": "get-quick-action-defaults",
-            "output": ["ActionOutput_salesforce_getquickactiondefaults"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_getquickactiondefaults", "ActionOutput_salesforce_getquickactiondefaults"],
+            "output": [
+                "ActionOutput_salesforce_getquickactiondefaults"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_getquickactiondefaults",
+                "ActionOutput_salesforce_getquickactiondefaults"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1031,7 +1238,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["quickActionName"],
+                        "required": [
+                            "quickActionName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_getquickactiondefaults": {
@@ -1057,9 +1266,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_getrecordbyexternalid",
             "name": "get-record-by-external-id",
-            "output": ["ActionOutput_salesforce_getrecordbyexternalid"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_getrecordbyexternalid", "ActionOutput_salesforce_getrecordbyexternalid"],
+            "output": [
+                "ActionOutput_salesforce_getrecordbyexternalid"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_getrecordbyexternalid",
+                "ActionOutput_salesforce_getrecordbyexternalid"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1090,7 +1306,11 @@
                                 }
                             }
                         },
-                        "required": ["sobject", "external_id_field", "external_id"],
+                        "required": [
+                            "sobject",
+                            "external_id_field",
+                            "external_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_getrecordbyexternalid": {
@@ -1110,11 +1330,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "url"],
+                                "required": [
+                                    "type",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {},
                         "description": "Record fields including Id and attributes"
                     }
@@ -1128,9 +1353,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_getrecord",
             "name": "get-record",
-            "output": ["ActionOutput_salesforce_getrecord"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_getrecord", "ActionOutput_salesforce_getrecord"],
+            "output": [
+                "ActionOutput_salesforce_getrecord"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_getrecord",
+                "ActionOutput_salesforce_getrecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1153,7 +1385,10 @@
                                 }
                             }
                         },
-                        "required": ["sObject", "recordId"],
+                        "required": [
+                            "sObject",
+                            "recordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_getrecord": {
@@ -1171,9 +1406,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_getsobjectbasicinfo",
             "name": "get-sobject-basic-info",
-            "output": ["ActionOutput_salesforce_getsobjectbasicinfo"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_getsobjectbasicinfo", "ActionOutput_salesforce_getsobjectbasicinfo"],
+            "output": [
+                "ActionOutput_salesforce_getsobjectbasicinfo"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_getsobjectbasicinfo",
+                "ActionOutput_salesforce_getsobjectbasicinfo"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1189,7 +1431,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sObject"],
+                        "required": [
+                            "sObject"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_getsobjectbasicinfo": {
@@ -1296,7 +1540,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["name", "label", "type"],
+                                    "required": [
+                                        "name",
+                                        "label",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1315,12 +1563,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name", "label"],
+                        "required": [
+                            "name",
+                            "label"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1333,9 +1586,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_listavailableresources",
             "name": "list-available-resources",
-            "output": ["ActionOutput_salesforce_listavailableresources"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_listavailableresources", "ActionOutput_salesforce_listavailableresources"],
+            "output": [
+                "ActionOutput_salesforce_listavailableresources"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_listavailableresources",
+                "ActionOutput_salesforce_listavailableresources"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1362,12 +1622,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["version", "label", "url"],
+                                    "required": [
+                                        "version",
+                                        "label",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["versions"],
+                        "required": [
+                            "versions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1380,9 +1646,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_listquickactions",
             "name": "list-quick-actions",
-            "output": ["ActionOutput_salesforce_listquickactions"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_listquickactions", "ActionOutput_salesforce_listquickactions"],
+            "output": [
+                "ActionOutput_salesforce_listquickactions"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_listquickactions",
+                "ActionOutput_salesforce_listquickactions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1429,7 +1702,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["actionName", "label", "type"],
+                                    "required": [
+                                        "actionName",
+                                        "label",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of quick actions available"
@@ -1439,7 +1716,10 @@
                                 "description": "Total number of quick actions returned"
                             }
                         },
-                        "required": ["quickActions", "count"],
+                        "required": [
+                            "quickActions",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1452,9 +1732,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_listrecentitems",
             "name": "list-recent-items",
-            "output": ["ActionOutput_salesforce_listrecentitems"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_listrecentitems", "ActionOutput_salesforce_listrecentitems"],
+            "output": [
+                "ActionOutput_salesforce_listrecentitems"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_listrecentitems",
+                "ActionOutput_salesforce_listrecentitems"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1493,7 +1780,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1502,7 +1791,10 @@
                                 "description": "Number of items returned"
                             }
                         },
-                        "required": ["items", "count"],
+                        "required": [
+                            "items",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1515,9 +1807,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_parameterizedsearchrecords",
             "name": "parameterized-search-records",
-            "output": ["ActionOutput_salesforce_parameterizedsearchrecords"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_parameterizedsearchrecords", "ActionOutput_salesforce_parameterizedsearchrecords"],
+            "output": [
+                "ActionOutput_salesforce_parameterizedsearchrecords"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_parameterizedsearchrecords",
+                "ActionOutput_salesforce_parameterizedsearchrecords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1563,7 +1862,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query", "sobjects"],
+                        "required": [
+                            "query",
+                            "sobjects"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_parameterizedsearchrecords": {
@@ -1588,12 +1890,17 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["sobjectType", "id"],
+                                    "required": [
+                                        "sobjectType",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1606,9 +1913,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_queryallrecords",
             "name": "query-all-records",
-            "output": ["ActionOutput_salesforce_queryallrecords"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_queryallrecords", "ActionOutput_salesforce_queryallrecords"],
+            "output": [
+                "ActionOutput_salesforce_queryallrecords"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_queryallrecords",
+                "ActionOutput_salesforce_queryallrecords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1624,7 +1938,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_queryallrecords": {
@@ -1650,7 +1966,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["totalSize", "done", "records"],
+                        "required": [
+                            "totalSize",
+                            "done",
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1663,9 +1983,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_queryrecords",
             "name": "query-records",
-            "output": ["ActionOutput_salesforce_queryrecords"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_queryrecords", "ActionOutput_salesforce_queryrecords"],
+            "output": [
+                "ActionOutput_salesforce_queryrecords"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_queryrecords",
+                "ActionOutput_salesforce_queryrecords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1681,7 +2008,9 @@
                                 "description": "SOQL query string. Example: \"SELECT Id, Name FROM Account LIMIT 10\""
                             }
                         },
-                        "required": ["soql"],
+                        "required": [
+                            "soql"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_queryrecords": {
@@ -1707,7 +2036,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["totalSize", "done", "records"],
+                        "required": [
+                            "totalSize",
+                            "done",
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1720,9 +2053,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_retrievequerymore",
             "name": "retrieve-query-more",
-            "output": ["ActionOutput_salesforce_retrievequerymore"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_retrievequerymore", "ActionOutput_salesforce_retrievequerymore"],
+            "output": [
+                "ActionOutput_salesforce_retrievequerymore"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_retrievequerymore",
+                "ActionOutput_salesforce_retrievequerymore"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1734,7 +2074,9 @@
                                 "description": "The nextRecordsUrl from a previous query or queryAll response. Example: \"/services/data/v62.0/query/01gD00000000abcIAQ-2000\""
                             }
                         },
-                        "required": ["nextRecordsUrl"],
+                        "required": [
+                            "nextRecordsUrl"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_retrievequerymore": {
@@ -1758,7 +2100,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["done", "totalSize", "records"],
+                        "required": [
+                            "done",
+                            "totalSize",
+                            "records"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1771,9 +2117,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_searchrecords",
             "name": "search-records",
-            "output": ["ActionOutput_salesforce_searchrecords"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_searchrecords", "ActionOutput_salesforce_searchrecords"],
+            "output": [
+                "ActionOutput_salesforce_searchrecords"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_searchrecords",
+                "ActionOutput_salesforce_searchrecords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1789,7 +2142,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["q"],
+                        "required": [
+                            "q"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_searchrecords": {
@@ -1815,14 +2170,20 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["type", "url"],
+                                                "required": [
+                                                    "type",
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "Id": {
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["attributes", "Id"],
+                                        "required": [
+                                            "attributes",
+                                            "Id"
+                                        ],
                                         "additionalProperties": {}
                                     }
                                 }
@@ -1831,7 +2192,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["searchResults", "totalSize"],
+                        "required": [
+                            "searchResults",
+                            "totalSize"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1844,9 +2208,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_updaterecordbyexternalid",
             "name": "update-record-by-external-id",
-            "output": ["ActionOutput_salesforce_updaterecordbyexternalid"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_updaterecordbyexternalid", "ActionOutput_salesforce_updaterecordbyexternalid"],
+            "output": [
+                "ActionOutput_salesforce_updaterecordbyexternalid"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_updaterecordbyexternalid",
+                "ActionOutput_salesforce_updaterecordbyexternalid"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1874,7 +2245,12 @@
                                 "description": "The field values to update on the record. Example: { \"Name\": \"Acme Corp\", \"Phone\": \"555-1234\" }"
                             }
                         },
-                        "required": ["sObject", "externalIdField", "externalId", "fields"],
+                        "required": [
+                            "sObject",
+                            "externalIdField",
+                            "externalId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_updaterecordbyexternalid": {
@@ -1893,7 +2269,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["updated"],
+                        "required": [
+                            "updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1906,9 +2284,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_updaterecord",
             "name": "update-record",
-            "output": ["ActionOutput_salesforce_updaterecord"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_updaterecord", "ActionOutput_salesforce_updaterecord"],
+            "output": [
+                "ActionOutput_salesforce_updaterecord"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_updaterecord",
+                "ActionOutput_salesforce_updaterecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1936,7 +2321,11 @@
                                 "description": "Fields to update on the record. Only provided fields will be updated."
                             }
                         },
-                        "required": ["sobject", "record_id", "fields"],
+                        "required": [
+                            "sobject",
+                            "record_id",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_updaterecord": {
@@ -1954,7 +2343,9 @@
                                 }
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1967,9 +2358,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_updatesobjectcollection",
             "name": "update-sobject-collection",
-            "output": ["ActionOutput_salesforce_updatesobjectcollection"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_updatesobjectcollection", "ActionOutput_salesforce_updatesobjectcollection"],
+            "output": [
+                "ActionOutput_salesforce_updatesobjectcollection"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_updatesobjectcollection",
+                "ActionOutput_salesforce_updatesobjectcollection"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1989,7 +2387,9 @@
                                                     "description": "The sObject type. Example: \"Account\", \"Contact\""
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "id": {
@@ -1997,7 +2397,10 @@
                                             "description": "The record ID to update. Example: \"001xx000003DHP0AAO\""
                                         }
                                     },
-                                    "required": ["attributes", "id"],
+                                    "required": [
+                                        "attributes",
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Array of records to update. Each record must include attributes.type, id, and the fields to update."
@@ -2007,7 +2410,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["records"],
+                        "required": [
+                            "records"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_updatesobjectcollection": {
@@ -2042,17 +2447,24 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["statusCode", "message"],
+                                                "required": [
+                                                    "statusCode",
+                                                    "message"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["success"],
+                                    "required": [
+                                        "success"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2065,9 +2477,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_upsertrecord",
             "name": "upsert-record",
-            "output": ["ActionOutput_salesforce_upsertrecord"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_upsertrecord", "ActionOutput_salesforce_upsertrecord"],
+            "output": [
+                "ActionOutput_salesforce_upsertrecord"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_upsertrecord",
+                "ActionOutput_salesforce_upsertrecord"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2099,7 +2518,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["sObject", "external_id_field", "external_id", "record_data"],
+                        "required": [
+                            "sObject",
+                            "external_id_field",
+                            "external_id",
+                            "record_data"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_upsertrecord": {
@@ -2136,12 +2560,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["statusCode", "message"],
+                                    "required": [
+                                        "statusCode",
+                                        "message"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2154,9 +2583,16 @@
             "endpoint": null,
             "input": "ActionInput_salesforce_upsertsobjectcollection",
             "name": "upsert-sobject-collection",
-            "output": ["ActionOutput_salesforce_upsertsobjectcollection"],
-            "scopes": ["api"],
-            "usedModels": ["ActionInput_salesforce_upsertsobjectcollection", "ActionOutput_salesforce_upsertsobjectcollection"],
+            "output": [
+                "ActionOutput_salesforce_upsertsobjectcollection"
+            ],
+            "scopes": [
+                "api"
+            ],
+            "usedModels": [
+                "ActionInput_salesforce_upsertsobjectcollection",
+                "ActionOutput_salesforce_upsertsobjectcollection"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2191,7 +2627,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["version", "sobject", "externalIdFieldName", "records"],
+                        "required": [
+                            "version",
+                            "sobject",
+                            "externalIdFieldName",
+                            "records"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_salesforce_upsertsobjectcollection": {
@@ -2224,13 +2665,17 @@
                                             }
                                         }
                                     },
-                                    "required": ["success"],
+                                    "required": [
+                                        "success"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Results for each record in the request"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2251,12 +2696,18 @@
             ],
             "input": null,
             "name": "accounts",
-            "output": ["Account"],
+            "output": [
+                "Account"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Account"],
+            "usedModels": [
+                "Account"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2304,12 +2755,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "createdDate", "lastModifiedDate", "systemModstamp"],
+                        "required": [
+                            "id",
+                            "createdDate",
+                            "lastModifiedDate",
+                            "systemModstamp"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2323,12 +2781,18 @@
             ],
             "input": null,
             "name": "articles",
-            "output": ["Article"],
+            "output": [
+                "Article"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Article"],
+            "usedModels": [
+                "Article"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2364,12 +2828,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "knowledge_article_id", "last_modified_at"],
+                        "required": [
+                            "id",
+                            "knowledge_article_id",
+                            "last_modified_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2383,12 +2853,18 @@
             ],
             "input": null,
             "name": "cases",
-            "output": ["Case"],
+            "output": [
+                "Case"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Case"],
+            "usedModels": [
+                "Case"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2451,12 +2927,19 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "created_at", "updated_at", "system_modstamp"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at",
+                            "system_modstamp"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2470,12 +2953,18 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2535,12 +3024,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "last_name", "created_at"],
+                        "required": [
+                            "id",
+                            "last_name",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2554,12 +3049,18 @@
             ],
             "input": null,
             "name": "opportunities",
-            "output": ["Opportunity"],
+            "output": [
+                "Opportunity"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Opportunity"],
+            "usedModels": [
+                "Opportunity"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2589,12 +3090,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "updated_at"],
+                        "required": [
+                            "id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2608,12 +3114,19 @@
             ],
             "input": "SyncMetadata_salesforce_recordsbysoql",
             "name": "records-by-soql",
-            "output": ["Record"],
+            "output": [
+                "Record"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Record", "SyncMetadata_salesforce_recordsbysoql"],
+            "usedModels": [
+                "Record",
+                "SyncMetadata_salesforce_recordsbysoql"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2632,7 +3145,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "raw"],
+                        "required": [
+                            "id",
+                            "raw"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_salesforce_recordsbysoql": {
@@ -2649,12 +3165,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["soql_query"],
+                        "required": [
+                            "soql_query"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2668,12 +3188,18 @@
             ],
             "input": null,
             "name": "tickets",
-            "output": ["Ticket"],
+            "output": [
+                "Ticket"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Ticket"],
+            "usedModels": [
+                "Ticket"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2733,7 +3259,11 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["CaseComment", "FeedItem", "EmailMessage"]
+                                            "enum": [
+                                                "CaseComment",
+                                                "FeedItem",
+                                                "EmailMessage"
+                                            ]
                                         },
                                         "created_date": {
                                             "type": "string"
@@ -2745,17 +3275,28 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type", "created_date"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "created_date"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "case_number", "created_date", "last_modified_date"],
+                        "required": [
+                            "id",
+                            "case_number",
+                            "created_date",
+                            "last_modified_date"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2769,12 +3310,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["api"],
+            "scopes": [
+                "api"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2810,12 +3357,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "system_modstamp"],
+                        "required": [
+                            "id",
+                            "system_modstamp"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

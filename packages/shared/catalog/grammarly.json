@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_grammarly_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_grammarly_deleteuser"],
+            "output": [
+                "ActionOutput_grammarly_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_grammarly_deleteuser", "ActionOutput_grammarly_deleteuser"],
+            "usedModels": [
+                "ActionInput_grammarly_deleteuser",
+                "ActionOutput_grammarly_deleteuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -20,7 +25,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_grammarly_deleteuser": {
@@ -30,7 +37,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -52,12 +61,17 @@
             ],
             "input": "SyncMetadata_grammarly_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_grammarly_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_grammarly_users"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -79,7 +93,13 @@
                             },
                             "__raw": {}
                         },
-                        "required": ["id", "firstName", "lastName", "email", "__raw"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "__raw"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_grammarly_users": {

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createassetuploadjob",
             "name": "create-asset-upload-job",
-            "output": ["ActionOutput_canva_createassetuploadjob"],
-            "scopes": ["asset:write"],
-            "usedModels": ["ActionInput_canva_createassetuploadjob", "ActionOutput_canva_createassetuploadjob"],
+            "output": [
+                "ActionOutput_canva_createassetuploadjob"
+            ],
+            "scopes": [
+                "asset:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createassetuploadjob",
+                "ActionOutput_canva_createassetuploadjob"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -27,7 +34,10 @@
                                 "description": "The asset name. Maximum 50 characters. Example: \"My Awesome Upload\""
                             }
                         },
-                        "required": ["file_base64", "name"],
+                        "required": [
+                            "file_base64",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createassetuploadjob": {
@@ -41,7 +51,11 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["failed", "in_progress", "success"]
+                                        "enum": [
+                                            "failed",
+                                            "in_progress",
+                                            "success"
+                                        ]
                                     },
                                     "error": {
                                         "type": "object",
@@ -53,7 +67,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "asset": {
@@ -61,7 +78,10 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "enum": ["image", "video"]
+                                                "enum": [
+                                                    "image",
+                                                    "video"
+                                                ]
                                             },
                                             "id": {
                                                 "type": "string"
@@ -85,7 +105,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["user_id", "team_id"],
+                                                "required": [
+                                                    "user_id",
+                                                    "team_id"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "created_at": {
@@ -107,7 +130,11 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["width", "height", "url"],
+                                                "required": [
+                                                    "width",
+                                                    "height",
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "metadata": {
@@ -118,15 +145,28 @@
                                                 "additionalProperties": {}
                                             }
                                         },
-                                        "required": ["type", "id", "name", "tags", "owner", "created_at", "updated_at"],
+                                        "required": [
+                                            "type",
+                                            "id",
+                                            "name",
+                                            "tags",
+                                            "owner",
+                                            "created_at",
+                                            "updated_at"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -139,9 +179,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createcommentreply",
             "name": "create-comment-reply",
-            "output": ["ActionOutput_canva_createcommentreply"],
-            "scopes": ["comment:write"],
-            "usedModels": ["ActionInput_canva_createcommentreply", "ActionOutput_canva_createcommentreply"],
+            "output": [
+                "ActionOutput_canva_createcommentreply"
+            ],
+            "scopes": [
+                "comment:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createcommentreply",
+                "ActionOutput_canva_createcommentreply"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -161,7 +208,11 @@
                                 "description": "The reply message in plaintext. Example: \"Thanks!\""
                             }
                         },
-                        "required": ["designId", "commentId", "message_plaintext"],
+                        "required": [
+                            "designId",
+                            "commentId",
+                            "message_plaintext"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createcommentreply": {
@@ -186,7 +237,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["plaintext"],
+                                "required": [
+                                    "plaintext"
+                                ],
                                 "additionalProperties": false
                             },
                             "mentions": {
@@ -216,7 +269,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["tag"],
+                                    "required": [
+                                        "tag"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -236,11 +291,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "design_id", "thread_id", "content", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "design_id",
+                            "thread_id",
+                            "content",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -253,9 +317,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_canva_createcomment"],
-            "scopes": ["comment:write"],
-            "usedModels": ["ActionInput_canva_createcomment", "ActionOutput_canva_createcomment"],
+            "output": [
+                "ActionOutput_canva_createcomment"
+            ],
+            "scopes": [
+                "comment:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createcomment",
+                "ActionOutput_canva_createcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -277,7 +348,10 @@
                                         "description": "Reference to the specific design element to anchor the comment to"
                                     }
                                 },
-                                "required": ["type", "design_id"],
+                                "required": [
+                                    "type",
+                                    "design_id"
+                                ],
                                 "additionalProperties": {},
                                 "description": "The object to attach the comment to"
                             },
@@ -292,7 +366,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["attached_to", "message_plaintext"],
+                        "required": [
+                            "attached_to",
+                            "message_plaintext"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createcomment": {
@@ -317,7 +394,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -343,7 +422,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "resolver": {
@@ -356,11 +437,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -373,9 +458,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createdesigncommentreply",
             "name": "create-design-comment-reply",
-            "output": ["ActionOutput_canva_createdesigncommentreply"],
-            "scopes": ["comment:write"],
-            "usedModels": ["ActionInput_canva_createdesigncommentreply", "ActionOutput_canva_createdesigncommentreply"],
+            "output": [
+                "ActionOutput_canva_createdesigncommentreply"
+            ],
+            "scopes": [
+                "comment:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createdesigncommentreply",
+                "ActionOutput_canva_createdesigncommentreply"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -395,7 +487,11 @@
                                 "description": "The reply message in plaintext. Example: \"Thanks for the feedback!\""
                             }
                         },
-                        "required": ["design_id", "thread_id", "message_plaintext"],
+                        "required": [
+                            "design_id",
+                            "thread_id",
+                            "message_plaintext"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createdesigncommentreply": {
@@ -420,7 +516,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "content": {
@@ -430,11 +528,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["plaintext"],
+                                "required": [
+                                    "plaintext"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "design_id", "thread_id", "content"],
+                        "required": [
+                            "id",
+                            "design_id",
+                            "thread_id",
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -447,9 +552,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createdesigncomment",
             "name": "create-design-comment",
-            "output": ["ActionOutput_canva_createdesigncomment"],
-            "scopes": ["comment:write"],
-            "usedModels": ["ActionInput_canva_createdesigncomment", "ActionOutput_canva_createdesigncomment"],
+            "output": [
+                "ActionOutput_canva_createdesigncomment"
+            ],
+            "scopes": [
+                "comment:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createdesigncomment",
+                "ActionOutput_canva_createdesigncomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -469,7 +581,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["design_id", "message_plaintext"],
+                        "required": [
+                            "design_id",
+                            "message_plaintext"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createdesigncomment": {
@@ -497,7 +612,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["plaintext"],
+                                        "required": [
+                                            "plaintext"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "mentions": {
@@ -524,11 +641,16 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["user_id", "team_id"],
+                                                    "required": [
+                                                        "user_id",
+                                                        "team_id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["tag"],
+                                            "required": [
+                                                "tag"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -542,7 +664,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "resolver": {
@@ -555,11 +679,15 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "author": {
@@ -572,7 +700,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -582,7 +712,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "design_id", "thread_type", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "design_id",
+                            "thread_type",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -595,9 +731,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createdesignexportjob",
             "name": "create-design-export-job",
-            "output": ["ActionOutput_canva_createdesignexportjob"],
-            "scopes": ["design:content:read"],
-            "usedModels": ["ActionInput_canva_createdesignexportjob", "ActionOutput_canva_createdesignexportjob"],
+            "output": [
+                "ActionOutput_canva_createdesignexportjob"
+            ],
+            "scopes": [
+                "design:content:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createdesignexportjob",
+                "ActionOutput_canva_createdesignexportjob"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -616,12 +759,17 @@
                                         "description": "Export format type. Example: \"pdf\", \"png\", \"jpg\", \"pptx\", \"gif\", \"mp4\", \"html_bundle\", \"html_standalone\""
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": {},
                                 "description": "Export format details including type and format-specific options."
                             }
                         },
-                        "required": ["design_id", "format"],
+                        "required": [
+                            "design_id",
+                            "format"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createdesignexportjob": {
@@ -652,15 +800,23 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -673,9 +829,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createdesignimportjob",
             "name": "create-design-import-job",
-            "output": ["ActionOutput_canva_createdesignimportjob"],
-            "scopes": ["design:content:write"],
-            "usedModels": ["ActionInput_canva_createdesignimportjob", "ActionOutput_canva_createdesignimportjob"],
+            "output": [
+                "ActionOutput_canva_createdesignimportjob"
+            ],
+            "scopes": [
+                "design:content:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createdesignimportjob",
+                "ActionOutput_canva_createdesignimportjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -695,7 +858,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["title", "file_content"],
+                        "required": [
+                            "title",
+                            "file_content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createdesignimportjob": {
@@ -711,11 +877,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -728,9 +899,17 @@
             "endpoint": null,
             "input": "ActionInput_canva_createdesignresizejob",
             "name": "create-design-resize-job",
-            "output": ["ActionOutput_canva_createdesignresizejob"],
-            "scopes": ["design:content:read", "design:content:write"],
-            "usedModels": ["ActionInput_canva_createdesignresizejob", "ActionOutput_canva_createdesignresizejob"],
+            "output": [
+                "ActionOutput_canva_createdesignresizejob"
+            ],
+            "scopes": [
+                "design:content:read",
+                "design:content:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createdesignresizejob",
+                "ActionOutput_canva_createdesignresizejob"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -752,10 +931,18 @@
                                             },
                                             "name": {
                                                 "type": "string",
-                                                "enum": ["doc", "email", "presentation", "whiteboard"]
+                                                "enum": [
+                                                    "doc",
+                                                    "email",
+                                                    "presentation",
+                                                    "whiteboard"
+                                                ]
                                             }
                                         },
-                                        "required": ["type", "name"],
+                                        "required": [
+                                            "type",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -776,13 +963,20 @@
                                                 "maximum": 8000
                                             }
                                         },
-                                        "required": ["type", "width", "height"],
+                                        "required": [
+                                            "type",
+                                            "width",
+                                            "height"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
                             }
                         },
-                        "required": ["design_id", "design_type"],
+                        "required": [
+                            "design_id",
+                            "design_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createdesignresizejob": {
@@ -796,7 +990,11 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["in_progress", "success", "failed"]
+                                        "enum": [
+                                            "in_progress",
+                                            "success",
+                                            "failed"
+                                        ]
                                     },
                                     "result": {
                                         "type": "object",
@@ -830,7 +1028,11 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["width", "height", "url"],
+                                                        "required": [
+                                                            "width",
+                                                            "height",
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "urls": {
@@ -843,7 +1045,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["edit_url", "view_url"],
+                                                        "required": [
+                                                            "edit_url",
+                                                            "view_url"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "created_at": {
@@ -862,7 +1067,12 @@
                                                         "maximum": 9007199254740991
                                                     }
                                                 },
-                                                "required": ["id", "urls", "created_at", "updated_at"],
+                                                "required": [
+                                                    "id",
+                                                    "urls",
+                                                    "created_at",
+                                                    "updated_at"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "trial_information": {
@@ -877,11 +1087,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["uses_remaining", "upgrade_url"],
+                                                "required": [
+                                                    "uses_remaining",
+                                                    "upgrade_url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["design"],
+                                        "required": [
+                                            "design"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "error": {
@@ -894,15 +1109,23 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -915,9 +1138,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createdesign",
             "name": "create-design",
-            "output": ["ActionOutput_canva_createdesign"],
-            "scopes": ["design:content:write"],
-            "usedModels": ["ActionInput_canva_createdesign", "ActionOutput_canva_createdesign"],
+            "output": [
+                "ActionOutput_canva_createdesign"
+            ],
+            "scopes": [
+                "design:content:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createdesign",
+                "ActionOutput_canva_createdesign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -935,11 +1165,19 @@
                                             },
                                             "name": {
                                                 "type": "string",
-                                                "enum": ["doc", "email", "presentation", "whiteboard"],
+                                                "enum": [
+                                                    "doc",
+                                                    "email",
+                                                    "presentation",
+                                                    "whiteboard"
+                                                ],
                                                 "description": "The preset design type name. Example: \"presentation\""
                                             }
                                         },
-                                        "required": ["type", "name"],
+                                        "required": [
+                                            "type",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -962,7 +1200,11 @@
                                                 "description": "The height of the design in pixels. Example: 1080"
                                             }
                                         },
-                                        "required": ["type", "width", "height"],
+                                        "required": [
+                                            "type",
+                                            "width",
+                                            "height"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ],
@@ -979,7 +1221,9 @@
                                 "maxLength": 255
                             }
                         },
-                        "required": ["design_type"],
+                        "required": [
+                            "design_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createdesign": {
@@ -1004,7 +1248,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["user_id", "team_id"],
+                                        "required": [
+                                            "user_id",
+                                            "team_id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "thumbnail": {
@@ -1024,7 +1271,11 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["width", "height", "url"],
+                                        "required": [
+                                            "width",
+                                            "height",
+                                            "url"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "urls": {
@@ -1037,7 +1288,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["edit_url", "view_url"],
+                                        "required": [
+                                            "edit_url",
+                                            "view_url"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "created_at": {
@@ -1056,11 +1310,19 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["id", "owner", "urls", "created_at", "updated_at"],
+                                "required": [
+                                    "id",
+                                    "owner",
+                                    "urls",
+                                    "created_at",
+                                    "updated_at"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["design"],
+                        "required": [
+                            "design"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1073,9 +1335,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_canva_createfolder"],
-            "scopes": ["folder:write"],
-            "usedModels": ["ActionInput_canva_createfolder", "ActionOutput_canva_createfolder"],
+            "output": [
+                "ActionOutput_canva_createfolder"
+            ],
+            "scopes": [
+                "folder:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createfolder",
+                "ActionOutput_canva_createfolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1095,7 +1364,10 @@
                                 "description": "The folder ID of the parent folder. Use \"root\" for top-level or \"uploads\" for the Uploads folder. Example: \"FAF2lZtloor\""
                             }
                         },
-                        "required": ["name", "parent_folder_id"],
+                        "required": [
+                            "name",
+                            "parent_folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createfolder": {
@@ -1136,15 +1408,26 @@
                                                 "description": "A URL for retrieving the thumbnail image."
                                             }
                                         },
-                                        "required": ["width", "height", "url"],
+                                        "required": [
+                                            "width",
+                                            "height",
+                                            "url"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "name", "created_at", "updated_at"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "created_at",
+                                    "updated_at"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["folder"],
+                        "required": [
+                            "folder"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1157,9 +1440,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createurlassetuploadjob",
             "name": "create-url-asset-upload-job",
-            "output": ["ActionOutput_canva_createurlassetuploadjob"],
-            "scopes": ["asset:write"],
-            "usedModels": ["ActionInput_canva_createurlassetuploadjob", "ActionOutput_canva_createurlassetuploadjob"],
+            "output": [
+                "ActionOutput_canva_createurlassetuploadjob"
+            ],
+            "scopes": [
+                "asset:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createurlassetuploadjob",
+                "ActionOutput_canva_createurlassetuploadjob"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1177,7 +1467,10 @@
                                 "description": "A name for the asset. Example: \"My Awesome Asset\""
                             }
                         },
-                        "required": ["url", "name"],
+                        "required": [
+                            "url",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createurlassetuploadjob": {
@@ -1202,7 +1495,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "asset": {
@@ -1239,7 +1535,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["user_id", "team_id"],
+                                                "required": [
+                                                    "user_id",
+                                                    "team_id"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "thumbnail": {
@@ -1255,19 +1554,36 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["width", "height", "url"],
+                                                "required": [
+                                                    "width",
+                                                    "height",
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["id", "type", "name", "tags", "created_at", "updated_at", "owner"],
+                                        "required": [
+                                            "id",
+                                            "type",
+                                            "name",
+                                            "tags",
+                                            "created_at",
+                                            "updated_at",
+                                            "owner"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1280,9 +1596,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_createurldesignimportjob",
             "name": "create-url-design-import-job",
-            "output": ["ActionOutput_canva_createurldesignimportjob"],
-            "scopes": ["design:content:write"],
-            "usedModels": ["ActionInput_canva_createurldesignimportjob", "ActionOutput_canva_createurldesignimportjob"],
+            "output": [
+                "ActionOutput_canva_createurldesignimportjob"
+            ],
+            "scopes": [
+                "design:content:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_createurldesignimportjob",
+                "ActionOutput_canva_createurldesignimportjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1308,7 +1631,10 @@
                                 "maxLength": 100
                             }
                         },
-                        "required": ["url", "title"],
+                        "required": [
+                            "url",
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_createurldesignimportjob": {
@@ -1322,7 +1648,11 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["in_progress", "success", "failed"]
+                                        "enum": [
+                                            "in_progress",
+                                            "success",
+                                            "failed"
+                                        ]
                                     },
                                     "result": {
                                         "type": "object",
@@ -1378,7 +1708,9 @@
                                                             "type": "number"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             }
@@ -1395,15 +1727,23 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1416,9 +1756,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_deleteasset",
             "name": "delete-asset",
-            "output": ["ActionOutput_canva_deleteasset"],
-            "scopes": ["asset:write"],
-            "usedModels": ["ActionInput_canva_deleteasset", "ActionOutput_canva_deleteasset"],
+            "output": [
+                "ActionOutput_canva_deleteasset"
+            ],
+            "scopes": [
+                "asset:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_deleteasset",
+                "ActionOutput_canva_deleteasset"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1430,7 +1777,9 @@
                                 "description": "The ID of the asset to delete. Example: \"MAHNAO5uFww\""
                             }
                         },
-                        "required": ["assetId"],
+                        "required": [
+                            "assetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_deleteasset": {
@@ -1443,7 +1792,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["assetId", "deleted"],
+                        "required": [
+                            "assetId",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1456,9 +1808,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_deletefolder",
             "name": "delete-folder",
-            "output": ["ActionOutput_canva_deletefolder"],
-            "scopes": ["folder:write"],
-            "usedModels": ["ActionInput_canva_deletefolder", "ActionOutput_canva_deletefolder"],
+            "output": [
+                "ActionOutput_canva_deletefolder"
+            ],
+            "scopes": [
+                "folder:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_deletefolder",
+                "ActionOutput_canva_deletefolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1470,7 +1829,9 @@
                                 "description": "Folder ID. Example: \"FAHNA0uMKHU\""
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_deletefolder": {
@@ -1480,7 +1841,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1493,9 +1856,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getassetuploadjob",
             "name": "get-asset-upload-job",
-            "output": ["ActionOutput_canva_getassetuploadjob"],
-            "scopes": ["asset:read"],
-            "usedModels": ["ActionInput_canva_getassetuploadjob", "ActionOutput_canva_getassetuploadjob"],
+            "output": [
+                "ActionOutput_canva_getassetuploadjob"
+            ],
+            "scopes": [
+                "asset:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getassetuploadjob",
+                "ActionOutput_canva_getassetuploadjob"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1507,7 +1877,9 @@
                                 "description": "The asset upload job ID. Example: \"e08861ae-3b29-45db-8dc1-1fe0bf7f1cc8\""
                             }
                         },
-                        "required": ["jobId"],
+                        "required": [
+                            "jobId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getassetuploadjob": {
@@ -1521,7 +1893,11 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["failed", "in_progress", "success"]
+                                        "enum": [
+                                            "failed",
+                                            "in_progress",
+                                            "success"
+                                        ]
                                     },
                                     "error": {
                                         "type": "object",
@@ -1533,7 +1909,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "asset": {
@@ -1541,7 +1920,10 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "enum": ["image", "video"]
+                                                "enum": [
+                                                    "image",
+                                                    "video"
+                                                ]
                                             },
                                             "id": {
                                                 "type": "string"
@@ -1571,7 +1953,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["user_id", "team_id"],
+                                                "required": [
+                                                    "user_id",
+                                                    "team_id"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "thumbnail": {
@@ -1587,7 +1972,11 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["width", "height", "url"],
+                                                "required": [
+                                                    "width",
+                                                    "height",
+                                                    "url"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "metadata": {
@@ -1612,7 +2001,9 @@
                                                                 }
                                                             }
                                                         },
-                                                        "required": ["type"],
+                                                        "required": [
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     {
@@ -1632,21 +2023,36 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["type"],
+                                                        "required": [
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 ]
                                             }
                                         },
-                                        "required": ["type", "id", "name", "tags", "created_at", "updated_at", "owner"],
+                                        "required": [
+                                            "type",
+                                            "id",
+                                            "name",
+                                            "tags",
+                                            "created_at",
+                                            "updated_at",
+                                            "owner"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1659,9 +2065,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getasset",
             "name": "get-asset",
-            "output": ["ActionOutput_canva_getasset"],
-            "scopes": ["asset:read"],
-            "usedModels": ["ActionInput_canva_getasset", "ActionOutput_canva_getasset"],
+            "output": [
+                "ActionOutput_canva_getasset"
+            ],
+            "scopes": [
+                "asset:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getasset",
+                "ActionOutput_canva_getasset"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1673,7 +2086,9 @@
                                 "description": "The ID of the asset. Example: \"MAHNAIYJM-w\""
                             }
                         },
-                        "required": ["assetId"],
+                        "required": [
+                            "assetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getasset": {
@@ -1684,7 +2099,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["image", "video"]
+                                "enum": [
+                                    "image",
+                                    "video"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -1711,7 +2129,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["user_id", "team_id"],
+                                "required": [
+                                    "user_id",
+                                    "team_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "thumbnail": {
@@ -1727,7 +2148,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             },
                             "metadata": {
@@ -1752,7 +2177,9 @@
                                                 }
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1772,13 +2199,25 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["type", "width", "height"],
+                                        "required": [
+                                            "type",
+                                            "width",
+                                            "height"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
                             }
                         },
-                        "required": ["id", "type", "name", "tags", "created_at", "updated_at", "owner"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name",
+                            "tags",
+                            "created_at",
+                            "updated_at",
+                            "owner"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1791,9 +2230,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getbrandtemplate",
             "name": "get-brand-template",
-            "output": ["ActionOutput_canva_getbrandtemplate"],
-            "scopes": ["brandtemplate:meta:read"],
-            "usedModels": ["ActionInput_canva_getbrandtemplate", "ActionOutput_canva_getbrandtemplate"],
+            "output": [
+                "ActionOutput_canva_getbrandtemplate"
+            ],
+            "scopes": [
+                "brandtemplate:meta:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getbrandtemplate",
+                "ActionOutput_canva_getbrandtemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1805,7 +2251,9 @@
                                 "description": "The brand template ID. Example: \"DEMzWSwy3BI\""
                             }
                         },
-                        "required": ["brandTemplateId"],
+                        "required": [
+                            "brandTemplateId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getbrandtemplate": {
@@ -1836,7 +2284,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -1846,7 +2298,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "title", "view_url", "create_url", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "title",
+                            "view_url",
+                            "create_url",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1859,9 +2318,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getcurrentusercapabilities",
             "name": "get-current-user-capabilities",
-            "output": ["ActionOutput_canva_getcurrentusercapabilities"],
-            "scopes": ["profile:read"],
-            "usedModels": ["ActionInput_canva_getcurrentusercapabilities", "ActionOutput_canva_getcurrentusercapabilities"],
+            "output": [
+                "ActionOutput_canva_getcurrentusercapabilities"
+            ],
+            "scopes": [
+                "profile:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getcurrentusercapabilities",
+                "ActionOutput_canva_getcurrentusercapabilities"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1880,7 +2346,9 @@
                                 }
                             }
                         },
-                        "required": ["capabilities"],
+                        "required": [
+                            "capabilities"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1893,9 +2361,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getcurrentuserprofile",
             "name": "get-current-user-profile",
-            "output": ["ActionOutput_canva_getcurrentuserprofile"],
-            "scopes": ["profile:read"],
-            "usedModels": ["ActionInput_canva_getcurrentuserprofile", "ActionOutput_canva_getcurrentuserprofile"],
+            "output": [
+                "ActionOutput_canva_getcurrentuserprofile"
+            ],
+            "scopes": [
+                "profile:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getcurrentuserprofile",
+                "ActionOutput_canva_getcurrentuserprofile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1911,7 +2386,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["display_name"],
+                        "required": [
+                            "display_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1924,9 +2401,14 @@
             "endpoint": null,
             "input": "ActionInput_canva_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_canva_getcurrentuser"],
+            "output": [
+                "ActionOutput_canva_getcurrentuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_canva_getcurrentuser", "ActionOutput_canva_getcurrentuser"],
+            "usedModels": [
+                "ActionInput_canva_getcurrentuser",
+                "ActionOutput_canva_getcurrentuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1947,7 +2429,10 @@
                                 "description": "The ID of the user's Canva Team."
                             }
                         },
-                        "required": ["user_id", "team_id"],
+                        "required": [
+                            "user_id",
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1960,9 +2445,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getdesigncommentreply",
             "name": "get-design-comment-reply",
-            "output": ["ActionOutput_canva_getdesigncommentreply"],
-            "scopes": ["comment:read"],
-            "usedModels": ["ActionInput_canva_getdesigncommentreply", "ActionOutput_canva_getdesigncommentreply"],
+            "output": [
+                "ActionOutput_canva_getdesigncommentreply"
+            ],
+            "scopes": [
+                "comment:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getdesigncommentreply",
+                "ActionOutput_canva_getdesigncommentreply"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1982,7 +2474,11 @@
                                 "description": "The ID of the reply. Example: \"KAHNAD33dXY\""
                             }
                         },
-                        "required": ["designId", "threadId", "replyId"],
+                        "required": [
+                            "designId",
+                            "threadId",
+                            "replyId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getdesigncommentreply": {
@@ -2007,7 +2503,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "content": {
@@ -2020,7 +2518,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["plaintext"],
+                                "required": [
+                                    "plaintext"
+                                ],
                                 "additionalProperties": false
                             },
                             "mentions": {
@@ -2041,7 +2541,15 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "design_id", "thread_id", "content", "mentions", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "design_id",
+                            "thread_id",
+                            "content",
+                            "mentions",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2054,9 +2562,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getdesigncommentthread",
             "name": "get-design-comment-thread",
-            "output": ["ActionOutput_canva_getdesigncommentthread"],
-            "scopes": ["comment:read"],
-            "usedModels": ["ActionInput_canva_getdesigncommentthread", "ActionOutput_canva_getdesigncommentthread"],
+            "output": [
+                "ActionOutput_canva_getdesigncommentthread"
+            ],
+            "scopes": [
+                "comment:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getdesigncommentthread",
+                "ActionOutput_canva_getdesigncommentthread"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2072,7 +2587,10 @@
                                 "description": "The ID of the comment thread. Example: \"KeAbiEAjZEj\""
                             }
                         },
-                        "required": ["design_id", "thread_id"],
+                        "required": [
+                            "design_id",
+                            "thread_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getdesigncommentthread": {
@@ -2106,7 +2624,9 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["plaintext"],
+                                                        "required": [
+                                                            "plaintext"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "mentions": {
@@ -2136,7 +2656,9 @@
                                                                     "additionalProperties": false
                                                                 }
                                                             },
-                                                            "required": ["tag"],
+                                                            "required": [
+                                                                "tag"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
@@ -2150,7 +2672,9 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id"],
+                                                        "required": [
+                                                            "id"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "resolver": {
@@ -2163,11 +2687,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id"],
+                                                        "required": [
+                                                            "id"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "content"],
+                                                "required": [
+                                                    "type",
+                                                    "content"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -2184,22 +2713,36 @@
                                                             "properties": {
                                                                 "type": {
                                                                     "type": "string",
-                                                                    "enum": ["add", "delete", "format"]
+                                                                    "enum": [
+                                                                        "add",
+                                                                        "delete",
+                                                                        "format"
+                                                                    ]
                                                                 },
                                                                 "format": {
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["type"],
+                                                            "required": [
+                                                                "type"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
                                                     "status": {
                                                         "type": "string",
-                                                        "enum": ["open", "accepted", "rejected"]
+                                                        "enum": [
+                                                            "open",
+                                                            "accepted",
+                                                            "rejected"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["type", "suggested_edits", "status"],
+                                                "required": [
+                                                    "type",
+                                                    "suggested_edits",
+                                                    "status"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ]
@@ -2214,7 +2757,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "created_at": {
@@ -2224,11 +2769,19 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["id", "design_id", "thread_type", "created_at", "updated_at"],
+                                "required": [
+                                    "id",
+                                    "design_id",
+                                    "thread_type",
+                                    "created_at",
+                                    "updated_at"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["thread"],
+                        "required": [
+                            "thread"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2241,9 +2794,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getdesignexportformats",
             "name": "get-design-export-formats",
-            "output": ["ActionOutput_canva_getdesignexportformats"],
-            "scopes": ["design:content:read"],
-            "usedModels": ["ActionInput_canva_getdesignexportformats", "ActionOutput_canva_getdesignexportformats"],
+            "output": [
+                "ActionOutput_canva_getdesignexportformats"
+            ],
+            "scopes": [
+                "design:content:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getdesignexportformats",
+                "ActionOutput_canva_getdesignexportformats"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2255,7 +2815,9 @@
                                 "description": "Design ID. Example: \"DAHNACmCy_g\""
                             }
                         },
-                        "required": ["designId"],
+                        "required": [
+                            "designId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getdesignexportformats": {
@@ -2268,7 +2830,9 @@
                                 }
                             }
                         },
-                        "required": ["formats"],
+                        "required": [
+                            "formats"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2281,9 +2845,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getdesignexportjob",
             "name": "get-design-export-job",
-            "output": ["ActionOutput_canva_getdesignexportjob"],
-            "scopes": ["design:content:read"],
-            "usedModels": ["ActionInput_canva_getdesignexportjob", "ActionOutput_canva_getdesignexportjob"],
+            "output": [
+                "ActionOutput_canva_getdesignexportjob"
+            ],
+            "scopes": [
+                "design:content:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getdesignexportjob",
+                "ActionOutput_canva_getdesignexportjob"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2295,7 +2866,9 @@
                                 "description": "The export job ID. Example: \"e08861ae-3b29-45db-8dc1-1fe0bf7f1cc8\""
                             }
                         },
-                        "required": ["exportId"],
+                        "required": [
+                            "exportId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getdesignexportjob": {
@@ -2309,7 +2882,11 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["failed", "in_progress", "success"]
+                                        "enum": [
+                                            "failed",
+                                            "in_progress",
+                                            "success"
+                                        ]
                                     },
                                     "urls": {
                                         "type": "array",
@@ -2322,21 +2899,33 @@
                                         "properties": {
                                             "code": {
                                                 "type": "string",
-                                                "enum": ["license_required", "approval_required", "internal_failure"]
+                                                "enum": [
+                                                    "license_required",
+                                                    "approval_required",
+                                                    "internal_failure"
+                                                ]
                                             },
                                             "message": {
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2349,9 +2938,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getdesignimportjob",
             "name": "get-design-import-job",
-            "output": ["ActionOutput_canva_getdesignimportjob"],
-            "scopes": ["design:content:write"],
-            "usedModels": ["ActionInput_canva_getdesignimportjob", "ActionOutput_canva_getdesignimportjob"],
+            "output": [
+                "ActionOutput_canva_getdesignimportjob"
+            ],
+            "scopes": [
+                "design:content:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getdesignimportjob",
+                "ActionOutput_canva_getdesignimportjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2363,7 +2959,9 @@
                                 "description": "The ID of the design import job. Example: \"e80335c7-afa5-4608-a815-4865c11d0025\""
                             }
                         },
-                        "required": ["jobId"],
+                        "required": [
+                            "jobId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getdesignimportjob": {
@@ -2377,7 +2975,11 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["failed", "in_progress", "success"]
+                                        "enum": [
+                                            "failed",
+                                            "in_progress",
+                                            "success"
+                                        ]
                                     },
                                     "result": {
                                         "type": "object",
@@ -2409,7 +3011,11 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["width", "height", "url"],
+                                                            "required": [
+                                                                "width",
+                                                                "height",
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "urls": {
@@ -2422,7 +3028,10 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["edit_url", "view_url"],
+                                                            "required": [
+                                                                "edit_url",
+                                                                "view_url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "created_at": {
@@ -2435,7 +3044,9 @@
                                                             "type": "number"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             }
@@ -2452,15 +3063,23 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2473,9 +3092,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getdesignpages",
             "name": "get-design-pages",
-            "output": ["ActionOutput_canva_getdesignpages"],
-            "scopes": ["design:content:read"],
-            "usedModels": ["ActionInput_canva_getdesignpages", "ActionOutput_canva_getdesignpages"],
+            "output": [
+                "ActionOutput_canva_getdesignpages"
+            ],
+            "scopes": [
+                "design:content:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getdesignpages",
+                "ActionOutput_canva_getdesignpages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2499,7 +3125,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["designId"],
+                        "required": [
+                            "designId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getdesignpages": {
@@ -2529,7 +3157,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["width", "height"],
+                                            "required": [
+                                                "width",
+                                                "height"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "thumbnail": {
@@ -2545,7 +3176,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["width", "height", "url"],
+                                            "required": [
+                                                "width",
+                                                "height",
+                                                "url"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2553,7 +3188,9 @@
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2566,9 +3203,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getdesign",
             "name": "get-design",
-            "output": ["ActionOutput_canva_getdesign"],
-            "scopes": ["design:meta:read"],
-            "usedModels": ["ActionInput_canva_getdesign", "ActionOutput_canva_getdesign"],
+            "output": [
+                "ActionOutput_canva_getdesign"
+            ],
+            "scopes": [
+                "design:meta:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getdesign",
+                "ActionOutput_canva_getdesign"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2580,7 +3224,9 @@
                                 "description": "The design ID. Example: \"DAHNACmCy_g\""
                             }
                         },
-                        "required": ["designId"],
+                        "required": [
+                            "designId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getdesign": {
@@ -2602,7 +3248,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["user_id", "team_id"],
+                                "required": [
+                                    "user_id",
+                                    "team_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "thumbnail": {
@@ -2618,7 +3267,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             },
                             "urls": {
@@ -2631,7 +3284,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["edit_url", "view_url"],
+                                "required": [
+                                    "edit_url",
+                                    "view_url"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -2644,7 +3300,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "owner", "urls", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "owner",
+                            "urls",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2657,9 +3319,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_getfolder",
             "name": "get-folder",
-            "output": ["ActionOutput_canva_getfolder"],
-            "scopes": ["folder:read"],
-            "usedModels": ["ActionInput_canva_getfolder", "ActionOutput_canva_getfolder"],
+            "output": [
+                "ActionOutput_canva_getfolder"
+            ],
+            "scopes": [
+                "folder:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_getfolder",
+                "ActionOutput_canva_getfolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2671,7 +3340,9 @@
                                 "description": "The folder ID. Example: \"root\" or \"FAHNA0uMKHU\""
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_getfolder": {
@@ -2702,11 +3373,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2719,9 +3399,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_geturlassetuploadjob",
             "name": "get-url-asset-upload-job",
-            "output": ["ActionOutput_canva_geturlassetuploadjob"],
-            "scopes": ["asset:read"],
-            "usedModels": ["ActionInput_canva_geturlassetuploadjob", "ActionOutput_canva_geturlassetuploadjob"],
+            "output": [
+                "ActionOutput_canva_geturlassetuploadjob"
+            ],
+            "scopes": [
+                "asset:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_geturlassetuploadjob",
+                "ActionOutput_canva_geturlassetuploadjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2733,7 +3420,9 @@
                                 "description": "The asset upload job ID. Example: \"e08861ae-3b29-45db-8dc1-1fe0bf7f1cc8\""
                             }
                         },
-                        "required": ["job_id"],
+                        "required": [
+                            "job_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_geturlassetuploadjob": {
@@ -2744,20 +3433,31 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["in_progress", "success", "failed"]
+                                "enum": [
+                                    "in_progress",
+                                    "success",
+                                    "failed"
+                                ]
                             },
                             "error": {
                                 "type": "object",
                                 "properties": {
                                     "code": {
                                         "type": "string",
-                                        "enum": ["file_too_big", "import_failed", "fetch_failed"]
+                                        "enum": [
+                                            "file_too_big",
+                                            "import_failed",
+                                            "fetch_failed"
+                                        ]
                                     },
                                     "message": {
                                         "type": "string"
                                     }
                                 },
-                                "required": ["code", "message"],
+                                "required": [
+                                    "code",
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             },
                             "asset": {
@@ -2768,7 +3468,10 @@
                                     },
                                     "type": {
                                         "type": "string",
-                                        "enum": ["image", "video"]
+                                        "enum": [
+                                            "image",
+                                            "video"
+                                        ]
                                     },
                                     "name": {
                                         "type": "string"
@@ -2810,7 +3513,11 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["width", "height", "url"],
+                                        "required": [
+                                            "width",
+                                            "height",
+                                            "url"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "metadata": {
@@ -2835,7 +3542,9 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["type"],
+                                                "required": [
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -2855,17 +3564,30 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["type"],
+                                                "required": [
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ]
                                     }
                                 },
-                                "required": ["id", "type", "name", "tags", "created_at", "updated_at", "owner"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "name",
+                                    "tags",
+                                    "created_at",
+                                    "updated_at",
+                                    "owner"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2878,9 +3600,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_geturldesignimportjob",
             "name": "get-url-design-import-job",
-            "output": ["ActionOutput_canva_geturldesignimportjob"],
-            "scopes": ["design:content:write"],
-            "usedModels": ["ActionInput_canva_geturldesignimportjob", "ActionOutput_canva_geturldesignimportjob"],
+            "output": [
+                "ActionOutput_canva_geturldesignimportjob"
+            ],
+            "scopes": [
+                "design:content:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_geturldesignimportjob",
+                "ActionOutput_canva_geturldesignimportjob"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2892,7 +3621,9 @@
                                 "description": "The ID of the URL import job. Example: \"e08861ae-3b29-45db-8dc1-1fe0bf7f1cc8\""
                             }
                         },
-                        "required": ["jobId"],
+                        "required": [
+                            "jobId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_geturldesignimportjob": {
@@ -2906,7 +3637,11 @@
                                     },
                                     "status": {
                                         "type": "string",
-                                        "enum": ["failed", "in_progress", "success"]
+                                        "enum": [
+                                            "failed",
+                                            "in_progress",
+                                            "success"
+                                        ]
                                     },
                                     "result": {
                                         "type": "object",
@@ -2942,7 +3677,11 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["width", "height", "url"],
+                                                            "required": [
+                                                                "width",
+                                                                "height",
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "urls": {
@@ -2955,7 +3694,10 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["edit_url", "view_url"],
+                                                            "required": [
+                                                                "edit_url",
+                                                                "view_url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "created_at": {
@@ -2974,12 +3716,19 @@
                                                             "maximum": 9007199254740991
                                                         }
                                                     },
-                                                    "required": ["id", "urls", "created_at", "updated_at"],
+                                                    "required": [
+                                                        "id",
+                                                        "urls",
+                                                        "created_at",
+                                                        "updated_at"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             }
                                         },
-                                        "required": ["designs"],
+                                        "required": [
+                                            "designs"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "error": {
@@ -2992,15 +3741,23 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["code", "message"],
+                                        "required": [
+                                            "code",
+                                            "message"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["job"],
+                        "required": [
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3013,9 +3770,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_listbrandtemplates",
             "name": "list-brand-templates",
-            "output": ["ActionOutput_canva_listbrandtemplates"],
-            "scopes": ["brandtemplate:meta:read"],
-            "usedModels": ["ActionInput_canva_listbrandtemplates", "ActionOutput_canva_listbrandtemplates"],
+            "output": [
+                "ActionOutput_canva_listbrandtemplates"
+            ],
+            "scopes": [
+                "brandtemplate:meta:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_listbrandtemplates",
+                "ActionOutput_canva_listbrandtemplates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3039,17 +3803,30 @@
                             "ownership": {
                                 "description": "Filter by ownership.",
                                 "type": "string",
-                                "enum": ["any", "owned", "shared"]
+                                "enum": [
+                                    "any",
+                                    "owned",
+                                    "shared"
+                                ]
                             },
                             "sort_by": {
                                 "description": "Sort order.",
                                 "type": "string",
-                                "enum": ["relevance", "modified_descending", "modified_ascending", "title_descending", "title_ascending"]
+                                "enum": [
+                                    "relevance",
+                                    "modified_descending",
+                                    "modified_ascending",
+                                    "title_descending",
+                                    "title_ascending"
+                                ]
                             },
                             "dataset": {
                                 "description": "Filter by dataset definitions.",
                                 "type": "string",
-                                "enum": ["any", "non_empty"]
+                                "enum": [
+                                    "any",
+                                    "non_empty"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3087,7 +3864,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["width", "height", "url"],
+                                            "required": [
+                                                "width",
+                                                "height",
+                                                "url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "created_at": {
@@ -3097,7 +3878,14 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "title", "view_url", "create_url", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "view_url",
+                                        "create_url",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3106,7 +3894,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3119,9 +3909,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_listdesigncommentreplies",
             "name": "list-design-comment-replies",
-            "output": ["ActionOutput_canva_listdesigncommentreplies"],
-            "scopes": ["comment:read"],
-            "usedModels": ["ActionInput_canva_listdesigncommentreplies", "ActionOutput_canva_listdesigncommentreplies"],
+            "output": [
+                "ActionOutput_canva_listdesigncommentreplies"
+            ],
+            "scopes": [
+                "comment:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_listdesigncommentreplies",
+                "ActionOutput_canva_listdesigncommentreplies"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3147,7 +3944,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["designId", "threadId"],
+                        "required": [
+                            "designId",
+                            "threadId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_listdesigncommentreplies": {
@@ -3177,7 +3977,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "content": {
@@ -3190,7 +3992,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["plaintext"],
+                                            "required": [
+                                                "plaintext"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "mentions": {
@@ -3217,11 +4021,17 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["user_id", "team_id"],
+                                                        "required": [
+                                                            "user_id",
+                                                            "team_id"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["tag", "user"],
+                                                "required": [
+                                                    "tag",
+                                                    "user"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -3232,7 +4042,15 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "design_id", "thread_id", "content", "mentions", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "design_id",
+                                        "thread_id",
+                                        "content",
+                                        "mentions",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3240,7 +4058,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3253,9 +4073,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_listdesigns",
             "name": "list-designs",
-            "output": ["ActionOutput_canva_listdesigns"],
-            "scopes": ["design:meta:read"],
-            "usedModels": ["ActionInput_canva_listdesigns", "ActionOutput_canva_listdesigns"],
+            "output": [
+                "ActionOutput_canva_listdesigns"
+            ],
+            "scopes": [
+                "design:meta:read"
+            ],
+            "usedModels": [
+                "ActionInput_canva_listdesigns",
+                "ActionOutput_canva_listdesigns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3269,7 +4096,11 @@
                             "ownership": {
                                 "description": "Filter by ownership: any, owned, or shared.",
                                 "type": "string",
-                                "enum": ["any", "owned", "shared"]
+                                "enum": [
+                                    "any",
+                                    "owned",
+                                    "shared"
+                                ]
                             },
                             "continuation": {
                                 "description": "Pagination cursor from the previous response. Example: \"RkFGMgXlsVTDbMd:MR3L0QjiaUzycIAjx0yMyuNiV0OildoiOwL0x32G4NjNu4FwtAQNxowUQNMMYN\"",
@@ -3278,7 +4109,13 @@
                             "sort_by": {
                                 "description": "Sort order for results.",
                                 "type": "string",
-                                "enum": ["relevance", "modified_descending", "modified_ascending", "title_descending", "title_ascending"]
+                                "enum": [
+                                    "relevance",
+                                    "modified_descending",
+                                    "modified_ascending",
+                                    "title_descending",
+                                    "title_ascending"
+                                ]
                             },
                             "limit": {
                                 "description": "Number of designs to return (1-100). Default: 25.",
@@ -3313,7 +4150,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["user_id", "team_id"],
+                                            "required": [
+                                                "user_id",
+                                                "team_id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "thumbnail": {
@@ -3329,7 +4169,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["width", "height", "url"],
+                                            "required": [
+                                                "width",
+                                                "height",
+                                                "url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "urls": {
@@ -3342,7 +4186,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["edit_url", "view_url"],
+                                            "required": [
+                                                "edit_url",
+                                                "view_url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "created_at": {
@@ -3361,7 +4208,13 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "owner", "urls", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "owner",
+                                        "urls",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3369,7 +4222,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3382,9 +4237,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_movefolderitem",
             "name": "move-folder-item",
-            "output": ["ActionOutput_canva_movefolderitem"],
-            "scopes": ["folder:write"],
-            "usedModels": ["ActionInput_canva_movefolderitem", "ActionOutput_canva_movefolderitem"],
+            "output": [
+                "ActionOutput_canva_movefolderitem"
+            ],
+            "scopes": [
+                "folder:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_movefolderitem",
+                "ActionOutput_canva_movefolderitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3400,7 +4262,10 @@
                                 "description": "The ID of the destination folder. Example: \"FAHNA0uMKHU\""
                             }
                         },
-                        "required": ["item_id", "to_folder_id"],
+                        "required": [
+                            "item_id",
+                            "to_folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_movefolderitem": {
@@ -3410,7 +4275,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3423,9 +4290,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_updateasset",
             "name": "update-asset",
-            "output": ["ActionOutput_canva_updateasset"],
-            "scopes": ["asset:write"],
-            "usedModels": ["ActionInput_canva_updateasset", "ActionOutput_canva_updateasset"],
+            "output": [
+                "ActionOutput_canva_updateasset"
+            ],
+            "scopes": [
+                "asset:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_updateasset",
+                "ActionOutput_canva_updateasset"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3451,7 +4325,9 @@
                                 }
                             }
                         },
-                        "required": ["assetId"],
+                        "required": [
+                            "assetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_updateasset": {
@@ -3471,7 +4347,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["image", "video"]
+                                "enum": [
+                                    "image",
+                                    "video"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -3489,7 +4368,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["user_id", "team_id"],
+                                "required": [
+                                    "user_id",
+                                    "team_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "import_status": {
@@ -3514,7 +4396,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             },
                             "metadata": {
@@ -3539,11 +4425,21 @@
                                         }
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "tags", "type", "created_at", "updated_at", "owner"],
+                        "required": [
+                            "id",
+                            "name",
+                            "tags",
+                            "type",
+                            "created_at",
+                            "updated_at",
+                            "owner"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3556,9 +4452,16 @@
             "endpoint": null,
             "input": "ActionInput_canva_updatefolder",
             "name": "update-folder",
-            "output": ["ActionOutput_canva_updatefolder"],
-            "scopes": ["folder:write"],
-            "usedModels": ["ActionInput_canva_updatefolder", "ActionOutput_canva_updatefolder"],
+            "output": [
+                "ActionOutput_canva_updatefolder"
+            ],
+            "scopes": [
+                "folder:write"
+            ],
+            "usedModels": [
+                "ActionInput_canva_updatefolder",
+                "ActionOutput_canva_updatefolder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3574,7 +4477,10 @@
                                 "description": "The new folder name. Example: My awesome holiday"
                             }
                         },
-                        "required": ["folderId", "name"],
+                        "required": [
+                            "folderId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_canva_updatefolder": {
@@ -3605,11 +4511,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3625,12 +4540,18 @@
             "endpoints": [],
             "input": null,
             "name": "brand-templates",
-            "output": ["BrandTemplate"],
+            "output": [
+                "BrandTemplate"
+            ],
             "runs": "every hour",
-            "scopes": ["brandtemplate:meta:read"],
+            "scopes": [
+                "brandtemplate:meta:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BrandTemplate"],
+            "usedModels": [
+                "BrandTemplate"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3663,7 +4584,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -3673,12 +4598,21 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "title", "view_url", "create_url", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "title",
+                            "view_url",
+                            "create_url",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3687,12 +4621,19 @@
             "endpoints": [],
             "input": "SyncMetadata_canva_designpages",
             "name": "design-pages",
-            "output": ["DesignPage"],
+            "output": [
+                "DesignPage"
+            ],
             "runs": "every hour",
-            "scopes": ["design:content:read"],
+            "scopes": [
+                "design:content:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DesignPage", "SyncMetadata_canva_designpages"],
+            "usedModels": [
+                "DesignPage",
+                "SyncMetadata_canva_designpages"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3722,7 +4663,10 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["width", "height"],
+                                "required": [
+                                    "width",
+                                    "height"
+                                ],
                                 "additionalProperties": false
                             },
                             "thumbnail": {
@@ -3738,11 +4682,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["width", "height", "url"],
+                                "required": [
+                                    "width",
+                                    "height",
+                                    "url"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "design_id", "page_number"],
+                        "required": [
+                            "id",
+                            "design_id",
+                            "page_number"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_canva_designpages": {
@@ -3756,12 +4708,16 @@
                                 }
                             }
                         },
-                        "required": ["design_ids"],
+                        "required": [
+                            "design_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3770,12 +4726,18 @@
             "endpoints": [],
             "input": null,
             "name": "designs",
-            "output": ["Design"],
+            "output": [
+                "Design"
+            ],
             "runs": "every hour",
-            "scopes": ["design:meta:read"],
+            "scopes": [
+                "design:meta:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Design"],
+            "usedModels": [
+                "Design"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3848,12 +4810,18 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3862,12 +4830,19 @@
             "endpoints": [],
             "input": "SyncMetadata_canva_folderitems",
             "name": "folder-items",
-            "output": ["FolderItem"],
+            "output": [
+                "FolderItem"
+            ],
             "runs": "every hour",
-            "scopes": ["folder:read"],
+            "scopes": [
+                "folder:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FolderItem", "SyncMetadata_canva_folderitems"],
+            "usedModels": [
+                "FolderItem",
+                "SyncMetadata_canva_folderitems"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3907,7 +4882,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "type", "folder_id"],
+                        "required": [
+                            "id",
+                            "type",
+                            "folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_canva_folderitems": {
@@ -3921,12 +4900,16 @@
                                 }
                             }
                         },
-                        "required": ["folder_ids"],
+                        "required": [
+                            "folder_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

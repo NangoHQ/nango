@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createbrand",
             "name": "create-brand",
-            "output": ["ActionOutput_bigcommerce_createbrand"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_createbrand", "ActionOutput_bigcommerce_createbrand"],
+            "output": [
+                "ActionOutput_bigcommerce_createbrand"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createbrand",
+                "ActionOutput_bigcommerce_createbrand"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -57,7 +64,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createbrand": {
@@ -102,7 +111,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -115,9 +127,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createcategory",
             "name": "create-category",
-            "output": ["ActionOutput_bigcommerce_createcategory"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_createcategory", "ActionOutput_bigcommerce_createcategory"],
+            "output": [
+                "ActionOutput_bigcommerce_createcategory"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createcategory",
+                "ActionOutput_bigcommerce_createcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -204,7 +223,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["parent_id", "name"],
+                        "required": [
+                            "parent_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createcategory": {
@@ -271,7 +293,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "parent_id", "name"],
+                        "required": [
+                            "id",
+                            "parent_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -284,9 +310,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createcoupon",
             "name": "create-coupon",
-            "output": ["ActionOutput_bigcommerce_createcoupon"],
-            "scopes": ["store_v2_marketing"],
-            "usedModels": ["ActionInput_bigcommerce_createcoupon", "ActionOutput_bigcommerce_createcoupon"],
+            "output": [
+                "ActionOutput_bigcommerce_createcoupon"
+            ],
+            "scopes": [
+                "store_v2_marketing"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createcoupon",
+                "ActionOutput_bigcommerce_createcoupon"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -299,7 +332,14 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["per_item_discount", "percentage_discount", "per_total_discount", "shipping_discount", "free_shipping", "promotion"],
+                                "enum": [
+                                    "per_item_discount",
+                                    "percentage_discount",
+                                    "per_total_discount",
+                                    "shipping_discount",
+                                    "free_shipping",
+                                    "promotion"
+                                ],
                                 "description": "Discount type."
                             },
                             "amount": {
@@ -315,7 +355,10 @@
                                 "properties": {
                                     "entity": {
                                         "type": "string",
-                                        "enum": ["products", "categories"],
+                                        "enum": [
+                                            "products",
+                                            "categories"
+                                        ],
                                         "description": "What the discount applies to."
                                     },
                                     "ids": {
@@ -326,7 +369,10 @@
                                         "description": "IDs of the products or categories."
                                     }
                                 },
-                                "required": ["entity", "ids"],
+                                "required": [
+                                    "entity",
+                                    "ids"
+                                ],
                                 "additionalProperties": false
                             },
                             "min_purchase": {
@@ -350,7 +396,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name", "type", "amount", "code", "applies_to"],
+                        "required": [
+                            "name",
+                            "type",
+                            "amount",
+                            "code",
+                            "applies_to"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createcoupon": {
@@ -403,7 +455,10 @@
                                         "description": "Entity IDs."
                                     }
                                 },
-                                "required": ["entity", "ids"],
+                                "required": [
+                                    "entity",
+                                    "ids"
+                                ],
                                 "additionalProperties": false,
                                 "description": "What the discount applies to."
                             },
@@ -441,7 +496,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "type", "amount", "code", "applies_to"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type",
+                            "amount",
+                            "code",
+                            "applies_to"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -454,9 +516,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createcustomer",
             "name": "create-customer",
-            "output": ["ActionOutput_bigcommerce_createcustomer"],
-            "scopes": ["store_v2_customers"],
-            "usedModels": ["ActionInput_bigcommerce_createcustomer", "ActionOutput_bigcommerce_createcustomer"],
+            "output": [
+                "ActionOutput_bigcommerce_createcustomer"
+            ],
+            "scopes": [
+                "store_v2_customers"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createcustomer",
+                "ActionOutput_bigcommerce_createcustomer"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -542,7 +611,11 @@
                                 }
                             }
                         },
-                        "required": ["email", "first_name", "last_name"],
+                        "required": [
+                            "email",
+                            "first_name",
+                            "last_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createcustomer": {
@@ -595,7 +668,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "first_name", "last_name"],
+                        "required": [
+                            "id",
+                            "email",
+                            "first_name",
+                            "last_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -608,9 +686,17 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createorder",
             "name": "create-order",
-            "output": ["ActionOutput_bigcommerce_createorder"],
-            "scopes": ["store_v2_orders", "store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_createorder", "ActionOutput_bigcommerce_createorder"],
+            "output": [
+                "ActionOutput_bigcommerce_createorder"
+            ],
+            "scopes": [
+                "store_v2_orders",
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createorder",
+                "ActionOutput_bigcommerce_createorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -648,7 +734,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["first_name", "last_name", "street_1", "city", "state", "zip", "country", "country_iso2", "email"],
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "street_1",
+                                    "city",
+                                    "state",
+                                    "zip",
+                                    "country",
+                                    "country_iso2",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "products": {
@@ -682,17 +778,26 @@
                                                         "maximum": 9007199254740991
                                                     }
                                                 },
-                                                "required": ["id", "value"],
+                                                "required": [
+                                                    "id",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["product_id", "quantity"],
+                                    "required": [
+                                        "product_id",
+                                        "quantity"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["billing_address", "products"],
+                        "required": [
+                            "billing_address",
+                            "products"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createorder": {
@@ -747,7 +852,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["first_name", "last_name", "street_1", "city", "state", "zip", "country", "country_iso2", "email"],
+                                "required": [
+                                    "first_name",
+                                    "last_name",
+                                    "street_1",
+                                    "city",
+                                    "state",
+                                    "zip",
+                                    "country",
+                                    "country_iso2",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "date_created": {
@@ -757,7 +872,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "customer_id", "status", "status_id", "total_ex_tax", "total_inc_tax"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "status",
+                            "status_id",
+                            "total_ex_tax",
+                            "total_inc_tax"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -770,9 +892,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createpricelist",
             "name": "create-price-list",
-            "output": ["ActionOutput_bigcommerce_createpricelist"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_createpricelist", "ActionOutput_bigcommerce_createpricelist"],
+            "output": [
+                "ActionOutput_bigcommerce_createpricelist"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createpricelist",
+                "ActionOutput_bigcommerce_createpricelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -788,7 +917,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createpricelist": {
@@ -810,7 +941,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -823,9 +956,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createproductvariant",
             "name": "create-product-variant",
-            "output": ["ActionOutput_bigcommerce_createproductvariant"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_createproductvariant", "ActionOutput_bigcommerce_createproductvariant"],
+            "output": [
+                "ActionOutput_bigcommerce_createproductvariant"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createproductvariant",
+                "ActionOutput_bigcommerce_createproductvariant"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -862,13 +1002,21 @@
                                             "description": "Option ID. Example: 151"
                                         }
                                     },
-                                    "required": ["id", "label", "option_id"],
+                                    "required": [
+                                        "id",
+                                        "label",
+                                        "option_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of option value objects defining this variant."
                             }
                         },
-                        "required": ["product_id", "sku", "option_values"],
+                        "required": [
+                            "product_id",
+                            "sku",
+                            "option_values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createproductvariant": {
@@ -884,37 +1032,67 @@
                                 "type": "string"
                             },
                             "sku_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "cost_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "sale_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "retail_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "weight": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "width": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "height": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "depth": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_free_shipping": {
                                 "type": "boolean"
                             },
                             "fixed_cost_shipping_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "purchasing_disabled": {
                                 "type": "boolean"
@@ -926,22 +1104,40 @@
                                 "type": "string"
                             },
                             "upc": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mpn": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "gtin": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "inventory_level": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "inventory_warning_level": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "bin_picking_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "option_values": {
                                 "type": "array",
@@ -961,7 +1157,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "option_id", "label"],
+                                    "required": [
+                                        "id",
+                                        "option_id",
+                                        "label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -972,7 +1172,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "product_id", "sku"],
+                        "required": [
+                            "id",
+                            "product_id",
+                            "sku"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -985,9 +1189,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createproduct",
             "name": "create-product",
-            "output": ["ActionOutput_bigcommerce_createproduct"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_createproduct", "ActionOutput_bigcommerce_createproduct"],
+            "output": [
+                "ActionOutput_bigcommerce_createproduct"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createproduct",
+                "ActionOutput_bigcommerce_createproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1000,7 +1211,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["physical", "digital"],
+                                "enum": [
+                                    "physical",
+                                    "digital"
+                                ],
                                 "description": "Product type. Example: \"physical\""
                             },
                             "weight": {
@@ -1039,7 +1253,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "type", "weight", "price", "categories"],
+                        "required": [
+                            "name",
+                            "type",
+                            "weight",
+                            "price",
+                            "categories"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createproduct": {
@@ -1088,7 +1308,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1101,9 +1325,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createsubscriber",
             "name": "create-subscriber",
-            "output": ["ActionOutput_bigcommerce_createsubscriber"],
-            "scopes": ["store_v2_customers"],
-            "usedModels": ["ActionInput_bigcommerce_createsubscriber", "ActionOutput_bigcommerce_createsubscriber"],
+            "output": [
+                "ActionOutput_bigcommerce_createsubscriber"
+            ],
+            "scopes": [
+                "store_v2_customers"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createsubscriber",
+                "ActionOutput_bigcommerce_createsubscriber"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1127,10 +1358,16 @@
                             "source": {
                                 "description": "The source of the subscriber. Example: \"storefront\"",
                                 "type": "string",
-                                "enum": ["storefront", "order", "custom"]
+                                "enum": [
+                                    "storefront",
+                                    "order",
+                                    "custom"
+                                ]
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createsubscriber": {
@@ -1152,7 +1389,10 @@
                                 "type": "string"
                             },
                             "order_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "channel_id": {
                                 "type": "number"
@@ -1182,9 +1422,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_createwishlist",
             "name": "create-wishlist",
-            "output": ["ActionOutput_bigcommerce_createwishlist"],
-            "scopes": ["store_v2_customers"],
-            "usedModels": ["ActionInput_bigcommerce_createwishlist", "ActionOutput_bigcommerce_createwishlist"],
+            "output": [
+                "ActionOutput_bigcommerce_createwishlist"
+            ],
+            "scopes": [
+                "store_v2_customers"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_createwishlist",
+                "ActionOutput_bigcommerce_createwishlist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1218,12 +1465,18 @@
                                             "description": "Variant ID. Example: 1"
                                         }
                                     },
-                                    "required": ["product_id", "variant_id"],
+                                    "required": [
+                                        "product_id",
+                                        "variant_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name", "customer_id"],
+                        "required": [
+                            "name",
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_createwishlist": {
@@ -1259,12 +1512,23 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "product_id", "variant_id"],
+                                    "required": [
+                                        "id",
+                                        "product_id",
+                                        "variant_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "customer_id", "name", "is_public", "token", "items"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "name",
+                            "is_public",
+                            "token",
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1277,9 +1541,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_deletebrand",
             "name": "delete-brand",
-            "output": ["ActionOutput_bigcommerce_deletebrand"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_deletebrand", "ActionOutput_bigcommerce_deletebrand"],
+            "output": [
+                "ActionOutput_bigcommerce_deletebrand"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_deletebrand",
+                "ActionOutput_bigcommerce_deletebrand"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1291,7 +1562,9 @@
                                 "description": "Brand ID to delete. Example: 1"
                             }
                         },
-                        "required": ["brand_id"],
+                        "required": [
+                            "brand_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_deletebrand": {
@@ -1304,7 +1577,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "brand_id"],
+                        "required": [
+                            "success",
+                            "brand_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1320,9 +1596,16 @@
             },
             "input": "ActionInput_bigcommerce_deletecategory",
             "name": "delete-category",
-            "output": ["ActionOutput_bigcommerce_deletecategory"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_deletecategory", "ActionOutput_bigcommerce_deletecategory"],
+            "output": [
+                "ActionOutput_bigcommerce_deletecategory"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_deletecategory",
+                "ActionOutput_bigcommerce_deletecategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1334,7 +1617,9 @@
                                 "description": "Category ID. Example: 23"
                             }
                         },
-                        "required": ["category_id"],
+                        "required": [
+                            "category_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_deletecategory": {
@@ -1344,7 +1629,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1360,9 +1647,16 @@
             },
             "input": "ActionInput_bigcommerce_deletecoupon",
             "name": "delete-coupon",
-            "output": ["ActionOutput_bigcommerce_deletecoupon"],
-            "scopes": ["store_v2_marketing"],
-            "usedModels": ["ActionInput_bigcommerce_deletecoupon", "ActionOutput_bigcommerce_deletecoupon"],
+            "output": [
+                "ActionOutput_bigcommerce_deletecoupon"
+            ],
+            "scopes": [
+                "store_v2_marketing"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_deletecoupon",
+                "ActionOutput_bigcommerce_deletecoupon"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1374,7 +1668,9 @@
                                 "description": "Coupon ID. Example: 1"
                             }
                         },
-                        "required": ["coupon_id"],
+                        "required": [
+                            "coupon_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_deletecoupon": {
@@ -1387,7 +1683,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "coupon_id"],
+                        "required": [
+                            "success",
+                            "coupon_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1400,9 +1699,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_deletecustomer",
             "name": "delete-customer",
-            "output": ["ActionOutput_bigcommerce_deletecustomer"],
-            "scopes": ["store_v2_customers"],
-            "usedModels": ["ActionInput_bigcommerce_deletecustomer", "ActionOutput_bigcommerce_deletecustomer"],
+            "output": [
+                "ActionOutput_bigcommerce_deletecustomer"
+            ],
+            "scopes": [
+                "store_v2_customers"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_deletecustomer",
+                "ActionOutput_bigcommerce_deletecustomer"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1414,7 +1720,9 @@
                                 "description": "Customer ID. Example: 1"
                             }
                         },
-                        "required": ["customer_id"],
+                        "required": [
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_deletecustomer": {
@@ -1427,7 +1735,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "customer_id"],
+                        "required": [
+                            "success",
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1440,9 +1751,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_deleteproductvariant",
             "name": "delete-product-variant",
-            "output": ["ActionOutput_bigcommerce_deleteproductvariant"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_deleteproductvariant", "ActionOutput_bigcommerce_deleteproductvariant"],
+            "output": [
+                "ActionOutput_bigcommerce_deleteproductvariant"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_deleteproductvariant",
+                "ActionOutput_bigcommerce_deleteproductvariant"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1458,7 +1776,10 @@
                                 "description": "The ID of the variant to delete. Example: 456"
                             }
                         },
-                        "required": ["product_id", "variant_id"],
+                        "required": [
+                            "product_id",
+                            "variant_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_deleteproductvariant": {
@@ -1468,7 +1789,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1481,9 +1804,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_deleteproduct",
             "name": "delete-product",
-            "output": ["ActionOutput_bigcommerce_deleteproduct"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_deleteproduct", "ActionOutput_bigcommerce_deleteproduct"],
+            "output": [
+                "ActionOutput_bigcommerce_deleteproduct"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_deleteproduct",
+                "ActionOutput_bigcommerce_deleteproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1495,7 +1825,9 @@
                                 "description": "Product ID to delete. Example: 123"
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_deleteproduct": {
@@ -1509,7 +1841,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1525,9 +1860,16 @@
             },
             "input": "ActionInput_bigcommerce_deletesubscriber",
             "name": "delete-subscriber",
-            "output": ["ActionOutput_bigcommerce_deletesubscriber"],
-            "scopes": ["store_v2_customers"],
-            "usedModels": ["ActionInput_bigcommerce_deletesubscriber", "ActionOutput_bigcommerce_deletesubscriber"],
+            "output": [
+                "ActionOutput_bigcommerce_deletesubscriber"
+            ],
+            "scopes": [
+                "store_v2_customers"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_deletesubscriber",
+                "ActionOutput_bigcommerce_deletesubscriber"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1539,7 +1881,9 @@
                                 "description": "The ID of the subscriber to delete. Example: 1"
                             }
                         },
-                        "required": ["subscriber_id"],
+                        "required": [
+                            "subscriber_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_deletesubscriber": {
@@ -1549,7 +1893,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1562,9 +1908,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_getbrand",
             "name": "get-brand",
-            "output": ["ActionOutput_bigcommerce_getbrand"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_getbrand", "ActionOutput_bigcommerce_getbrand"],
+            "output": [
+                "ActionOutput_bigcommerce_getbrand"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_getbrand",
+                "ActionOutput_bigcommerce_getbrand"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1576,7 +1929,9 @@
                                 "description": "The ID of the brand to retrieve. Example: 35"
                             }
                         },
-                        "required": ["brand_id"],
+                        "required": [
+                            "brand_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_getbrand": {
@@ -1616,11 +1971,17 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["url", "is_customized"],
+                                "required": [
+                                    "url",
+                                    "is_customized"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1633,9 +1994,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_getcategory",
             "name": "get-category",
-            "output": ["ActionOutput_bigcommerce_getcategory"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_getcategory", "ActionOutput_bigcommerce_getcategory"],
+            "output": [
+                "ActionOutput_bigcommerce_getcategory"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_getcategory",
+                "ActionOutput_bigcommerce_getcategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1647,7 +2015,9 @@
                                 "description": "Category ID. Example: 12"
                             }
                         },
-                        "required": ["category_id"],
+                        "required": [
+                            "category_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_getcategory": {
@@ -1711,7 +2081,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1724,9 +2096,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_getcoupon",
             "name": "get-coupon",
-            "output": ["ActionOutput_bigcommerce_getcoupon"],
-            "scopes": ["store_v2_marketing_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_getcoupon", "ActionOutput_bigcommerce_getcoupon"],
+            "output": [
+                "ActionOutput_bigcommerce_getcoupon"
+            ],
+            "scopes": [
+                "store_v2_marketing_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_getcoupon",
+                "ActionOutput_bigcommerce_getcoupon"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1738,7 +2117,9 @@
                                 "description": "Coupon ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_getcoupon": {
@@ -1807,7 +2188,16 @@
                                 }
                             }
                         },
-                        "required": ["id", "name", "type", "amount", "code", "applies_to", "num_uses", "date_created"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type",
+                            "amount",
+                            "code",
+                            "applies_to",
+                            "num_uses",
+                            "date_created"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1820,9 +2210,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_getorderproducts",
             "name": "get-order-products",
-            "output": ["ActionOutput_bigcommerce_getorderproducts"],
-            "scopes": ["store_v2_orders_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_getorderproducts", "ActionOutput_bigcommerce_getorderproducts"],
+            "output": [
+                "ActionOutput_bigcommerce_getorderproducts"
+            ],
+            "scopes": [
+                "store_v2_orders_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_getorderproducts",
+                "ActionOutput_bigcommerce_getorderproducts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1842,7 +2239,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_getorderproducts": {
@@ -1914,7 +2313,10 @@
                                             "type": "string"
                                         },
                                         "weight": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         },
                                         "width": {
                                             "type": "string"
@@ -1944,10 +2346,16 @@
                                             "type": "number"
                                         },
                                         "wrapping_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "base_wrapping_cost": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "wrapping_cost_ex_tax": {
                                             "type": "string"
@@ -1965,10 +2373,16 @@
                                             "type": "number"
                                         },
                                         "event_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "event_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "fixed_shipping_cost": {
                                             "type": "string"
@@ -1980,10 +2394,16 @@
                                             "type": "string"
                                         },
                                         "option_set_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "parent_order_product_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "is_bundled_product": {
                                             "type": "boolean"
@@ -1992,7 +2412,10 @@
                                             "type": "string"
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "brand": {
                                             "type": "string"
@@ -2012,7 +2435,10 @@
                                                         "type": "string"
                                                     },
                                                     "code": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "target": {
                                                         "type": "string"
@@ -2100,13 +2526,18 @@
                                             "type": "string"
                                         },
                                         "gift_certificate_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "discounted_total_inc_tax": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2115,7 +2546,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2131,9 +2564,16 @@
             },
             "input": "ActionInput_bigcommerce_getordershippingaddresses",
             "name": "get-order-shipping-addresses",
-            "output": ["ActionOutput_bigcommerce_getordershippingaddresses"],
-            "scopes": ["store_v2_orders_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_getordershippingaddresses", "ActionOutput_bigcommerce_getordershippingaddresses"],
+            "output": [
+                "ActionOutput_bigcommerce_getordershippingaddresses"
+            ],
+            "scopes": [
+                "store_v2_orders_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_getordershippingaddresses",
+                "ActionOutput_bigcommerce_getordershippingaddresses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2145,7 +2585,9 @@
                                 "description": "BigCommerce order ID. Example: 100"
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_getordershippingaddresses": {
@@ -2202,12 +2644,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "order_id"],
+                                    "required": [
+                                        "id",
+                                        "order_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["shipping_addresses"],
+                        "required": [
+                            "shipping_addresses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2220,9 +2667,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_getorder",
             "name": "get-order",
-            "output": ["ActionOutput_bigcommerce_getorder"],
-            "scopes": ["store_v2_orders_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_getorder", "ActionOutput_bigcommerce_getorder"],
+            "output": [
+                "ActionOutput_bigcommerce_getorder"
+            ],
+            "scopes": [
+                "store_v2_orders_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_getorder",
+                "ActionOutput_bigcommerce_getorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2234,7 +2688,9 @@
                                 "description": "Order ID. Example: 100"
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_getorder": {
@@ -2277,7 +2733,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2290,9 +2748,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_getproduct",
             "name": "get-product",
-            "output": ["ActionOutput_bigcommerce_getproduct"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_getproduct", "ActionOutput_bigcommerce_getproduct"],
+            "output": [
+                "ActionOutput_bigcommerce_getproduct"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_getproduct",
+                "ActionOutput_bigcommerce_getproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2304,7 +2769,9 @@
                                 "description": "Product ID. Example: 77"
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_getproduct": {
@@ -2320,46 +2787,88 @@
                                 "type": "string"
                             },
                             "sku": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "weight": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "width": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "depth": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "height": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "cost_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "retail_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "sale_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "map_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "tax_class_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "product_tax_code": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "calculated_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "categories": {
                                 "type": "array",
@@ -2368,34 +2877,61 @@
                                 }
                             },
                             "brand_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "option_set_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "option_set_display": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "inventory_level": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "inventory_warning_level": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "inventory_tracking": {
                                 "type": "string"
                             },
                             "reviews_rating_sum": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "reviews_count": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "total_sold": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "fixed_cost_shipping_price": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_free_shipping": {
                                 "type": "boolean"
@@ -2413,34 +2949,61 @@
                                 }
                             },
                             "warranty": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "bin_picking_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "layout_file": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "upc": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mpn": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "gtin": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_last_imported": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "search_keywords": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "availability": {
                                 "type": "string"
                             },
                             "availability_description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "gift_wrapping_options_type": {
                                 "type": "string"
@@ -2452,7 +3015,10 @@
                                 }
                             },
                             "sort_order": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "condition": {
                                 "type": "string"
@@ -2461,13 +3027,22 @@
                                 "type": "boolean"
                             },
                             "order_quantity_minimum": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "order_quantity_maximum": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "page_title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "meta_keywords": {
                                 "anyOf": [
@@ -2483,7 +3058,10 @@
                                 ]
                             },
                             "meta_description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_created": {
                                 "type": "string"
@@ -2492,13 +3070,22 @@
                                 "type": "string"
                             },
                             "view_count": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "preorder_release_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "preorder_message": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_preorder_only": {
                                 "type": "boolean"
@@ -2507,7 +3094,10 @@
                                 "type": "boolean"
                             },
                             "price_hidden_label": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "custom_url": {
                                 "anyOf": [
@@ -2521,7 +3111,10 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["url", "is_customized"],
+                                        "required": [
+                                            "url",
+                                            "is_customized"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2530,28 +3123,52 @@
                                 ]
                             },
                             "base_variant_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "open_graph_type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "open_graph_title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "open_graph_description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "open_graph_use_meta_description": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "open_graph_use_product_name": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "open_graph_use_image": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2567,9 +3184,16 @@
             },
             "input": "ActionInput_bigcommerce_listbrands",
             "name": "list-brands",
-            "output": ["ActionOutput_bigcommerce_listbrands"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listbrands", "ActionOutput_bigcommerce_listbrands"],
+            "output": [
+                "ActionOutput_bigcommerce_listbrands"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listbrands",
+                "ActionOutput_bigcommerce_listbrands"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2629,11 +3253,17 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["url", "is_customized"],
+                                            "required": [
+                                                "url",
+                                                "is_customized"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2641,7 +3271,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2657,9 +3289,16 @@
             },
             "input": "ActionInput_bigcommerce_listcategories",
             "name": "list-categories",
-            "output": ["ActionOutput_bigcommerce_listcategories"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listcategories", "ActionOutput_bigcommerce_listcategories"],
+            "output": [
+                "ActionOutput_bigcommerce_listcategories"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listcategories",
+                "ActionOutput_bigcommerce_listcategories"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2745,7 +3384,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2753,7 +3394,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2766,9 +3409,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_listchannellistings",
             "name": "list-channel-listings",
-            "output": ["ActionOutput_bigcommerce_listchannellistings"],
-            "scopes": ["store_channel_listings_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listchannellistings", "ActionOutput_bigcommerce_listchannellistings"],
+            "output": [
+                "ActionOutput_bigcommerce_listchannellistings"
+            ],
+            "scopes": [
+                "store_channel_listings_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listchannellistings",
+                "ActionOutput_bigcommerce_listchannellistings"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2799,7 +3449,9 @@
                                 }
                             }
                         },
-                        "required": ["channel_id"],
+                        "required": [
+                            "channel_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_listchannellistings": {
@@ -2870,12 +3522,18 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["variant_id"],
+                                                "required": [
+                                                    "variant_id"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         }
                                     },
-                                    "required": ["channel_id", "listing_id", "product_id"],
+                                    "required": [
+                                        "channel_id",
+                                        "listing_id",
+                                        "product_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2883,7 +3541,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["listings"],
+                        "required": [
+                            "listings"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2899,9 +3559,18 @@
             },
             "input": "ActionInput_bigcommerce_listchannels",
             "name": "list-channels",
-            "output": ["ActionOutput_bigcommerce_listchannels"],
-            "scopes": ["store_channel_listings_read_only", "store_channel_settings_read_only", "store_sites_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listchannels", "ActionOutput_bigcommerce_listchannels"],
+            "output": [
+                "ActionOutput_bigcommerce_listchannels"
+            ],
+            "scopes": [
+                "store_channel_listings_read_only",
+                "store_channel_settings_read_only",
+                "store_sites_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listchannels",
+                "ActionOutput_bigcommerce_listchannels"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2989,7 +3658,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2997,7 +3669,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3013,9 +3687,16 @@
             },
             "input": "ActionInput_bigcommerce_listcoupons",
             "name": "list-coupons",
-            "output": ["ActionOutput_bigcommerce_listcoupons"],
-            "scopes": ["store_v2_marketing_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listcoupons", "ActionOutput_bigcommerce_listcoupons"],
+            "output": [
+                "ActionOutput_bigcommerce_listcoupons"
+            ],
+            "scopes": [
+                "store_v2_marketing_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listcoupons",
+                "ActionOutput_bigcommerce_listcoupons"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3082,7 +3763,10 @@
                                                             }
                                                         }
                                                     },
-                                                    "required": ["entity", "ids"],
+                                                    "required": [
+                                                        "entity",
+                                                        "ids"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3142,7 +3826,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "type", "amount", "enabled", "code"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "amount",
+                                        "enabled",
+                                        "code"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3150,7 +3841,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3166,9 +3859,16 @@
             },
             "input": "ActionInput_bigcommerce_listcustomeraddresses",
             "name": "list-customer-addresses",
-            "output": ["ActionOutput_bigcommerce_listcustomeraddresses"],
-            "scopes": ["store_v2_customers_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listcustomeraddresses", "ActionOutput_bigcommerce_listcustomeraddresses"],
+            "output": [
+                "ActionOutput_bigcommerce_listcustomeraddresses"
+            ],
+            "scopes": [
+                "store_v2_customers_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listcustomeraddresses",
+                "ActionOutput_bigcommerce_listcustomeraddresses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3188,7 +3888,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["customer_id"],
+                        "required": [
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_listcustomeraddresses": {
@@ -3207,7 +3909,10 @@
                                         },
                                         "address_type": {
                                             "type": "string",
-                                            "enum": ["residential", "commercial"]
+                                            "enum": [
+                                                "residential",
+                                                "commercial"
+                                            ]
                                         },
                                         "city": {
                                             "type": "string"
@@ -3270,7 +3975,9 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["name"],
+                                                "required": [
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
@@ -3293,7 +4000,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3309,9 +4018,16 @@
             },
             "input": "ActionInput_bigcommerce_listcustomers",
             "name": "list-customers",
-            "output": ["ActionOutput_bigcommerce_listcustomers"],
-            "scopes": ["store_v2_customers_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listcustomers", "ActionOutput_bigcommerce_listcustomers"],
+            "output": [
+                "ActionOutput_bigcommerce_listcustomers"
+            ],
+            "scopes": [
+                "store_v2_customers_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listcustomers",
+                "ActionOutput_bigcommerce_listcustomers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3348,40 +4064,76 @@
                                             "description": "Customer ID. Example: 1"
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "company": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_created": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_modified": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "address_count": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "customer_group_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "tax_exempt_category": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "accepts_product_review_abandoned_cart_emails": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "store_credit": {
                                             "anyOf": [
@@ -3389,10 +4141,16 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "amount": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "currency": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -3416,7 +4174,10 @@
                                             ]
                                         },
                                         "origin_channel_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "attributes": {
                                             "anyOf": [
@@ -3428,10 +4189,16 @@
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "id": {
-                                                                        "type": ["number", "null"]
+                                                                        "type": [
+                                                                            "number",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "name": {
-                                                                        "type": ["string", "null"]
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "value": {}
                                                                 },
@@ -3449,7 +4216,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3458,7 +4227,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3474,9 +4245,16 @@
             },
             "input": "ActionInput_bigcommerce_listorderstatuses",
             "name": "list-order-statuses",
-            "output": ["ActionOutput_bigcommerce_listorderstatuses"],
-            "scopes": ["store_v2_orders_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listorderstatuses", "ActionOutput_bigcommerce_listorderstatuses"],
+            "output": [
+                "ActionOutput_bigcommerce_listorderstatuses"
+            ],
+            "scopes": [
+                "store_v2_orders_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listorderstatuses",
+                "ActionOutput_bigcommerce_listorderstatuses"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3506,12 +4284,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "system_label"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "system_label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["statuses"],
+                        "required": [
+                            "statuses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3527,9 +4311,16 @@
             },
             "input": "ActionInput_bigcommerce_listorders",
             "name": "list-orders",
-            "output": ["ActionOutput_bigcommerce_listorders"],
-            "scopes": ["store_v2_orders_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listorders", "ActionOutput_bigcommerce_listorders"],
+            "output": [
+                "ActionOutput_bigcommerce_listorders"
+            ],
+            "scopes": [
+                "store_v2_orders_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listorders",
+                "ActionOutput_bigcommerce_listorders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3781,7 +4572,9 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name"],
+                                                        "required": [
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
@@ -3813,7 +4606,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["url", "resource"],
+                                            "required": [
+                                                "url",
+                                                "resource"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "shipping_addresses": {
@@ -3826,7 +4622,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["url", "resource"],
+                                            "required": [
+                                                "url",
+                                                "resource"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "coupons": {
@@ -3839,7 +4638,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["url", "resource"],
+                                            "required": [
+                                                "url",
+                                                "resource"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "consignments": {
@@ -3852,11 +4654,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["url", "resource"],
+                                            "required": [
+                                                "url",
+                                                "resource"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3864,7 +4671,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3880,9 +4689,16 @@
             },
             "input": "ActionInput_bigcommerce_listpricelists",
             "name": "list-price-lists",
-            "output": ["ActionOutput_bigcommerce_listpricelists"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listpricelists", "ActionOutput_bigcommerce_listpricelists"],
+            "output": [
+                "ActionOutput_bigcommerce_listpricelists"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listpricelists",
+                "ActionOutput_bigcommerce_listpricelists"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3924,7 +4740,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3932,7 +4751,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3948,9 +4769,16 @@
             },
             "input": "ActionInput_bigcommerce_listproductvariants",
             "name": "list-product-variants",
-            "output": ["ActionOutput_bigcommerce_listproductvariants"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listproductvariants", "ActionOutput_bigcommerce_listproductvariants"],
+            "output": [
+                "ActionOutput_bigcommerce_listproductvariants"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listproductvariants",
+                "ActionOutput_bigcommerce_listproductvariants"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3974,7 +4802,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_listproductvariants": {
@@ -4090,12 +4920,21 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "label", "option_id", "option_display_name"],
+                                                "required": [
+                                                    "id",
+                                                    "label",
+                                                    "option_id",
+                                                    "option_display_name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "product_id", "sku"],
+                                    "required": [
+                                        "id",
+                                        "product_id",
+                                        "sku"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4103,7 +4942,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["variants"],
+                        "required": [
+                            "variants"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4119,9 +4960,16 @@
             },
             "input": "ActionInput_bigcommerce_listproducts",
             "name": "list-products",
-            "output": ["ActionOutput_bigcommerce_listproducts"],
-            "scopes": ["store_v2_products_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listproducts", "ActionOutput_bigcommerce_listproducts"],
+            "output": [
+                "ActionOutput_bigcommerce_listproducts"
+            ],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listproducts",
+                "ActionOutput_bigcommerce_listproducts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4154,7 +5002,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4162,7 +5013,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4178,9 +5031,16 @@
             },
             "input": "ActionInput_bigcommerce_listsubscribers",
             "name": "list-subscribers",
-            "output": ["ActionOutput_bigcommerce_listsubscribers"],
-            "scopes": ["store_v2_customers_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listsubscribers", "ActionOutput_bigcommerce_listsubscribers"],
+            "output": [
+                "ActionOutput_bigcommerce_listsubscribers"
+            ],
+            "scopes": [
+                "store_v2_customers_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listsubscribers",
+                "ActionOutput_bigcommerce_listsubscribers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4226,10 +5086,16 @@
                                             "type": "string"
                                         },
                                         "order_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "channel_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "date_created": {
                                             "type": "string"
@@ -4238,7 +5104,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "email"],
+                                    "required": [
+                                        "id",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4246,7 +5115,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4262,9 +5133,16 @@
             },
             "input": "ActionInput_bigcommerce_listwishlists",
             "name": "list-wishlists",
-            "output": ["ActionOutput_bigcommerce_listwishlists"],
-            "scopes": ["store_v2_customers_read_only"],
-            "usedModels": ["ActionInput_bigcommerce_listwishlists", "ActionOutput_bigcommerce_listwishlists"],
+            "output": [
+                "ActionOutput_bigcommerce_listwishlists"
+            ],
+            "scopes": [
+                "store_v2_customers_read_only"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_listwishlists",
+                "ActionOutput_bigcommerce_listwishlists"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4322,12 +5200,20 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["id", "product_id"],
+                                                "required": [
+                                                    "id",
+                                                    "product_id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "customer_id", "name", "is_public"],
+                                    "required": [
+                                        "id",
+                                        "customer_id",
+                                        "name",
+                                        "is_public"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4335,7 +5221,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4348,9 +5236,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_updatebrand",
             "name": "update-brand",
-            "output": ["ActionOutput_bigcommerce_updatebrand"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_updatebrand", "ActionOutput_bigcommerce_updatebrand"],
+            "output": [
+                "ActionOutput_bigcommerce_updatebrand"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updatebrand",
+                "ActionOutput_bigcommerce_updatebrand"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4402,7 +5297,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["brand_id"],
+                        "required": [
+                            "brand_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updatebrand": {
@@ -4445,7 +5342,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4461,9 +5361,16 @@
             },
             "input": "ActionInput_bigcommerce_updatecategory",
             "name": "update-category",
-            "output": ["ActionOutput_bigcommerce_updatecategory"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_updatecategory", "ActionOutput_bigcommerce_updatecategory"],
+            "output": [
+                "ActionOutput_bigcommerce_updatecategory"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updatecategory",
+                "ActionOutput_bigcommerce_updatecategory"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4540,7 +5447,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["category_id"],
+                        "required": [
+                            "category_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updatecategory": {
@@ -4604,7 +5513,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4620,9 +5531,16 @@
             },
             "input": "ActionInput_bigcommerce_updatecoupon",
             "name": "update-coupon",
-            "output": ["ActionOutput_bigcommerce_updatecoupon"],
-            "scopes": ["store_v2_marketing"],
-            "usedModels": ["ActionInput_bigcommerce_updatecoupon", "ActionOutput_bigcommerce_updatecoupon"],
+            "output": [
+                "ActionOutput_bigcommerce_updatecoupon"
+            ],
+            "scopes": [
+                "store_v2_marketing"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updatecoupon",
+                "ActionOutput_bigcommerce_updatecoupon"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4640,7 +5558,14 @@
                             "type": {
                                 "description": "Type of coupon. Example: \"per_total_discount\"",
                                 "type": "string",
-                                "enum": ["per_item_discount", "per_total_discount", "shipping_discount", "free_shipping", "percentage_discount", "promotion"]
+                                "enum": [
+                                    "per_item_discount",
+                                    "per_total_discount",
+                                    "shipping_discount",
+                                    "free_shipping",
+                                    "percentage_discount",
+                                    "promotion"
+                                ]
                             },
                             "amount": {
                                 "description": "Discount amount or percentage. Example: \"5.0000\"",
@@ -4656,7 +5581,10 @@
                                 "properties": {
                                     "entity": {
                                         "type": "string",
-                                        "enum": ["products", "categories"],
+                                        "enum": [
+                                            "products",
+                                            "categories"
+                                        ],
                                         "description": "What the discount applies to. Example: \"categories\""
                                     },
                                     "ids": {
@@ -4667,7 +5595,10 @@
                                         "description": "Array of product or category IDs. Example: [0]"
                                     }
                                 },
-                                "required": ["entity", "ids"],
+                                "required": [
+                                    "entity",
+                                    "ids"
+                                ],
                                 "additionalProperties": false
                             },
                             "min_purchase": {
@@ -4706,7 +5637,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updatecoupon": {
@@ -4750,7 +5683,10 @@
                                 "properties": {
                                     "entity": {
                                         "type": "string",
-                                        "enum": ["products", "categories"],
+                                        "enum": [
+                                            "products",
+                                            "categories"
+                                        ],
                                         "description": "What the discount applies to. Example: \"categories\""
                                     },
                                     "ids": {
@@ -4761,7 +5697,10 @@
                                         "description": "Array of product or category IDs. Example: [0]"
                                     }
                                 },
-                                "required": ["entity", "ids"],
+                                "required": [
+                                    "entity",
+                                    "ids"
+                                ],
                                 "additionalProperties": false
                             },
                             "num_uses": {
@@ -4811,7 +5750,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4824,9 +5765,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_updatecustomer",
             "name": "update-customer",
-            "output": ["ActionOutput_bigcommerce_updatecustomer"],
-            "scopes": ["store_v2_customers"],
-            "usedModels": ["ActionInput_bigcommerce_updatecustomer", "ActionOutput_bigcommerce_updatecustomer"],
+            "output": [
+                "ActionOutput_bigcommerce_updatecustomer"
+            ],
+            "scopes": [
+                "store_v2_customers"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updatecustomer",
+                "ActionOutput_bigcommerce_updatecustomer"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4923,7 +5871,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updatecustomer": {
@@ -5035,7 +5985,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5048,9 +6000,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_updateorder",
             "name": "update-order",
-            "output": ["ActionOutput_bigcommerce_updateorder"],
-            "scopes": ["store_v2_orders"],
-            "usedModels": ["ActionInput_bigcommerce_updateorder", "ActionOutput_bigcommerce_updateorder"],
+            "output": [
+                "ActionOutput_bigcommerce_updateorder"
+            ],
+            "scopes": [
+                "store_v2_orders"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updateorder",
+                "ActionOutput_bigcommerce_updateorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5067,14 +6026,22 @@
                             },
                             "staff_notes": {
                                 "description": "Staff notes to set on the order.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "customer_message": {
                                 "description": "Customer message to set on the order.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["order_id"],
+                        "required": [
+                            "order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updateorder": {
@@ -5102,7 +6069,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5118,9 +6087,16 @@
             },
             "input": "ActionInput_bigcommerce_updateproductvariant",
             "name": "update-product-variant",
-            "output": ["ActionOutput_bigcommerce_updateproductvariant"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_updateproductvariant", "ActionOutput_bigcommerce_updateproductvariant"],
+            "output": [
+                "ActionOutput_bigcommerce_updateproductvariant"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updateproductvariant",
+                "ActionOutput_bigcommerce_updateproductvariant"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5137,35 +6113,59 @@
                             },
                             "cost_price": {
                                 "description": "Cost price of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "price": {
                                 "description": "Base price of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "sale_price": {
                                 "description": "Sale price of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "retail_price": {
                                 "description": "Retail price of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "weight": {
                                 "description": "Weight of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "width": {
                                 "description": "Width of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "height": {
                                 "description": "Height of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "depth": {
                                 "description": "Depth of the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_free_shipping": {
                                 "description": "Whether the variant has free shipping.",
@@ -5173,7 +6173,10 @@
                             },
                             "fixed_cost_shipping_price": {
                                 "description": "Fixed shipping cost for the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "purchasing_disabled": {
                                 "description": "If true, this variant will not be purchasable.",
@@ -5185,7 +6188,10 @@
                             },
                             "upc": {
                                 "description": "UPC code for the variant.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "image_url": {
                                 "description": "Publicly available image URL.",
@@ -5193,30 +6199,48 @@
                             },
                             "inventory_level": {
                                 "description": "Inventory level for the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "inventory_warning_level": {
                                 "description": "Inventory warning level for the variant.",
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "bin_picking_number": {
                                 "description": "Warehouse location identifier.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mpn": {
                                 "description": "Manufacturer Part Number.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "gtin": {
                                 "description": "Global Trade Item Number.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sku": {
                                 "description": "SKU for the variant.",
                                 "type": "string"
                             }
                         },
-                        "required": ["product_id", "variant_id"],
+                        "required": [
+                            "product_id",
+                            "variant_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updateproductvariant": {
@@ -5314,12 +6338,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "option_id", "option_display_name", "label"],
+                                    "required": [
+                                        "id",
+                                        "option_id",
+                                        "option_display_name",
+                                        "label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "product_id"],
+                        "required": [
+                            "id",
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5335,9 +6367,16 @@
             },
             "input": "ActionInput_bigcommerce_updateproduct",
             "name": "update-product",
-            "output": ["ActionOutput_bigcommerce_updateproduct"],
-            "scopes": ["store_v2_products"],
-            "usedModels": ["ActionInput_bigcommerce_updateproduct", "ActionOutput_bigcommerce_updateproduct"],
+            "output": [
+                "ActionOutput_bigcommerce_updateproduct"
+            ],
+            "scopes": [
+                "store_v2_products"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updateproduct",
+                "ActionOutput_bigcommerce_updateproduct"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5404,7 +6443,11 @@
                             },
                             "inventory_tracking": {
                                 "type": "string",
-                                "enum": ["none", "product", "variant"]
+                                "enum": [
+                                    "none",
+                                    "product",
+                                    "variant"
+                                ]
                             },
                             "is_visible": {
                                 "type": "boolean"
@@ -5417,11 +6460,19 @@
                             },
                             "availability": {
                                 "type": "string",
-                                "enum": ["available", "disabled", "preorder"]
+                                "enum": [
+                                    "available",
+                                    "disabled",
+                                    "preorder"
+                                ]
                             },
                             "condition": {
                                 "type": "string",
-                                "enum": ["New", "Used", "Refurbished"]
+                                "enum": [
+                                    "New",
+                                    "Used",
+                                    "Refurbished"
+                                ]
                             },
                             "is_condition_shown": {
                                 "type": "boolean"
@@ -5481,7 +6532,10 @@
                                 "type": "number"
                             },
                             "preorder_release_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "preorder_message": {
                                 "type": "string"
@@ -5497,7 +6551,17 @@
                             },
                             "open_graph_type": {
                                 "type": "string",
-                                "enum": ["product", "album", "book", "drink", "food", "game", "movie", "song", "tv_show"]
+                                "enum": [
+                                    "product",
+                                    "album",
+                                    "book",
+                                    "drink",
+                                    "food",
+                                    "game",
+                                    "movie",
+                                    "song",
+                                    "tv_show"
+                                ]
                             },
                             "open_graph_title": {
                                 "type": "string"
@@ -5516,7 +6580,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["physical", "digital"]
+                                "enum": [
+                                    "physical",
+                                    "digital"
+                                ]
                             },
                             "custom_url": {
                                 "type": "object",
@@ -5541,7 +6608,11 @@
                             },
                             "gift_wrapping_options_type": {
                                 "type": "string",
-                                "enum": ["any", "none", "list"]
+                                "enum": [
+                                    "any",
+                                    "none",
+                                    "list"
+                                ]
                             },
                             "gift_wrapping_options_list": {
                                 "type": "array",
@@ -5564,7 +6635,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "value"],
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5584,13 +6658,25 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["price", "percent", "fixed"]
+                                            "enum": [
+                                                "price",
+                                                "percent",
+                                                "fixed"
+                                            ]
                                         },
                                         "amount": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         }
                                     },
-                                    "required": ["quantity_min", "quantity_max", "type", "amount"],
+                                    "required": [
+                                        "quantity_min",
+                                        "quantity_max",
+                                        "type",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5641,7 +6727,9 @@
                                 }
                             }
                         },
-                        "required": ["product_id"],
+                        "required": [
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updateproduct": {
@@ -5778,7 +6866,10 @@
                                 "type": "number"
                             },
                             "preorder_release_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "preorder_message": {
                                 "type": "string"
@@ -5857,7 +6948,10 @@
                                 "type": "number"
                             },
                             "base_variant_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "primary_image": {
                                 "type": "object",
@@ -5877,7 +6971,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -5890,9 +6986,16 @@
             "endpoint": null,
             "input": "ActionInput_bigcommerce_updatesubscriber",
             "name": "update-subscriber",
-            "output": ["ActionOutput_bigcommerce_updatesubscriber"],
-            "scopes": ["store_v2_customers"],
-            "usedModels": ["ActionInput_bigcommerce_updatesubscriber", "ActionOutput_bigcommerce_updatesubscriber"],
+            "output": [
+                "ActionOutput_bigcommerce_updatesubscriber"
+            ],
+            "scopes": [
+                "store_v2_customers"
+            ],
+            "usedModels": [
+                "ActionInput_bigcommerce_updatesubscriber",
+                "ActionOutput_bigcommerce_updatesubscriber"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5918,7 +7021,11 @@
                             "source": {
                                 "description": "The source of the subscriber.",
                                 "type": "string",
-                                "enum": ["storefront", "order", "custom"]
+                                "enum": [
+                                    "storefront",
+                                    "order",
+                                    "custom"
+                                ]
                             },
                             "order_id": {
                                 "description": "The ID of the source order, if source was order.",
@@ -5933,11 +7040,16 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["marketing_newsletter", "abandoned_cart"]
+                                    "enum": [
+                                        "marketing_newsletter",
+                                        "abandoned_cart"
+                                    ]
                                 }
                             }
                         },
-                        "required": ["subscriber_id"],
+                        "required": [
+                            "subscriber_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bigcommerce_updatesubscriber": {
@@ -5977,7 +7089,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5998,12 +7112,18 @@
             ],
             "input": null,
             "name": "brands",
-            "output": ["Brand"],
+            "output": [
+                "Brand"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_products_read_only"],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Brand"],
+            "usedModels": [
+                "Brand"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6048,12 +7168,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6067,12 +7191,18 @@
             ],
             "input": null,
             "name": "categories",
-            "output": ["Category"],
+            "output": [
+                "Category"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_products_read_only"],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Category"],
+            "usedModels": [
+                "Category"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6141,12 +7271,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6160,12 +7294,19 @@
             ],
             "input": "SyncMetadata_bigcommerce_channellistings",
             "name": "channel-listings",
-            "output": ["ChannelListing"],
+            "output": [
+                "ChannelListing"
+            ],
             "runs": "every hour",
-            "scopes": ["store_channel_listings_read_only"],
+            "scopes": [
+                "store_channel_listings_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChannelListing", "SyncMetadata_bigcommerce_channellistings"],
+            "usedModels": [
+                "ChannelListing",
+                "SyncMetadata_bigcommerce_channellistings"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6240,7 +7381,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "channel_id", "listing_id", "product_id"],
+                        "required": [
+                            "id",
+                            "channel_id",
+                            "listing_id",
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_bigcommerce_channellistings": {
@@ -6258,7 +7404,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6267,12 +7415,20 @@
             "endpoints": [],
             "input": null,
             "name": "channels",
-            "output": ["Channel"],
+            "output": [
+                "Channel"
+            ],
             "runs": "every hour",
-            "scopes": ["store_channel_listings_read_only", "store_channel_settings_read_only", "store_sites_read_only"],
+            "scopes": [
+                "store_channel_listings_read_only",
+                "store_channel_settings_read_only",
+                "store_sites_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Channel"],
+            "usedModels": [
+                "Channel"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6317,12 +7473,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6336,12 +7497,18 @@
             ],
             "input": null,
             "name": "coupons",
-            "output": ["Coupon"],
+            "output": [
+                "Coupon"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_marketing_read_only"],
+            "scopes": [
+                "store_v2_marketing_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Coupon"],
+            "usedModels": [
+                "Coupon"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6386,7 +7553,10 @@
                                         }
                                     }
                                 },
-                                "required": ["entity", "ids"],
+                                "required": [
+                                    "entity",
+                                    "ids"
+                                ],
                                 "additionalProperties": false
                             },
                             "num_uses": {
@@ -6411,12 +7581,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6425,12 +7599,18 @@
             "endpoints": [],
             "input": null,
             "name": "customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_customers_read_only"],
+            "scopes": [
+                "store_v2_customers_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer"],
+            "usedModels": [
+                "Customer"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6484,12 +7664,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6503,12 +7687,18 @@
             ],
             "input": null,
             "name": "orders",
-            "output": ["Order"],
+            "output": [
+                "Order"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_orders_read_only"],
+            "scopes": [
+                "store_v2_orders_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Order"],
+            "usedModels": [
+                "Order"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6550,12 +7740,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6569,12 +7763,18 @@
             ],
             "input": null,
             "name": "products",
-            "output": ["Product"],
+            "output": [
+                "Product"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_products_read_only"],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Product"],
+            "usedModels": [
+                "Product"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6679,12 +7879,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6698,12 +7902,18 @@
             ],
             "input": null,
             "name": "subscribers",
-            "output": ["Subscriber"],
+            "output": [
+                "Subscriber"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_customers_read_only"],
+            "scopes": [
+                "store_v2_customers_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subscriber"],
+            "usedModels": [
+                "Subscriber"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6745,12 +7955,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "date_modified"],
+                        "required": [
+                            "id",
+                            "email",
+                            "date_modified"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6764,12 +7980,18 @@
             ],
             "input": null,
             "name": "variants",
-            "output": ["Variant"],
+            "output": [
+                "Variant"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_products_read_only"],
+            "scopes": [
+                "store_v2_products_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Variant"],
+            "usedModels": [
+                "Variant"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6855,12 +8077,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "product_id"],
+                        "required": [
+                            "id",
+                            "product_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6874,12 +8101,18 @@
             ],
             "input": null,
             "name": "wishlists",
-            "output": ["Wishlist"],
+            "output": [
+                "Wishlist"
+            ],
             "runs": "every hour",
-            "scopes": ["store_v2_customers_read_only"],
+            "scopes": [
+                "store_v2_customers_read_only"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Wishlist"],
+            "usedModels": [
+                "Wishlist"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6917,17 +8150,28 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "product_id"],
+                                    "required": [
+                                        "id",
+                                        "product_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "customer_id", "name", "is_public", "token"],
+                        "required": [
+                            "id",
+                            "customer_id",
+                            "name",
+                            "is_public",
+                            "token"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

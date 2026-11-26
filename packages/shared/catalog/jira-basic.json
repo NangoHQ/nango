@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_jira_basic_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_jira_basic_createuser"],
+            "output": [
+                "ActionOutput_jira_basic_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_jira_basic_createuser", "ActionOutput_jira_basic_createuser"],
+            "usedModels": [
+                "ActionInput_jira_basic_createuser",
+                "ActionOutput_jira_basic_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -32,7 +37,12 @@
                                 }
                             }
                         },
-                        "required": ["firstName", "lastName", "email", "products"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "products"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_basic_createuser": {
@@ -51,7 +61,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -64,9 +79,14 @@
             "endpoint": null,
             "input": "ActionInput_jira_basic_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_jira_basic_deleteuser"],
+            "output": [
+                "ActionOutput_jira_basic_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_jira_basic_deleteuser", "ActionOutput_jira_basic_deleteuser"],
+            "usedModels": [
+                "ActionInput_jira_basic_deleteuser",
+                "ActionOutput_jira_basic_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -77,7 +97,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_basic_deleteuser": {
@@ -87,7 +109,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -100,9 +124,14 @@
             "endpoint": null,
             "input": "ActionInput_jira_basic_fetchteams",
             "name": "fetch-teams",
-            "output": ["ActionOutput_jira_basic_fetchteams"],
+            "output": [
+                "ActionOutput_jira_basic_fetchteams"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_jira_basic_fetchteams", "ActionOutput_jira_basic_fetchteams"],
+            "usedModels": [
+                "ActionInput_jira_basic_fetchteams",
+                "ActionOutput_jira_basic_fetchteams"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -113,7 +142,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_jira_basic_fetchteams": {
@@ -131,12 +162,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["teams"],
+                        "required": [
+                            "teams"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -158,12 +194,17 @@
             ],
             "input": "SyncMetadata_jira_basic_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_jira_basic_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_jira_basic_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -184,7 +225,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_jira_basic_users": {

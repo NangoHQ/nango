@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_createcommentreaction",
             "name": "create-comment-reaction",
-            "output": ["ActionOutput_figma_createcommentreaction"],
-            "scopes": ["file_comments:write"],
-            "usedModels": ["ActionInput_figma_createcommentreaction", "ActionOutput_figma_createcommentreaction"],
+            "output": [
+                "ActionOutput_figma_createcommentreaction"
+            ],
+            "scopes": [
+                "file_comments:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_createcommentreaction",
+                "ActionOutput_figma_createcommentreaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,11 @@
                                 "description": "The emoji shortcode for the reaction. Example: \":thumbsup:\""
                             }
                         },
-                        "required": ["file_key", "comment_id", "emoji"],
+                        "required": [
+                            "file_key",
+                            "comment_id",
+                            "emoji"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_createcommentreaction": {
@@ -42,7 +53,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["status", "error"],
+                        "required": [
+                            "status",
+                            "error"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -55,9 +69,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_figma_createcomment"],
-            "scopes": ["file_comments:write"],
-            "usedModels": ["ActionInput_figma_createcomment", "ActionOutput_figma_createcomment"],
+            "output": [
+                "ActionOutput_figma_createcomment"
+            ],
+            "scopes": [
+                "file_comments:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_createcomment",
+                "ActionOutput_figma_createcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -89,7 +110,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["file_key", "message"],
+                        "required": [
+                            "file_key",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_createcomment": {
@@ -112,7 +136,10 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["x", "y"],
+                                                "required": [
+                                                    "x",
+                                                    "y"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -131,11 +158,17 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["x", "y"],
+                                                        "required": [
+                                                            "x",
+                                                            "y"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["node_id", "node_offset"],
+                                                "required": [
+                                                    "node_id",
+                                                    "node_offset"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -157,7 +190,12 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["x", "y", "region_height", "region_width"],
+                                                "required": [
+                                                    "x",
+                                                    "y",
+                                                    "region_height",
+                                                    "region_width"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -176,7 +214,10 @@
                                                                 "type": "number"
                                                             }
                                                         },
-                                                        "required": ["x", "y"],
+                                                        "required": [
+                                                            "x",
+                                                            "y"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "region_height": {
@@ -189,7 +230,12 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["node_id", "node_offset", "region_height", "region_width"],
+                                                "required": [
+                                                    "node_id",
+                                                    "node_offset",
+                                                    "region_height",
+                                                    "region_width"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ]
@@ -203,7 +249,10 @@
                                 "type": "string"
                             },
                             "parent_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user": {
                                 "type": "object",
@@ -218,20 +267,29 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "handle"],
+                                "required": [
+                                    "id",
+                                    "handle"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
                                 "type": "string"
                             },
                             "resolved_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "message": {
                                 "type": "string"
                             },
                             "order_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "reactions": {
                                 "type": "array",
@@ -251,7 +309,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "handle"],
+                                            "required": [
+                                                "id",
+                                                "handle"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "emoji": {
@@ -261,12 +322,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["user", "emoji"],
+                                    "required": [
+                                        "user",
+                                        "emoji"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -279,9 +345,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_createdevresources",
             "name": "create-dev-resources",
-            "output": ["ActionOutput_figma_createdevresources"],
-            "scopes": ["file_dev_resources:write"],
-            "usedModels": ["ActionInput_figma_createdevresources", "ActionOutput_figma_createdevresources"],
+            "output": [
+                "ActionOutput_figma_createdevresources"
+            ],
+            "scopes": [
+                "file_dev_resources:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_createdevresources",
+                "ActionOutput_figma_createdevresources"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -306,12 +379,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "url", "file_key", "node_id"],
+                                    "required": [
+                                        "name",
+                                        "url",
+                                        "file_key",
+                                        "node_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["dev_resources"],
+                        "required": [
+                            "dev_resources"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_createdevresources": {
@@ -338,7 +418,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "url", "file_key", "node_id"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "url",
+                                        "file_key",
+                                        "node_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -348,21 +434,33 @@
                                     "type": "object",
                                     "properties": {
                                         "file_key": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "node_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "error": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["file_key", "node_id", "error"],
+                                    "required": [
+                                        "file_key",
+                                        "node_id",
+                                        "error"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["links_created"],
+                        "required": [
+                            "links_created"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -375,9 +473,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_deletecommentreaction",
             "name": "delete-comment-reaction",
-            "output": ["ActionOutput_figma_deletecommentreaction"],
-            "scopes": ["file_comments:write"],
-            "usedModels": ["ActionInput_figma_deletecommentreaction", "ActionOutput_figma_deletecommentreaction"],
+            "output": [
+                "ActionOutput_figma_deletecommentreaction"
+            ],
+            "scopes": [
+                "file_comments:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_deletecommentreaction",
+                "ActionOutput_figma_deletecommentreaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -397,7 +502,11 @@
                                 "description": "Emoji shortcode of the reaction to delete. Example: \":thumbsup:\""
                             }
                         },
-                        "required": ["file_key", "comment_id", "emoji"],
+                        "required": [
+                            "file_key",
+                            "comment_id",
+                            "emoji"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_deletecommentreaction": {
@@ -407,7 +516,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -420,9 +531,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_figma_deletecomment"],
-            "scopes": ["file_comments:write"],
-            "usedModels": ["ActionInput_figma_deletecomment", "ActionOutput_figma_deletecomment"],
+            "output": [
+                "ActionOutput_figma_deletecomment"
+            ],
+            "scopes": [
+                "file_comments:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_deletecomment",
+                "ActionOutput_figma_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -438,7 +556,10 @@
                                 "description": "The ID of the comment to delete. Example: \"1774450194\""
                             }
                         },
-                        "required": ["file_key", "comment_id"],
+                        "required": [
+                            "file_key",
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_deletecomment": {
@@ -448,7 +569,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -461,9 +584,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_deletedevresource",
             "name": "delete-dev-resource",
-            "output": ["ActionOutput_figma_deletedevresource"],
-            "scopes": ["file_dev_resources:write"],
-            "usedModels": ["ActionInput_figma_deletedevresource", "ActionOutput_figma_deletedevresource"],
+            "output": [
+                "ActionOutput_figma_deletedevresource"
+            ],
+            "scopes": [
+                "file_dev_resources:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_deletedevresource",
+                "ActionOutput_figma_deletedevresource"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -479,7 +609,10 @@
                                 "description": "The ID of the dev resource to delete. Example: \"1234567890\""
                             }
                         },
-                        "required": ["file_key", "dev_resource_id"],
+                        "required": [
+                            "file_key",
+                            "dev_resource_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_deletedevresource": {
@@ -489,7 +622,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -502,9 +637,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_figma_deletewebhook"],
-            "scopes": ["webhooks:write"],
-            "usedModels": ["ActionInput_figma_deletewebhook", "ActionOutput_figma_deletewebhook"],
+            "output": [
+                "ActionOutput_figma_deletewebhook"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_deletewebhook",
+                "ActionOutput_figma_deletewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -516,7 +658,9 @@
                                 "description": "The ID of the webhook to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_deletewebhook": {
@@ -544,7 +688,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -557,9 +703,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getcomment",
             "name": "get-comment",
-            "output": ["ActionOutput_figma_getcomment"],
-            "scopes": ["file_comments:read"],
-            "usedModels": ["ActionInput_figma_getcomment", "ActionOutput_figma_getcomment"],
+            "output": [
+                "ActionOutput_figma_getcomment"
+            ],
+            "scopes": [
+                "file_comments:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getcomment",
+                "ActionOutput_figma_getcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -575,7 +728,10 @@
                                 "description": "Comment ID. Example: \"1774450119\""
                             }
                         },
-                        "required": ["file_key", "comment_id"],
+                        "required": [
+                            "file_key",
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getcomment": {
@@ -606,7 +762,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "handle"],
+                                "required": [
+                                    "id",
+                                    "handle"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -637,7 +796,10 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["x", "y"],
+                                        "required": [
+                                            "x",
+                                            "y"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -647,7 +809,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "user", "created_at", "message"],
+                        "required": [
+                            "id",
+                            "user",
+                            "created_at",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -660,9 +827,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getcomponent",
             "name": "get-component",
-            "output": ["ActionOutput_figma_getcomponent"],
-            "scopes": ["library_assets:read"],
-            "usedModels": ["ActionInput_figma_getcomponent", "ActionOutput_figma_getcomponent"],
+            "output": [
+                "ActionOutput_figma_getcomponent"
+            ],
+            "scopes": [
+                "library_assets:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getcomponent",
+                "ActionOutput_figma_getcomponent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -674,7 +848,9 @@
                                 "description": "The unique identifier of the component. Example: \"abc123\""
                             }
                         },
-                        "required": ["key"],
+                        "required": [
+                            "key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getcomponent": {
@@ -717,7 +893,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "handle", "img_url"],
+                                "required": [
+                                    "id",
+                                    "handle",
+                                    "img_url"
+                                ],
                                 "additionalProperties": false
                             },
                             "containing_frame": {
@@ -766,7 +946,15 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["key", "file_key", "node_id", "name", "created_at", "updated_at", "user"],
+                        "required": [
+                            "key",
+                            "file_key",
+                            "node_id",
+                            "name",
+                            "created_at",
+                            "updated_at",
+                            "user"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -779,9 +967,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getcomponentset",
             "name": "get-component-set",
-            "output": ["ActionOutput_figma_getcomponentset"],
-            "scopes": ["library_assets:read"],
-            "usedModels": ["ActionInput_figma_getcomponentset", "ActionOutput_figma_getcomponentset"],
+            "output": [
+                "ActionOutput_figma_getcomponentset"
+            ],
+            "scopes": [
+                "library_assets:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getcomponentset",
+                "ActionOutput_figma_getcomponentset"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -793,7 +988,9 @@
                                 "description": "The unique identifier of the component set."
                             }
                         },
-                        "required": ["key"],
+                        "required": [
+                            "key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getcomponentset": {
@@ -836,7 +1033,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "containing_frame": {
@@ -882,11 +1081,23 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["pageId", "pageName"],
+                                "required": [
+                                    "pageId",
+                                    "pageName"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["key", "file_key", "node_id", "name", "description", "created_at", "updated_at", "user"],
+                        "required": [
+                            "key",
+                            "file_key",
+                            "node_id",
+                            "name",
+                            "description",
+                            "created_at",
+                            "updated_at",
+                            "user"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -899,9 +1110,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_figma_getcurrentuser"],
-            "scopes": ["current_user:read"],
-            "usedModels": ["ActionInput_figma_getcurrentuser", "ActionOutput_figma_getcurrentuser"],
+            "output": [
+                "ActionOutput_figma_getcurrentuser"
+            ],
+            "scopes": [
+                "current_user:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getcurrentuser",
+                "ActionOutput_figma_getcurrentuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -926,7 +1144,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "handle"],
+                        "required": [
+                            "id",
+                            "email",
+                            "handle"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -939,9 +1161,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getfilecomponentsets",
             "name": "get-file-component-sets",
-            "output": ["ActionOutput_figma_getfilecomponentsets"],
-            "scopes": ["library_content:read"],
-            "usedModels": ["ActionInput_figma_getfilecomponentsets", "ActionOutput_figma_getfilecomponentsets"],
+            "output": [
+                "ActionOutput_figma_getfilecomponentsets"
+            ],
+            "scopes": [
+                "library_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getfilecomponentsets",
+                "ActionOutput_figma_getfilecomponentsets"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -953,7 +1182,9 @@
                                 "description": "The unique identifier of the Figma file to retrieve component sets from. Example: \"UzYlOaPNPL2c7zmHCEljOs\""
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getfilecomponentsets": {
@@ -1010,7 +1241,11 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "handle", "img_url"],
+                                                    "required": [
+                                                        "id",
+                                                        "handle",
+                                                        "img_url"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "containing_frame": {
@@ -1043,7 +1278,10 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["nodeId", "name"],
+                                                                    "required": [
+                                                                        "nodeId",
+                                                                        "name"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 {
@@ -1063,7 +1301,10 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["nodeId", "name"],
+                                                                    "required": [
+                                                                        "nodeId",
+                                                                        "name"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 {
@@ -1072,20 +1313,38 @@
                                                             ]
                                                         }
                                                     },
-                                                    "required": ["pageId", "pageName"],
+                                                    "required": [
+                                                        "pageId",
+                                                        "pageName"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["key", "file_key", "node_id", "name", "description", "created_at", "updated_at", "user"],
+                                            "required": [
+                                                "key",
+                                                "file_key",
+                                                "node_id",
+                                                "name",
+                                                "description",
+                                                "created_at",
+                                                "updated_at",
+                                                "user"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["component_sets"],
+                                "required": [
+                                    "component_sets"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status", "error", "meta"],
+                        "required": [
+                            "status",
+                            "error",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1098,9 +1357,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getfilecomponents",
             "name": "get-file-components",
-            "output": ["ActionOutput_figma_getfilecomponents"],
-            "scopes": ["library_content:read"],
-            "usedModels": ["ActionInput_figma_getfilecomponents", "ActionOutput_figma_getfilecomponents"],
+            "output": [
+                "ActionOutput_figma_getfilecomponents"
+            ],
+            "scopes": [
+                "library_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getfilecomponents",
+                "ActionOutput_figma_getfilecomponents"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1112,7 +1378,9 @@
                                 "description": "The key of the Figma file to retrieve components from. Example: \"UzYlOaPNPL2c7zmHCEljOs\""
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getfilecomponents": {
@@ -1160,7 +1428,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "handle", "img_url"],
+                                            "required": [
+                                                "id",
+                                                "handle",
+                                                "img_url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "containing_frame": {
@@ -1182,16 +1454,30 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["pageId", "pageName"],
+                                            "required": [
+                                                "pageId",
+                                                "pageName"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["key", "file_key", "node_id", "name", "description", "created_at", "updated_at", "user"],
+                                    "required": [
+                                        "key",
+                                        "file_key",
+                                        "node_id",
+                                        "name",
+                                        "description",
+                                        "created_at",
+                                        "updated_at",
+                                        "user"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["components"],
+                        "required": [
+                            "components"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1204,9 +1490,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getfilenode",
             "name": "get-file-node",
-            "output": ["ActionOutput_figma_getfilenode"],
-            "scopes": ["file_content:read"],
-            "usedModels": ["ActionInput_figma_getfilenode", "ActionOutput_figma_getfilenode"],
+            "output": [
+                "ActionOutput_figma_getfilenode"
+            ],
+            "scopes": [
+                "file_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getfilenode",
+                "ActionOutput_figma_getfilenode"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1222,7 +1515,10 @@
                                 "description": "The ID of the node to retrieve. Example: \"91:1\""
                             }
                         },
-                        "required": ["file_key", "node_id"],
+                        "required": [
+                            "file_key",
+                            "node_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getfilenode": {
@@ -1265,7 +1561,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["uri"],
+                                                "required": [
+                                                    "uri"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1273,7 +1571,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["key", "name", "description", "documentationLinks", "remote"],
+                                    "required": [
+                                        "key",
+                                        "name",
+                                        "description",
+                                        "documentationLinks",
+                                        "remote"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "A mapping from component IDs to component metadata"
@@ -1304,7 +1608,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["uri"],
+                                                "required": [
+                                                    "uri"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1312,7 +1618,13 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["key", "name", "description", "documentationLinks", "remote"],
+                                    "required": [
+                                        "key",
+                                        "name",
+                                        "description",
+                                        "documentationLinks",
+                                        "remote"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "A mapping from component set IDs to component set metadata"
@@ -1345,13 +1657,25 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["key", "name", "description", "remote", "styleType"],
+                                    "required": [
+                                        "key",
+                                        "name",
+                                        "description",
+                                        "remote",
+                                        "styleType"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "A mapping from style IDs to style metadata"
                             }
                         },
-                        "required": ["document", "components", "componentSets", "schemaVersion", "styles"],
+                        "required": [
+                            "document",
+                            "components",
+                            "componentSets",
+                            "schemaVersion",
+                            "styles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1364,9 +1688,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getfilestyles",
             "name": "get-file-styles",
-            "output": ["ActionOutput_figma_getfilestyles"],
-            "scopes": ["library_content:read"],
-            "usedModels": ["ActionInput_figma_getfilestyles", "ActionOutput_figma_getfilestyles"],
+            "output": [
+                "ActionOutput_figma_getfilestyles"
+            ],
+            "scopes": [
+                "library_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getfilestyles",
+                "ActionOutput_figma_getfilestyles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1378,7 +1709,9 @@
                                 "description": "The unique identifier of the Figma file. Example: \"UzYlOaPNPL2c7zmHCEljOs\""
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getfilestyles": {
@@ -1409,7 +1742,12 @@
                                                 },
                                                 "style_type": {
                                                     "type": "string",
-                                                    "enum": ["FILL", "TEXT", "EFFECT", "GRID"]
+                                                    "enum": [
+                                                        "FILL",
+                                                        "TEXT",
+                                                        "EFFECT",
+                                                        "GRID"
+                                                    ]
                                                 },
                                                 "thumbnail_url": {
                                                     "type": "string"
@@ -1439,7 +1777,11 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "handle", "img_url"],
+                                                    "required": [
+                                                        "id",
+                                                        "handle",
+                                                        "img_url"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "sort_position": {
@@ -1462,11 +1804,17 @@
                                         }
                                     }
                                 },
-                                "required": ["styles"],
+                                "required": [
+                                    "styles"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status", "error", "meta"],
+                        "required": [
+                            "status",
+                            "error",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1479,9 +1827,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getlocalvariables",
             "name": "get-local-variables",
-            "output": ["ActionOutput_figma_getlocalvariables"],
-            "scopes": ["file_variables:read"],
-            "usedModels": ["ActionInput_figma_getlocalvariables", "ActionOutput_figma_getlocalvariables"],
+            "output": [
+                "ActionOutput_figma_getlocalvariables"
+            ],
+            "scopes": [
+                "file_variables:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getlocalvariables",
+                "ActionOutput_figma_getlocalvariables"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1493,7 +1848,9 @@
                                 "description": "The key of the Figma file. Example: \"UzYlOaPNPL2c7zmHCEljOs\""
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getlocalvariables": {
@@ -1543,7 +1900,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name", "modeId"],
+                                                        "required": [
+                                                            "name",
+                                                            "modeId"
+                                                        ],
                                                         "additionalProperties": {}
                                                     }
                                                 },
@@ -1563,7 +1923,10 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1620,16 +1983,26 @@
                                                     "additionalProperties": {}
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     }
                                 },
-                                "required": ["variableCollections", "variables"],
+                                "required": [
+                                    "variableCollections",
+                                    "variables"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status", "error", "meta"],
+                        "required": [
+                            "status",
+                            "error",
+                            "meta"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1642,9 +2015,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_figma_getproject"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_figma_getproject", "ActionOutput_figma_getproject"],
+            "output": [
+                "ActionOutput_figma_getproject"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getproject",
+                "ActionOutput_figma_getproject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1660,7 +2040,10 @@
                                 "description": "The ID of the project to retrieve. Example: \"604829489\""
                             }
                         },
-                        "required": ["team_id", "project_id"],
+                        "required": [
+                            "team_id",
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getproject": {
@@ -1673,7 +2056,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1686,9 +2072,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getpublishedvariables",
             "name": "get-published-variables",
-            "output": ["ActionOutput_figma_getpublishedvariables"],
-            "scopes": ["file_variables:read"],
-            "usedModels": ["ActionInput_figma_getpublishedvariables", "ActionOutput_figma_getpublishedvariables"],
+            "output": [
+                "ActionOutput_figma_getpublishedvariables"
+            ],
+            "scopes": [
+                "file_variables:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getpublishedvariables",
+                "ActionOutput_figma_getpublishedvariables"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1700,7 +2093,9 @@
                                 "description": "Figma file key to retrieve published variables from. Example: \"UzYlOaPNPL2c7zmHCEljOs\""
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getpublishedvariables": {
@@ -1740,13 +2135,26 @@
                                                 },
                                                 "resolvedDataType": {
                                                     "type": "string",
-                                                    "enum": ["BOOLEAN", "FLOAT", "STRING", "COLOR"]
+                                                    "enum": [
+                                                        "BOOLEAN",
+                                                        "FLOAT",
+                                                        "STRING",
+                                                        "COLOR"
+                                                    ]
                                                 },
                                                 "updatedAt": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "subscribed_id", "name", "key", "variableCollectionId", "resolvedDataType", "updatedAt"],
+                                            "required": [
+                                                "id",
+                                                "subscribed_id",
+                                                "name",
+                                                "key",
+                                                "variableCollectionId",
+                                                "resolvedDataType",
+                                                "updatedAt"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1774,16 +2182,29 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "subscribed_id", "name", "key", "updatedAt"],
+                                            "required": [
+                                                "id",
+                                                "subscribed_id",
+                                                "name",
+                                                "key",
+                                                "updatedAt"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["variables", "variableCollections"],
+                                "required": [
+                                    "variables",
+                                    "variableCollections"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status", "error", "meta"],
+                        "required": [
+                            "status",
+                            "error",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1796,9 +2217,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getstyle",
             "name": "get-style",
-            "output": ["ActionOutput_figma_getstyle"],
-            "scopes": ["library_assets:read"],
-            "usedModels": ["ActionInput_figma_getstyle", "ActionOutput_figma_getstyle"],
+            "output": [
+                "ActionOutput_figma_getstyle"
+            ],
+            "scopes": [
+                "library_assets:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getstyle",
+                "ActionOutput_figma_getstyle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1810,7 +2238,9 @@
                                 "description": "The unique identifier of the style. Example: \"0f6da13a103e47271a3c8c6d52187ca4587ae898\""
                             }
                         },
-                        "required": ["key"],
+                        "required": [
+                            "key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getstyle": {
@@ -1827,7 +2257,12 @@
                             },
                             "style_type": {
                                 "type": "string",
-                                "enum": ["FILL", "TEXT", "EFFECT", "GRID"]
+                                "enum": [
+                                    "FILL",
+                                    "TEXT",
+                                    "EFFECT",
+                                    "GRID"
+                                ]
                             },
                             "thumbnail_url": {
                                 "type": "string"
@@ -1857,14 +2292,29 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "handle", "img_url"],
+                                "required": [
+                                    "id",
+                                    "handle",
+                                    "img_url"
+                                ],
                                 "additionalProperties": false
                             },
                             "sort_position": {
                                 "type": "string"
                             }
                         },
-                        "required": ["key", "file_key", "node_id", "style_type", "name", "description", "created_at", "updated_at", "user", "sort_position"],
+                        "required": [
+                            "key",
+                            "file_key",
+                            "node_id",
+                            "style_type",
+                            "name",
+                            "description",
+                            "created_at",
+                            "updated_at",
+                            "user",
+                            "sort_position"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1877,9 +2327,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getversion",
             "name": "get-version",
-            "output": ["ActionOutput_figma_getversion"],
-            "scopes": ["file_versions:read"],
-            "usedModels": ["ActionInput_figma_getversion", "ActionOutput_figma_getversion"],
+            "output": [
+                "ActionOutput_figma_getversion"
+            ],
+            "scopes": [
+                "file_versions:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getversion",
+                "ActionOutput_figma_getversion"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1895,7 +2352,10 @@
                                 "description": "The unique identifier for the version. Example: \"2356506860085774014\""
                             }
                         },
-                        "required": ["file_key", "version_id"],
+                        "required": [
+                            "file_key",
+                            "version_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getversion": {
@@ -1929,11 +2389,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "handle"],
+                                "required": [
+                                    "id",
+                                    "handle"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "created_at"],
+                        "required": [
+                            "id",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1946,9 +2412,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_getwebhook",
             "name": "get-webhook",
-            "output": ["ActionOutput_figma_getwebhook"],
-            "scopes": ["webhooks:read"],
-            "usedModels": ["ActionInput_figma_getwebhook", "ActionOutput_figma_getwebhook"],
+            "output": [
+                "ActionOutput_figma_getwebhook"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_getwebhook",
+                "ActionOutput_figma_getwebhook"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1960,7 +2433,9 @@
                                 "description": "The ID of the webhook to retrieve. Example: \"123456789\""
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_getwebhook": {
@@ -1995,10 +2470,16 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["ACTIVE", "PAUSED"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "PAUSED"
+                                ]
                             },
                             "client_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "passcode": {
                                 "type": "string"
@@ -2007,7 +2488,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -2035,9 +2519,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listcommentreactions",
             "name": "list-comment-reactions",
-            "output": ["ActionOutput_figma_listcommentreactions"],
-            "scopes": ["file_comments:read"],
-            "usedModels": ["ActionInput_figma_listcommentreactions", "ActionOutput_figma_listcommentreactions"],
+            "output": [
+                "ActionOutput_figma_listcommentreactions"
+            ],
+            "scopes": [
+                "file_comments:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listcommentreactions",
+                "ActionOutput_figma_listcommentreactions"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2057,7 +2548,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_key", "comment_id"],
+                        "required": [
+                            "file_key",
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listcommentreactions": {
@@ -2081,7 +2575,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "handle", "img_url"],
+                                            "required": [
+                                                "id",
+                                                "handle",
+                                                "img_url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "emoji": {
@@ -2091,7 +2589,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["user", "emoji", "created_at"],
+                                    "required": [
+                                        "user",
+                                        "emoji",
+                                        "created_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2099,7 +2601,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["reactions"],
+                        "required": [
+                            "reactions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2112,9 +2616,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_figma_listcomments"],
-            "scopes": ["file_comments:read"],
-            "usedModels": ["ActionInput_figma_listcomments", "ActionOutput_figma_listcomments"],
+            "output": [
+                "ActionOutput_figma_listcomments"
+            ],
+            "scopes": [
+                "file_comments:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listcomments",
+                "ActionOutput_figma_listcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2134,7 +2645,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listcomments": {
@@ -2163,7 +2676,10 @@
                                                             "type": "number"
                                                         }
                                                     },
-                                                    "required": ["x", "y"],
+                                                    "required": [
+                                                        "x",
+                                                        "y"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2182,11 +2698,17 @@
                                                                     "type": "number"
                                                                 }
                                                             },
-                                                            "required": ["x", "y"],
+                                                            "required": [
+                                                                "x",
+                                                                "y"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["node_id", "node_offset"],
+                                                    "required": [
+                                                        "node_id",
+                                                        "node_offset"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2208,7 +2730,12 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["x", "y", "region_height", "region_width"],
+                                                    "required": [
+                                                        "x",
+                                                        "y",
+                                                        "region_height",
+                                                        "region_width"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2227,7 +2754,10 @@
                                                                     "type": "number"
                                                                 }
                                                             },
-                                                            "required": ["x", "y"],
+                                                            "required": [
+                                                                "x",
+                                                                "y"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "region_height": {
@@ -2240,7 +2770,12 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["node_id", "node_offset", "region_height", "region_width"],
+                                                    "required": [
+                                                        "node_id",
+                                                        "node_offset",
+                                                        "region_height",
+                                                        "region_width"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             ]
@@ -2261,7 +2796,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "handle", "img_url"],
+                                            "required": [
+                                                "id",
+                                                "handle",
+                                                "img_url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "created_at": {
@@ -2294,7 +2833,11 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "handle", "img_url"],
+                                                        "required": [
+                                                            "id",
+                                                            "handle",
+                                                            "img_url"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "emoji": {
@@ -2304,12 +2847,23 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["user", "emoji", "created_at"],
+                                                "required": [
+                                                    "user",
+                                                    "emoji",
+                                                    "created_at"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "file_key", "user", "created_at", "message", "reactions"],
+                                    "required": [
+                                        "id",
+                                        "file_key",
+                                        "user",
+                                        "created_at",
+                                        "message",
+                                        "reactions"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2317,7 +2871,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2330,9 +2886,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listcomponentsets",
             "name": "list-component-sets",
-            "output": ["ActionOutput_figma_listcomponentsets"],
-            "scopes": ["team_library_content:read"],
-            "usedModels": ["ActionInput_figma_listcomponentsets", "ActionOutput_figma_listcomponentsets"],
+            "output": [
+                "ActionOutput_figma_listcomponentsets"
+            ],
+            "scopes": [
+                "team_library_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listcomponentsets",
+                "ActionOutput_figma_listcomponentsets"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2354,7 +2917,9 @@
                                 "maximum": 1000
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listcomponentsets": {
@@ -2405,7 +2970,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "handle", "img_url"],
+                                            "required": [
+                                                "id",
+                                                "handle",
+                                                "img_url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "containing_frame": {
@@ -2436,7 +3005,14 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["key", "file_key", "node_id", "name", "created_at", "updated_at"],
+                                    "required": [
+                                        "key",
+                                        "file_key",
+                                        "node_id",
+                                        "name",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2444,7 +3020,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["component_sets"],
+                        "required": [
+                            "component_sets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2457,9 +3035,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listcomponents",
             "name": "list-components",
-            "output": ["ActionOutput_figma_listcomponents"],
-            "scopes": ["team_library_content:read"],
-            "usedModels": ["ActionInput_figma_listcomponents", "ActionOutput_figma_listcomponents"],
+            "output": [
+                "ActionOutput_figma_listcomponents"
+            ],
+            "scopes": [
+                "team_library_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listcomponents",
+                "ActionOutput_figma_listcomponents"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2482,7 +3067,9 @@
                                 "maximum": 1000
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listcomponents": {
@@ -2536,7 +3123,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "containing_frame": {
@@ -2558,7 +3147,12 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["key", "file_key", "node_id", "name"],
+                                    "required": [
+                                        "key",
+                                        "file_key",
+                                        "node_id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2566,7 +3160,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["components"],
+                        "required": [
+                            "components"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2579,9 +3175,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listdevresources",
             "name": "list-dev-resources",
-            "output": ["ActionOutput_figma_listdevresources"],
-            "scopes": ["file_dev_resources:read"],
-            "usedModels": ["ActionInput_figma_listdevresources", "ActionOutput_figma_listdevresources"],
+            "output": [
+                "ActionOutput_figma_listdevresources"
+            ],
+            "scopes": [
+                "file_dev_resources:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listdevresources",
+                "ActionOutput_figma_listdevresources"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2600,7 +3203,9 @@
                                 }
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listdevresources": {
@@ -2627,12 +3232,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "url", "file_key", "node_id"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "url",
+                                        "file_key",
+                                        "node_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["dev_resources"],
+                        "required": [
+                            "dev_resources"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2645,9 +3258,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listfilenodes",
             "name": "list-file-nodes",
-            "output": ["ActionOutput_figma_listfilenodes"],
-            "scopes": ["file_content:read"],
-            "usedModels": ["ActionInput_figma_listfilenodes", "ActionOutput_figma_listfilenodes"],
+            "output": [
+                "ActionOutput_figma_listfilenodes"
+            ],
+            "scopes": [
+                "file_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listfilenodes",
+                "ActionOutput_figma_listfilenodes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2687,7 +3307,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_key", "ids"],
+                        "required": [
+                            "file_key",
+                            "ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listfilenodes": {
@@ -2771,9 +3394,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listfiles",
             "name": "list-files",
-            "output": ["ActionOutput_figma_listfiles"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_figma_listfiles", "ActionOutput_figma_listfiles"],
+            "output": [
+                "ActionOutput_figma_listfiles"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listfiles",
+                "ActionOutput_figma_listfiles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2789,7 +3419,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listfiles": {
@@ -2816,12 +3448,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["key", "name", "last_modified"],
+                                    "required": [
+                                        "key",
+                                        "name",
+                                        "last_modified"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name", "files"],
+                        "required": [
+                            "name",
+                            "files"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2834,9 +3473,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_figma_listprojects"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_figma_listprojects", "ActionOutput_figma_listprojects"],
+            "output": [
+                "ActionOutput_figma_listprojects"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listprojects",
+                "ActionOutput_figma_listprojects"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2868,7 +3514,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2876,7 +3525,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_name", "projects"],
+                        "required": [
+                            "team_name",
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2889,9 +3541,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_liststyles",
             "name": "list-styles",
-            "output": ["ActionOutput_figma_liststyles"],
-            "scopes": ["team_library_content:read"],
-            "usedModels": ["ActionInput_figma_liststyles", "ActionOutput_figma_liststyles"],
+            "output": [
+                "ActionOutput_figma_liststyles"
+            ],
+            "scopes": [
+                "team_library_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_liststyles",
+                "ActionOutput_figma_liststyles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2957,14 +3616,26 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "handle"],
+                                            "required": [
+                                                "id",
+                                                "handle"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "sort_position": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["key", "file_key", "node_id", "style_type", "name", "created_at", "updated_at", "user"],
+                                    "required": [
+                                        "key",
+                                        "file_key",
+                                        "node_id",
+                                        "style_type",
+                                        "name",
+                                        "created_at",
+                                        "updated_at",
+                                        "user"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2972,7 +3643,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["styles"],
+                        "required": [
+                            "styles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2985,9 +3658,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listversions",
             "name": "list-versions",
-            "output": ["ActionOutput_figma_listversions"],
-            "scopes": ["file_versions:read"],
-            "usedModels": ["ActionInput_figma_listversions", "ActionOutput_figma_listversions"],
+            "output": [
+                "ActionOutput_figma_listversions"
+            ],
+            "scopes": [
+                "file_versions:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listversions",
+                "ActionOutput_figma_listversions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3009,7 +3689,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listversions": {
@@ -3045,14 +3727,22 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "handle", "img_url"],
+                                            "required": [
+                                                "id",
+                                                "handle",
+                                                "img_url"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "thumbnail_url": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "created_at", "user"],
+                                    "required": [
+                                        "id",
+                                        "created_at",
+                                        "user"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3060,7 +3750,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["versions"],
+                        "required": [
+                            "versions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3073,9 +3765,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_figma_listwebhooks"],
-            "scopes": ["webhooks:read"],
-            "usedModels": ["ActionInput_figma_listwebhooks", "ActionOutput_figma_listwebhooks"],
+            "output": [
+                "ActionOutput_figma_listwebhooks"
+            ],
+            "scopes": [
+                "webhooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_listwebhooks",
+                "ActionOutput_figma_listwebhooks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3087,7 +3786,9 @@
                                 "description": "ID of the Figma team to list webhooks for. Example: \"1639747348117609063\""
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_listwebhooks": {
@@ -3132,12 +3833,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "event_type", "team_id", "context", "context_id", "plan_api_id", "status", "passcode", "endpoint"],
+                                    "required": [
+                                        "id",
+                                        "event_type",
+                                        "team_id",
+                                        "context",
+                                        "context_id",
+                                        "plan_api_id",
+                                        "status",
+                                        "passcode",
+                                        "endpoint"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["webhooks"],
+                        "required": [
+                            "webhooks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3150,9 +3863,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_renderimages",
             "name": "render-images",
-            "output": ["ActionOutput_figma_renderimages"],
-            "scopes": ["file_content:read"],
-            "usedModels": ["ActionInput_figma_renderimages", "ActionOutput_figma_renderimages"],
+            "output": [
+                "ActionOutput_figma_renderimages"
+            ],
+            "scopes": [
+                "file_content:read"
+            ],
+            "usedModels": [
+                "ActionInput_figma_renderimages",
+                "ActionOutput_figma_renderimages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3180,7 +3900,12 @@
                             "format": {
                                 "description": "Image output format. Defaults to png.",
                                 "type": "string",
-                                "enum": ["jpg", "png", "svg", "pdf"]
+                                "enum": [
+                                    "jpg",
+                                    "png",
+                                    "svg",
+                                    "pdf"
+                                ]
                             },
                             "svg_outline_text": {
                                 "description": "Whether text elements are rendered as outlines in SVGs. Defaults to true.",
@@ -3211,7 +3936,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_key", "node_ids"],
+                        "required": [
+                            "file_key",
+                            "node_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_renderimages": {
@@ -3223,14 +3951,19 @@
                                     "type": "string"
                                 },
                                 "additionalProperties": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 }
                             },
                             "err": {
                                 "type": "string"
                             }
                         },
-                        "required": ["images"],
+                        "required": [
+                            "images"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3243,9 +3976,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_updatedevresources",
             "name": "update-dev-resources",
-            "output": ["ActionOutput_figma_updatedevresources"],
-            "scopes": ["file_dev_resources:write"],
-            "usedModels": ["ActionInput_figma_updatedevresources", "ActionOutput_figma_updatedevresources"],
+            "output": [
+                "ActionOutput_figma_updatedevresources"
+            ],
+            "scopes": [
+                "file_dev_resources:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_updatedevresources",
+                "ActionOutput_figma_updatedevresources"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3270,13 +4010,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "A list of dev resources that you want to update."
                             }
                         },
-                        "required": ["dev_resources"],
+                        "required": [
+                            "dev_resources"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_updatedevresources": {
@@ -3302,12 +4046,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "error"],
+                                    "required": [
+                                        "id",
+                                        "error"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["links_updated"],
+                        "required": [
+                            "links_updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3320,9 +4069,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_updatevariables",
             "name": "update-variables",
-            "output": ["ActionOutput_figma_updatevariables"],
-            "scopes": ["file_variables:write"],
-            "usedModels": ["ActionInput_figma_updatevariables", "ActionOutput_figma_updatevariables"],
+            "output": [
+                "ActionOutput_figma_updatevariables"
+            ],
+            "scopes": [
+                "file_variables:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_updatevariables",
+                "ActionOutput_figma_updatevariables"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3340,7 +4096,11 @@
                                     "properties": {
                                         "action": {
                                             "type": "string",
-                                            "enum": ["CREATE", "UPDATE", "DELETE"]
+                                            "enum": [
+                                                "CREATE",
+                                                "UPDATE",
+                                                "DELETE"
+                                            ]
                                         },
                                         "id": {
                                             "type": "string"
@@ -3367,7 +4127,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["action"],
+                                    "required": [
+                                        "action"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3378,7 +4140,11 @@
                                     "properties": {
                                         "action": {
                                             "type": "string",
-                                            "enum": ["CREATE", "UPDATE", "DELETE"]
+                                            "enum": [
+                                                "CREATE",
+                                                "UPDATE",
+                                                "DELETE"
+                                            ]
                                         },
                                         "id": {
                                             "type": "string"
@@ -3390,7 +4156,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["action", "variableCollectionId"],
+                                    "required": [
+                                        "action",
+                                        "variableCollectionId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3401,7 +4170,11 @@
                                     "properties": {
                                         "action": {
                                             "type": "string",
-                                            "enum": ["CREATE", "UPDATE", "DELETE"]
+                                            "enum": [
+                                                "CREATE",
+                                                "UPDATE",
+                                                "DELETE"
+                                            ]
                                         },
                                         "id": {
                                             "type": "string"
@@ -3414,7 +4187,12 @@
                                         },
                                         "resolvedType": {
                                             "type": "string",
-                                            "enum": ["BOOLEAN", "FLOAT", "STRING", "COLOR"]
+                                            "enum": [
+                                                "BOOLEAN",
+                                                "FLOAT",
+                                                "STRING",
+                                                "COLOR"
+                                            ]
                                         },
                                         "description": {
                                             "type": "string"
@@ -3438,7 +4216,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["action"],
+                                    "required": [
+                                        "action"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3480,7 +4260,11 @@
                                                             "type": "number"
                                                         }
                                                     },
-                                                    "required": ["r", "g", "b"],
+                                                    "required": [
+                                                        "r",
+                                                        "g",
+                                                        "b"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3494,7 +4278,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "id"],
+                                                    "required": [
+                                                        "type",
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3503,12 +4290,18 @@
                                             ]
                                         }
                                     },
-                                    "required": ["variableId", "modeId", "value"],
+                                    "required": [
+                                        "variableId",
+                                        "modeId",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["file_key"],
+                        "required": [
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_updatevariables": {
@@ -3536,7 +4329,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status", "error"],
+                        "required": [
+                            "status",
+                            "error"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3549,9 +4345,16 @@
             "endpoint": null,
             "input": "ActionInput_figma_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_figma_updatewebhook"],
-            "scopes": ["webhooks:write"],
-            "usedModels": ["ActionInput_figma_updatewebhook", "ActionOutput_figma_updatewebhook"],
+            "output": [
+                "ActionOutput_figma_updatewebhook"
+            ],
+            "scopes": [
+                "webhooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_figma_updatewebhook",
+                "ActionOutput_figma_updatewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3586,14 +4389,19 @@
                             "status": {
                                 "description": "State to put the webhook in. The webhook cannot be put into an error state this way.",
                                 "type": "string",
-                                "enum": ["ACTIVE", "PAUSED"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "PAUSED"
+                                ]
                             },
                             "description": {
                                 "description": "User-provided description or name for the webhook. Max length 140 characters. Providing an empty string will delete the description.",
                                 "type": "string"
                             }
                         },
-                        "required": ["webhook_id"],
+                        "required": [
+                            "webhook_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_figma_updatewebhook": {
@@ -3633,7 +4441,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "event_type", "team_id", "context", "context_id", "plan_api_id", "status", "passcode", "endpoint"],
+                        "required": [
+                            "id",
+                            "event_type",
+                            "team_id",
+                            "context",
+                            "context_id",
+                            "plan_api_id",
+                            "status",
+                            "passcode",
+                            "endpoint"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3654,12 +4472,20 @@
             ],
             "input": "SyncMetadata_figma_comments",
             "name": "comments",
-            "output": ["Comment"],
+            "output": [
+                "Comment"
+            ],
             "runs": "every hour",
-            "scopes": ["projects:read", "file_comments:read"],
+            "scopes": [
+                "projects:read",
+                "file_comments:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Comment", "SyncMetadata_figma_comments"],
+            "usedModels": [
+                "Comment",
+                "SyncMetadata_figma_comments"
+            ],
             "version": "1.3.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3715,7 +4541,13 @@
                                 }
                             }
                         },
-                        "required": ["id", "file_key", "user_id", "created_at", "message"],
+                        "required": [
+                            "id",
+                            "file_key",
+                            "user_id",
+                            "created_at",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_comments": {
@@ -3749,12 +4581,19 @@
             ],
             "input": "SyncMetadata_figma_componentsets",
             "name": "component-sets",
-            "output": ["ComponentSet"],
+            "output": [
+                "ComponentSet"
+            ],
             "runs": "every hour",
-            "scopes": ["team_library_content:read"],
+            "scopes": [
+                "team_library_content:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ComponentSet", "SyncMetadata_figma_componentsets"],
+            "usedModels": [
+                "ComponentSet",
+                "SyncMetadata_figma_componentsets"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3792,7 +4631,9 @@
                             "user": {},
                             "containing_frame": {}
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_componentsets": {
@@ -3802,12 +4643,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3821,12 +4666,19 @@
             ],
             "input": "SyncMetadata_figma_components",
             "name": "components",
-            "output": ["Component"],
+            "output": [
+                "Component"
+            ],
             "runs": "every hour",
-            "scopes": ["team_library_content:read"],
+            "scopes": [
+                "team_library_content:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Component", "SyncMetadata_figma_components"],
+            "usedModels": [
+                "Component",
+                "SyncMetadata_figma_components"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3871,7 +4723,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "handle"],
+                                "required": [
+                                    "id",
+                                    "handle"
+                                ],
                                 "additionalProperties": false
                             },
                             "containing_frame": {
@@ -3931,11 +4786,21 @@
                                         ]
                                     }
                                 },
-                                "required": ["pageId", "pageName"],
+                                "required": [
+                                    "pageId",
+                                    "pageName"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "file_key", "node_id", "name", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "file_key",
+                            "node_id",
+                            "name",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_components": {
@@ -3945,12 +4810,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3964,12 +4833,20 @@
             ],
             "input": "SyncMetadata_figma_filenodes",
             "name": "file-nodes",
-            "output": ["FileNode"],
+            "output": [
+                "FileNode"
+            ],
             "runs": "every hour",
-            "scopes": ["projects:read", "file_content:read"],
+            "scopes": [
+                "projects:read",
+                "file_content:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FileNode", "SyncMetadata_figma_filenodes"],
+            "usedModels": [
+                "FileNode",
+                "SyncMetadata_figma_filenodes"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3999,7 +4876,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "file_key", "node_id", "type", "last_modified"],
+                        "required": [
+                            "id",
+                            "file_key",
+                            "node_id",
+                            "type",
+                            "last_modified"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_filenodes": {
@@ -4009,12 +4892,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4028,12 +4915,19 @@
             ],
             "input": "SyncMetadata_figma_files",
             "name": "files",
-            "output": ["File"],
+            "output": [
+                "File"
+            ],
             "runs": "every hour",
-            "scopes": ["projects:read"],
+            "scopes": [
+                "projects:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["File", "SyncMetadata_figma_files"],
+            "usedModels": [
+                "File",
+                "SyncMetadata_figma_files"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4057,7 +4951,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "last_modified"],
+                        "required": [
+                            "id",
+                            "name",
+                            "last_modified"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_files": {
@@ -4067,12 +4965,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4086,12 +4988,19 @@
             ],
             "input": "SyncMetadata_figma_projects",
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["projects:read"],
+            "scopes": [
+                "projects:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project", "SyncMetadata_figma_projects"],
+            "usedModels": [
+                "Project",
+                "SyncMetadata_figma_projects"
+            ],
             "version": "1.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4106,7 +5015,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_projects": {
@@ -4116,7 +5028,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4135,12 +5049,19 @@
             ],
             "input": "SyncMetadata_figma_styles",
             "name": "styles",
-            "output": ["Style"],
+            "output": [
+                "Style"
+            ],
             "runs": "every hour",
-            "scopes": ["team_library_content:read"],
+            "scopes": [
+                "team_library_content:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Style", "SyncMetadata_figma_styles"],
+            "usedModels": [
+                "Style",
+                "SyncMetadata_figma_styles"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4191,7 +5112,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "key", "file_key"],
+                        "required": [
+                            "id",
+                            "key",
+                            "file_key"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_styles": {
@@ -4201,12 +5126,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4220,12 +5149,20 @@
             ],
             "input": "SyncMetadata_figma_variables",
             "name": "variables",
-            "output": ["Variable"],
+            "output": [
+                "Variable"
+            ],
             "runs": "every hour",
-            "scopes": ["projects:read", "file_variables:read"],
+            "scopes": [
+                "projects:read",
+                "file_variables:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Variable", "SyncMetadata_figma_variables"],
+            "usedModels": [
+                "Variable",
+                "SyncMetadata_figma_variables"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4250,7 +5187,12 @@
                             },
                             "resolvedDataType": {
                                 "type": "string",
-                                "enum": ["BOOLEAN", "FLOAT", "STRING", "COLOR"]
+                                "enum": [
+                                    "BOOLEAN",
+                                    "FLOAT",
+                                    "STRING",
+                                    "COLOR"
+                                ]
                             },
                             "updatedAt": {
                                 "type": "string"
@@ -4259,7 +5201,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "subscribed_id", "name", "key", "variableCollectionId", "resolvedDataType", "updatedAt", "fileKey"],
+                        "required": [
+                            "id",
+                            "subscribed_id",
+                            "name",
+                            "key",
+                            "variableCollectionId",
+                            "resolvedDataType",
+                            "updatedAt",
+                            "fileKey"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_variables": {
@@ -4269,12 +5220,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4288,12 +5243,20 @@
             ],
             "input": "SyncMetadata_figma_versions",
             "name": "versions",
-            "output": ["Version"],
+            "output": [
+                "Version"
+            ],
             "runs": "every hour",
-            "scopes": ["file_versions:read", "team_library_content:read"],
+            "scopes": [
+                "file_versions:read",
+                "team_library_content:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Version", "SyncMetadata_figma_versions"],
+            "usedModels": [
+                "Version",
+                "SyncMetadata_figma_versions"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4332,11 +5295,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "file_key", "created_at"],
+                        "required": [
+                            "id",
+                            "file_key",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_figma_versions": {
@@ -4353,7 +5322,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4367,12 +5338,19 @@
             ],
             "input": "SyncMetadata_figma_webhooks",
             "name": "webhooks",
-            "output": ["Webhook"],
+            "output": [
+                "Webhook"
+            ],
             "runs": "every hour",
-            "scopes": ["webhooks:read"],
+            "scopes": [
+                "webhooks:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webhook", "SyncMetadata_figma_webhooks"],
+            "usedModels": [
+                "Webhook",
+                "SyncMetadata_figma_webhooks"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4402,7 +5380,10 @@
                                 "type": "string"
                             },
                             "client_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "passcode": {
                                 "type": "string"
@@ -4411,7 +5392,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -4436,12 +5420,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

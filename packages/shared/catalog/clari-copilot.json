@@ -14,12 +14,17 @@
             ],
             "input": "SyncMetadata_clari_copilot_calls",
             "name": "calls",
-            "output": ["ClariCopilotCall"],
+            "output": [
+                "ClariCopilotCall"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ClariCopilotCall", "SyncMetadata_clari_copilot_calls"],
+            "usedModels": [
+                "ClariCopilotCall",
+                "SyncMetadata_clari_copilot_calls"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -123,7 +128,12 @@
                                         }
                                     }
                                 },
-                                "required": ["source_crm", "deal_id", "account_id", "contact_ids"],
+                                "required": [
+                                    "source_crm",
+                                    "deal_id",
+                                    "account_id",
+                                    "contact_ids"
+                                ],
                                 "additionalProperties": false
                             },
                             "bookmark_timestamps": {
@@ -210,7 +220,11 @@
                                         }
                                     }
                                 },
-                                "required": ["full_summary", "topics_discussed", "key_action_items"],
+                                "required": [
+                                    "full_summary",
+                                    "topics_discussed",
+                                    "key_action_items"
+                                ],
                                 "additionalProperties": false
                             },
                             "competitor_sentiments": {
@@ -262,7 +276,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

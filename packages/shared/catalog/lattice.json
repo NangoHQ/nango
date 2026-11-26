@@ -15,12 +15,17 @@
             ],
             "input": "SyncMetadata_lattice_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_lattice_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_lattice_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -41,7 +46,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lattice_users": {

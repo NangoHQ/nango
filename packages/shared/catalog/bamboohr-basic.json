@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_createapplicant",
             "name": "create-applicant",
-            "output": ["ActionOutput_bamboohr_basic_createapplicant"],
-            "scopes": ["hiring:applications.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_createapplicant", "ActionOutput_bamboohr_basic_createapplicant"],
+            "output": [
+                "ActionOutput_bamboohr_basic_createapplicant"
+            ],
+            "scopes": [
+                "hiring:applications.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_createapplicant",
+                "ActionOutput_bamboohr_basic_createapplicant"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -93,7 +100,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName", "jobId"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "jobId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_createapplicant": {
@@ -106,7 +117,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["result", "candidateId"],
+                        "required": [
+                            "result",
+                            "candidateId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -119,9 +133,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_createemployeegoal",
             "name": "create-employee-goal",
-            "output": ["ActionOutput_bamboohr_basic_createemployeegoal"],
-            "scopes": ["goal.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_createemployeegoal", "ActionOutput_bamboohr_basic_createemployeegoal"],
+            "output": [
+                "ActionOutput_bamboohr_basic_createemployeegoal"
+            ],
+            "scopes": [
+                "goal.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_createemployeegoal",
+                "ActionOutput_bamboohr_basic_createemployeegoal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -188,12 +209,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["title"],
+                                    "required": [
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["employeeId", "title", "dueDate", "sharedWithEmployeeIds"],
+                        "required": [
+                            "employeeId",
+                            "title",
+                            "dueDate",
+                            "sharedWithEmployeeIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_createemployeegoal": {
@@ -235,7 +263,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["in_progress", "completed", "closed"]
+                                "enum": [
+                                    "in_progress",
+                                    "completed",
+                                    "closed"
+                                ]
                             },
                             "milestones": {
                                 "type": "array",
@@ -256,19 +288,34 @@
                                             "type": "string"
                                         },
                                         "currentValue": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "startValue": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "endValue": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "completedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastUpdateDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastUpdateUserId": {
                                             "anyOf": [
@@ -311,9 +358,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_createemployeetablerow",
             "name": "create-employee-table-row",
-            "output": ["ActionOutput_bamboohr_basic_createemployeetablerow"],
-            "scopes": ["employee.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_createemployeetablerow", "ActionOutput_bamboohr_basic_createemployeetablerow"],
+            "output": [
+                "ActionOutput_bamboohr_basic_createemployeetablerow"
+            ],
+            "scopes": [
+                "employee.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_createemployeetablerow",
+                "ActionOutput_bamboohr_basic_createemployeetablerow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -337,7 +391,11 @@
                                 "description": "Dictionary of table field names and values for the new row."
                             }
                         },
-                        "required": ["employee_id", "table", "fields"],
+                        "required": [
+                            "employee_id",
+                            "table",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_createemployeetablerow": {
@@ -353,7 +411,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "employee_id", "table"],
+                        "required": [
+                            "success",
+                            "employee_id",
+                            "table"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -366,9 +428,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_createemployeetraining",
             "name": "create-employee-training",
-            "output": ["ActionOutput_bamboohr_basic_createemployeetraining"],
-            "scopes": ["training.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_createemployeetraining", "ActionOutput_bamboohr_basic_createemployeetraining"],
+            "output": [
+                "ActionOutput_bamboohr_basic_createemployeetraining"
+            ],
+            "scopes": [
+                "training.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_createemployeetraining",
+                "ActionOutput_bamboohr_basic_createemployeetraining"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -416,11 +485,18 @@
                                         "description": "Monetary amount as a decimal string (e.g. \"100.00\")."
                                     }
                                 },
-                                "required": ["currency", "amount"],
+                                "required": [
+                                    "currency",
+                                    "amount"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["employeeId", "completed", "type"],
+                        "required": [
+                            "employeeId",
+                            "completed",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_createemployeetraining": {
@@ -451,10 +527,17 @@
                                 "type": "string"
                             },
                             "type": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["id", "employeeId", "completed"],
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "completed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -467,9 +550,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_createemployee",
             "name": "create-employee",
-            "output": ["ActionOutput_bamboohr_basic_createemployee"],
-            "scopes": ["employee.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_createemployee", "ActionOutput_bamboohr_basic_createemployee"],
+            "output": [
+                "ActionOutput_bamboohr_basic_createemployee"
+            ],
+            "scopes": [
+                "employee.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_createemployee",
+                "ActionOutput_bamboohr_basic_createemployee"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -501,7 +591,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName"],
+                        "required": [
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_createemployee": {
@@ -530,7 +623,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -543,9 +640,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_createtimeoffrequest",
             "name": "create-time-off-request",
-            "output": ["ActionOutput_bamboohr_basic_createtimeoffrequest"],
-            "scopes": ["time_off.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_createtimeoffrequest", "ActionOutput_bamboohr_basic_createtimeoffrequest"],
+            "output": [
+                "ActionOutput_bamboohr_basic_createtimeoffrequest"
+            ],
+            "scopes": [
+                "time_off.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_createtimeoffrequest",
+                "ActionOutput_bamboohr_basic_createtimeoffrequest"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -621,7 +725,13 @@
                                 }
                             }
                         },
-                        "required": ["employeeId", "status", "start", "end", "timeOffTypeId"],
+                        "required": [
+                            "employeeId",
+                            "status",
+                            "start",
+                            "end",
+                            "timeOffTypeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_createtimeoffrequest": {
@@ -661,7 +771,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["unit", "amount"],
+                                "required": [
+                                    "unit",
+                                    "amount"
+                                ],
                                 "additionalProperties": false
                             },
                             "notes": {
@@ -686,7 +799,13 @@
                                 }
                             }
                         },
-                        "required": ["id", "employeeId", "status", "start", "end"],
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "status",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -699,9 +818,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_bamboohr_basic_createwebhook"],
-            "scopes": ["webhooks.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_createwebhook", "ActionOutput_bamboohr_basic_createwebhook"],
+            "output": [
+                "ActionOutput_bamboohr_basic_createwebhook"
+            ],
+            "scopes": [
+                "webhooks.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_createwebhook",
+                "ActionOutput_bamboohr_basic_createwebhook"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -735,7 +861,10 @@
                             },
                             "format": {
                                 "type": "string",
-                                "enum": ["json", "form-encoded"],
+                                "enum": [
+                                    "json",
+                                    "form-encoded"
+                                ],
                                 "description": "The payload format the webhook uses."
                             },
                             "includeCompanyDomain": {
@@ -750,7 +879,11 @@
                                 }
                             }
                         },
-                        "required": ["name", "url", "format"],
+                        "required": [
+                            "name",
+                            "url",
+                            "format"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_createwebhook": {
@@ -793,7 +926,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "url", "format"],
+                        "required": [
+                            "id",
+                            "name",
+                            "url",
+                            "format"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -806,9 +944,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deletecompanyfile",
             "name": "delete-company-file",
-            "output": ["ActionOutput_bamboohr_basic_deletecompanyfile"],
-            "scopes": ["company_file.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deletecompanyfile", "ActionOutput_bamboohr_basic_deletecompanyfile"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deletecompanyfile"
+            ],
+            "scopes": [
+                "company_file.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deletecompanyfile",
+                "ActionOutput_bamboohr_basic_deletecompanyfile"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -820,7 +965,9 @@
                                 "description": "The ID of the company file to delete. Example: 123"
                             }
                         },
-                        "required": ["fileId"],
+                        "required": [
+                            "fileId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deletecompanyfile": {
@@ -833,7 +980,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "fileId"],
+                        "required": [
+                            "success",
+                            "fileId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -846,9 +996,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deleteemployeefile",
             "name": "delete-employee-file",
-            "output": ["ActionOutput_bamboohr_basic_deleteemployeefile"],
-            "scopes": ["employee:file.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deleteemployeefile", "ActionOutput_bamboohr_basic_deleteemployeefile"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deleteemployeefile"
+            ],
+            "scopes": [
+                "employee:file.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deleteemployeefile",
+                "ActionOutput_bamboohr_basic_deleteemployeefile"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -857,14 +1014,23 @@
                         "properties": {
                             "employeeId": {
                                 "description": "The ID of the employee whose file is being deleted. Use 0 to default to the employee associated with the API key.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "fileId": {
                                 "description": "The ID of the employee file to delete.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["employeeId", "fileId"],
+                        "required": [
+                            "employeeId",
+                            "fileId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deleteemployeefile": {
@@ -874,13 +1040,23 @@
                                 "type": "boolean"
                             },
                             "employeeId": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "fileId": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["success", "employeeId", "fileId"],
+                        "required": [
+                            "success",
+                            "employeeId",
+                            "fileId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -893,9 +1069,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deleteemployeegoal",
             "name": "delete-employee-goal",
-            "output": ["ActionOutput_bamboohr_basic_deleteemployeegoal"],
-            "scopes": ["goal.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deleteemployeegoal", "ActionOutput_bamboohr_basic_deleteemployeegoal"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deleteemployeegoal"
+            ],
+            "scopes": [
+                "goal.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deleteemployeegoal",
+                "ActionOutput_bamboohr_basic_deleteemployeegoal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -911,7 +1094,10 @@
                                 "description": "Goal ID. Example: \"456\""
                             }
                         },
-                        "required": ["employeeId", "goalId"],
+                        "required": [
+                            "employeeId",
+                            "goalId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deleteemployeegoal": {
@@ -927,7 +1113,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "employeeId", "goalId"],
+                        "required": [
+                            "success",
+                            "employeeId",
+                            "goalId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -940,9 +1130,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deleteemployeetablerow",
             "name": "delete-employee-table-row",
-            "output": ["ActionOutput_bamboohr_basic_deleteemployeetablerow"],
-            "scopes": ["employee.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deleteemployeetablerow", "ActionOutput_bamboohr_basic_deleteemployeetablerow"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deleteemployeetablerow"
+            ],
+            "scopes": [
+                "employee.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deleteemployeetablerow",
+                "ActionOutput_bamboohr_basic_deleteemployeetablerow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -962,7 +1159,11 @@
                                 "description": "The ID of the specific row to delete. Example: \"456\""
                             }
                         },
-                        "required": ["employeeId", "table", "rowId"],
+                        "required": [
+                            "employeeId",
+                            "table",
+                            "rowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deleteemployeetablerow": {
@@ -975,7 +1176,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -988,9 +1191,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deleteemployeetraining",
             "name": "delete-employee-training",
-            "output": ["ActionOutput_bamboohr_basic_deleteemployeetraining"],
-            "scopes": ["training.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deleteemployeetraining", "ActionOutput_bamboohr_basic_deleteemployeetraining"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deleteemployeetraining"
+            ],
+            "scopes": [
+                "training.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deleteemployeetraining",
+                "ActionOutput_bamboohr_basic_deleteemployeetraining"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1002,7 +1212,9 @@
                                 "description": "The ID of the training record to delete. Example: 123"
                             }
                         },
-                        "required": ["trainingRecordId"],
+                        "required": [
+                            "trainingRecordId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deleteemployeetraining": {
@@ -1015,7 +1227,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "trainingRecordId"],
+                        "required": [
+                            "success",
+                            "trainingRecordId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1028,9 +1243,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deleteemployee",
             "name": "delete-employee",
-            "output": ["ActionOutput_bamboohr_basic_deleteemployee"],
-            "scopes": ["employee.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deleteemployee", "ActionOutput_bamboohr_basic_deleteemployee"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deleteemployee"
+            ],
+            "scopes": [
+                "employee.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deleteemployee",
+                "ActionOutput_bamboohr_basic_deleteemployee"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1042,7 +1264,9 @@
                                 "description": "The BambooHR employee ID to delete. Example: \"123\""
                             }
                         },
-                        "required": ["employeeId"],
+                        "required": [
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deleteemployee": {
@@ -1055,7 +1279,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "employeeId"],
+                        "required": [
+                            "success",
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1068,9 +1295,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deletetimeoffrequest",
             "name": "delete-time-off-request",
-            "output": ["ActionOutput_bamboohr_basic_deletetimeoffrequest"],
-            "scopes": ["time_off.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deletetimeoffrequest", "ActionOutput_bamboohr_basic_deletetimeoffrequest"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deletetimeoffrequest"
+            ],
+            "scopes": [
+                "time_off.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deletetimeoffrequest",
+                "ActionOutput_bamboohr_basic_deletetimeoffrequest"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1082,7 +1316,9 @@
                                 "description": "The ID of the time off request to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["request_id"],
+                        "required": [
+                            "request_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deletetimeoffrequest": {
@@ -1095,7 +1331,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "request_id"],
+                        "required": [
+                            "success",
+                            "request_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1108,9 +1347,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deletetimetrackingentry",
             "name": "delete-time-tracking-entry",
-            "output": ["ActionOutput_bamboohr_basic_deletetimetrackingentry"],
-            "scopes": ["time_tracking.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deletetimetrackingentry", "ActionOutput_bamboohr_basic_deletetimetrackingentry"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deletetimetrackingentry"
+            ],
+            "scopes": [
+                "time_tracking.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deletetimetrackingentry",
+                "ActionOutput_bamboohr_basic_deletetimetrackingentry"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1126,7 +1372,10 @@
                                 "description": "Time tracking entry ID. Example: \"456\""
                             }
                         },
-                        "required": ["employeeId", "entryId"],
+                        "required": [
+                            "employeeId",
+                            "entryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deletetimetrackingentry": {
@@ -1136,7 +1385,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1149,9 +1400,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_bamboohr_basic_deletewebhook"],
-            "scopes": ["webhooks.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_deletewebhook", "ActionOutput_bamboohr_basic_deletewebhook"],
+            "output": [
+                "ActionOutput_bamboohr_basic_deletewebhook"
+            ],
+            "scopes": [
+                "webhooks.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_deletewebhook",
+                "ActionOutput_bamboohr_basic_deletewebhook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1165,7 +1423,9 @@
                                 "description": "The ID of the webhook to delete. Example: 123"
                             }
                         },
-                        "required": ["webhookId"],
+                        "required": [
+                            "webhookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_deletewebhook": {
@@ -1175,7 +1435,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1188,9 +1450,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getapplicant",
             "name": "get-applicant",
-            "output": ["ActionOutput_bamboohr_basic_getapplicant"],
-            "scopes": ["hiring:applications"],
-            "usedModels": ["ActionInput_bamboohr_basic_getapplicant", "ActionOutput_bamboohr_basic_getapplicant"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getapplicant"
+            ],
+            "scopes": [
+                "hiring:applications"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getapplicant",
+                "ActionOutput_bamboohr_basic_getapplicant"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1204,7 +1473,9 @@
                                 "description": "Application ID. Example: 123"
                             }
                         },
-                        "required": ["applicationId"],
+                        "required": [
+                            "applicationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getapplicant": {
@@ -1243,7 +1514,10 @@
                                                         "type": "string"
                                                     },
                                                     "avatar": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "jobTitle": {
                                                         "anyOf": [
@@ -1251,13 +1525,22 @@
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "id": {
-                                                                        "type": ["number", "null"]
+                                                                        "type": [
+                                                                            "number",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "label": {
-                                                                        "type": ["string", "null"]
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
-                                                                "required": ["id", "label"],
+                                                                "required": [
+                                                                    "id",
+                                                                    "label"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1266,7 +1549,13 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["id", "firstName", "lastName", "avatar", "jobTitle"],
+                                                "required": [
+                                                    "id",
+                                                    "firstName",
+                                                    "lastName",
+                                                    "avatar",
+                                                    "jobTitle"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -1275,20 +1564,35 @@
                                         ]
                                     }
                                 },
-                                "required": ["id", "label"],
+                                "required": [
+                                    "id",
+                                    "label"
+                                ],
                                 "additionalProperties": false
                             },
                             "rating": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "resumeFileId": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "coverLetterFileId": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "attachmentCount": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "attachments": {
                                 "anyOf": [
@@ -1307,7 +1611,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name", "fileUrl"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "fileUrl"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1353,10 +1661,16 @@
                                 "type": "number"
                             },
                             "referredBy": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "desiredSalary": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "commentCount": {
                                 "type": "number"
@@ -1382,7 +1696,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "label"],
+                                            "required": [
+                                                "id",
+                                                "label"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "answer": {
@@ -1395,31 +1712,55 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "label"],
+                                            "required": [
+                                                "id",
+                                                "label"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "hasRevisions": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "isArchived": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "archivedDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "editedDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "editedEndDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["question", "answer"],
+                                    "required": [
+                                        "question",
+                                        "answer"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "applicationReferences": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "applicant": {
                                 "type": "object",
@@ -1437,16 +1778,28 @@
                                         "type": "string"
                                     },
                                     "phoneNumber": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "avatar": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "source": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "twitterUsername": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "address": {
                                         "anyOf": [
@@ -1454,22 +1807,40 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "addressLine1": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "addressLine2": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "city": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "state": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "zipcode": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "country": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1480,13 +1851,22 @@
                                         ]
                                     },
                                     "linkedinUrl": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "websiteUrl": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "availableStartDate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "education": {
                                         "anyOf": [
@@ -1494,7 +1874,10 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "institution": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "level": {
                                                         "anyOf": [
@@ -1508,7 +1891,10 @@
                                                                         "type": "string"
                                                                     }
                                                                 },
-                                                                "required": ["id", "label"],
+                                                                "required": [
+                                                                    "id",
+                                                                    "label"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1525,7 +1911,12 @@
                                         ]
                                     }
                                 },
-                                "required": ["id", "firstName", "lastName", "email"],
+                                "required": [
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "job": {
@@ -1538,13 +1929,19 @@
                                         "type": "object",
                                         "properties": {
                                             "id": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "label": {
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "label"],
+                                        "required": [
+                                            "id",
+                                            "label"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "hiringLead": {
@@ -1562,7 +1959,10 @@
                                                         "type": "string"
                                                     },
                                                     "avatar": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "jobTitle": {
                                                         "anyOf": [
@@ -1570,13 +1970,22 @@
                                                                 "type": "object",
                                                                 "properties": {
                                                                     "id": {
-                                                                        "type": ["number", "null"]
+                                                                        "type": [
+                                                                            "number",
+                                                                            "null"
+                                                                        ]
                                                                     },
                                                                     "label": {
-                                                                        "type": ["string", "null"]
+                                                                        "type": [
+                                                                            "string",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
-                                                                "required": ["id", "label"],
+                                                                "required": [
+                                                                    "id",
+                                                                    "label"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             {
@@ -1585,7 +1994,11 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["employeeId", "firstName", "lastName"],
+                                                "required": [
+                                                    "employeeId",
+                                                    "firstName",
+                                                    "lastName"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -1594,11 +2007,20 @@
                                         ]
                                     }
                                 },
-                                "required": ["id", "title"],
+                                "required": [
+                                    "id",
+                                    "title"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "appliedDate", "status", "applicant", "job"],
+                        "required": [
+                            "id",
+                            "appliedDate",
+                            "status",
+                            "applicant",
+                            "job"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1611,9 +2033,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getcompanyfile",
             "name": "get-company-file",
-            "output": ["ActionOutput_bamboohr_basic_getcompanyfile"],
-            "scopes": ["company_file"],
-            "usedModels": ["ActionInput_bamboohr_basic_getcompanyfile", "ActionOutput_bamboohr_basic_getcompanyfile"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getcompanyfile"
+            ],
+            "scopes": [
+                "company_file"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getcompanyfile",
+                "ActionOutput_bamboohr_basic_getcompanyfile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1625,7 +2054,9 @@
                                 "description": "Company file ID. Example: 172"
                             }
                         },
-                        "required": ["fileId"],
+                        "required": [
+                            "fileId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getcompanyfile": {
@@ -1650,7 +2081,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1663,9 +2096,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getcompanyreport",
             "name": "get-company-report",
-            "output": ["ActionOutput_bamboohr_basic_getcompanyreport"],
-            "scopes": ["report"],
-            "usedModels": ["ActionInput_bamboohr_basic_getcompanyreport", "ActionOutput_bamboohr_basic_getcompanyreport"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getcompanyreport"
+            ],
+            "scopes": [
+                "report"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getcompanyreport",
+                "ActionOutput_bamboohr_basic_getcompanyreport"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1701,10 +2141,15 @@
                                             "includeNull": {
                                                 "description": "Whether to include employees with no last-changed date.",
                                                 "type": "string",
-                                                "enum": ["yes", "no"]
+                                                "enum": [
+                                                    "yes",
+                                                    "no"
+                                                ]
                                             }
                                         },
-                                        "required": ["value"],
+                                        "required": [
+                                            "value"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "employeeIds": {
@@ -1717,13 +2162,18 @@
                                     "filterDuplicates": {
                                         "description": "Whether to apply standard duplicate row filtering. Defaults to enabled.",
                                         "type": "string",
-                                        "enum": ["yes", "no"]
+                                        "enum": [
+                                            "yes",
+                                            "no"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["fields"],
+                        "required": [
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getcompanyreport": {
@@ -1747,7 +2197,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1760,12 +2214,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["title", "fields", "employees"],
+                        "required": [
+                            "title",
+                            "fields",
+                            "employees"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1778,9 +2238,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getemployeefile",
             "name": "get-employee-file",
-            "output": ["ActionOutput_bamboohr_basic_getemployeefile"],
-            "scopes": ["employee:file"],
-            "usedModels": ["ActionInput_bamboohr_basic_getemployeefile", "ActionOutput_bamboohr_basic_getemployeefile"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getemployeefile"
+            ],
+            "scopes": [
+                "employee:file"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getemployeefile",
+                "ActionOutput_bamboohr_basic_getemployeefile"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1796,7 +2263,10 @@
                                 "description": "The ID of the employee file to download."
                             }
                         },
-                        "required": ["employeeId", "fileId"],
+                        "required": [
+                            "employeeId",
+                            "fileId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getemployeefile": {
@@ -1825,7 +2295,14 @@
                                 "description": "Size of the file in bytes."
                             }
                         },
-                        "required": ["id", "employeeId", "content", "contentType", "filename", "size"],
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "content",
+                            "contentType",
+                            "filename",
+                            "size"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1838,9 +2315,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getemployeetablerow",
             "name": "get-employee-table-row",
-            "output": ["ActionOutput_bamboohr_basic_getemployeetablerow"],
-            "scopes": ["employee"],
-            "usedModels": ["ActionInput_bamboohr_basic_getemployeetablerow", "ActionOutput_bamboohr_basic_getemployeetablerow"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getemployeetablerow"
+            ],
+            "scopes": [
+                "employee"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getemployeetablerow",
+                "ActionOutput_bamboohr_basic_getemployeetablerow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1860,7 +2344,11 @@
                                 "description": "The ID of the specific row to retrieve."
                             }
                         },
-                        "required": ["employeeId", "table", "rowId"],
+                        "required": [
+                            "employeeId",
+                            "table",
+                            "rowId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getemployeetablerow": {
@@ -1878,9 +2366,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getemployee",
             "name": "get-employee",
-            "output": ["ActionOutput_bamboohr_basic_getemployee"],
-            "scopes": ["employee"],
-            "usedModels": ["ActionInput_bamboohr_basic_getemployee", "ActionOutput_bamboohr_basic_getemployee"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getemployee"
+            ],
+            "scopes": [
+                "employee"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getemployee",
+                "ActionOutput_bamboohr_basic_getemployee"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1903,7 +2398,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["employeeId"],
+                        "required": [
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getemployee": {
@@ -1913,7 +2410,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1926,9 +2425,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getsavedreport",
             "name": "get-saved-report",
-            "output": ["ActionOutput_bamboohr_basic_getsavedreport"],
-            "scopes": ["report"],
-            "usedModels": ["ActionInput_bamboohr_basic_getsavedreport", "ActionOutput_bamboohr_basic_getsavedreport"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getsavedreport"
+            ],
+            "scopes": [
+                "report"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getsavedreport",
+                "ActionOutput_bamboohr_basic_getsavedreport"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1940,7 +2446,9 @@
                                 "description": "The numeric ID of the saved custom report to execute. Example: 42"
                             }
                         },
-                        "required": ["reportId"],
+                        "required": [
+                            "reportId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getsavedreport": {
@@ -1964,7 +2472,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1991,9 +2501,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_gettimeoffbalance",
             "name": "get-time-off-balance",
-            "output": ["ActionOutput_bamboohr_basic_gettimeoffbalance"],
-            "scopes": ["time_off"],
-            "usedModels": ["ActionInput_bamboohr_basic_gettimeoffbalance", "ActionOutput_bamboohr_basic_gettimeoffbalance"],
+            "output": [
+                "ActionOutput_bamboohr_basic_gettimeoffbalance"
+            ],
+            "scopes": [
+                "time_off"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_gettimeoffbalance",
+                "ActionOutput_bamboohr_basic_gettimeoffbalance"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2019,7 +2536,9 @@
                                 "maximum": 4
                             }
                         },
-                        "required": ["employeeId"],
+                        "required": [
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_gettimeoffbalance": {
@@ -2031,7 +2550,10 @@
                                     "type": "object",
                                     "properties": {
                                         "timeOffType": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -2040,7 +2562,10 @@
                                             "type": "string"
                                         },
                                         "balance": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         },
                                         "end": {
                                             "type": "string"
@@ -2049,15 +2574,25 @@
                                             "type": "string"
                                         },
                                         "usedYearToDate": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         }
                                     },
-                                    "required": ["timeOffType", "name", "units", "balance"],
+                                    "required": [
+                                        "timeOffType",
+                                        "name",
+                                        "units",
+                                        "balance"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["balances"],
+                        "required": [
+                            "balances"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2070,9 +2605,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_gettimeoffrequest",
             "name": "get-time-off-request",
-            "output": ["ActionOutput_bamboohr_basic_gettimeoffrequest"],
-            "scopes": ["time_off"],
-            "usedModels": ["ActionInput_bamboohr_basic_gettimeoffrequest", "ActionOutput_bamboohr_basic_gettimeoffrequest"],
+            "output": [
+                "ActionOutput_bamboohr_basic_gettimeoffrequest"
+            ],
+            "scopes": [
+                "time_off"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_gettimeoffrequest",
+                "ActionOutput_bamboohr_basic_gettimeoffrequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2086,7 +2628,9 @@
                                 "description": "The time off request ID. Example: 1348"
                             }
                         },
-                        "required": ["requestId"],
+                        "required": [
+                            "requestId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_gettimeoffrequest": {
@@ -2206,7 +2750,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2219,9 +2765,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_bamboohr_basic_getuser"],
-            "scopes": ["user"],
-            "usedModels": ["ActionInput_bamboohr_basic_getuser", "ActionOutput_bamboohr_basic_getuser"],
+            "output": [
+                "ActionOutput_bamboohr_basic_getuser"
+            ],
+            "scopes": [
+                "user"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_getuser",
+                "ActionOutput_bamboohr_basic_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2233,17 +2786,25 @@
                                 "description": "BambooHR user ID. Example: \"123\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_getuser": {
                         "type": "object",
                         "properties": {
                             "id": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "employeeId": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "firstName": {
                                 "type": "string"
@@ -2273,9 +2834,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listapplicants",
             "name": "list-applicants",
-            "output": ["ActionOutput_bamboohr_basic_listapplicants"],
-            "scopes": ["hiring:applications"],
-            "usedModels": ["ActionInput_bamboohr_basic_listapplicants", "ActionOutput_bamboohr_basic_listapplicants"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listapplicants"
+            ],
+            "scopes": [
+                "hiring:applications"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listapplicants",
+                "ActionOutput_bamboohr_basic_listapplicants"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2403,7 +2971,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2416,9 +2986,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listcompanyfiles",
             "name": "list-company-files",
-            "output": ["ActionOutput_bamboohr_basic_listcompanyfiles"],
-            "scopes": ["company_file"],
-            "usedModels": ["ActionInput_bamboohr_basic_listcompanyfiles", "ActionOutput_bamboohr_basic_listcompanyfiles"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listcompanyfiles"
+            ],
+            "scopes": [
+                "company_file"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listcompanyfiles",
+                "ActionOutput_bamboohr_basic_listcompanyfiles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2476,7 +3053,10 @@
                                                         "type": "string"
                                                     },
                                                     "createdBy": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "shareWithEmployees": {
                                                         "type": "string"
@@ -2494,12 +3074,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2507,7 +3091,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["categories"],
+                        "required": [
+                            "categories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2520,9 +3106,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listdepartments",
             "name": "list-departments",
-            "output": ["ActionOutput_bamboohr_basic_listdepartments"],
-            "scopes": ["field"],
-            "usedModels": ["ActionInput_bamboohr_basic_listdepartments", "ActionOutput_bamboohr_basic_listdepartments"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listdepartments"
+            ],
+            "scopes": [
+                "field"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listdepartments",
+                "ActionOutput_bamboohr_basic_listdepartments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2540,7 +3133,10 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -2549,12 +3145,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["departments"],
+                        "required": [
+                            "departments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2567,9 +3168,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listdatasetfields",
             "name": "list-dataset-fields",
-            "output": ["ActionOutput_bamboohr_basic_listdatasetfields"],
-            "scopes": ["report"],
-            "usedModels": ["ActionInput_bamboohr_basic_listdatasetfields", "ActionOutput_bamboohr_basic_listdatasetfields"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listdatasetfields"
+            ],
+            "scopes": [
+                "report"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listdatasetfields",
+                "ActionOutput_bamboohr_basic_listdatasetfields"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2604,12 +3212,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "label"],
+                                    "required": [
+                                        "name",
+                                        "label"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["fields"],
+                        "required": [
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2622,9 +3235,17 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listemployeefields",
             "name": "list-employee-fields",
-            "output": ["ActionOutput_bamboohr_basic_listemployeefields"],
-            "scopes": ["employee", "field"],
-            "usedModels": ["ActionInput_bamboohr_basic_listemployeefields", "ActionOutput_bamboohr_basic_listemployeefields"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listemployeefields"
+            ],
+            "scopes": [
+                "employee",
+                "field"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listemployeefields",
+                "ActionOutput_bamboohr_basic_listemployeefields"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2654,12 +3275,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["fields"],
+                        "required": [
+                            "fields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2672,9 +3298,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listemployeefiles",
             "name": "list-employee-files",
-            "output": ["ActionOutput_bamboohr_basic_listemployeefiles"],
-            "scopes": ["employee:file"],
-            "usedModels": ["ActionInput_bamboohr_basic_listemployeefiles", "ActionOutput_bamboohr_basic_listemployeefiles"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listemployeefiles"
+            ],
+            "scopes": [
+                "employee:file"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listemployeefiles",
+                "ActionOutput_bamboohr_basic_listemployeefiles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2686,7 +3319,9 @@
                                 "description": "The ID of the employee whose files are being listed. Use 0 to resolve to the employee associated with the API key."
                             }
                         },
-                        "required": ["employeeId"],
+                        "required": [
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_listemployeefiles": {
@@ -2739,7 +3374,10 @@
                                                         "type": "string"
                                                     },
                                                     "createdBy": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "shareWithEmployee": {
                                                         "type": "string"
@@ -2754,17 +3392,25 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["employeeId"],
+                        "required": [
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2777,9 +3423,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listemployeegoals",
             "name": "list-employee-goals",
-            "output": ["ActionOutput_bamboohr_basic_listemployeegoals"],
-            "scopes": ["goal"],
-            "usedModels": ["ActionInput_bamboohr_basic_listemployeegoals", "ActionOutput_bamboohr_basic_listemployeegoals"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listemployeegoals"
+            ],
+            "scopes": [
+                "goal"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listemployeegoals",
+                "ActionOutput_bamboohr_basic_listemployeegoals"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2793,10 +3446,17 @@
                             "filter": {
                                 "description": "Goal status filter. Use status-inProgress for active goals, status-completed for completed goals, status-closed for closed goals, and status-all for all goals including closed.",
                                 "type": "string",
-                                "enum": ["status-inProgress", "status-completed", "status-closed", "status-all"]
+                                "enum": [
+                                    "status-inProgress",
+                                    "status-completed",
+                                    "status-closed",
+                                    "status-all"
+                                ]
                             }
                         },
-                        "required": ["employeeId"],
+                        "required": [
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_listemployeegoals": {
@@ -2855,25 +3515,47 @@
                                                         "type": "string"
                                                     },
                                                     "currentValue": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "startValue": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "endValue": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "completedDateTime": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "lastUpdateDateTime": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "lastUpdateUserId": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["id", "employeeGoalId", "title"],
+                                                "required": [
+                                                    "id",
+                                                    "employeeGoalId",
+                                                    "title"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2890,12 +3572,17 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["goals"],
+                        "required": [
+                            "goals"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2908,9 +3595,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listemployeetablerows",
             "name": "list-employee-table-rows",
-            "output": ["ActionOutput_bamboohr_basic_listemployeetablerows"],
-            "scopes": ["employee"],
-            "usedModels": ["ActionInput_bamboohr_basic_listemployeetablerows", "ActionOutput_bamboohr_basic_listemployeetablerows"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listemployeetablerows"
+            ],
+            "scopes": [
+                "employee"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listemployeetablerows",
+                "ActionOutput_bamboohr_basic_listemployeetablerows"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2926,7 +3620,10 @@
                                 "description": "The API name of the table to retrieve. Examples: jobInfo, compensation, employmentStatus, contacts, emergencyContacts, dependents, employeeEducation."
                             }
                         },
-                        "required": ["employeeId", "table"],
+                        "required": [
+                            "employeeId",
+                            "table"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_listemployeetablerows": {
@@ -2941,12 +3638,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["rows"],
+                        "required": [
+                            "rows"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2959,9 +3660,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listemployeetraining",
             "name": "list-employee-training",
-            "output": ["ActionOutput_bamboohr_basic_listemployeetraining"],
-            "scopes": ["training"],
-            "usedModels": ["ActionInput_bamboohr_basic_listemployeetraining", "ActionOutput_bamboohr_basic_listemployeetraining"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listemployeetraining"
+            ],
+            "scopes": [
+                "training"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listemployeetraining",
+                "ActionOutput_bamboohr_basic_listemployeetraining"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2981,7 +3689,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["employee_id"],
+                        "required": [
+                            "employee_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_listemployeetraining": {
@@ -3020,7 +3730,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3028,7 +3740,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3041,9 +3755,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listemployees",
             "name": "list-employees",
-            "output": ["ActionOutput_bamboohr_basic_listemployees"],
-            "scopes": ["employee_directory"],
-            "usedModels": ["ActionInput_bamboohr_basic_listemployees", "ActionOutput_bamboohr_basic_listemployees"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listemployees"
+            ],
+            "scopes": [
+                "employee_directory"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listemployees",
+                "ActionOutput_bamboohr_basic_listemployees"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3073,7 +3794,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3081,7 +3804,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["employees"],
+                        "required": [
+                            "employees"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3094,9 +3819,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listjobopenings",
             "name": "list-job-openings",
-            "output": ["ActionOutput_bamboohr_basic_listjobopenings"],
-            "scopes": ["hiring:applications"],
-            "usedModels": ["ActionInput_bamboohr_basic_listjobopenings", "ActionOutput_bamboohr_basic_listjobopenings"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listjobopenings"
+            ],
+            "scopes": [
+                "hiring:applications"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listjobopenings",
+                "ActionOutput_bamboohr_basic_listjobopenings"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3113,11 +3845,20 @@
                             },
                             "sort_by": {
                                 "type": "string",
-                                "enum": ["count", "title", "lead", "created", "status"]
+                                "enum": [
+                                    "count",
+                                    "title",
+                                    "lead",
+                                    "created",
+                                    "status"
+                                ]
                             },
                             "sort_order": {
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             },
                             "cursor": {
                                 "description": "Pagination cursor",
@@ -3141,7 +3882,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "id": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "label": {
                                                     "type": "string"
@@ -3208,7 +3952,10 @@
                                                     "type": "string"
                                                 },
                                                 "avatar": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "jobTitle": {
                                                     "anyOf": [
@@ -3228,19 +3975,33 @@
                                             "additionalProperties": false
                                         },
                                         "newApplicantsCount": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "activeApplicantsCount": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "totalApplicantsCount": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "postingUrl": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3248,7 +4009,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3261,9 +4024,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listjobtitles",
             "name": "list-job-titles",
-            "output": ["ActionOutput_bamboohr_basic_listjobtitles"],
-            "scopes": ["field"],
-            "usedModels": ["ActionInput_bamboohr_basic_listjobtitles", "ActionOutput_bamboohr_basic_listjobtitles"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listjobtitles"
+            ],
+            "scopes": [
+                "field"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listjobtitles",
+                "ActionOutput_bamboohr_basic_listjobtitles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3290,12 +4060,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["options"],
+                        "required": [
+                            "options"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3308,9 +4083,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listlocations",
             "name": "list-locations",
-            "output": ["ActionOutput_bamboohr_basic_listlocations"],
-            "scopes": ["field"],
-            "usedModels": ["ActionInput_bamboohr_basic_listlocations", "ActionOutput_bamboohr_basic_listlocations"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listlocations"
+            ],
+            "scopes": [
+                "field"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listlocations",
+                "ActionOutput_bamboohr_basic_listlocations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3337,24 +4119,38 @@
                                             "type": "string"
                                         },
                                         "createdDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "archivedDate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "manageable": {
                                             "type": "string"
                                         },
                                         "frequency": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["locations"],
+                        "required": [
+                            "locations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3367,9 +4163,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listtimeoffrequests",
             "name": "list-time-off-requests",
-            "output": ["ActionOutput_bamboohr_basic_listtimeoffrequests"],
-            "scopes": ["time_off"],
-            "usedModels": ["ActionInput_bamboohr_basic_listtimeoffrequests", "ActionOutput_bamboohr_basic_listtimeoffrequests"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listtimeoffrequests"
+            ],
+            "scopes": [
+                "time_off"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listtimeoffrequests",
+                "ActionOutput_bamboohr_basic_listtimeoffrequests"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3391,7 +4194,11 @@
                             "action": {
                                 "description": "Limit to requests the caller can view, approve, or only their own requests. Defaults to view.",
                                 "type": "string",
-                                "enum": ["view", "approve", "myRequests"]
+                                "enum": [
+                                    "view",
+                                    "approve",
+                                    "myRequests"
+                                ]
                             },
                             "employeeId": {
                                 "description": "A particular employee ID to limit the response to.",
@@ -3410,7 +4217,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["start", "end"],
+                        "required": [
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_listtimeoffrequests": {
@@ -3440,7 +4250,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["status"],
+                                            "required": [
+                                                "status"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "name": {
@@ -3468,7 +4280,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "amount": {
@@ -3481,7 +4296,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["unit", "amount"],
+                                            "required": [
+                                                "unit",
+                                                "amount"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "actions": {
@@ -3523,16 +4341,30 @@
                                                 "type": "string"
                                             },
                                             "additionalProperties": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         }
                                     },
-                                    "required": ["id", "employeeId", "status", "name", "start", "end", "type", "amount"],
+                                    "required": [
+                                        "id",
+                                        "employeeId",
+                                        "status",
+                                        "name",
+                                        "start",
+                                        "end",
+                                        "type",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3545,9 +4377,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listtimeofftypes",
             "name": "list-time-off-types",
-            "output": ["ActionOutput_bamboohr_basic_listtimeofftypes"],
-            "scopes": ["time_off"],
-            "usedModels": ["ActionInput_bamboohr_basic_listtimeofftypes", "ActionOutput_bamboohr_basic_listtimeofftypes"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listtimeofftypes"
+            ],
+            "scopes": [
+                "time_off"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listtimeofftypes",
+                "ActionOutput_bamboohr_basic_listtimeofftypes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3583,12 +4422,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3601,9 +4445,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listtimetrackingentries",
             "name": "list-time-tracking-entries",
-            "output": ["ActionOutput_bamboohr_basic_listtimetrackingentries"],
-            "scopes": ["time_tracking"],
-            "usedModels": ["ActionInput_bamboohr_basic_listtimetrackingentries", "ActionOutput_bamboohr_basic_listtimetrackingentries"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listtimetrackingentries"
+            ],
+            "scopes": [
+                "time_tracking"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listtimetrackingentries",
+                "ActionOutput_bamboohr_basic_listtimetrackingentries"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3627,7 +4478,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["employeeId", "start", "end"],
+                        "required": [
+                            "employeeId",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_listtimetrackingentries": {
@@ -3678,7 +4533,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3686,7 +4543,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3699,9 +4558,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listtrainingtypes",
             "name": "list-training-types",
-            "output": ["ActionOutput_bamboohr_basic_listtrainingtypes"],
-            "scopes": ["training"],
-            "usedModels": ["ActionInput_bamboohr_basic_listtrainingtypes", "ActionOutput_bamboohr_basic_listtrainingtypes"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listtrainingtypes"
+            ],
+            "scopes": [
+                "training"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listtrainingtypes",
+                "ActionOutput_bamboohr_basic_listtrainingtypes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3728,7 +4594,11 @@
                                     "type": "boolean"
                                 },
                                 "frequency": {
-                                    "type": ["string", "number", "null"]
+                                    "type": [
+                                        "string",
+                                        "number",
+                                        "null"
+                                    ]
                                 },
                                 "dueFromHireDate": {
                                     "anyOf": [
@@ -3746,7 +4616,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["unit", "amount"],
+                                            "required": [
+                                                "unit",
+                                                "amount"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -3770,22 +4643,37 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
                                 },
                                 "linkUrl": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "description": {
-                                    "type": ["string", "null"]
+                                    "type": [
+                                        "string",
+                                        "null"
+                                    ]
                                 },
                                 "allowEmployeesToMarkComplete": {
                                     "type": "boolean"
                                 }
                             },
-                            "required": ["id", "name", "renewable", "required", "allowEmployeesToMarkComplete"],
+                            "required": [
+                                "id",
+                                "name",
+                                "renewable",
+                                "required",
+                                "allowEmployeesToMarkComplete"
+                            ],
                             "additionalProperties": false
                         }
                     }
@@ -3799,9 +4687,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_bamboohr_basic_listusers"],
-            "scopes": ["user"],
-            "usedModels": ["ActionInput_bamboohr_basic_listusers", "ActionOutput_bamboohr_basic_listusers"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listusers"
+            ],
+            "scopes": [
+                "user"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listusers",
+                "ActionOutput_bamboohr_basic_listusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3844,7 +4739,9 @@
                                 }
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3857,9 +4754,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_bamboohr_basic_listwebhooks"],
-            "scopes": ["webhooks"],
-            "usedModels": ["ActionInput_bamboohr_basic_listwebhooks", "ActionOutput_bamboohr_basic_listwebhooks"],
+            "output": [
+                "ActionOutput_bamboohr_basic_listwebhooks"
+            ],
+            "scopes": [
+                "webhooks"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_listwebhooks",
+                "ActionOutput_bamboohr_basic_listwebhooks"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3890,19 +4794,30 @@
                                         },
                                         "lastSent": {
                                             "description": "The date the webhook was last sent, or null if never sent.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "url": {
                                             "type": "string",
                                             "description": "The URL of the webhook."
                                         }
                                     },
-                                    "required": ["id", "name", "created", "lastSent", "url"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "created",
+                                        "lastSent",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["webhooks"],
+                        "required": [
+                            "webhooks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3915,9 +4830,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_updateemployeegoal",
             "name": "update-employee-goal",
-            "output": ["ActionOutput_bamboohr_basic_updateemployeegoal"],
-            "scopes": ["goal.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_updateemployeegoal", "ActionOutput_bamboohr_basic_updateemployeegoal"],
+            "output": [
+                "ActionOutput_bamboohr_basic_updateemployeegoal"
+            ],
+            "scopes": [
+                "goal.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_updateemployeegoal",
+                "ActionOutput_bamboohr_basic_updateemployeegoal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3956,7 +4878,10 @@
                             },
                             "completionDate": {
                                 "description": "The date the goal was completed in YYYY-MM-DD format",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sharedWithEmployeeIds": {
                                 "type": "array",
@@ -3969,10 +4894,19 @@
                             },
                             "alignsWithOptionId": {
                                 "description": "The option ID that aligns with this goal",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["employeeId", "goalId", "title", "dueDate", "sharedWithEmployeeIds"],
+                        "required": [
+                            "employeeId",
+                            "goalId",
+                            "title",
+                            "dueDate",
+                            "sharedWithEmployeeIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_updateemployeegoal": {
@@ -3985,13 +4919,19 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "percentComplete": {
                                 "type": "number"
                             },
                             "alignsWithOptionId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sharedWithEmployeeIds": {
                                 "type": "array",
@@ -4003,14 +4943,24 @@
                                 "type": "string"
                             },
                             "completionDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastChangedDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["in_progress", "completed", "closed"]
+                                "enum": [
+                                    "in_progress",
+                                    "completed",
+                                    "closed"
+                                ]
                             },
                             "milestones": {
                                 "anyOf": [
@@ -4029,16 +4979,28 @@
                                                     "type": "string"
                                                 },
                                                 "currentValue": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "startValue": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "endValue": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "completedDateTime": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "lastUpdateDateTime": {
                                                     "type": "string"
@@ -4047,7 +5009,13 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["id", "employeeGoalId", "title", "lastUpdateDateTime", "lastUpdateUserId"],
+                                            "required": [
+                                                "id",
+                                                "employeeGoalId",
+                                                "title",
+                                                "lastUpdateDateTime",
+                                                "lastUpdateUserId"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -4068,7 +5036,10 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["canEditGoalProgressBar", "canEditGoalMilestoneProgressBar"],
+                                        "required": [
+                                            "canEditGoalProgressBar",
+                                            "canEditGoalMilestoneProgressBar"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -4077,7 +5048,14 @@
                                 ]
                             }
                         },
-                        "required": ["id", "title", "percentComplete", "sharedWithEmployeeIds", "dueDate", "status"],
+                        "required": [
+                            "id",
+                            "title",
+                            "percentComplete",
+                            "sharedWithEmployeeIds",
+                            "dueDate",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4090,9 +5068,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_updateemployeetablerow",
             "name": "update-employee-table-row",
-            "output": ["ActionOutput_bamboohr_basic_updateemployeetablerow"],
-            "scopes": ["employee.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_updateemployeetablerow", "ActionOutput_bamboohr_basic_updateemployeetablerow"],
+            "output": [
+                "ActionOutput_bamboohr_basic_updateemployeetablerow"
+            ],
+            "scopes": [
+                "employee.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_updateemployeetablerow",
+                "ActionOutput_bamboohr_basic_updateemployeetablerow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4120,7 +5105,12 @@
                                 "description": "Dictionary of table field names and values to update."
                             }
                         },
-                        "required": ["employeeId", "table", "rowId", "fields"],
+                        "required": [
+                            "employeeId",
+                            "table",
+                            "rowId",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_updateemployeetablerow": {
@@ -4139,7 +5129,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["employeeId", "table", "rowId", "updated"],
+                        "required": [
+                            "employeeId",
+                            "table",
+                            "rowId",
+                            "updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4152,9 +5147,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_updateemployeetraining",
             "name": "update-employee-training",
-            "output": ["ActionOutput_bamboohr_basic_updateemployeetraining"],
-            "scopes": ["training.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_updateemployeetraining", "ActionOutput_bamboohr_basic_updateemployeetraining"],
+            "output": [
+                "ActionOutput_bamboohr_basic_updateemployeetraining"
+            ],
+            "scopes": [
+                "training.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_updateemployeetraining",
+                "ActionOutput_bamboohr_basic_updateemployeetraining"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4163,7 +5165,10 @@
                         "properties": {
                             "trainingRecordId": {
                                 "description": "The ID of the training record to update. Example: \"123\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "completed": {
                                 "type": "string",
@@ -4189,18 +5194,27 @@
                             },
                             "hours": {
                                 "description": "Number of hours for the training",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "credits": {
                                 "description": "Credits earned for the training",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "notes": {
                                 "description": "Optional notes about the training record",
                                 "type": "string"
                             }
                         },
-                        "required": ["trainingRecordId", "completed"],
+                        "required": [
+                            "trainingRecordId",
+                            "completed"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_updateemployeetraining": {
@@ -4234,7 +5248,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["trainingRecordId"],
+                        "required": [
+                            "trainingRecordId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4247,9 +5263,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_updateemployee",
             "name": "update-employee",
-            "output": ["ActionOutput_bamboohr_basic_updateemployee"],
-            "scopes": ["employee.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_updateemployee", "ActionOutput_bamboohr_basic_updateemployee"],
+            "output": [
+                "ActionOutput_bamboohr_basic_updateemployee"
+            ],
+            "scopes": [
+                "employee.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_updateemployee",
+                "ActionOutput_bamboohr_basic_updateemployee"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -4313,7 +5336,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["employeeId"],
+                        "required": [
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_updateemployee": {
@@ -4377,7 +5402,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4390,9 +5417,16 @@
             "endpoint": null,
             "input": "ActionInput_bamboohr_basic_updatetimeoffrequeststatus",
             "name": "update-time-off-request-status",
-            "output": ["ActionOutput_bamboohr_basic_updatetimeoffrequeststatus"],
-            "scopes": ["time_off.write"],
-            "usedModels": ["ActionInput_bamboohr_basic_updatetimeoffrequeststatus", "ActionOutput_bamboohr_basic_updatetimeoffrequeststatus"],
+            "output": [
+                "ActionOutput_bamboohr_basic_updatetimeoffrequeststatus"
+            ],
+            "scopes": [
+                "time_off.write"
+            ],
+            "usedModels": [
+                "ActionInput_bamboohr_basic_updatetimeoffrequeststatus",
+                "ActionOutput_bamboohr_basic_updatetimeoffrequeststatus"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4405,7 +5439,13 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["approved", "denied", "declined", "canceled", "cancelled"],
+                                "enum": [
+                                    "approved",
+                                    "denied",
+                                    "declined",
+                                    "canceled",
+                                    "cancelled"
+                                ],
                                 "description": "The new status for the time off request."
                             },
                             "note": {
@@ -4413,7 +5453,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["requestId", "status"],
+                        "required": [
+                            "requestId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bamboohr_basic_updatetimeoffrequeststatus": {
@@ -4429,7 +5472,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "requestId", "status"],
+                        "required": [
+                            "success",
+                            "requestId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4450,12 +5497,18 @@
             ],
             "input": null,
             "name": "applicants",
-            "output": ["Applicant"],
+            "output": [
+                "Applicant"
+            ],
             "runs": "every hour",
-            "scopes": ["hiring:applications"],
+            "scopes": [
+                "hiring:applications"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Applicant"],
+            "usedModels": [
+                "Applicant"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4506,12 +5559,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4525,12 +5582,18 @@
             ],
             "input": null,
             "name": "company-files",
-            "output": ["CompanyFile"],
+            "output": [
+                "CompanyFile"
+            ],
             "runs": "every hour",
-            "scopes": ["company_file"],
+            "scopes": [
+                "company_file"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CompanyFile"],
+            "usedModels": [
+                "CompanyFile"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4572,7 +5635,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4591,12 +5656,18 @@
             ],
             "input": null,
             "name": "departments",
-            "output": ["Department"],
+            "output": [
+                "Department"
+            ],
             "runs": "every hour",
-            "scopes": ["field"],
+            "scopes": [
+                "field"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Department"],
+            "usedModels": [
+                "Department"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4611,7 +5682,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4630,12 +5703,19 @@
             ],
             "input": null,
             "name": "employee-files",
-            "output": ["EmployeeFile"],
+            "output": [
+                "EmployeeFile"
+            ],
             "runs": "every hour",
-            "scopes": ["employee", "employee:file"],
+            "scopes": [
+                "employee",
+                "employee:file"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EmployeeFile"],
+            "usedModels": [
+                "EmployeeFile"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4674,12 +5754,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "employeeId"],
+                        "required": [
+                            "id",
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4693,12 +5778,19 @@
             ],
             "input": "SyncMetadata_bamboohr_basic_employeetablerows",
             "name": "employee-table-rows",
-            "output": ["EmployeeTableRow"],
+            "output": [
+                "EmployeeTableRow"
+            ],
             "runs": "every hour",
-            "scopes": ["employee"],
+            "scopes": [
+                "employee"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EmployeeTableRow", "SyncMetadata_bamboohr_basic_employeetablerows"],
+            "usedModels": [
+                "EmployeeTableRow",
+                "SyncMetadata_bamboohr_basic_employeetablerows"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4726,7 +5818,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "employee_id", "table", "data"],
+                        "required": [
+                            "id",
+                            "employee_id",
+                            "table",
+                            "data"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_bamboohr_basic_employeetablerows": {
@@ -4740,7 +5837,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4754,12 +5853,18 @@
             ],
             "input": null,
             "name": "employees",
-            "output": ["Employee"],
+            "output": [
+                "Employee"
+            ],
             "runs": "every hour",
-            "scopes": ["report"],
+            "scopes": [
+                "report"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Employee"],
+            "usedModels": [
+                "Employee"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4777,7 +5882,10 @@
                                 "type": "string"
                             },
                             "preferredName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "workPhone": {
                                 "type": "string"
@@ -4798,12 +5906,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4817,12 +5929,19 @@
             ],
             "input": null,
             "name": "goals",
-            "output": ["Goal"],
+            "output": [
+                "Goal"
+            ],
             "runs": "every hour",
-            "scopes": ["employee_directory", "goal"],
+            "scopes": [
+                "employee_directory",
+                "goal"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Goal"],
+            "usedModels": [
+                "Goal"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4846,7 +5965,10 @@
                                 "type": "number"
                             },
                             "alignsWithOptionId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sharedWithEmployeeIds": {
                                 "type": "array",
@@ -4858,10 +5980,16 @@
                                 "type": "string"
                             },
                             "completionDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lastChangedDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "type": "string"
@@ -4883,25 +6011,47 @@
                                                     "type": "string"
                                                 },
                                                 "currentValue": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "startValue": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "endValue": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "completedDateTime": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "lastUpdateDateTime": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "lastUpdateUserId": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id", "employeeGoalId", "title"],
+                                            "required": [
+                                                "id",
+                                                "employeeGoalId",
+                                                "title"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -4911,7 +6061,11 @@
                                 ]
                             }
                         },
-                        "required": ["id", "employeeId", "title"],
+                        "required": [
+                            "id",
+                            "employeeId",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4930,12 +6084,18 @@
             ],
             "input": null,
             "name": "job-openings",
-            "output": ["JobOpening"],
+            "output": [
+                "JobOpening"
+            ],
             "runs": "every hour",
-            "scopes": ["hiring:applications"],
+            "scopes": [
+                "hiring:applications"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["JobOpening"],
+            "usedModels": [
+                "JobOpening"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4998,7 +6158,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5017,12 +6179,18 @@
             ],
             "input": null,
             "name": "locations",
-            "output": ["Location"],
+            "output": [
+                "Location"
+            ],
             "runs": "every hour",
-            "scopes": ["field"],
+            "scopes": [
+                "field"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Location"],
+            "usedModels": [
+                "Location"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5046,7 +6214,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5065,12 +6236,18 @@
             ],
             "input": null,
             "name": "time-off-requests",
-            "output": ["TimeOffRequest"],
+            "output": [
+                "TimeOffRequest"
+            ],
             "runs": "every hour",
-            "scopes": ["time_off"],
+            "scopes": [
+                "time_off"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TimeOffRequest"],
+            "usedModels": [
+                "TimeOffRequest"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5121,7 +6298,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5140,12 +6319,18 @@
             ],
             "input": null,
             "name": "time-off-types",
-            "output": ["TimeOffType"],
+            "output": [
+                "TimeOffType"
+            ],
             "runs": "every hour",
-            "scopes": ["time_off"],
+            "scopes": [
+                "time_off"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TimeOffType"],
+            "usedModels": [
+                "TimeOffType"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5172,7 +6357,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5191,12 +6379,19 @@
             ],
             "input": null,
             "name": "time-tracking",
-            "output": ["TimeTrackingEntry"],
+            "output": [
+                "TimeTrackingEntry"
+            ],
             "runs": "every hour",
-            "scopes": ["employee", "time_tracking"],
+            "scopes": [
+                "employee",
+                "time_tracking"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TimeTrackingEntry"],
+            "usedModels": [
+                "TimeTrackingEntry"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5239,12 +6434,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "employeeId"],
+                        "required": [
+                            "id",
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5258,12 +6458,19 @@
             ],
             "input": null,
             "name": "training-records",
-            "output": ["TrainingRecord"],
+            "output": [
+                "TrainingRecord"
+            ],
             "runs": "every hour",
-            "scopes": ["employee_directory", "training"],
+            "scopes": [
+                "employee_directory",
+                "training"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TrainingRecord"],
+            "usedModels": [
+                "TrainingRecord"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5303,12 +6510,17 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "employeeId"],
+                        "required": [
+                            "id",
+                            "employeeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5323,12 +6535,18 @@
             ],
             "input": null,
             "name": "unified-employees",
-            "output": ["StandardEmployee"],
+            "output": [
+                "StandardEmployee"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["report"],
+            "scopes": [
+                "report"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StandardEmployee"],
+            "usedModels": [
+                "StandardEmployee"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5367,7 +6585,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "employmentType": {
@@ -5444,7 +6665,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "firstName", "lastName", "email"],
+                                "required": [
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "workLocation": {
@@ -5500,11 +6726,16 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["name", "type"],
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "addresses": {
@@ -5540,7 +6771,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["type"],
+                                    "required": [
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5569,7 +6802,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "number"],
+                                    "required": [
+                                        "type",
+                                        "number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5594,7 +6830,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "address"],
+                                    "required": [
+                                        "type",
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5623,7 +6862,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5637,12 +6878,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["user"],
+            "scopes": [
+                "user"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5676,7 +6923,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

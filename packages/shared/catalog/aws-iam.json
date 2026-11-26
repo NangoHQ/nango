@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_aws_iam_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_aws_iam_createuser"],
+            "output": [
+                "ActionOutput_aws_iam_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_aws_iam_createuser", "ActionOutput_aws_iam_createuser"],
+            "usedModels": [
+                "ActionInput_aws_iam_createuser",
+                "ActionOutput_aws_iam_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +34,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aws_iam_createuser": {
@@ -48,7 +57,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -61,9 +75,14 @@
             "endpoint": null,
             "input": "ActionInput_aws_iam_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_aws_iam_deleteuser"],
+            "output": [
+                "ActionOutput_aws_iam_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_aws_iam_deleteuser", "ActionOutput_aws_iam_deleteuser"],
+            "usedModels": [
+                "ActionInput_aws_iam_deleteuser",
+                "ActionOutput_aws_iam_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -74,7 +93,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["userName"],
+                        "required": [
+                            "userName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_aws_iam_deleteuser": {
@@ -84,7 +105,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -106,12 +129,17 @@
             ],
             "input": "SyncMetadata_aws_iam_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_aws_iam_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_aws_iam_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -132,7 +160,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "firstName", "lastName", "email"],
+                        "required": [
+                            "id",
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_aws_iam_users": {

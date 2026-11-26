@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_clickup_createcomment"],
+            "output": [
+                "ActionOutput_clickup_createcomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_createcomment", "ActionOutput_clickup_createcomment"],
+            "usedModels": [
+                "ActionInput_clickup_createcomment",
+                "ActionOutput_clickup_createcomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -33,7 +38,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["comment_text"],
+                        "required": [
+                            "comment_text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_createcomment": {
@@ -51,7 +58,11 @@
                                 "description": "Unix timestamp in milliseconds"
                             }
                         },
-                        "required": ["id", "hist_id", "date"],
+                        "required": [
+                            "id",
+                            "hist_id",
+                            "date"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -64,9 +75,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_clickup_createfolder"],
+            "output": [
+                "ActionOutput_clickup_createfolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_createfolder", "ActionOutput_clickup_createfolder"],
+            "usedModels": [
+                "ActionInput_clickup_createfolder",
+                "ActionOutput_clickup_createfolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -82,7 +98,10 @@
                                 "description": "Name of the folder to create. Example: \"New Folder\""
                             }
                         },
-                        "required": ["space_id", "name"],
+                        "required": [
+                            "space_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_createfolder": {
@@ -104,7 +123,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "lists": {
@@ -119,7 +141,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -130,7 +155,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "space"],
+                        "required": [
+                            "id",
+                            "name",
+                            "space"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -143,9 +172,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_creategoal",
             "name": "create-goal",
-            "output": ["ActionOutput_clickup_creategoal"],
+            "output": [
+                "ActionOutput_clickup_creategoal"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_creategoal", "ActionOutput_clickup_creategoal"],
+            "usedModels": [
+                "ActionInput_clickup_creategoal",
+                "ActionOutput_clickup_creategoal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -187,15 +221,23 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["user", "team"]
+                                            "enum": [
+                                                "user",
+                                                "team"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_creategoal": {
@@ -243,12 +285,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "team_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -261,9 +310,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_createlist",
             "name": "create-list",
-            "output": ["ActionOutput_clickup_createlist"],
+            "output": [
+                "ActionOutput_clickup_createlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_createlist", "ActionOutput_clickup_createlist"],
+            "usedModels": [
+                "ActionInput_clickup_createlist",
+                "ActionOutput_clickup_createlist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -307,7 +361,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_createlist": {
@@ -329,7 +385,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "space": {
@@ -342,7 +401,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "statuses": {
@@ -366,12 +428,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "status", "orderindex", "color", "type"],
+                                    "required": [
+                                        "id",
+                                        "status",
+                                        "orderindex",
+                                        "color",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name", "space"],
+                        "required": [
+                            "id",
+                            "name",
+                            "space"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -384,9 +456,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_createspace",
             "name": "create-space",
-            "output": ["ActionOutput_clickup_createspace"],
+            "output": [
+                "ActionOutput_clickup_createspace"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_createspace", "ActionOutput_clickup_createspace"],
+            "usedModels": [
+                "ActionInput_clickup_createspace",
+                "ActionOutput_clickup_createspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -421,7 +498,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "time_tracking": {
@@ -432,7 +511,9 @@
                                                 "description": "Enable time tracking"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "tags": {
@@ -443,7 +524,9 @@
                                                 "description": "Enable tags"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "priorities": {
@@ -454,14 +537,18 @@
                                                 "description": "Enable priorities"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_createspace": {
@@ -494,7 +581,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "status", "color", "orderindex", "type"],
+                                    "required": [
+                                        "id",
+                                        "status",
+                                        "color",
+                                        "orderindex",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -511,7 +604,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "time_tracking": {
@@ -521,7 +616,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "tags": {
@@ -531,7 +628,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "priorities": {
@@ -541,7 +640,9 @@
                                                 "type": "boolean"
                                             }
                                         },
-                                        "required": ["enabled"],
+                                        "required": [
+                                            "enabled"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -551,7 +652,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "statuses"],
+                        "required": [
+                            "id",
+                            "name",
+                            "statuses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -564,9 +669,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_clickup_createtask"],
+            "output": [
+                "ActionOutput_clickup_createtask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_createtask", "ActionOutput_clickup_createtask"],
+            "usedModels": [
+                "ActionInput_clickup_createtask",
+                "ActionOutput_clickup_createtask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -626,7 +736,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["list_id", "name"],
+                        "required": [
+                            "list_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_createtask": {
@@ -660,7 +773,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["status"],
+                                "required": [
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             },
                             "priority": {
@@ -679,7 +794,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "priority", "color", "orderindex"],
+                                "required": [
+                                    "id",
+                                    "priority",
+                                    "color",
+                                    "orderindex"
+                                ],
                                 "additionalProperties": false
                             },
                             "due_date": {
@@ -701,7 +821,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "folder": {
@@ -714,7 +837,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "space": {
@@ -727,7 +853,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "tags": {
@@ -748,7 +876,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -770,13 +900,18 @@
                                             "type": "string"
                                         },
                                         "profilePicture": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "initials": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -805,17 +940,25 @@
                                         "type": "string"
                                     },
                                     "profilePicture": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -828,9 +971,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_createtimeentry",
             "name": "create-time-entry",
-            "output": ["ActionOutput_clickup_createtimeentry"],
+            "output": [
+                "ActionOutput_clickup_createtimeentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_createtimeentry", "ActionOutput_clickup_createtimeentry"],
+            "usedModels": [
+                "ActionInput_clickup_createtimeentry",
+                "ActionOutput_clickup_createtimeentry"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -877,12 +1025,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["team_id", "start", "duration"],
+                        "required": [
+                            "team_id",
+                            "start",
+                            "duration"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_createtimeentry": {
@@ -902,7 +1056,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "workspace_id": {
@@ -930,7 +1086,10 @@
                                 "type": "number"
                             },
                             "end": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "duration": {
                                 "type": "number"
@@ -939,7 +1098,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -952,9 +1113,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_clickup_deletecomment"],
+            "output": [
+                "ActionOutput_clickup_deletecomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_deletecomment", "ActionOutput_clickup_deletecomment"],
+            "usedModels": [
+                "ActionInput_clickup_deletecomment",
+                "ActionOutput_clickup_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -966,7 +1132,9 @@
                                 "description": "The ID of the comment to delete. Example: \"90150225604615\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_deletecomment": {
@@ -977,7 +1145,9 @@
                                 "description": "Whether the comment was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -990,9 +1160,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_deletefolder",
             "name": "delete-folder",
-            "output": ["ActionOutput_clickup_deletefolder"],
+            "output": [
+                "ActionOutput_clickup_deletefolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_deletefolder", "ActionOutput_clickup_deletefolder"],
+            "usedModels": [
+                "ActionInput_clickup_deletefolder",
+                "ActionOutput_clickup_deletefolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1004,7 +1179,9 @@
                                 "description": "The ID of the folder to delete. Example: \"901516078072\""
                             }
                         },
-                        "required": ["folder_id"],
+                        "required": [
+                            "folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_deletefolder": {
@@ -1015,7 +1192,9 @@
                                 "description": "Whether the deletion was successful"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1028,9 +1207,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_deletegoal",
             "name": "delete-goal",
-            "output": ["ActionOutput_clickup_deletegoal"],
+            "output": [
+                "ActionOutput_clickup_deletegoal"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_deletegoal", "ActionOutput_clickup_deletegoal"],
+            "usedModels": [
+                "ActionInput_clickup_deletegoal",
+                "ActionOutput_clickup_deletegoal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1042,7 +1226,9 @@
                                 "description": "The ID of the goal to delete. Example: \"2def2fe3-90cb-4332-8d3e-ba04e38c67ef\""
                             }
                         },
-                        "required": ["goal_id"],
+                        "required": [
+                            "goal_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_deletegoal": {
@@ -1053,7 +1239,9 @@
                                 "description": "Whether the goal was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1066,9 +1254,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_deletelist",
             "name": "delete-list",
-            "output": ["ActionOutput_clickup_deletelist"],
+            "output": [
+                "ActionOutput_clickup_deletelist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_deletelist", "ActionOutput_clickup_deletelist"],
+            "usedModels": [
+                "ActionInput_clickup_deletelist",
+                "ActionOutput_clickup_deletelist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1080,7 +1273,9 @@
                                 "description": "The ID of the list to delete. Example: \"901523451693\""
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_deletelist": {
@@ -1091,7 +1286,9 @@
                                 "description": "Whether the deletion was successful"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1104,9 +1301,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_deletespace",
             "name": "delete-space",
-            "output": ["ActionOutput_clickup_deletespace"],
+            "output": [
+                "ActionOutput_clickup_deletespace"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_deletespace", "ActionOutput_clickup_deletespace"],
+            "usedModels": [
+                "ActionInput_clickup_deletespace",
+                "ActionOutput_clickup_deletespace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1118,7 +1320,9 @@
                                 "description": "Space ID to delete. Example: \"901511023604\""
                             }
                         },
-                        "required": ["space_id"],
+                        "required": [
+                            "space_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_deletespace": {
@@ -1128,7 +1332,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1141,9 +1347,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_clickup_deletetask"],
+            "output": [
+                "ActionOutput_clickup_deletetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_deletetask", "ActionOutput_clickup_deletetask"],
+            "usedModels": [
+                "ActionInput_clickup_deletetask",
+                "ActionOutput_clickup_deletetask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1155,7 +1366,9 @@
                                 "description": "The ID of the task to delete. Example: \"86c9w2nke\""
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_deletetask": {
@@ -1173,9 +1386,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_deletetimeentry",
             "name": "delete-time-entry",
-            "output": ["ActionOutput_clickup_deletetimeentry"],
+            "output": [
+                "ActionOutput_clickup_deletetimeentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_deletetimeentry", "ActionOutput_clickup_deletetimeentry"],
+            "usedModels": [
+                "ActionInput_clickup_deletetimeentry",
+                "ActionOutput_clickup_deletetimeentry"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1187,7 +1405,9 @@
                                 "description": "The ID of the time entry to delete. Example: \"5090290025624291206\""
                             }
                         },
-                        "required": ["time_entry_id"],
+                        "required": [
+                            "time_entry_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_deletetimeentry": {
@@ -1255,11 +1475,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["deleted"],
+                        "required": [
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1272,9 +1496,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_getfolder",
             "name": "get-folder",
-            "output": ["ActionOutput_clickup_getfolder"],
+            "output": [
+                "ActionOutput_clickup_getfolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_getfolder", "ActionOutput_clickup_getfolder"],
+            "usedModels": [
+                "ActionInput_clickup_getfolder",
+                "ActionOutput_clickup_getfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1286,7 +1515,9 @@
                                 "description": "The ID of the folder to retrieve. Example: \"901516078072\""
                             }
                         },
-                        "required": ["folder_id"],
+                        "required": [
+                            "folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_getfolder": {
@@ -1314,7 +1545,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "task_count": {
@@ -1332,7 +1566,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1340,7 +1577,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "space"],
+                        "required": [
+                            "id",
+                            "name",
+                            "space"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1353,9 +1594,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_getgoal",
             "name": "get-goal",
-            "output": ["ActionOutput_clickup_getgoal"],
+            "output": [
+                "ActionOutput_clickup_getgoal"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_getgoal", "ActionOutput_clickup_getgoal"],
+            "usedModels": [
+                "ActionInput_clickup_getgoal",
+                "ActionOutput_clickup_getgoal"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1367,7 +1613,9 @@
                                 "description": "Goal ID. Example: \"2def2fe3-90cb-4332-8d3e-ba04e38c67ef\""
                             }
                         },
-                        "required": ["goal_id"],
+                        "required": [
+                            "goal_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_getgoal": {
@@ -1413,7 +1661,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "team_id", "private", "archived"],
+                        "required": [
+                            "id",
+                            "name",
+                            "team_id",
+                            "private",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1426,9 +1680,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_clickup_getlist"],
+            "output": [
+                "ActionOutput_clickup_getlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_getlist", "ActionOutput_clickup_getlist"],
+            "usedModels": [
+                "ActionInput_clickup_getlist",
+                "ActionOutput_clickup_getlist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1440,7 +1699,9 @@
                                 "description": "The ID of the list to retrieve. Example: \"901523451693\""
                             }
                         },
-                        "required": ["listId"],
+                        "required": [
+                            "listId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_getlist": {
@@ -1474,7 +1735,10 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "space": {
@@ -1487,7 +1751,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "statuses": {
@@ -1511,7 +1778,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "status", "orderindex", "color", "type"],
+                                    "required": [
+                                        "id",
+                                        "status",
+                                        "orderindex",
+                                        "color",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1519,7 +1792,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "orderindex", "space"],
+                        "required": [
+                            "id",
+                            "name",
+                            "orderindex",
+                            "space"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1532,9 +1810,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_getspace",
             "name": "get-space",
-            "output": ["ActionOutput_clickup_getspace"],
+            "output": [
+                "ActionOutput_clickup_getspace"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_getspace", "ActionOutput_clickup_getspace"],
+            "usedModels": [
+                "ActionInput_clickup_getspace",
+                "ActionOutput_clickup_getspace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1546,7 +1829,9 @@
                                 "description": "Space ID. Example: \"901511023604\""
                             }
                         },
-                        "required": ["space_id"],
+                        "required": [
+                            "space_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_getspace": {
@@ -1585,7 +1870,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "status", "orderindex", "color"],
+                                    "required": [
+                                        "id",
+                                        "status",
+                                        "orderindex",
+                                        "color"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1598,7 +1888,14 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "private", "archived", "statuses", "multiple_assignees"],
+                        "required": [
+                            "id",
+                            "name",
+                            "private",
+                            "archived",
+                            "statuses",
+                            "multiple_assignees"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1611,9 +1908,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_clickup_gettask"],
+            "output": [
+                "ActionOutput_clickup_gettask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_gettask", "ActionOutput_clickup_gettask"],
+            "usedModels": [
+                "ActionInput_clickup_gettask",
+                "ActionOutput_clickup_gettask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1633,7 +1935,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_gettask": {
@@ -1661,7 +1965,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["status"],
+                                "required": [
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             },
                             "priority": {
@@ -1674,7 +1980,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["priority"],
+                                "required": [
+                                    "priority"
+                                ],
                                 "additionalProperties": false
                             },
                             "assignees": {
@@ -1698,7 +2006,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1723,7 +2033,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1737,7 +2049,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "folder": {
@@ -1750,7 +2065,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "space": {
@@ -1763,7 +2081,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "attachments": {
@@ -1781,12 +2101,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1799,9 +2124,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_gettimeentry",
             "name": "get-time-entry",
-            "output": ["ActionOutput_clickup_gettimeentry"],
+            "output": [
+                "ActionOutput_clickup_gettimeentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_gettimeentry", "ActionOutput_clickup_gettimeentry"],
+            "usedModels": [
+                "ActionInput_clickup_gettimeentry",
+                "ActionOutput_clickup_gettimeentry"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1813,7 +2143,9 @@
                                 "description": "The ID of the time entry to retrieve. Example: \"5090290025624291206\""
                             }
                         },
-                        "required": ["time_entry_id"],
+                        "required": [
+                            "time_entry_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_gettimeentry": {
@@ -1835,7 +2167,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name", "status"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "status"
+                                ],
                                 "additionalProperties": false
                             },
                             "workspace_id": {
@@ -1854,7 +2190,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "billable": {
@@ -1888,17 +2226,31 @@
                                         "type": "string"
                                     },
                                     "folder_id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "space_id": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["list_id", "folder_id", "space_id"],
+                                "required": [
+                                    "list_id",
+                                    "folder_id",
+                                    "space_id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "user", "billable"],
+                        "required": [
+                            "id",
+                            "user",
+                            "billable"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1911,9 +2263,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_clickup_getuser"],
+            "output": [
+                "ActionOutput_clickup_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_getuser", "ActionOutput_clickup_getuser"],
+            "usedModels": [
+                "ActionInput_clickup_getuser",
+                "ActionOutput_clickup_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1925,7 +2282,9 @@
                                 "description": "User ID. Example: 302438666"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_getuser": {
@@ -1965,7 +2324,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1978,9 +2339,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_clickup_listcomments"],
+            "output": [
+                "ActionOutput_clickup_listcomments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listcomments", "ActionOutput_clickup_listcomments"],
+            "usedModels": [
+                "ActionInput_clickup_listcomments",
+                "ActionOutput_clickup_listcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2031,19 +2397,34 @@
                                             "type": "object",
                                             "properties": {
                                                 "id": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "username": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "email": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "color": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "profilePicture": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -2055,12 +2436,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2073,9 +2458,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listfolders",
             "name": "list-folders",
-            "output": ["ActionOutput_clickup_listfolders"],
+            "output": [
+                "ActionOutput_clickup_listfolders"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listfolders", "ActionOutput_clickup_listfolders"],
+            "usedModels": [
+                "ActionInput_clickup_listfolders",
+                "ActionOutput_clickup_listfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2091,7 +2481,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["space_id"],
+                        "required": [
+                            "space_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_listfolders": {
@@ -2127,7 +2519,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "task_count": {
@@ -2147,12 +2542,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "orderindex"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "orderindex"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2165,9 +2566,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listgoals",
             "name": "list-goals",
-            "output": ["ActionOutput_clickup_listgoals"],
+            "output": [
+                "ActionOutput_clickup_listgoals"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listgoals", "ActionOutput_clickup_listgoals"],
+            "usedModels": [
+                "ActionInput_clickup_listgoals",
+                "ActionOutput_clickup_listgoals"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2179,7 +2585,9 @@
                                 "description": "ClickUp team/workspace ID. Example: \"90152560096\""
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_listgoals": {
@@ -2247,10 +2655,20 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["number", "currency", "boolean", "percentage"]
+                                            "enum": [
+                                                "number",
+                                                "currency",
+                                                "boolean",
+                                                "percentage"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "team_id", "creator"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "team_id",
+                                        "creator"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2281,12 +2699,20 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "team_id", "creator"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "team_id",
+                                        "creator"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["goals", "folders"],
+                        "required": [
+                            "goals",
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2299,9 +2725,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_clickup_listlists"],
+            "output": [
+                "ActionOutput_clickup_listlists"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listlists", "ActionOutput_clickup_listlists"],
+            "usedModels": [
+                "ActionInput_clickup_listlists",
+                "ActionOutput_clickup_listlists"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2424,12 +2855,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "orderindex"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "orderindex"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["lists"],
+                        "required": [
+                            "lists"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2442,9 +2879,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listspaces",
             "name": "list-spaces",
-            "output": ["ActionOutput_clickup_listspaces"],
+            "output": [
+                "ActionOutput_clickup_listspaces"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listspaces", "ActionOutput_clickup_listspaces"],
+            "usedModels": [
+                "ActionInput_clickup_listspaces",
+                "ActionOutput_clickup_listspaces"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2460,7 +2902,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_listspaces": {
@@ -2490,12 +2934,17 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["spaces"],
+                        "required": [
+                            "spaces"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2508,9 +2957,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_clickup_listtasks"],
+            "output": [
+                "ActionOutput_clickup_listtasks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listtasks", "ActionOutput_clickup_listtasks"],
+            "usedModels": [
+                "ActionInput_clickup_listtasks",
+                "ActionOutput_clickup_listtasks"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2532,7 +2986,12 @@
                             "order_by": {
                                 "description": "Field to order by",
                                 "type": "string",
-                                "enum": ["id", "created", "updated", "due_date"]
+                                "enum": [
+                                    "id",
+                                    "created",
+                                    "updated",
+                                    "due_date"
+                                ]
                             },
                             "reverse": {
                                 "description": "Reverse order. Default: false",
@@ -2588,7 +3047,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_listtasks": {
@@ -2606,10 +3067,16 @@
                                             "type": "string"
                                         },
                                         "text_content": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
                                             "type": "object",
@@ -2633,7 +3100,10 @@
                                             "type": "string"
                                         },
                                         "date_closed": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "archived": {
                                             "type": "boolean"
@@ -2654,7 +3124,10 @@
                                                     "type": "string"
                                                 },
                                                 "profile_picture": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -2677,7 +3150,10 @@
                                                         "type": "string"
                                                     },
                                                     "profile_picture": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -2701,7 +3177,10 @@
                                                         "type": "string"
                                                     },
                                                     "profile_picture": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -2726,7 +3205,10 @@
                                             }
                                         },
                                         "parent": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "priority": {
                                             "anyOf": [
@@ -2748,10 +3230,16 @@
                                             ]
                                         },
                                         "due_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "start_date": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "folder": {
                                             "type": "object",
@@ -2805,7 +3293,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2813,7 +3303,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["tasks", "last_page"],
+                        "required": [
+                            "tasks",
+                            "last_page"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2826,9 +3319,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listtimeentries",
             "name": "list-time-entries",
-            "output": ["ActionOutput_clickup_listtimeentries"],
+            "output": [
+                "ActionOutput_clickup_listtimeentries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listtimeentries", "ActionOutput_clickup_listtimeentries"],
+            "usedModels": [
+                "ActionInput_clickup_listtimeentries",
+                "ActionOutput_clickup_listtimeentries"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2903,7 +3401,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2933,7 +3434,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "username", "email"],
+                                            "required": [
+                                                "id",
+                                                "username",
+                                                "email"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "billable": {
@@ -2960,7 +3465,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name"],
+                                                "required": [
+                                                    "name"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -2974,25 +3481,43 @@
                                                     "type": "number"
                                                 },
                                                 "folder_id": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "space_id": {
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["list_id", "folder_id", "space_id"],
+                                            "required": [
+                                                "list_id",
+                                                "folder_id",
+                                                "space_id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "workspace_id": {
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "task", "user", "billable", "start", "end", "duration", "workspace_id"],
+                                    "required": [
+                                        "id",
+                                        "task",
+                                        "user",
+                                        "billable",
+                                        "start",
+                                        "end",
+                                        "duration",
+                                        "workspace_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3005,9 +3530,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_clickup_listusers"],
+            "output": [
+                "ActionOutput_clickup_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_listusers", "ActionOutput_clickup_listusers"],
+            "usedModels": [
+                "ActionInput_clickup_listusers",
+                "ActionOutput_clickup_listusers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3046,12 +3576,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "username", "email", "color", "role", "role_key"],
+                                    "required": [
+                                        "id",
+                                        "username",
+                                        "email",
+                                        "color",
+                                        "role",
+                                        "role_key"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3064,9 +3603,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_clickup_updatecomment"],
+            "output": [
+                "ActionOutput_clickup_updatecomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_updatecomment", "ActionOutput_clickup_updatecomment"],
+            "usedModels": [
+                "ActionInput_clickup_updatecomment",
+                "ActionOutput_clickup_updatecomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3090,7 +3634,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["comment_id", "comment_text"],
+                        "required": [
+                            "comment_id",
+                            "comment_text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_updatecomment": {
@@ -3101,7 +3648,9 @@
                                 "description": "Whether the update was successful."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3114,9 +3663,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_updatefolder",
             "name": "update-folder",
-            "output": ["ActionOutput_clickup_updatefolder"],
+            "output": [
+                "ActionOutput_clickup_updatefolder"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_updatefolder", "ActionOutput_clickup_updatefolder"],
+            "usedModels": [
+                "ActionInput_clickup_updatefolder",
+                "ActionOutput_clickup_updatefolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3132,7 +3686,10 @@
                                 "description": "The new name for the folder. Example: \"Updated Folder Name\""
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_updatefolder": {
@@ -3160,7 +3717,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3173,9 +3733,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_updategoal",
             "name": "update-goal",
-            "output": ["ActionOutput_clickup_updategoal"],
+            "output": [
+                "ActionOutput_clickup_updategoal"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_updategoal", "ActionOutput_clickup_updategoal"],
+            "usedModels": [
+                "ActionInput_clickup_updategoal",
+                "ActionOutput_clickup_updategoal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3207,7 +3772,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["goal_id"],
+                        "required": [
+                            "goal_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_updategoal": {
@@ -3225,9 +3792,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_updatelist",
             "name": "update-list",
-            "output": ["ActionOutput_clickup_updatelist"],
+            "output": [
+                "ActionOutput_clickup_updatelist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_updatelist", "ActionOutput_clickup_updatelist"],
+            "usedModels": [
+                "ActionInput_clickup_updatelist",
+                "ActionOutput_clickup_updatelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3271,7 +3843,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["list_id"],
+                        "required": [
+                            "list_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_updatelist": {
@@ -3320,7 +3894,10 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "space": {
@@ -3330,7 +3907,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "archived": {
@@ -3343,7 +3922,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3356,9 +3938,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_updatespace",
             "name": "update-space",
-            "output": ["ActionOutput_clickup_updatespace"],
+            "output": [
+                "ActionOutput_clickup_updatespace"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_updatespace", "ActionOutput_clickup_updatespace"],
+            "usedModels": [
+                "ActionInput_clickup_updatespace",
+                "ActionOutput_clickup_updatespace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3465,7 +4052,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["space_id"],
+                        "required": [
+                            "space_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_updatespace": {
@@ -3495,7 +4084,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3508,9 +4100,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_clickup_updatetask"],
+            "output": [
+                "ActionOutput_clickup_updatetask"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_updatetask", "ActionOutput_clickup_updatetask"],
+            "usedModels": [
+                "ActionInput_clickup_updatetask",
+                "ActionOutput_clickup_updatetask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3603,7 +4200,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_updatetask": {
@@ -3649,7 +4248,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3662,9 +4263,14 @@
             "endpoint": null,
             "input": "ActionInput_clickup_updatetimeentry",
             "name": "update-time-entry",
-            "output": ["ActionOutput_clickup_updatetimeentry"],
+            "output": [
+                "ActionOutput_clickup_updatetimeentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clickup_updatetimeentry", "ActionOutput_clickup_updatetimeentry"],
+            "usedModels": [
+                "ActionInput_clickup_updatetimeentry",
+                "ActionOutput_clickup_updatetimeentry"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3703,7 +4309,9 @@
                                 }
                             }
                         },
-                        "required": ["timer_id"],
+                        "required": [
+                            "timer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clickup_updatetimeentry": {
@@ -3746,7 +4354,15 @@
                                 }
                             }
                         },
-                        "required": ["id", "description", "start", "end", "duration", "billable", "tags"],
+                        "required": [
+                            "id",
+                            "description",
+                            "start",
+                            "end",
+                            "duration",
+                            "billable",
+                            "tags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3767,12 +4383,17 @@
             ],
             "input": "SyncMetadata_clickup_comments",
             "name": "comments",
-            "output": ["Comment"],
+            "output": [
+                "Comment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Comment", "SyncMetadata_clickup_comments"],
+            "usedModels": [
+                "Comment",
+                "SyncMetadata_clickup_comments"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3794,7 +4415,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_clickup_comments": {
@@ -3804,12 +4427,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3823,12 +4450,17 @@
             ],
             "input": "SyncMetadata_clickup_folders",
             "name": "folders",
-            "output": ["Folder"],
+            "output": [
+                "Folder"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Folder", "SyncMetadata_clickup_folders"],
+            "usedModels": [
+                "Folder",
+                "SyncMetadata_clickup_folders"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3855,7 +4487,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "orderindex", "overrideStatuses", "hidden", "spaceId"],
+                        "required": [
+                            "id",
+                            "name",
+                            "orderindex",
+                            "overrideStatuses",
+                            "hidden",
+                            "spaceId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_clickup_folders": {
@@ -3865,12 +4504,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3884,12 +4527,17 @@
             ],
             "input": "SyncMetadata_clickup_goals",
             "name": "goals",
-            "output": ["Goal"],
+            "output": [
+                "Goal"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Goal", "SyncMetadata_clickup_goals"],
+            "usedModels": [
+                "Goal",
+                "SyncMetadata_clickup_goals"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3904,7 +4552,10 @@
                                 "type": "string"
                             },
                             "color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "date_created": {
                                 "type": "string"
@@ -3919,25 +4570,46 @@
                                 "type": "string"
                             },
                             "pretty_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "archived": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "multiple_owners": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "due_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "folder_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "members": {
                                 "type": "array",
@@ -3952,13 +4624,28 @@
                                 }
                             },
                             "percent_completed": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "pretty_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "date_created", "date_updated", "creator", "team_id", "members", "owners"],
+                        "required": [
+                            "id",
+                            "name",
+                            "date_created",
+                            "date_updated",
+                            "creator",
+                            "team_id",
+                            "members",
+                            "owners"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_clickup_goals": {
@@ -3968,7 +4655,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3987,12 +4676,17 @@
             ],
             "input": "SyncMetadata_clickup_lists",
             "name": "lists",
-            "output": ["List"],
+            "output": [
+                "List"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["List", "SyncMetadata_clickup_lists"],
+            "usedModels": [
+                "List",
+                "SyncMetadata_clickup_lists"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4046,7 +4740,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "space_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "space_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_clickup_lists": {
@@ -4056,12 +4754,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4075,12 +4777,17 @@
             ],
             "input": "SyncMetadata_clickup_spaces",
             "name": "spaces",
-            "output": ["Space"],
+            "output": [
+                "Space"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Space", "SyncMetadata_clickup_spaces"],
+            "usedModels": [
+                "Space",
+                "SyncMetadata_clickup_spaces"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4095,19 +4802,34 @@
                                 "type": "string"
                             },
                             "color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "private": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "archived": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "adminCanManage": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_clickup_spaces": {
@@ -4117,7 +4839,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4136,12 +4860,16 @@
             ],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4162,7 +4890,10 @@
                                 "type": "string"
                             },
                             "orderindex": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "date_created": {
                                 "type": "string"
@@ -4200,7 +4931,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4223,10 +4956,16 @@
                                 "type": "string"
                             },
                             "time_estimate": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "time_spent": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "list_id": {
                                 "type": "string"
@@ -4250,12 +4989,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "date_created", "date_updated"],
+                        "required": [
+                            "id",
+                            "name",
+                            "date_created",
+                            "date_updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4269,12 +5015,17 @@
             ],
             "input": "SyncMetadata_clickup_timeentries",
             "name": "time-entries",
-            "output": ["TimeEntry"],
+            "output": [
+                "TimeEntry"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TimeEntry", "SyncMetadata_clickup_timeentries"],
+            "usedModels": [
+                "TimeEntry",
+                "SyncMetadata_clickup_timeentries"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4313,7 +5064,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "start", "end", "duration"],
+                        "required": [
+                            "id",
+                            "start",
+                            "end",
+                            "duration"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_clickup_timeentries": {
@@ -4323,7 +5079,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4342,12 +5100,16 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4380,7 +5142,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "username", "email", "color"],
+                        "required": [
+                            "id",
+                            "username",
+                            "email",
+                            "color"
+                        ],
                         "additionalProperties": false
                     }
                 }

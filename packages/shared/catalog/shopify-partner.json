@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_shopify_partner_getactivesubscription",
             "name": "get-active-subscription",
-            "output": ["ActionOutput_shopify_partner_getactivesubscription"],
-            "scopes": ["read_apps", "read_shopify_payments"],
-            "usedModels": ["ActionInput_shopify_partner_getactivesubscription", "ActionOutput_shopify_partner_getactivesubscription"],
+            "output": [
+                "ActionOutput_shopify_partner_getactivesubscription"
+            ],
+            "scopes": [
+                "read_apps",
+                "read_shopify_payments"
+            ],
+            "usedModels": [
+                "ActionInput_shopify_partner_getactivesubscription",
+                "ActionOutput_shopify_partner_getactivesubscription"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +33,10 @@
                                 "description": "Shopify shop GID using the shopify namespace. Example: \"gid://shopify/Shop/1234567890\""
                             }
                         },
-                        "required": ["appId", "shopId"],
+                        "required": [
+                            "appId",
+                            "shopId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shopify_partner_getactivesubscription": {
@@ -46,7 +57,11 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["apiKey", "id", "name"],
+                                        "required": [
+                                            "apiKey",
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "billingPeriod": {
@@ -67,7 +82,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["endTime", "startTime"],
+                                                "required": [
+                                                    "endTime",
+                                                    "startTime"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -81,7 +99,10 @@
                                             "type": "object",
                                             "properties": {
                                                 "description": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "discount": {
                                                     "anyOf": [
@@ -89,19 +110,34 @@
                                                             "type": "object",
                                                             "properties": {
                                                                 "amount": {
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "discountEndsAt": {
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "originalDiscountCycles": {
-                                                                    "type": ["number", "null"]
+                                                                    "type": [
+                                                                        "number",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "percentage": {
-                                                                    "type": ["number", "null"]
+                                                                    "type": [
+                                                                        "number",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "remainingDiscountCycles": {
-                                                                    "type": ["number", "null"]
+                                                                    "type": [
+                                                                        "number",
+                                                                        "null"
+                                                                    ]
                                                                 }
                                                             },
                                                             "additionalProperties": false
@@ -112,7 +148,10 @@
                                                     ]
                                                 },
                                                 "handle": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "price": {
                                                     "type": "object",
@@ -138,10 +177,16 @@
                                                                         "type": "string"
                                                                     },
                                                                     "upTo": {
-                                                                        "type": ["number", "null"]
+                                                                        "type": [
+                                                                            "number",
+                                                                            "null"
+                                                                        ]
                                                                     }
                                                                 },
-                                                                "required": ["amount", "amountPerUnit"],
+                                                                "required": [
+                                                                    "amount",
+                                                                    "amountPerUnit"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         },
@@ -149,7 +194,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["active", "currency"],
+                                                    "required": [
+                                                        "active",
+                                                        "currency"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "usage": {
@@ -167,14 +215,20 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["amount", "currencyCode"],
+                                                                    "required": [
+                                                                        "amount",
+                                                                        "currencyCode"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 "quantity": {
                                                                     "type": "number"
                                                                 }
                                                             },
-                                                            "required": ["cost", "quantity"],
+                                                            "required": [
+                                                                "cost",
+                                                                "quantity"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -183,12 +237,17 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["price"],
+                                            "required": [
+                                                "price"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
                                     "legacySubscriptionId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "pendingUpdate": {
                                         "anyOf": [
@@ -204,7 +263,10 @@
                                                             "type": "object",
                                                             "properties": {
                                                                 "description": {
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "discount": {
                                                                     "anyOf": [
@@ -212,19 +274,34 @@
                                                                             "type": "object",
                                                                             "properties": {
                                                                                 "amount": {
-                                                                                    "type": ["string", "null"]
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
                                                                                 },
                                                                                 "discountEndsAt": {
-                                                                                    "type": ["string", "null"]
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
                                                                                 },
                                                                                 "originalDiscountCycles": {
-                                                                                    "type": ["number", "null"]
+                                                                                    "type": [
+                                                                                        "number",
+                                                                                        "null"
+                                                                                    ]
                                                                                 },
                                                                                 "percentage": {
-                                                                                    "type": ["number", "null"]
+                                                                                    "type": [
+                                                                                        "number",
+                                                                                        "null"
+                                                                                    ]
                                                                                 },
                                                                                 "remainingDiscountCycles": {
-                                                                                    "type": ["number", "null"]
+                                                                                    "type": [
+                                                                                        "number",
+                                                                                        "null"
+                                                                                    ]
                                                                                 }
                                                                             },
                                                                             "additionalProperties": false
@@ -235,7 +312,10 @@
                                                                     ]
                                                                 },
                                                                 "handle": {
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "price": {
                                                                     "type": "object",
@@ -261,10 +341,16 @@
                                                                                         "type": "string"
                                                                                     },
                                                                                     "upTo": {
-                                                                                        "type": ["number", "null"]
+                                                                                        "type": [
+                                                                                            "number",
+                                                                                            "null"
+                                                                                        ]
                                                                                     }
                                                                                 },
-                                                                                "required": ["amount", "amountPerUnit"],
+                                                                                "required": [
+                                                                                    "amount",
+                                                                                    "amountPerUnit"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
@@ -272,7 +358,10 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["active", "currency"],
+                                                                    "required": [
+                                                                        "active",
+                                                                        "currency"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 "usage": {
@@ -290,14 +379,20 @@
                                                                                             "type": "string"
                                                                                         }
                                                                                     },
-                                                                                    "required": ["amount", "currencyCode"],
+                                                                                    "required": [
+                                                                                        "amount",
+                                                                                        "currencyCode"
+                                                                                    ],
                                                                                     "additionalProperties": false
                                                                                 },
                                                                                 "quantity": {
                                                                                     "type": "number"
                                                                                 }
                                                                             },
-                                                                            "required": ["cost", "quantity"],
+                                                                            "required": [
+                                                                                "cost",
+                                                                                "quantity"
+                                                                            ],
                                                                             "additionalProperties": false
                                                                         },
                                                                         {
@@ -306,15 +401,23 @@
                                                                     ]
                                                                 }
                                                             },
-                                                            "required": ["price"],
+                                                            "required": [
+                                                                "price"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
                                                     "legacySubscriptionId": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
-                                                "required": ["billingPeriod", "items"],
+                                                "required": [
+                                                    "billingPeriod",
+                                                    "items"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -335,14 +438,27 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "myshopifyDomain", "name"],
+                                        "required": [
+                                            "id",
+                                            "myshopifyDomain",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "trialEndsAt": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["app", "billingPeriod", "cancelAtEndOfCycle", "items", "shop"],
+                                "required": [
+                                    "app",
+                                    "billingPeriod",
+                                    "cancelAtEndOfCycle",
+                                    "items",
+                                    "shop"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -360,9 +476,14 @@
             "endpoint": null,
             "input": "ActionInput_shopify_partner_getpublicapiversions",
             "name": "get-public-api-versions",
-            "output": ["ActionOutput_shopify_partner_getpublicapiversions"],
+            "output": [
+                "ActionOutput_shopify_partner_getpublicapiversions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shopify_partner_getpublicapiversions", "ActionOutput_shopify_partner_getpublicapiversions"],
+            "usedModels": [
+                "ActionInput_shopify_partner_getpublicapiversions",
+                "ActionOutput_shopify_partner_getpublicapiversions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -389,12 +510,18 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["handle", "displayName", "supported"],
+                                    "required": [
+                                        "handle",
+                                        "displayName",
+                                        "supported"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["versions"],
+                        "required": [
+                            "versions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -407,9 +534,16 @@
             "endpoint": null,
             "input": "ActionInput_shopify_partner_listappevents",
             "name": "list-app-events",
-            "output": ["ActionOutput_shopify_partner_listappevents"],
-            "scopes": ["read_partner_events"],
-            "usedModels": ["ActionInput_shopify_partner_listappevents", "ActionOutput_shopify_partner_listappevents"],
+            "output": [
+                "ActionOutput_shopify_partner_listappevents"
+            ],
+            "scopes": [
+                "read_partner_events"
+            ],
+            "usedModels": [
+                "ActionInput_shopify_partner_listappevents",
+                "ActionOutput_shopify_partner_listappevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -443,7 +577,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shopify_partner_listappevents": {
@@ -470,7 +606,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "shop": {
@@ -486,11 +625,20 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name", "myshopifyDomain"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "myshopifyDomain"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["type", "occurredAt", "app", "shop"],
+                                    "required": [
+                                        "type",
+                                        "occurredAt",
+                                        "app",
+                                        "shop"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -498,7 +646,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -511,9 +661,16 @@
             "endpoint": null,
             "input": "ActionInput_shopify_partner_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_shopify_partner_listevents"],
-            "scopes": ["read_partner_events"],
-            "usedModels": ["ActionInput_shopify_partner_listevents", "ActionOutput_shopify_partner_listevents"],
+            "output": [
+                "ActionOutput_shopify_partner_listevents"
+            ],
+            "scopes": [
+                "read_partner_events"
+            ],
+            "usedModels": [
+                "ActionInput_shopify_partner_listevents",
+                "ActionOutput_shopify_partner_listevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -537,7 +694,10 @@
                             "subjectType": {
                                 "description": "Filter by subject type.",
                                 "type": "string",
-                                "enum": ["APP", "THEME"]
+                                "enum": [
+                                    "APP",
+                                    "THEME"
+                                ]
                             },
                             "subjectId": {
                                 "description": "Filter by subject ID. Must be a GID in the format gid://shopify/App/{id} or gid://shopify/Theme/{id}.",
@@ -585,7 +745,10 @@
                             "orderBy": {
                                 "description": "Order direction for event results.",
                                 "type": "string",
-                                "enum": ["OCCURRED_AT_ASC", "OCCURRED_AT_DESC"]
+                                "enum": [
+                                    "OCCURRED_AT_ASC",
+                                    "OCCURRED_AT_DESC"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -622,7 +785,11 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "myshopifyDomain", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "myshopifyDomain",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -645,7 +812,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name"],
+                                                    "required": [
+                                                        "id",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -654,7 +824,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "eventType", "occurredAt"],
+                                    "required": [
+                                        "id",
+                                        "eventType",
+                                        "occurredAt"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -662,7 +836,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -675,9 +851,14 @@
             "endpoint": null,
             "input": "ActionInput_shopify_partner_listtransactions",
             "name": "list-transactions",
-            "output": ["ActionOutput_shopify_partner_listtransactions"],
+            "output": [
+                "ActionOutput_shopify_partner_listtransactions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shopify_partner_listtransactions", "ActionOutput_shopify_partner_listtransactions"],
+            "usedModels": [
+                "ActionInput_shopify_partner_listtransactions",
+                "ActionOutput_shopify_partner_listtransactions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -757,7 +938,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -768,7 +951,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["items", "hasNextPage"],
+                        "required": [
+                            "items",
+                            "hasNextPage"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -781,9 +967,14 @@
             "endpoint": null,
             "input": "ActionInput_shopify_partner_querypartnerdata",
             "name": "query-partner-data",
-            "output": ["ActionOutput_shopify_partner_querypartnerdata"],
+            "output": [
+                "ActionOutput_shopify_partner_querypartnerdata"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_shopify_partner_querypartnerdata", "ActionOutput_shopify_partner_querypartnerdata"],
+            "usedModels": [
+                "ActionInput_shopify_partner_querypartnerdata",
+                "ActionOutput_shopify_partner_querypartnerdata"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -804,7 +995,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_shopify_partner_querypartnerdata": {
@@ -844,14 +1037,20 @@
                                                         "type": "number"
                                                     }
                                                 },
-                                                "required": ["line", "column"],
+                                                "required": [
+                                                    "line",
+                                                    "column"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
                                         "path": {
                                             "type": "array",
                                             "items": {
-                                                "type": ["string", "number"]
+                                                "type": [
+                                                    "string",
+                                                    "number"
+                                                ]
                                             }
                                         },
                                         "extensions": {
@@ -862,7 +1061,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["message"],
+                                    "required": [
+                                        "message"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -882,12 +1083,16 @@
             "endpoints": [],
             "input": null,
             "name": "events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event"],
+            "usedModels": [
+                "Event"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -938,7 +1143,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currencyCode"],
+                                "required": [
+                                    "amount",
+                                    "currencyCode"
+                                ],
                                 "additionalProperties": false
                             },
                             "balanceUsed": {
@@ -969,7 +1177,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currencyCode"],
+                                "required": [
+                                    "amount",
+                                    "currencyCode"
+                                ],
                                 "additionalProperties": false
                             },
                             "creditStatus": {
@@ -988,7 +1199,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currencyCode"],
+                                "required": [
+                                    "amount",
+                                    "currencyCode"
+                                ],
                                 "additionalProperties": false
                             },
                             "netAmount": {
@@ -1001,7 +1215,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currencyCode"],
+                                "required": [
+                                    "amount",
+                                    "currencyCode"
+                                ],
                                 "additionalProperties": false
                             },
                             "settlementDate": {
@@ -1017,7 +1234,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currencyCode"],
+                                "required": [
+                                    "amount",
+                                    "currencyCode"
+                                ],
                                 "additionalProperties": false
                             },
                             "reason": {
@@ -1045,12 +1265,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "eventType", "occurredAt"],
+                        "required": [
+                            "id",
+                            "eventType",
+                            "occurredAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1059,12 +1285,16 @@
             "endpoints": [],
             "input": null,
             "name": "transactions",
-            "output": ["Transaction"],
+            "output": [
+                "Transaction"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Transaction"],
+            "usedModels": [
+                "Transaction"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1112,12 +1342,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "createdAt"],
+                        "required": [
+                            "id",
+                            "createdAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

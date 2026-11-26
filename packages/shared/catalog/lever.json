@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_lever_applyposting",
             "name": "apply-posting",
-            "output": ["ActionOutput_lever_applyposting"],
+            "output": [
+                "ActionOutput_lever_applyposting"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_lever_applyposting", "ActionOutput_lever_applyposting"],
+            "usedModels": [
+                "ActionInput_lever_applyposting",
+                "ActionOutput_lever_applyposting"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -30,7 +35,10 @@
                                         },
                                         "value": {}
                                     },
-                                    "required": ["name", "value"],
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -57,7 +65,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "value"],
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -86,7 +97,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["marketing"],
+                                "required": [
+                                    "marketing"
+                                ],
                                 "additionalProperties": false
                             },
                             "diversitySurvey": {
@@ -103,7 +116,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["postId"],
+                        "required": [
+                            "postId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_applyposting": {
@@ -113,7 +128,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["applicationId"],
+                        "required": [
+                            "applicationId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -126,9 +143,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_createnote",
             "name": "create-note",
-            "output": ["ActionOutput_lever_createnote"],
-            "scopes": ["notes:write:admin"],
-            "usedModels": ["ActionInput_lever_createnote", "ActionOutput_lever_createnote"],
+            "output": [
+                "ActionOutput_lever_createnote"
+            ],
+            "scopes": [
+                "notes:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_createnote",
+                "ActionOutput_lever_createnote"
+            ],
             "version": "3.0.0",
             "json_schema": {
                 "definitions": {
@@ -168,7 +192,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["opportunityId", "value"],
+                        "required": [
+                            "opportunityId",
+                            "value"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_createnote": {
@@ -178,7 +205,10 @@
                                 "type": "string"
                             },
                             "text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "fields": {
                                 "anyOf": [
@@ -192,22 +222,39 @@
                                 ]
                             },
                             "user": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "secret": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "completedAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "deletedAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -220,9 +267,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_createopportunity",
             "name": "create-opportunity",
-            "output": ["ActionOutput_lever_createopportunity"],
-            "scopes": ["opportunities:write:admin"],
-            "usedModels": ["ActionInput_lever_createopportunity", "ActionOutput_lever_createopportunity"],
+            "output": [
+                "ActionOutput_lever_createopportunity"
+            ],
+            "scopes": [
+                "opportunities:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_createopportunity",
+                "ActionOutput_lever_createopportunity"
+            ],
             "version": "3.0.0",
             "json_schema": {
                 "definitions": {
@@ -263,7 +317,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["value", "type"],
+                                    "required": [
+                                        "value",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -322,14 +379,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["archivedAt", "reason"],
+                                "required": [
+                                    "archivedAt",
+                                    "reason"
+                                ],
                                 "additionalProperties": false
                             },
                             "contact": {
                                 "type": "string"
                             }
                         },
-                        "required": ["perform_as"],
+                        "required": [
+                            "perform_as"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_createopportunity": {
@@ -342,10 +404,16 @@
                                 "type": "string"
                             },
                             "headline": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "contact": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "emails": {
                                 "anyOf": [
@@ -374,7 +442,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["value", "type"],
+                                            "required": [
+                                                "value",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -384,10 +455,16 @@
                                 ]
                             },
                             "confidentiality": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "location": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "links": {
                                 "anyOf": [
@@ -414,7 +491,10 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["reason", "archivedAt"],
+                                        "required": [
+                                            "reason",
+                                            "archivedAt"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -429,22 +509,40 @@
                                 "type": "number"
                             },
                             "lastInteractionAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "lastAdvancedAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "snoozedUntil": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "archivedAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "archiveReason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "stage": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "stageChanges": {
                                 "anyOf": [
@@ -471,7 +569,12 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["toStageId", "toStageIndex", "updatedAt", "userId"],
+                                                    "required": [
+                                                        "toStageId",
+                                                        "toStageIndex",
+                                                        "updatedAt",
+                                                        "userId"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             ]
@@ -483,7 +586,10 @@
                                 ]
                             },
                             "owner": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "tags": {
                                 "anyOf": [
@@ -512,10 +618,16 @@
                                 ]
                             },
                             "origin": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sourcedBy": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "applications": {
                                 "anyOf": [
@@ -531,7 +643,10 @@
                                 ]
                             },
                             "resume": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "followers": {
                                 "anyOf": [
@@ -552,10 +667,16 @@
                                         "type": "object",
                                         "properties": {
                                             "list": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "show": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -580,13 +701,24 @@
                                 ]
                             },
                             "isAnonymized": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "opportunityLocation": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "name",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -599,9 +731,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_getarchivereasons",
             "name": "get-archive-reasons",
-            "output": ["ActionOutput_lever_getarchivereasons"],
-            "scopes": ["archive_reasons:read:admin"],
-            "usedModels": ["ActionInput_lever_getarchivereasons", "ActionOutput_lever_getarchivereasons"],
+            "output": [
+                "ActionOutput_lever_getarchivereasons"
+            ],
+            "scopes": [
+                "archive_reasons:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_getarchivereasons",
+                "ActionOutput_lever_getarchivereasons"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -632,12 +771,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "text", "status", "type"],
+                                    "required": [
+                                        "id",
+                                        "text",
+                                        "status",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["success", "response"],
+                        "required": [
+                            "success",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -650,9 +797,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_getposting",
             "name": "get-posting",
-            "output": ["ActionOutput_lever_getposting"],
-            "scopes": ["postings:read:admin"],
-            "usedModels": ["ActionInput_lever_getposting", "ActionOutput_lever_getposting"],
+            "output": [
+                "ActionOutput_lever_getposting"
+            ],
+            "scopes": [
+                "postings:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_getposting",
+                "ActionOutput_lever_getposting"
+            ],
             "version": "3.0.0",
             "json_schema": {
                 "definitions": {
@@ -664,7 +818,9 @@
                                 "description": "Posting ID. Example: \"f2f01e16-27f8-4711-a728-7d49499795a0\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_getposting": {
@@ -680,25 +836,46 @@
                                         "type": "string"
                                     },
                                     "text": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "createdAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "updatedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "user": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "owner": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "hiringManager": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "confidentiality": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "categories": {
                                         "anyOf": [
@@ -706,13 +883,22 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "team": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "department": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "location": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "allLocations": {
                                                         "anyOf": [
@@ -728,10 +914,16 @@
                                                         ]
                                                     },
                                                     "commitment": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "level": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -747,10 +939,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "description": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "descriptionHtml": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "lists": {
                                                         "anyOf": [
@@ -766,7 +964,10 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["text", "content"],
+                                                                    "required": [
+                                                                        "text",
+                                                                        "content"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             },
@@ -776,10 +977,16 @@
                                                         ]
                                                     },
                                                     "closing": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "closingHtml": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -790,7 +997,10 @@
                                         ]
                                     },
                                     "country": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "followers": {
                                         "anyOf": [
@@ -819,7 +1029,10 @@
                                         ]
                                     },
                                     "state": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "distributionChannels": {
                                         "anyOf": [
@@ -835,7 +1048,10 @@
                                         ]
                                     },
                                     "reqCode": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "requisitionCodes": {
                                         "anyOf": [
@@ -851,10 +1067,16 @@
                                         ]
                                     },
                                     "salaryDescription": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "salaryDescriptionHtml": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "salaryRange": {
                                         "anyOf": [
@@ -862,16 +1084,28 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "max": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "min": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "currency": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "interval": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -887,13 +1121,22 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "list": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "show": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "apply": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -904,14 +1147,22 @@
                                         ]
                                     },
                                     "workplaceType": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success", "response"],
+                        "required": [
+                            "success",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -924,9 +1175,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_getpostings",
             "name": "get-postings",
-            "output": ["ActionOutput_lever_getpostings"],
-            "scopes": ["postings:read:admin"],
-            "usedModels": ["ActionInput_lever_getpostings", "ActionOutput_lever_getpostings"],
+            "output": [
+                "ActionOutput_lever_getpostings"
+            ],
+            "scopes": [
+                "postings:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_getpostings",
+                "ActionOutput_lever_getpostings"
+            ],
             "version": "2.0.3",
             "json_schema": {
                 "definitions": {
@@ -950,7 +1208,10 @@
                                             "type": "string"
                                         },
                                         "text": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdAt": {
                                             "type": "number"
@@ -959,16 +1220,28 @@
                                             "type": "number"
                                         },
                                         "user": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "owner": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "hiringManager": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "confidentiality": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "categories": {
                                             "anyOf": [
@@ -976,13 +1249,22 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "team": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "department": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "location": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "allLocations": {
                                                             "anyOf": [
@@ -998,10 +1280,16 @@
                                                             ]
                                                         },
                                                         "commitment": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "level": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1017,10 +1305,16 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "description": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "descriptionHtml": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "lists": {
                                                             "anyOf": [
@@ -1030,10 +1324,16 @@
                                                                         "type": "object",
                                                                         "properties": {
                                                                             "text": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             },
                                                                             "content": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             }
                                                                         },
                                                                         "additionalProperties": false
@@ -1045,10 +1345,16 @@
                                                             ]
                                                         },
                                                         "closing": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "closingHtml": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1059,7 +1365,10 @@
                                             ]
                                         },
                                         "country": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "followers": {
                                             "anyOf": [
@@ -1088,7 +1397,10 @@
                                             ]
                                         },
                                         "state": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "distributionChannels": {
                                             "anyOf": [
@@ -1104,7 +1416,10 @@
                                             ]
                                         },
                                         "reqCode": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "requisitionCodes": {
                                             "anyOf": [
@@ -1120,10 +1435,16 @@
                                             ]
                                         },
                                         "salaryDescription": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "salaryDescriptionHtml": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "salaryRange": {
                                             "anyOf": [
@@ -1131,16 +1452,28 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "max": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "min": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "currency": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "interval": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1156,13 +1489,22 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "list": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "show": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "apply": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1173,15 +1515,23 @@
                                             ]
                                         },
                                         "workplaceType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["success", "response"],
+                        "required": [
+                            "success",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1194,9 +1544,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_getstages",
             "name": "get-stages",
-            "output": ["ActionOutput_lever_getstages"],
-            "scopes": ["stages:read:admin"],
-            "usedModels": ["ActionInput_lever_getstages", "ActionOutput_lever_getstages"],
+            "output": [
+                "ActionOutput_lever_getstages"
+            ],
+            "scopes": [
+                "stages:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_getstages",
+                "ActionOutput_lever_getstages"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -1220,12 +1577,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "text"],
+                                    "required": [
+                                        "id",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["stages"],
+                        "required": [
+                            "stages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1238,9 +1600,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_updateopportunityarchived",
             "name": "update-opportunity-archived",
-            "output": ["ActionOutput_lever_updateopportunityarchived"],
-            "scopes": ["opportunities:write:admin"],
-            "usedModels": ["ActionInput_lever_updateopportunityarchived", "ActionOutput_lever_updateopportunityarchived"],
+            "output": [
+                "ActionOutput_lever_updateopportunityarchived"
+            ],
+            "scopes": [
+                "opportunities:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_updateopportunityarchived",
+                "ActionOutput_lever_updateopportunityarchived"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -1268,7 +1637,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["opportunityId", "reason"],
+                        "required": [
+                            "opportunityId",
+                            "reason"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_updateopportunityarchived": {
@@ -1287,13 +1659,22 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "headline": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "contact": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "emails": {
                                         "anyOf": [
@@ -1322,7 +1703,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "value"],
+                                                    "required": [
+                                                        "type",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1332,10 +1716,16 @@
                                         ]
                                     },
                                     "confidentiality": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "location": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "links": {
                                         "anyOf": [
@@ -1356,10 +1746,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "reason": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "archivedAt": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1370,28 +1766,52 @@
                                         ]
                                     },
                                     "createdAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "updatedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastInteractionAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastAdvancedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "snoozedUntil": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archivedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archiveReason": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stage": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stageChanges": {
                                         "anyOf": [
@@ -1405,7 +1825,10 @@
                                         ]
                                     },
                                     "owner": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "tags": {
                                         "anyOf": [
@@ -1434,10 +1857,16 @@
                                         ]
                                     },
                                     "origin": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "sourcedBy": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "applications": {
                                         "anyOf": [
@@ -1453,7 +1882,10 @@
                                         ]
                                     },
                                     "resume": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "followers": {
                                         "anyOf": [
@@ -1474,10 +1906,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "list": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "show": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1496,17 +1934,29 @@
                                         ]
                                     },
                                     "isAnonymized": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "opportunityLocation": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success", "opportunityId", "response"],
+                        "required": [
+                            "success",
+                            "opportunityId",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1519,9 +1969,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_updateopportunitylinks",
             "name": "update-opportunity-links",
-            "output": ["ActionOutput_lever_updateopportunitylinks"],
-            "scopes": ["opportunities:write:admin"],
-            "usedModels": ["ActionInput_lever_updateopportunitylinks", "ActionOutput_lever_updateopportunitylinks"],
+            "output": [
+                "ActionOutput_lever_updateopportunitylinks"
+            ],
+            "scopes": [
+                "opportunities:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_updateopportunitylinks",
+                "ActionOutput_lever_updateopportunitylinks"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -1545,7 +2002,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["links", "opportunityId"],
+                        "required": [
+                            "links",
+                            "opportunityId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_updateopportunitylinks": {
@@ -1564,13 +2024,22 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "headline": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "contact": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "emails": {
                                         "anyOf": [
@@ -1599,7 +2068,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "value"],
+                                                    "required": [
+                                                        "type",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1609,10 +2081,16 @@
                                         ]
                                     },
                                     "confidentiality": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "location": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "links": {
                                         "anyOf": [
@@ -1633,10 +2111,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "reason": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "archivedAt": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1647,28 +2131,52 @@
                                         ]
                                     },
                                     "createdAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "updatedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastInteractionAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastAdvancedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "snoozedUntil": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archivedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archiveReason": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stage": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stageChanges": {
                                         "anyOf": [
@@ -1692,7 +2200,12 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["toStageId", "toStageIndex", "updatedAt", "userId"],
+                                                            "required": [
+                                                                "toStageId",
+                                                                "toStageIndex",
+                                                                "updatedAt",
+                                                                "userId"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -1707,7 +2220,10 @@
                                         ]
                                     },
                                     "owner": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "tags": {
                                         "anyOf": [
@@ -1736,10 +2252,16 @@
                                         ]
                                     },
                                     "origin": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "sourcedBy": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "applications": {
                                         "anyOf": [
@@ -1755,7 +2277,10 @@
                                         ]
                                     },
                                     "resume": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "followers": {
                                         "anyOf": [
@@ -1776,10 +2301,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "list": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "show": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1804,16 +2335,25 @@
                                         ]
                                     },
                                     "isAnonymized": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "opportunityLocation": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success", "response"],
+                        "required": [
+                            "success",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1826,9 +2366,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_updateopportunitysources",
             "name": "update-opportunity-sources",
-            "output": ["ActionOutput_lever_updateopportunitysources"],
-            "scopes": ["opportunities:write:admin"],
-            "usedModels": ["ActionInput_lever_updateopportunitysources", "ActionOutput_lever_updateopportunitysources"],
+            "output": [
+                "ActionOutput_lever_updateopportunitysources"
+            ],
+            "scopes": [
+                "opportunities:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_updateopportunitysources",
+                "ActionOutput_lever_updateopportunitysources"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -1855,7 +2402,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["opportunityId", "sources"],
+                        "required": [
+                            "opportunityId",
+                            "sources"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_updateopportunitysources": {
@@ -1874,13 +2424,22 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "headline": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "contact": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "emails": {
                                         "anyOf": [
@@ -1909,7 +2468,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "value"],
+                                                    "required": [
+                                                        "type",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1919,10 +2481,16 @@
                                         ]
                                     },
                                     "confidentiality": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "location": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "links": {
                                         "anyOf": [
@@ -1943,10 +2511,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "reason": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "archivedAt": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -1957,28 +2531,52 @@
                                         ]
                                     },
                                     "createdAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "updatedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastInteractionAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastAdvancedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "snoozedUntil": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archivedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archiveReason": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stage": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stageChanges": {
                                         "anyOf": [
@@ -1992,7 +2590,10 @@
                                         ]
                                     },
                                     "owner": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "tags": {
                                         "anyOf": [
@@ -2021,10 +2622,16 @@
                                         ]
                                     },
                                     "origin": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "sourcedBy": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "applications": {
                                         "anyOf": [
@@ -2040,7 +2647,10 @@
                                         ]
                                     },
                                     "resume": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "followers": {
                                         "anyOf": [
@@ -2061,10 +2671,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "list": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "show": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -2083,17 +2699,28 @@
                                         ]
                                     },
                                     "isAnonymized": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "opportunityLocation": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success", "response"],
+                        "required": [
+                            "success",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2106,9 +2733,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_updateopportunitystage",
             "name": "update-opportunity-stage",
-            "output": ["ActionOutput_lever_updateopportunitystage"],
-            "scopes": ["opportunities:write:admin"],
-            "usedModels": ["ActionInput_lever_updateopportunitystage", "ActionOutput_lever_updateopportunitystage"],
+            "output": [
+                "ActionOutput_lever_updateopportunitystage"
+            ],
+            "scopes": [
+                "opportunities:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_updateopportunitystage",
+                "ActionOutput_lever_updateopportunitystage"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -2128,7 +2762,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["opportunityId", "stage"],
+                        "required": [
+                            "opportunityId",
+                            "stage"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_updateopportunitystage": {
@@ -2147,13 +2784,22 @@
                                         "type": "string"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "headline": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "contact": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "emails": {
                                         "anyOf": [
@@ -2182,7 +2828,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type", "value"],
+                                                    "required": [
+                                                        "type",
+                                                        "value"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -2192,10 +2841,16 @@
                                         ]
                                     },
                                     "confidentiality": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "location": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "links": {
                                         "anyOf": [
@@ -2216,10 +2871,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "reason": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "archivedAt": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -2230,28 +2891,52 @@
                                         ]
                                     },
                                     "createdAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "updatedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastInteractionAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "lastAdvancedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "snoozedUntil": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archivedAt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "archiveReason": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stage": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "stageChanges": {
                                         "anyOf": [
@@ -2265,7 +2950,10 @@
                                         ]
                                     },
                                     "owner": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "tags": {
                                         "anyOf": [
@@ -2294,10 +2982,16 @@
                                         ]
                                     },
                                     "origin": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "sourcedBy": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "applications": {
                                         "anyOf": [
@@ -2313,7 +3007,10 @@
                                         ]
                                     },
                                     "resume": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "followers": {
                                         "anyOf": [
@@ -2334,10 +3031,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "list": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "show": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -2356,17 +3059,28 @@
                                         ]
                                     },
                                     "isAnonymized": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "opportunityLocation": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["success", "response"],
+                        "required": [
+                            "success",
+                            "response"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2379,9 +3093,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_updateopportunitytags",
             "name": "update-opportunity-tags",
-            "output": ["ActionOutput_lever_updateopportunitytags"],
-            "scopes": ["opportunities:write:admin"],
-            "usedModels": ["ActionInput_lever_updateopportunitytags", "ActionOutput_lever_updateopportunitytags"],
+            "output": [
+                "ActionOutput_lever_updateopportunitytags"
+            ],
+            "scopes": [
+                "opportunities:write:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_updateopportunitytags",
+                "ActionOutput_lever_updateopportunitytags"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -2409,7 +3130,11 @@
                                 "description": "The ID of the user to attribute this change to. Example: \"be129d9b-50da-4485-9377-0d83e981f30b\""
                             }
                         },
-                        "required": ["opportunityId", "tags", "perform_as"],
+                        "required": [
+                            "opportunityId",
+                            "tags",
+                            "perform_as"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_lever_updateopportunitytags": {
@@ -2428,7 +3153,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2441,9 +3168,16 @@
             "endpoint": null,
             "input": "ActionInput_lever_users",
             "name": "users",
-            "output": ["ActionOutput_lever_users"],
-            "scopes": ["users:read:admin"],
-            "usedModels": ["ActionInput_lever_users", "ActionOutput_lever_users"],
+            "output": [
+                "ActionOutput_lever_users"
+            ],
+            "scopes": [
+                "users:read:admin"
+            ],
+            "usedModels": [
+                "ActionInput_lever_users",
+                "ActionOutput_lever_users"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -2474,16 +3208,25 @@
                                             "type": "string"
                                         },
                                         "photo": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdAt": {
                                             "type": "number"
                                         },
                                         "deactivatedAt": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "externalDirectoryId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "linkedContactIds": {
                                             "anyOf": [
@@ -2499,18 +3242,33 @@
                                             ]
                                         },
                                         "jobTitle": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "managerId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "username", "email", "accessRole", "createdAt"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "username",
+                                        "email",
+                                        "accessRole",
+                                        "createdAt"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2526,12 +3284,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_opportunities",
             "name": "opportunities",
-            "output": ["LeverOpportunity"],
+            "output": [
+                "LeverOpportunity"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["opportunities:read:admin"],
+            "scopes": [
+                "opportunities:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverOpportunity", "SyncMetadata_lever_opportunities"],
+            "usedModels": [
+                "LeverOpportunity",
+                "SyncMetadata_lever_opportunities"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2692,7 +3457,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lever_opportunities": {
@@ -2702,7 +3469,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2711,12 +3480,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_opportunitiesapplications",
             "name": "opportunities-applications",
-            "output": ["LeverOpportunityApplication"],
+            "output": [
+                "LeverOpportunityApplication"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["applications:read:admin"],
+            "scopes": [
+                "applications:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverOpportunityApplication", "SyncMetadata_lever_opportunitiesapplications"],
+            "usedModels": [
+                "LeverOpportunityApplication",
+                "SyncMetadata_lever_opportunitiesapplications"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2740,22 +3516,40 @@
                                 "type": "string"
                             },
                             "posting": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "postingHiringManager": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "postingOwner": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone": {
                                 "anyOf": [
@@ -2763,7 +3557,10 @@
                                         "type": "object",
                                         "properties": {
                                             "type": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "value": {
                                                 "type": "string"
@@ -2791,7 +3588,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "requisitionCode"],
+                                        "required": [
+                                            "id",
+                                            "requisitionCode"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2800,13 +3600,22 @@
                                 ]
                             },
                             "ownerId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "hiringManager": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "company": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "links": {
                                 "anyOf": [
@@ -2822,7 +3631,10 @@
                                 ]
                             },
                             "comments": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "customQuestions": {
                                 "anyOf": [
@@ -2847,7 +3659,10 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["reason", "archivedAt"],
+                                        "required": [
+                                            "reason",
+                                            "archivedAt"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2856,7 +3671,13 @@
                                 ]
                             }
                         },
-                        "required": ["id", "opportunityId", "candidateId", "createdAt", "type"],
+                        "required": [
+                            "id",
+                            "opportunityId",
+                            "candidateId",
+                            "createdAt",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lever_opportunitiesapplications": {
@@ -2866,7 +3687,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2875,12 +3698,18 @@
             "endpoints": [],
             "input": null,
             "name": "opportunities-feedbacks",
-            "output": ["LeverOpportunityFeedback"],
+            "output": [
+                "LeverOpportunityFeedback"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["feedback:read:admin"],
+            "scopes": [
+                "feedback:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverOpportunityFeedback"],
+            "usedModels": [
+                "LeverOpportunityFeedback"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2929,12 +3758,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2943,12 +3777,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_opportunitiesinterviews",
             "name": "opportunities-interviews",
-            "output": ["LeverOpportunityInterview"],
+            "output": [
+                "LeverOpportunityInterview"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["interviews:read:admin"],
+            "scopes": [
+                "interviews:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverOpportunityInterview", "SyncMetadata_lever_opportunitiesinterviews"],
+            "usedModels": [
+                "LeverOpportunityInterview",
+                "SyncMetadata_lever_opportunitiesinterviews"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2983,10 +3824,18 @@
                                             "type": "string"
                                         },
                                         "feedbackTemplate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["email", "id", "name", "feedbackTemplate"],
+                                    "required": [
+                                        "email",
+                                        "id",
+                                        "name",
+                                        "feedbackTemplate"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3003,10 +3852,16 @@
                                 "type": "number"
                             },
                             "location": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "feedbackTemplate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "feedbackForms": {
                                 "type": "array",
@@ -3024,7 +3879,10 @@
                                 "type": "string"
                             },
                             "canceledAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "postings": {
                                 "type": "array",
@@ -3033,7 +3891,10 @@
                                 }
                             },
                             "gcalEventUrl": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -3064,7 +3925,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3073,12 +3936,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_opportunitiesnotes",
             "name": "opportunities-notes",
-            "output": ["LeverOpportunityNote"],
+            "output": [
+                "LeverOpportunityNote"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["notes:read:admin"],
+            "scopes": [
+                "notes:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverOpportunityNote", "SyncMetadata_lever_opportunitiesnotes"],
+            "usedModels": [
+                "LeverOpportunityNote",
+                "SyncMetadata_lever_opportunitiesnotes"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3112,7 +3982,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lever_opportunitiesnotes": {
@@ -3122,7 +3994,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3131,12 +4005,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_opportunitiesoffers",
             "name": "opportunities-offers",
-            "output": ["LeverOpportunityOffer"],
+            "output": [
+                "LeverOpportunityOffer"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["offers:read:admin"],
+            "scopes": [
+                "offers:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverOpportunityOffer", "SyncMetadata_lever_opportunitiesoffers"],
+            "usedModels": [
+                "LeverOpportunityOffer",
+                "SyncMetadata_lever_opportunitiesoffers"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3168,10 +4049,18 @@
                                             "type": "string"
                                         },
                                         "value": {
-                                            "type": ["string", "number", "null"]
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["text", "identifier", "value"],
+                                    "required": [
+                                        "text",
+                                        "identifier",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3190,7 +4079,11 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["fileName", "uploadedAt", "downloadUrl"],
+                                        "required": [
+                                            "fileName",
+                                            "uploadedAt",
+                                            "downloadUrl"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3213,7 +4106,11 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["fileName", "uploadedAt", "downloadUrl"],
+                                        "required": [
+                                            "fileName",
+                                            "uploadedAt",
+                                            "downloadUrl"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -3222,7 +4119,15 @@
                                 ]
                             }
                         },
-                        "required": ["id", "createdAt", "status", "creator", "fields", "sentDocument", "signedDocument"],
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "status",
+                            "creator",
+                            "fields",
+                            "sentDocument",
+                            "signedDocument"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lever_opportunitiesoffers": {
@@ -3241,12 +4146,18 @@
             "endpoints": [],
             "input": null,
             "name": "archive-reasons",
-            "output": ["ArchiveReason"],
+            "output": [
+                "ArchiveReason"
+            ],
             "runs": "every hour",
-            "scopes": ["archive_reasons:read:admin"],
+            "scopes": [
+                "archive_reasons:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ArchiveReason"],
+            "usedModels": [
+                "ArchiveReason"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3261,12 +4172,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3275,12 +4190,18 @@
             "endpoints": [],
             "input": null,
             "name": "feedback-templates",
-            "output": ["FeedbackTemplate"],
+            "output": [
+                "FeedbackTemplate"
+            ],
             "runs": "every hour",
-            "scopes": ["feedback_templates:read:admin"],
+            "scopes": [
+                "feedback_templates:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FeedbackTemplate"],
+            "usedModels": [
+                "FeedbackTemplate"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3304,7 +4225,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "createdAt": {
@@ -3326,7 +4250,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "text"],
+                                "required": [
+                                    "id",
+                                    "text"
+                                ],
                                 "additionalProperties": false
                             },
                             "fields": {
@@ -3334,12 +4261,17 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3348,12 +4280,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_opportunitiespanels",
             "name": "opportunities-panels",
-            "output": ["LeverOpportunityPanel"],
+            "output": [
+                "LeverOpportunityPanel"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["panels:read:admin"],
+            "scopes": [
+                "panels:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverOpportunityPanel", "SyncMetadata_lever_opportunitiespanels"],
+            "usedModels": [
+                "LeverOpportunityPanel",
+                "SyncMetadata_lever_opportunitiespanels"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3408,7 +4347,11 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "createdAt", "timezone"],
+                        "required": [
+                            "id",
+                            "createdAt",
+                            "timezone"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lever_opportunitiespanels": {
@@ -3418,7 +4361,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3427,12 +4372,18 @@
             "endpoints": [],
             "input": null,
             "name": "opportunities-referrals",
-            "output": ["Referral"],
+            "output": [
+                "Referral"
+            ],
             "runs": "every hour",
-            "scopes": ["referrals:read:admin"],
+            "scopes": [
+                "referrals:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Referral"],
+            "usedModels": [
+                "Referral"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3482,12 +4433,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "opportunityId"],
+                        "required": [
+                            "id",
+                            "opportunityId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3496,12 +4452,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_postings",
             "name": "postings",
-            "output": ["LeverPosting"],
+            "output": [
+                "LeverPosting"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["postings:read:admin"],
+            "scopes": [
+                "postings:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverPosting", "SyncMetadata_lever_postings"],
+            "usedModels": [
+                "LeverPosting",
+                "SyncMetadata_lever_postings"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3513,25 +4476,46 @@
                                 "type": "string"
                             },
                             "text": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "updatedAt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "user": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "owner": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "hiringManager": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "confidentiality": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "categories": {
                                 "anyOf": [
@@ -3539,13 +4523,22 @@
                                         "type": "object",
                                         "properties": {
                                             "team": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "department": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "location": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "allLocations": {
                                                 "anyOf": [
@@ -3561,10 +4554,16 @@
                                                 ]
                                             },
                                             "commitment": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "level": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -3580,10 +4579,16 @@
                                         "type": "object",
                                         "properties": {
                                             "description": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "descriptionHtml": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "lists": {
                                                 "anyOf": [
@@ -3593,10 +4598,16 @@
                                                             "type": "object",
                                                             "properties": {
                                                                 "text": {
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 },
                                                                 "content": {
-                                                                    "type": ["string", "null"]
+                                                                    "type": [
+                                                                        "string",
+                                                                        "null"
+                                                                    ]
                                                                 }
                                                             },
                                                             "additionalProperties": {}
@@ -3608,10 +4619,16 @@
                                                 ]
                                             },
                                             "closing": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "closingHtml": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -3622,7 +4639,10 @@
                                 ]
                             },
                             "country": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "followers": {
                                 "anyOf": [
@@ -3651,7 +4671,10 @@
                                 ]
                             },
                             "state": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "distributionChannels": {
                                 "anyOf": [
@@ -3667,7 +4690,10 @@
                                 ]
                             },
                             "reqCode": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "requisitionCodes": {
                                 "anyOf": [
@@ -3683,10 +4709,16 @@
                                 ]
                             },
                             "salaryDescription": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "salaryDescriptionHtml": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "salaryRange": {
                                 "anyOf": [
@@ -3694,16 +4726,28 @@
                                         "type": "object",
                                         "properties": {
                                             "max": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "min": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "currency": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "interval": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -3719,13 +4763,22 @@
                                         "type": "object",
                                         "properties": {
                                             "list": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "show": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "apply": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -3736,10 +4789,15 @@
                                 ]
                             },
                             "workplaceType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lever_postings": {
@@ -3749,7 +4807,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3758,12 +4818,19 @@
             "endpoints": [],
             "input": "SyncMetadata_lever_postingsquestions",
             "name": "postings-questions",
-            "output": ["LeverPostingApply"],
+            "output": [
+                "LeverPostingApply"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["postings:read:admin"],
+            "scopes": [
+                "postings:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverPostingApply", "SyncMetadata_lever_postingsquestions"],
+            "usedModels": [
+                "LeverPostingApply",
+                "SyncMetadata_lever_postingsquestions"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3791,7 +4858,9 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_lever_postingsquestions": {
@@ -3801,7 +4870,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3810,12 +4881,18 @@
             "endpoints": [],
             "input": null,
             "name": "requisitions",
-            "output": ["Requisition"],
+            "output": [
+                "Requisition"
+            ],
             "runs": "every hour",
-            "scopes": ["requisitions:read:admin"],
+            "scopes": [
+                "requisitions:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Requisition"],
+            "usedModels": [
+                "Requisition"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3857,10 +4934,16 @@
                                 "type": "string"
                             },
                             "headcountHired": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "headcountTotal": {
-                                "type": ["number", "string"]
+                                "type": [
+                                    "number",
+                                    "string"
+                                ]
                             },
                             "employmentStatus": {
                                 "type": "string"
@@ -3952,12 +5035,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3966,12 +5053,18 @@
             "endpoints": [],
             "input": null,
             "name": "sources",
-            "output": ["Source"],
+            "output": [
+                "Source"
+            ],
             "runs": "every hour",
-            "scopes": ["sources:read:admin"],
+            "scopes": [
+                "sources:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Source"],
+            "usedModels": [
+                "Source"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3989,12 +5082,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4003,12 +5101,18 @@
             "endpoints": [],
             "input": null,
             "name": "stages",
-            "output": ["LeverStage"],
+            "output": [
+                "LeverStage"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["stages:read:admin"],
+            "scopes": [
+                "stages:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LeverStage"],
+            "usedModels": [
+                "LeverStage"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4023,12 +5127,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "text"],
+                        "required": [
+                            "id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4037,12 +5146,18 @@
             "endpoints": [],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
-            "scopes": ["tags:read:admin"],
+            "scopes": [
+                "tags:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4062,12 +5177,18 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "text", "count"],
+                        "required": [
+                            "id",
+                            "text",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4076,12 +5197,18 @@
             "endpoints": [],
             "input": null,
             "name": "webhooks",
-            "output": ["Webhook"],
+            "output": [
+                "Webhook"
+            ],
             "runs": "every hour",
-            "scopes": ["webhooks:read:admin"],
+            "scopes": [
+                "webhooks:read:admin"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Webhook"],
+            "usedModels": [
+                "Webhook"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4109,12 +5236,18 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "event", "url"],
+                        "required": [
+                            "id",
+                            "event",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

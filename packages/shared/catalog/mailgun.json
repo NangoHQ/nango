@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_addlistmember",
             "name": "add-list-member",
-            "output": ["ActionOutput_mailgun_addlistmember"],
+            "output": [
+                "ActionOutput_mailgun_addlistmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_addlistmember", "ActionOutput_mailgun_addlistmember"],
+            "usedModels": [
+                "ActionInput_mailgun_addlistmember",
+                "ActionOutput_mailgun_addlistmember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -45,7 +50,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["list_address", "address"],
+                        "required": [
+                            "list_address",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for adding a member to a Mailgun mailing list."
                     },
@@ -77,7 +85,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["address"],
+                        "required": [
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "The added mailing list member and Mailgun's confirmation message."
                     }
@@ -91,9 +101,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_createbounce",
             "name": "create-bounce",
-            "output": ["ActionOutput_mailgun_createbounce"],
+            "output": [
+                "ActionOutput_mailgun_createbounce"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_createbounce", "ActionOutput_mailgun_createbounce"],
+            "usedModels": [
+                "ActionInput_mailgun_createbounce",
+                "ActionOutput_mailgun_createbounce"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -119,7 +134,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for manually adding an address to a Mailgun domain's bounce suppression list."
                     },
@@ -135,7 +153,10 @@
                                 "description": "The email address that was added to the bounce suppression list. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["message", "address"],
+                        "required": [
+                            "message",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of adding an address to the bounce suppression list."
                     }
@@ -149,9 +170,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_createcomplaint",
             "name": "create-complaint",
-            "output": ["ActionOutput_mailgun_createcomplaint"],
+            "output": [
+                "ActionOutput_mailgun_createcomplaint"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_createcomplaint", "ActionOutput_mailgun_createcomplaint"],
+            "usedModels": [
+                "ActionInput_mailgun_createcomplaint",
+                "ActionOutput_mailgun_createcomplaint"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -167,7 +193,10 @@
                                 "description": "Email address to add to the spam-complaint suppression list. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for manually adding an address to a domain's spam-complaint suppression list"
                     },
@@ -183,7 +212,10 @@
                                 "description": "Confirmation message returned by Mailgun. Example: \"Address has been added to the complaints table\""
                             }
                         },
-                        "required": ["address", "message"],
+                        "required": [
+                            "address",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of adding an address to a domain's spam-complaint suppression list"
                     }
@@ -197,9 +229,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_createlist",
             "name": "create-list",
-            "output": ["ActionOutput_mailgun_createlist"],
+            "output": [
+                "ActionOutput_mailgun_createlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_createlist", "ActionOutput_mailgun_createlist"],
+            "usedModels": [
+                "ActionInput_mailgun_createlist",
+                "ActionOutput_mailgun_createlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -221,15 +258,24 @@
                             "access_level": {
                                 "description": "Who can post to the list: \"readonly\" (only the account, the Mailgun default), \"members\" (list members), or \"everyone\".",
                                 "type": "string",
-                                "enum": ["readonly", "members", "everyone"]
+                                "enum": [
+                                    "readonly",
+                                    "members",
+                                    "everyone"
+                                ]
                             },
                             "reply_preference": {
                                 "description": "Where replies to list messages go: \"list\" (the whole list) or \"sender\" (the original author). Omit to use the Mailgun default.",
                                 "type": "string",
-                                "enum": ["list", "sender"]
+                                "enum": [
+                                    "list",
+                                    "sender"
+                                ]
                             }
                         },
-                        "required": ["address"],
+                        "required": [
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Mailgun mailing list"
                     },
@@ -265,7 +311,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["address"],
+                        "required": [
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "The created Mailgun mailing list"
                     }
@@ -279,9 +327,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_createtemplate",
             "name": "create-template",
-            "output": ["ActionOutput_mailgun_createtemplate"],
+            "output": [
+                "ActionOutput_mailgun_createtemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_createtemplate", "ActionOutput_mailgun_createtemplate"],
+            "usedModels": [
+                "ActionInput_mailgun_createtemplate",
+                "ActionOutput_mailgun_createtemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -313,7 +366,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain", "name"],
+                        "required": [
+                            "domain",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Mailgun message template with its initial version."
                     },
@@ -368,7 +424,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "The created Mailgun template with its initial version."
                     }
@@ -382,9 +441,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_createunsubscribe",
             "name": "create-unsubscribe",
-            "output": ["ActionOutput_mailgun_createunsubscribe"],
+            "output": [
+                "ActionOutput_mailgun_createunsubscribe"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_createunsubscribe", "ActionOutput_mailgun_createunsubscribe"],
+            "usedModels": [
+                "ActionInput_mailgun_createunsubscribe",
+                "ActionOutput_mailgun_createunsubscribe"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -404,7 +468,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for adding an address to a Mailgun domain unsubscribe suppression list."
                     },
@@ -420,7 +487,10 @@
                                 "description": "Confirmation message returned by Mailgun, e.g. \"Address has been added to the unsubscribes table\"."
                             }
                         },
-                        "required": ["address", "message"],
+                        "required": [
+                            "address",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of adding the address to the unsubscribe suppression list."
                     }
@@ -434,9 +504,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_createwhitelistentry",
             "name": "create-whitelist-entry",
-            "output": ["ActionOutput_mailgun_createwhitelistentry"],
+            "output": [
+                "ActionOutput_mailgun_createwhitelistentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_createwhitelistentry", "ActionOutput_mailgun_createwhitelistentry"],
+            "usedModels": [
+                "ActionInput_mailgun_createwhitelistentry",
+                "ActionOutput_mailgun_createwhitelistentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -456,7 +531,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain_name"],
+                        "required": [
+                            "domain_name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for adding an entry to a sending domain allowlist. Provide either \"address\" or \"domain\"."
                     },
@@ -476,7 +553,11 @@
                                 "description": "The address or domain that was added to the allowlist"
                             }
                         },
-                        "required": ["message", "type", "value"],
+                        "required": [
+                            "message",
+                            "type",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of adding an entry to the sending domain allowlist"
                     }
@@ -490,9 +571,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_deletebounce",
             "name": "delete-bounce",
-            "output": ["ActionOutput_mailgun_deletebounce"],
+            "output": [
+                "ActionOutput_mailgun_deletebounce"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_deletebounce", "ActionOutput_mailgun_deletebounce"],
+            "usedModels": [
+                "ActionInput_mailgun_deletebounce",
+                "ActionOutput_mailgun_deletebounce"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -508,7 +594,10 @@
                                 "description": "Email address to remove from the bounce suppression list. Example: \"user@example.com\"."
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Domain and address identifying the bounce suppression entry to delete."
                     },
@@ -524,7 +613,10 @@
                                 "description": "Confirmation message returned by Mailgun, e.g. \"Bounced address has been removed\"."
                             }
                         },
-                        "required": ["address", "message"],
+                        "required": [
+                            "address",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the address was removed from the domain's bounce suppression list."
                     }
@@ -538,9 +630,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_deletecomplaint",
             "name": "delete-complaint",
-            "output": ["ActionOutput_mailgun_deletecomplaint"],
+            "output": [
+                "ActionOutput_mailgun_deletecomplaint"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_deletecomplaint", "ActionOutput_mailgun_deletecomplaint"],
+            "usedModels": [
+                "ActionInput_mailgun_deletecomplaint",
+                "ActionOutput_mailgun_deletecomplaint"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -556,7 +653,10 @@
                                 "description": "Email address to remove from the spam-complaint suppression list. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for removing an address from a domain's spam-complaint suppression list"
                     },
@@ -572,7 +672,10 @@
                                 "description": "Confirmation message returned by Mailgun"
                             }
                         },
-                        "required": ["address", "message"],
+                        "required": [
+                            "address",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the address was removed from the spam-complaint suppression list"
                     }
@@ -586,9 +689,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_deletelist",
             "name": "delete-list",
-            "output": ["ActionOutput_mailgun_deletelist"],
+            "output": [
+                "ActionOutput_mailgun_deletelist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_deletelist", "ActionOutput_mailgun_deletelist"],
+            "usedModels": [
+                "ActionInput_mailgun_deletelist",
+                "ActionOutput_mailgun_deletelist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -600,7 +708,9 @@
                                 "description": "Full address of the mailing list to delete. Example: \"dev@mg.example.com\""
                             }
                         },
-                        "required": ["list_address"],
+                        "required": [
+                            "list_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a Mailgun mailing list"
                     },
@@ -616,7 +726,10 @@
                                 "description": "Confirmation message returned by Mailgun, e.g. \"Mailing list has been removed\"."
                             }
                         },
-                        "required": ["address", "message"],
+                        "required": [
+                            "address",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of deleting a Mailgun mailing list"
                     }
@@ -630,9 +743,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_deletetemplate",
             "name": "delete-template",
-            "output": ["ActionOutput_mailgun_deletetemplate"],
+            "output": [
+                "ActionOutput_mailgun_deletetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_deletetemplate", "ActionOutput_mailgun_deletetemplate"],
+            "usedModels": [
+                "ActionInput_mailgun_deletetemplate",
+                "ActionOutput_mailgun_deletetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -648,7 +766,10 @@
                                 "description": "The name of the template to delete. Example: \"welcome-email\""
                             }
                         },
-                        "required": ["domain", "name"],
+                        "required": [
+                            "domain",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a Mailgun template."
                     },
@@ -667,12 +788,17 @@
                                         "description": "The name of the template that was deleted."
                                     }
                                 },
-                                "required": ["name"],
+                                "required": [
+                                    "name"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The template that was deleted."
                             }
                         },
-                        "required": ["message", "template"],
+                        "required": [
+                            "message",
+                            "template"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation of the deleted Mailgun template."
                     }
@@ -686,9 +812,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_deleteunsubscribe",
             "name": "delete-unsubscribe",
-            "output": ["ActionOutput_mailgun_deleteunsubscribe"],
+            "output": [
+                "ActionOutput_mailgun_deleteunsubscribe"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_deleteunsubscribe", "ActionOutput_mailgun_deleteunsubscribe"],
+            "usedModels": [
+                "ActionInput_mailgun_deleteunsubscribe",
+                "ActionOutput_mailgun_deleteunsubscribe"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -704,7 +835,10 @@
                                 "description": "Email address to remove from the unsubscribe suppression list. Example: \"user@example.com\"."
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for removing an address from a Mailgun domain unsubscribe suppression list."
                     },
@@ -720,7 +854,10 @@
                                 "description": "Confirmation message returned by Mailgun. Example: \"Unsubscribe event has been removed\"."
                             }
                         },
-                        "required": ["address", "message"],
+                        "required": [
+                            "address",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of removing an address from the unsubscribe suppression list."
                     }
@@ -734,9 +871,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_deletewhitelistentry",
             "name": "delete-whitelist-entry",
-            "output": ["ActionOutput_mailgun_deletewhitelistentry"],
+            "output": [
+                "ActionOutput_mailgun_deletewhitelistentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_deletewhitelistentry", "ActionOutput_mailgun_deletewhitelistentry"],
+            "usedModels": [
+                "ActionInput_mailgun_deletewhitelistentry",
+                "ActionOutput_mailgun_deletewhitelistentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -752,7 +894,10 @@
                                 "description": "The email address or domain to remove from the allowlist. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a single entry from a Mailgun domain allowlist."
                     },
@@ -768,7 +913,10 @@
                                 "description": "The address or domain that was removed from the allowlist. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["message", "value"],
+                        "required": [
+                            "message",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of deleting a single entry from a Mailgun domain allowlist."
                     }
@@ -782,9 +930,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getbounce",
             "name": "get-bounce",
-            "output": ["ActionOutput_mailgun_getbounce"],
+            "output": [
+                "ActionOutput_mailgun_getbounce"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getbounce", "ActionOutput_mailgun_getbounce"],
+            "usedModels": [
+                "ActionInput_mailgun_getbounce",
+                "ActionOutput_mailgun_getbounce"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -800,7 +953,10 @@
                                 "description": "The email address to look up on the bounce list. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Lookup parameters for checking one address against a domain bounce suppression list."
                     },
@@ -828,7 +984,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["bounced", "address"],
+                        "required": [
+                            "bounced",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of checking an address against a domain bounce suppression list."
                     }
@@ -842,9 +1001,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getcomplaint",
             "name": "get-complaint",
-            "output": ["ActionOutput_mailgun_getcomplaint"],
+            "output": [
+                "ActionOutput_mailgun_getcomplaint"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getcomplaint", "ActionOutput_mailgun_getcomplaint"],
+            "usedModels": [
+                "ActionInput_mailgun_getcomplaint",
+                "ActionOutput_mailgun_getcomplaint"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -860,7 +1024,10 @@
                                 "description": "The email address to look up on the domain's spam-complaint suppression list. Example: \"user@example.com\"."
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for checking whether an address is on a domain's spam-complaint suppression list."
                     },
@@ -880,7 +1047,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["on_complaint_list"],
+                        "required": [
+                            "on_complaint_list"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of checking an address against a domain's spam-complaint suppression list."
                     }
@@ -894,9 +1063,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getdomain",
             "name": "get-domain",
-            "output": ["ActionOutput_mailgun_getdomain"],
+            "output": [
+                "ActionOutput_mailgun_getdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getdomain", "ActionOutput_mailgun_getdomain"],
+            "usedModels": [
+                "ActionInput_mailgun_getdomain",
+                "ActionOutput_mailgun_getdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -908,7 +1082,9 @@
                                 "description": "Name of the sending domain to retrieve. Example: \"mg.example.com\""
                             }
                         },
-                        "required": ["domain_name"],
+                        "required": [
+                            "domain_name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Mailgun sending domain."
                     },
@@ -1038,7 +1214,14 @@
                                             "description": "Expected DNS record value. Example: \"mxa.mailgun.org\""
                                         }
                                     },
-                                    "required": ["is_active", "cached", "priority", "record_type", "valid", "value"],
+                                    "required": [
+                                        "is_active",
+                                        "cached",
+                                        "priority",
+                                        "record_type",
+                                        "valid",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1076,12 +1259,21 @@
                                             "description": "Expected DNS record value."
                                         }
                                     },
-                                    "required": ["is_active", "cached", "name", "record_type", "valid", "value"],
+                                    "required": [
+                                        "is_active",
+                                        "cached",
+                                        "name",
+                                        "record_type",
+                                        "valid",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "The requested Mailgun domain and, for custom domains, its expected DNS records."
                     }
@@ -1095,9 +1287,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getlistmember",
             "name": "get-list-member",
-            "output": ["ActionOutput_mailgun_getlistmember"],
+            "output": [
+                "ActionOutput_mailgun_getlistmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getlistmember", "ActionOutput_mailgun_getlistmember"],
+            "usedModels": [
+                "ActionInput_mailgun_getlistmember",
+                "ActionOutput_mailgun_getlistmember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1113,7 +1310,10 @@
                                 "description": "Email address of the mailing list member to retrieve. Example: \"daniel@test.com\""
                             }
                         },
-                        "required": ["list_address", "member_address"],
+                        "required": [
+                            "list_address",
+                            "member_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the mailing list and the member to retrieve, both by email address."
                     },
@@ -1141,7 +1341,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["address"],
+                        "required": [
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "A single mailing list member."
                     }
@@ -1155,9 +1357,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getlistwithmembers",
             "name": "get-list-with-members",
-            "output": ["ActionOutput_mailgun_getlistwithmembers"],
+            "output": [
+                "ActionOutput_mailgun_getlistwithmembers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getlistwithmembers", "ActionOutput_mailgun_getlistwithmembers"],
+            "usedModels": [
+                "ActionInput_mailgun_getlistwithmembers",
+                "ActionOutput_mailgun_getlistwithmembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1175,7 +1382,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["list_address"],
+                        "required": [
+                            "list_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a mailing list together with its members."
                     },
@@ -1203,7 +1412,10 @@
                                     },
                                     "description": {
                                         "description": "Description of the mailing list, or null when unset.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "members_count": {
                                         "type": "number",
@@ -1211,10 +1423,18 @@
                                     },
                                     "reply_preference": {
                                         "description": "Where replies to list messages should be directed (e.g. \"list\", \"sender\"), or null when unset.",
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["address", "access_level", "created_at", "members_count"],
+                                "required": [
+                                    "address",
+                                    "access_level",
+                                    "created_at",
+                                    "members_count"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Details of the mailing list."
                             },
@@ -1244,7 +1464,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["address", "subscribed"],
+                                    "required": [
+                                        "address",
+                                        "subscribed"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single member of the mailing list."
                                 },
@@ -1255,7 +1478,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["list", "members"],
+                        "required": [
+                            "list",
+                            "members"
+                        ],
                         "additionalProperties": false,
                         "description": "A mailing list combined with its member roster."
                     }
@@ -1269,9 +1495,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_mailgun_getlist"],
+            "output": [
+                "ActionOutput_mailgun_getlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getlist", "ActionOutput_mailgun_getlist"],
+            "usedModels": [
+                "ActionInput_mailgun_getlist",
+                "ActionOutput_mailgun_getlist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1283,7 +1514,9 @@
                                 "description": "The mailing list address to retrieve. Example: \"dev@samples.mailgun.org\""
                             }
                         },
-                        "required": ["address"],
+                        "required": [
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single mailing list"
                     },
@@ -1319,7 +1552,12 @@
                                 "description": "The number of members on the mailing list. Example: 3"
                             }
                         },
-                        "required": ["address", "access_level", "created_at", "members_count"],
+                        "required": [
+                            "address",
+                            "access_level",
+                            "created_at",
+                            "members_count"
+                        ],
                         "additionalProperties": false,
                         "description": "The retrieved mailing list"
                     }
@@ -1333,9 +1571,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_gettemplate",
             "name": "get-template",
-            "output": ["ActionOutput_mailgun_gettemplate"],
+            "output": [
+                "ActionOutput_mailgun_gettemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_gettemplate", "ActionOutput_mailgun_gettemplate"],
+            "usedModels": [
+                "ActionInput_mailgun_gettemplate",
+                "ActionOutput_mailgun_gettemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1351,7 +1594,10 @@
                                 "description": "The name of the template to retrieve. Example: \"welcome-email\""
                             }
                         },
-                        "required": ["domain", "name"],
+                        "required": [
+                            "domain",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Mailgun template by domain and name"
                     },
@@ -1379,7 +1625,12 @@
                                 "description": "The domain that owns the template"
                             }
                         },
-                        "required": ["name", "createdAt", "id", "domain"],
+                        "required": [
+                            "name",
+                            "createdAt",
+                            "id",
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "Template metadata returned by Mailgun for a single template"
                     }
@@ -1393,9 +1644,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getunsubscribe",
             "name": "get-unsubscribe",
-            "output": ["ActionOutput_mailgun_getunsubscribe"],
+            "output": [
+                "ActionOutput_mailgun_getunsubscribe"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getunsubscribe", "ActionOutput_mailgun_getunsubscribe"],
+            "usedModels": [
+                "ActionInput_mailgun_getunsubscribe",
+                "ActionOutput_mailgun_getunsubscribe"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1411,7 +1667,10 @@
                                 "description": "The email address to look up in the unsubscribe suppression list. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for checking whether an email address is on a Mailgun domain's unsubscribe suppression list."
                     },
@@ -1438,7 +1697,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["on_unsubscribe_list", "address"],
+                        "required": [
+                            "on_unsubscribe_list",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of checking an email address against a Mailgun domain's unsubscribe suppression list."
                     }
@@ -1452,9 +1714,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_getwhitelistentry",
             "name": "get-whitelist-entry",
-            "output": ["ActionOutput_mailgun_getwhitelistentry"],
+            "output": [
+                "ActionOutput_mailgun_getwhitelistentry"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_getwhitelistentry", "ActionOutput_mailgun_getwhitelistentry"],
+            "usedModels": [
+                "ActionInput_mailgun_getwhitelistentry",
+                "ActionOutput_mailgun_getwhitelistentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1470,7 +1737,10 @@
                                 "description": "The allowlisted address or domain to look up. Example: \"alice@example.com\""
                             }
                         },
-                        "required": ["domain", "address"],
+                        "required": [
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for looking up a single allowlist entry."
                     },
@@ -1494,7 +1764,12 @@
                                 "description": "User-provided reason recorded when the entry was allowlisted. Empty string when none was given."
                             }
                         },
-                        "required": ["type", "value", "createdAt", "reason"],
+                        "required": [
+                            "type",
+                            "value",
+                            "createdAt",
+                            "reason"
+                        ],
                         "additionalProperties": false,
                         "description": "The allowlist entry found for the requested address or domain."
                     }
@@ -1508,9 +1783,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listbounces",
             "name": "list-bounces",
-            "output": ["ActionOutput_mailgun_listbounces"],
+            "output": [
+                "ActionOutput_mailgun_listbounces"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listbounces", "ActionOutput_mailgun_listbounces"],
+            "usedModels": [
+                "ActionInput_mailgun_listbounces",
+                "ActionOutput_mailgun_listbounces"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1536,7 +1816,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "Filters for listing the bounce suppression entries of a domain."
                     },
@@ -1565,7 +1847,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["address"],
+                                    "required": [
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Bounce suppression entries for the requested page."
@@ -1575,7 +1859,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["bounces"],
+                        "required": [
+                            "bounces"
+                        ],
                         "additionalProperties": false,
                         "description": "One page of bounce suppression entries for a domain."
                     }
@@ -1589,9 +1875,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listcomplaints",
             "name": "list-complaints",
-            "output": ["ActionOutput_mailgun_listcomplaints"],
+            "output": [
+                "ActionOutput_mailgun_listcomplaints"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listcomplaints", "ActionOutput_mailgun_listcomplaints"],
+            "usedModels": [
+                "ActionInput_mailgun_listcomplaints",
+                "ActionOutput_mailgun_listcomplaints"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1614,7 +1905,9 @@
                                 "format": "uri"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing spam-complaint suppression entries of a Mailgun domain"
                     },
@@ -1643,7 +1936,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["address"],
+                                    "required": [
+                                        "address"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single spam-complaint suppression entry"
                                 },
@@ -1654,7 +1949,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Page of spam-complaint suppression entries for a Mailgun domain"
                     }
@@ -1668,9 +1965,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listdomains",
             "name": "list-domains",
-            "output": ["ActionOutput_mailgun_listdomains"],
+            "output": [
+                "ActionOutput_mailgun_listdomains"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listdomains", "ActionOutput_mailgun_listdomains"],
+            "usedModels": [
+                "ActionInput_mailgun_listdomains",
+                "ActionOutput_mailgun_listdomains"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1766,7 +2068,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A sending domain on the Mailgun account."
                                 },
@@ -1777,7 +2082,10 @@
                                 "description": "Total number of domains on the account across all pages."
                             }
                         },
-                        "required": ["domains", "total_count"],
+                        "required": [
+                            "domains",
+                            "total_count"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of listing the sending domains on the Mailgun account."
                     }
@@ -1791,9 +2099,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_mailgun_listevents"],
+            "output": [
+                "ActionOutput_mailgun_listevents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listevents", "ActionOutput_mailgun_listevents"],
+            "usedModels": [
+                "ActionInput_mailgun_listevents",
+                "ActionOutput_mailgun_listevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1827,7 +2140,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing Mailgun event log entries of a domain"
                     },
@@ -1883,7 +2198,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "event", "timestamp"],
+                                    "required": [
+                                        "id",
+                                        "event",
+                                        "timestamp"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "Event log entries for the domain, newest first unless an ascending cursor is used"
@@ -1893,7 +2212,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of Mailgun event log entries with a cursor to the next page"
                     }
@@ -1907,9 +2228,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listlistmembers",
             "name": "list-list-members",
-            "output": ["ActionOutput_mailgun_listlistmembers"],
+            "output": [
+                "ActionOutput_mailgun_listlistmembers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listlistmembers", "ActionOutput_mailgun_listlistmembers"],
+            "usedModels": [
+                "ActionInput_mailgun_listlistmembers",
+                "ActionOutput_mailgun_listlistmembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1935,7 +2261,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["list_address"],
+                        "required": [
+                            "list_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the members of a Mailgun mailing list."
                     },
@@ -1968,7 +2296,12 @@
                                             "description": "Custom variables stored on the member. Empty object when none were set."
                                         }
                                     },
-                                    "required": ["address", "name", "subscribed", "vars"],
+                                    "required": [
+                                        "address",
+                                        "name",
+                                        "subscribed",
+                                        "vars"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Members of the mailing list for the requested page, in ascending alphabetical order by address."
@@ -1978,7 +2311,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of mailing list members with an optional cursor for fetching the next page."
                     }
@@ -1992,9 +2327,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_mailgun_listlists"],
+            "output": [
+                "ActionOutput_mailgun_listlists"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listlists", "ActionOutput_mailgun_listlists"],
+            "usedModels": [
+                "ActionInput_mailgun_listlists",
+                "ActionOutput_mailgun_listlists"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2056,7 +2396,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["address"],
+                                    "required": [
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Mailing lists on the account for the requested page."
@@ -2066,7 +2408,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of mailing lists plus a cursor for the next page."
                     }
@@ -2080,9 +2424,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listtemplates",
             "name": "list-templates",
-            "output": ["ActionOutput_mailgun_listtemplates"],
+            "output": [
+                "ActionOutput_mailgun_listtemplates"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listtemplates", "ActionOutput_mailgun_listtemplates"],
+            "usedModels": [
+                "ActionInput_mailgun_listtemplates",
+                "ActionOutput_mailgun_listtemplates"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2104,7 +2453,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the stored message templates of a Mailgun domain."
                     },
@@ -2141,7 +2492,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Stored templates of the domain for the requested page."
@@ -2151,7 +2504,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of stored Mailgun templates for a domain."
                     }
@@ -2165,9 +2520,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listunsubscribes",
             "name": "list-unsubscribes",
-            "output": ["ActionOutput_mailgun_listunsubscribes"],
+            "output": [
+                "ActionOutput_mailgun_listunsubscribes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listunsubscribes", "ActionOutput_mailgun_listunsubscribes"],
+            "usedModels": [
+                "ActionInput_mailgun_listunsubscribes",
+                "ActionOutput_mailgun_listunsubscribes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2191,7 +2551,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing unsubscribe suppression entries of a Mailgun domain."
                     },
@@ -2219,7 +2581,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["address"],
+                                    "required": [
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Unsubscribe suppression entries for the requested page. Empty when no (further) entries exist."
@@ -2229,7 +2593,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of unsubscribe suppression entries for a Mailgun domain."
                     }
@@ -2243,9 +2609,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_listwhitelistentries",
             "name": "list-whitelist-entries",
-            "output": ["ActionOutput_mailgun_listwhitelistentries"],
+            "output": [
+                "ActionOutput_mailgun_listwhitelistentries"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_listwhitelistentries", "ActionOutput_mailgun_listwhitelistentries"],
+            "usedModels": [
+                "ActionInput_mailgun_listwhitelistentries",
+                "ActionOutput_mailgun_listwhitelistentries"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2271,7 +2642,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain"],
+                        "required": [
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing a domain's sending allowlist entries"
                     },
@@ -2300,7 +2673,11 @@
                                             "description": "Timestamp for when the entry was created, in RFC 822 format. Example: \"Tue, 12 Aug 2025 20:00:06 UTC\""
                                         }
                                     },
-                                    "required": ["value", "type", "createdAt"],
+                                    "required": [
+                                        "value",
+                                        "type",
+                                        "createdAt"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Allowlist entries for the requested page. Empty when the domain has no allowlist entries"
@@ -2310,7 +2687,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "The domain's sending allowlist entries and pagination state"
                     }
@@ -2324,9 +2703,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_removelistmember",
             "name": "remove-list-member",
-            "output": ["ActionOutput_mailgun_removelistmember"],
+            "output": [
+                "ActionOutput_mailgun_removelistmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_removelistmember", "ActionOutput_mailgun_removelistmember"],
+            "usedModels": [
+                "ActionInput_mailgun_removelistmember",
+                "ActionOutput_mailgun_removelistmember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2342,7 +2726,10 @@
                                 "description": "Email address of the member to remove from the mailing list. Example: \"jane.doe@example.com\"."
                             }
                         },
-                        "required": ["list_address", "member_address"],
+                        "required": [
+                            "list_address",
+                            "member_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for removing a member from a Mailgun mailing list."
                     },
@@ -2358,7 +2745,10 @@
                                 "description": "Confirmation message returned by Mailgun. Example: \"Mailing list member has been deleted\"."
                             }
                         },
-                        "required": ["address", "message"],
+                        "required": [
+                            "address",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of removing a member from a Mailgun mailing list."
                     }
@@ -2372,9 +2762,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_sendemailsafely",
             "name": "send-email-safely",
-            "output": ["ActionOutput_mailgun_sendemailsafely"],
+            "output": [
+                "ActionOutput_mailgun_sendemailsafely"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_sendemailsafely", "ActionOutput_mailgun_sendemailsafely"],
+            "usedModels": [
+                "ActionInput_mailgun_sendemailsafely",
+                "ActionOutput_mailgun_sendemailsafely"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2402,7 +2797,13 @@
                                 "description": "Plain-text body of the message"
                             }
                         },
-                        "required": ["domain", "from", "to", "subject", "text"],
+                        "required": [
+                            "domain",
+                            "from",
+                            "to",
+                            "subject",
+                            "text"
+                        ],
                         "additionalProperties": false,
                         "description": "Recipient, sender, and content for an email that is only sent after checking the recipient against the domain's suppression lists."
                     },
@@ -2420,7 +2821,11 @@
                             "reason": {
                                 "description": "Which suppression list the recipient was found on. Present only when suppressed is true",
                                 "type": "string",
-                                "enum": ["bounced", "complained", "unsubscribed"]
+                                "enum": [
+                                    "bounced",
+                                    "complained",
+                                    "unsubscribed"
+                                ]
                             },
                             "details": {
                                 "description": "The suppression record that matched the recipient. Present only when suppressed is true",
@@ -2450,7 +2855,9 @@
                                         }
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false
                             },
                             "message_id": {
@@ -2474,11 +2881,17 @@
                                         "description": "Error message returned by Mailgun for the rejected send"
                                     }
                                 },
-                                "required": ["status", "message"],
+                                "required": [
+                                    "status",
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["sent", "suppressed"],
+                        "required": [
+                            "sent",
+                            "suppressed"
+                        ],
                         "additionalProperties": false,
                         "description": "Outcome of the suppression check and, when the recipient is not suppressed, of the send attempt."
                     }
@@ -2492,9 +2905,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_sendmessage",
             "name": "send-message",
-            "output": ["ActionOutput_mailgun_sendmessage"],
+            "output": [
+                "ActionOutput_mailgun_sendmessage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_sendmessage", "ActionOutput_mailgun_sendmessage"],
+            "usedModels": [
+                "ActionInput_mailgun_sendmessage",
+                "ActionOutput_mailgun_sendmessage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2534,7 +2952,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain", "from", "to", "subject"],
+                        "required": [
+                            "domain",
+                            "from",
+                            "to",
+                            "subject"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for sending an email message through a Mailgun domain."
                     },
@@ -2550,7 +2973,10 @@
                                 "description": "Provider status message for the send request. Example: \"Queued. Thank you.\"."
                             }
                         },
-                        "required": ["id", "message"],
+                        "required": [
+                            "id",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result returned by Mailgun once the message has been accepted and queued for delivery."
                     }
@@ -2564,9 +2990,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_subscribeemailtolist",
             "name": "subscribe-email-to-list",
-            "output": ["ActionOutput_mailgun_subscribeemailtolist"],
+            "output": [
+                "ActionOutput_mailgun_subscribeemailtolist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_subscribeemailtolist", "ActionOutput_mailgun_subscribeemailtolist"],
+            "usedModels": [
+                "ActionInput_mailgun_subscribeemailtolist",
+                "ActionOutput_mailgun_subscribeemailtolist"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2584,7 +3015,11 @@
                             "access_level": {
                                 "description": "Access level for the mailing list, used only when this call creates it. Defaults to \"members\" instead of Mailgun's own \"readonly\" default. Ignored when the list already exists.",
                                 "type": "string",
-                                "enum": ["readonly", "members", "everyone"]
+                                "enum": [
+                                    "readonly",
+                                    "members",
+                                    "everyone"
+                                ]
                             },
                             "member_address": {
                                 "type": "string",
@@ -2603,7 +3038,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["list_address", "member_address"],
+                        "required": [
+                            "list_address",
+                            "member_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for subscribing an email address to a Mailgun mailing list, creating the list first when it does not exist."
                     },
@@ -2638,12 +3076,17 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["address"],
+                                "required": [
+                                    "address"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The resulting mailing list member after the upsert."
                             }
                         },
-                        "required": ["list_created", "member"],
+                        "required": [
+                            "list_created",
+                            "member"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of subscribing the email address: whether the list was created by this call, plus the final member."
                     }
@@ -2657,9 +3100,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_updatelistmember",
             "name": "update-list-member",
-            "output": ["ActionOutput_mailgun_updatelistmember"],
+            "output": [
+                "ActionOutput_mailgun_updatelistmember"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_updatelistmember", "ActionOutput_mailgun_updatelistmember"],
+            "usedModels": [
+                "ActionInput_mailgun_updatelistmember",
+                "ActionOutput_mailgun_updatelistmember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2691,7 +3139,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["list_address", "member_address"],
+                        "required": [
+                            "list_address",
+                            "member_address"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields identifying the mailing list member to update and the new values to apply. Only the provided fields are changed; omitted fields keep their current values."
                     },
@@ -2719,7 +3170,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["address", "subscribed"],
+                        "required": [
+                            "address",
+                            "subscribed"
+                        ],
                         "additionalProperties": false,
                         "description": "The mailing list member as stored on the provider after the update was applied."
                     }
@@ -2733,9 +3187,14 @@
             "endpoint": null,
             "input": "ActionInput_mailgun_updatetemplate",
             "name": "update-template",
-            "output": ["ActionOutput_mailgun_updatetemplate"],
+            "output": [
+                "ActionOutput_mailgun_updatetemplate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mailgun_updatetemplate", "ActionOutput_mailgun_updatetemplate"],
+            "usedModels": [
+                "ActionInput_mailgun_updatetemplate",
+                "ActionOutput_mailgun_updatetemplate"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2759,7 +3218,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["domain", "name"],
+                        "required": [
+                            "domain",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating a Mailgun template's metadata. Provide at least one of description or new_name."
                     },
@@ -2775,7 +3237,10 @@
                                 "description": "Confirmation message returned by Mailgun, e.g. \"template has been updated\" or \"Template has been renamed\"."
                             }
                         },
-                        "required": ["name", "message"],
+                        "required": [
+                            "name",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the template metadata update."
                     }
@@ -2792,12 +3257,16 @@
             "endpoints": [],
             "input": null,
             "name": "bounces",
-            "output": ["Bounce"],
+            "output": [
+                "Bounce"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Bounce"],
+            "usedModels": [
+                "Bounce"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2830,7 +3299,12 @@
                                 "description": "When Mailgun recorded the bounce, in RFC 2822 format, e.g. \"Fri, 02 Oct 2026 00:31:24 UTC\"."
                             }
                         },
-                        "required": ["id", "domain", "address", "created_at"],
+                        "required": [
+                            "id",
+                            "domain",
+                            "address",
+                            "created_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A Mailgun hard-bounce suppression entry for a single recipient address on a single sending domain."
                     }
@@ -2845,12 +3319,16 @@
             "endpoints": [],
             "input": null,
             "name": "complaints",
-            "output": ["Complaint"],
+            "output": [
+                "Complaint"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Complaint"],
+            "usedModels": [
+                "Complaint"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2875,7 +3353,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "domain", "address"],
+                        "required": [
+                            "id",
+                            "domain",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "A Mailgun spam-complaint suppression entry for a single email address on a single domain."
                     }
@@ -2890,12 +3372,16 @@
             "endpoints": [],
             "input": null,
             "name": "domains",
-            "output": ["Domain"],
+            "output": [
+                "Domain"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Domain"],
+            "usedModels": [
+                "Domain"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2968,13 +3454,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "A sending domain configured on the Mailgun account"
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2983,12 +3474,16 @@
             "endpoints": [],
             "input": null,
             "name": "events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event"],
+            "usedModels": [
+                "Event"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3128,13 +3623,21 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "event_id", "domain", "event", "timestamp"],
+                        "required": [
+                            "id",
+                            "event_id",
+                            "domain",
+                            "event",
+                            "timestamp"
+                        ],
                         "additionalProperties": false,
                         "description": "A Mailgun event log entry (delivery, engagement or suppression event) for a message, normalized across all domains on the connection."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3143,12 +3646,16 @@
             "endpoints": [],
             "input": null,
             "name": "list-members",
-            "output": ["ListMember"],
+            "output": [
+                "ListMember"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ListMember"],
+            "usedModels": [
+                "ListMember"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3185,7 +3692,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "list_address", "address"],
+                        "required": [
+                            "id",
+                            "list_address",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "A member of a Mailgun mailing list, tagged with the address of its parent list"
                     }
@@ -3200,12 +3711,16 @@
             "endpoints": [],
             "input": null,
             "name": "lists",
-            "output": ["MailingList"],
+            "output": [
+                "MailingList"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MailingList"],
+            "usedModels": [
+                "MailingList"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3246,7 +3761,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "address"],
+                        "required": [
+                            "id",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "A Mailgun mailing list on the account."
                     }
@@ -3261,12 +3779,16 @@
             "endpoints": [],
             "input": null,
             "name": "templates",
-            "output": ["Template"],
+            "output": [
+                "Template"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Template"],
+            "usedModels": [
+                "Template"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3295,13 +3817,20 @@
                                 "description": "Mailgun sending domain that owns the template. Example: \"mg.example.com\""
                             }
                         },
-                        "required": ["id", "name", "createdAt", "domain"],
+                        "required": [
+                            "id",
+                            "name",
+                            "createdAt",
+                            "domain"
+                        ],
                         "additionalProperties": false,
                         "description": "A stored Mailgun message template. The list endpoint returns metadata only - version/body content is not included."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3310,12 +3839,16 @@
             "endpoints": [],
             "input": null,
             "name": "unsubscribes",
-            "output": ["Unsubscribe"],
+            "output": [
+                "Unsubscribe"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Unsubscribe"],
+            "usedModels": [
+                "Unsubscribe"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3347,7 +3880,13 @@
                                 "description": "RFC 2822 timestamp of when the address was unsubscribed, e.g. `Fri, 02 Oct 2026 01:07:33 UTC`"
                             }
                         },
-                        "required": ["id", "address", "domain", "tags", "created_at"],
+                        "required": [
+                            "id",
+                            "address",
+                            "domain",
+                            "tags",
+                            "created_at"
+                        ],
                         "additionalProperties": false,
                         "description": "A Mailgun unsubscribe suppression entry for a sending domain"
                     }

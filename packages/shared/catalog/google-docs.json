@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_adddocumenttab",
             "name": "add-document-tab",
-            "output": ["ActionOutput_google_docs_adddocumenttab"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_adddocumenttab", "ActionOutput_google_docs_adddocumenttab"],
+            "output": [
+                "ActionOutput_google_docs_adddocumenttab"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_adddocumenttab",
+                "ActionOutput_google_docs_adddocumenttab"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -39,7 +46,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_adddocumenttab": {
@@ -68,7 +77,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tabId"],
+                        "required": [
+                            "tabId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -81,9 +92,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_createdocument",
             "name": "create-document",
-            "output": ["ActionOutput_google_docs_createdocument"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_createdocument", "ActionOutput_google_docs_createdocument"],
+            "output": [
+                "ActionOutput_google_docs_createdocument"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_createdocument",
+                "ActionOutput_google_docs_createdocument"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -95,7 +113,9 @@
                                 "description": "Title for the new Google Doc. Example: \"Meeting Notes\""
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_createdocument": {
@@ -108,7 +128,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "revisionId"],
+                        "required": [
+                            "documentId",
+                            "revisionId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -121,9 +144,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_createfooter",
             "name": "create-footer",
-            "output": ["ActionOutput_google_docs_createfooter"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_createfooter", "ActionOutput_google_docs_createfooter"],
+            "output": [
+                "ActionOutput_google_docs_createfooter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_createfooter",
+                "ActionOutput_google_docs_createfooter"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -145,7 +175,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_createfooter": {
@@ -161,7 +193,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "footerId"],
+                        "required": [
+                            "documentId",
+                            "footerId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -174,9 +209,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_createfootnote",
             "name": "create-footnote",
-            "output": ["ActionOutput_google_docs_createfootnote"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_createfootnote", "ActionOutput_google_docs_createfootnote"],
+            "output": [
+                "ActionOutput_google_docs_createfootnote"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_createfootnote",
+                "ActionOutput_google_docs_createfootnote"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -202,7 +244,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "index"],
+                        "required": [
+                            "documentId",
+                            "index"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_createfootnote": {
@@ -218,7 +263,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "footnoteId"],
+                        "required": [
+                            "documentId",
+                            "footnoteId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -231,9 +279,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_createheader",
             "name": "create-header",
-            "output": ["ActionOutput_google_docs_createheader"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_createheader", "ActionOutput_google_docs_createheader"],
+            "output": [
+                "ActionOutput_google_docs_createheader"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_createheader",
+                "ActionOutput_google_docs_createheader"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -249,7 +304,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_createheader": {
@@ -265,7 +322,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "headerId", "textInserted"],
+                        "required": [
+                            "documentId",
+                            "headerId",
+                            "textInserted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -278,9 +339,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_createnamedrange",
             "name": "create-named-range",
-            "output": ["ActionOutput_google_docs_createnamedrange"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_createnamedrange", "ActionOutput_google_docs_createnamedrange"],
+            "output": [
+                "ActionOutput_google_docs_createnamedrange"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_createnamedrange",
+                "ActionOutput_google_docs_createnamedrange"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -308,7 +376,12 @@
                                 "description": "End index of the range (exclusive)."
                             }
                         },
-                        "required": ["documentId", "name", "startIndex", "endIndex"],
+                        "required": [
+                            "documentId",
+                            "name",
+                            "startIndex",
+                            "endIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_createnamedrange": {
@@ -319,7 +392,9 @@
                                 "description": "The ID of the newly created named range."
                             }
                         },
-                        "required": ["namedRangeId"],
+                        "required": [
+                            "namedRangeId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -332,9 +407,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_createparagraphbullets",
             "name": "create-paragraph-bullets",
-            "output": ["ActionOutput_google_docs_createparagraphbullets"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_createparagraphbullets", "ActionOutput_google_docs_createparagraphbullets"],
+            "output": [
+                "ActionOutput_google_docs_createparagraphbullets"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_createparagraphbullets",
+                "ActionOutput_google_docs_createparagraphbullets"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -379,7 +461,11 @@
                                 ]
                             }
                         },
-                        "required": ["documentId", "startIndex", "endIndex"],
+                        "required": [
+                            "documentId",
+                            "startIndex",
+                            "endIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_createparagraphbullets": {
@@ -392,7 +478,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -405,9 +493,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deletecontentrange",
             "name": "delete-content-range",
-            "output": ["ActionOutput_google_docs_deletecontentrange"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deletecontentrange", "ActionOutput_google_docs_deletecontentrange"],
+            "output": [
+                "ActionOutput_google_docs_deletecontentrange"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deletecontentrange",
+                "ActionOutput_google_docs_deletecontentrange"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -435,7 +530,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "startIndex", "endIndex"],
+                        "required": [
+                            "documentId",
+                            "startIndex",
+                            "endIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deletecontentrange": {
@@ -462,7 +561,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["documentId", "replies"],
+                        "required": [
+                            "documentId",
+                            "replies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -475,9 +577,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deletedocumenttab",
             "name": "delete-document-tab",
-            "output": ["ActionOutput_google_docs_deletedocumenttab"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deletedocumenttab", "ActionOutput_google_docs_deletedocumenttab"],
+            "output": [
+                "ActionOutput_google_docs_deletedocumenttab"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deletedocumenttab",
+                "ActionOutput_google_docs_deletedocumenttab"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -493,7 +602,10 @@
                                 "description": "Tab ID to delete. Example: \"t.r7sklz35b6u5\""
                             }
                         },
-                        "required": ["documentId", "tabId"],
+                        "required": [
+                            "documentId",
+                            "tabId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deletedocumenttab": {
@@ -506,7 +618,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "tabId"],
+                        "required": [
+                            "documentId",
+                            "tabId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -519,9 +634,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deletefooter",
             "name": "delete-footer",
-            "output": ["ActionOutput_google_docs_deletefooter"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deletefooter", "ActionOutput_google_docs_deletefooter"],
+            "output": [
+                "ActionOutput_google_docs_deletefooter"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deletefooter",
+                "ActionOutput_google_docs_deletefooter"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -541,7 +663,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "footerId"],
+                        "required": [
+                            "documentId",
+                            "footerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deletefooter": {
@@ -554,7 +679,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "success"],
+                        "required": [
+                            "documentId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -567,9 +695,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deleteheader",
             "name": "delete-header",
-            "output": ["ActionOutput_google_docs_deleteheader"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deleteheader", "ActionOutput_google_docs_deleteheader"],
+            "output": [
+                "ActionOutput_google_docs_deleteheader"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deleteheader",
+                "ActionOutput_google_docs_deleteheader"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -585,7 +720,10 @@
                                 "description": "Header ID to delete. Example: \"kix.oq93zh93nzrf\""
                             }
                         },
-                        "required": ["documentId", "headerId"],
+                        "required": [
+                            "documentId",
+                            "headerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deleteheader": {
@@ -601,7 +739,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "headerId", "success"],
+                        "required": [
+                            "documentId",
+                            "headerId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -614,9 +756,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deletenamedrange",
             "name": "delete-named-range",
-            "output": ["ActionOutput_google_docs_deletenamedrange"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deletenamedrange", "ActionOutput_google_docs_deletenamedrange"],
+            "output": [
+                "ActionOutput_google_docs_deletenamedrange"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deletenamedrange",
+                "ActionOutput_google_docs_deletenamedrange"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -640,7 +789,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deletenamedrange": {
@@ -653,7 +804,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "documentId"],
+                        "required": [
+                            "success",
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -666,9 +820,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deleteparagraphbullets",
             "name": "delete-paragraph-bullets",
-            "output": ["ActionOutput_google_docs_deleteparagraphbullets"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deleteparagraphbullets", "ActionOutput_google_docs_deleteparagraphbullets"],
+            "output": [
+                "ActionOutput_google_docs_deleteparagraphbullets"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deleteparagraphbullets",
+                "ActionOutput_google_docs_deleteparagraphbullets"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -695,12 +856,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["startIndex", "endIndex"],
+                                "required": [
+                                    "startIndex",
+                                    "endIndex"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The range of paragraphs to remove bullets from."
                             }
                         },
-                        "required": ["documentId", "range"],
+                        "required": [
+                            "documentId",
+                            "range"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deleteparagraphbullets": {
@@ -713,7 +880,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "success"],
+                        "required": [
+                            "documentId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -726,9 +896,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deletetablecolumn",
             "name": "delete-table-column",
-            "output": ["ActionOutput_google_docs_deletetablecolumn"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deletetablecolumn", "ActionOutput_google_docs_deletetablecolumn"],
+            "output": [
+                "ActionOutput_google_docs_deletetablecolumn"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deletetablecolumn",
+                "ActionOutput_google_docs_deletetablecolumn"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -758,7 +935,12 @@
                                 "description": "The column index to delete. Example: 1"
                             }
                         },
-                        "required": ["documentId", "tableStartLocationIndex", "rowIndex", "columnIndex"],
+                        "required": [
+                            "documentId",
+                            "tableStartLocationIndex",
+                            "rowIndex",
+                            "columnIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deletetablecolumn": {
@@ -771,7 +953,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "success"],
+                        "required": [
+                            "documentId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -784,9 +969,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_deletetablerow",
             "name": "delete-table-row",
-            "output": ["ActionOutput_google_docs_deletetablerow"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_deletetablerow", "ActionOutput_google_docs_deletetablerow"],
+            "output": [
+                "ActionOutput_google_docs_deletetablerow"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_deletetablerow",
+                "ActionOutput_google_docs_deletetablerow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -818,7 +1010,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "tableStartIndex", "rowIndex", "columnIndex"],
+                        "required": [
+                            "documentId",
+                            "tableStartIndex",
+                            "rowIndex",
+                            "columnIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_deletetablerow": {
@@ -844,9 +1041,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_exportdocument",
             "name": "export-document",
-            "output": ["ActionOutput_google_docs_exportdocument"],
-            "scopes": ["https://www.googleapis.com/auth/drive.readonly"],
-            "usedModels": ["ActionInput_google_docs_exportdocument", "ActionOutput_google_docs_exportdocument"],
+            "output": [
+                "ActionOutput_google_docs_exportdocument"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_exportdocument",
+                "ActionOutput_google_docs_exportdocument"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -868,7 +1072,10 @@
                                 "description": "The target MIME type for the export."
                             }
                         },
-                        "required": ["fileId", "mimeType"],
+                        "required": [
+                            "fileId",
+                            "mimeType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_exportdocument": {
@@ -889,7 +1096,12 @@
                                 "description": "The size of the exported data in bytes."
                             }
                         },
-                        "required": ["fileId", "mimeType", "data", "size"],
+                        "required": [
+                            "fileId",
+                            "mimeType",
+                            "data",
+                            "size"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -902,9 +1114,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_insertinlineimage",
             "name": "insert-inline-image",
-            "output": ["ActionOutput_google_docs_insertinlineimage"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_insertinlineimage", "ActionOutput_google_docs_insertinlineimage"],
+            "output": [
+                "ActionOutput_google_docs_insertinlineimage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_insertinlineimage",
+                "ActionOutput_google_docs_insertinlineimage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -930,7 +1149,9 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["index"],
+                                "required": [
+                                    "index"
+                                ],
                                 "additionalProperties": false
                             },
                             "endOfSegmentLocation": {
@@ -957,7 +1178,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "height": {
@@ -970,14 +1194,20 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId", "imageUri"],
+                        "required": [
+                            "documentId",
+                            "imageUri"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_insertinlineimage": {
@@ -990,7 +1220,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1003,9 +1235,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_insertpagebreak",
             "name": "insert-page-break",
-            "output": ["ActionOutput_google_docs_insertpagebreak"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_insertpagebreak", "ActionOutput_google_docs_insertpagebreak"],
+            "output": [
+                "ActionOutput_google_docs_insertpagebreak"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_insertpagebreak",
+                "ActionOutput_google_docs_insertpagebreak"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1023,7 +1262,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_insertpagebreak": {
@@ -1036,7 +1277,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "inserted"],
+                        "required": [
+                            "documentId",
+                            "inserted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1049,9 +1293,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_insertsectionbreak",
             "name": "insert-section-break",
-            "output": ["ActionOutput_google_docs_insertsectionbreak"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_insertsectionbreak", "ActionOutput_google_docs_insertsectionbreak"],
+            "output": [
+                "ActionOutput_google_docs_insertsectionbreak"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_insertsectionbreak",
+                "ActionOutput_google_docs_insertsectionbreak"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1065,7 +1316,10 @@
                             "sectionType": {
                                 "description": "Type of section break to insert. Defaults to NEXT_PAGE.",
                                 "type": "string",
-                                "enum": ["NEXT_PAGE", "CONTINUOUS"]
+                                "enum": [
+                                    "NEXT_PAGE",
+                                    "CONTINUOUS"
+                                ]
                             },
                             "index": {
                                 "description": "Zero-based body index where the section break should be inserted. If omitted, inserts at the end of the document body.",
@@ -1091,7 +1345,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginBottom": {
@@ -1104,7 +1361,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginLeft": {
@@ -1117,7 +1377,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginRight": {
@@ -1130,7 +1393,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "pageNumberStart": {
@@ -1140,13 +1406,18 @@
                                     },
                                     "contentDirection": {
                                         "type": "string",
-                                        "enum": ["LEFT_TO_RIGHT", "RIGHT_TO_LEFT"]
+                                        "enum": [
+                                            "LEFT_TO_RIGHT",
+                                            "RIGHT_TO_LEFT"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_insertsectionbreak": {
@@ -1159,7 +1430,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1172,9 +1445,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_inserttablecolumn",
             "name": "insert-table-column",
-            "output": ["ActionOutput_google_docs_inserttablecolumn"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_inserttablecolumn", "ActionOutput_google_docs_inserttablecolumn"],
+            "output": [
+                "ActionOutput_google_docs_inserttablecolumn"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_inserttablecolumn",
+                "ActionOutput_google_docs_inserttablecolumn"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1208,7 +1488,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "tableStartLocationIndex", "rowIndex", "columnIndex"],
+                        "required": [
+                            "documentId",
+                            "tableStartLocationIndex",
+                            "rowIndex",
+                            "columnIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_inserttablecolumn": {
@@ -1218,7 +1503,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1231,9 +1518,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_inserttablerow",
             "name": "insert-table-row",
-            "output": ["ActionOutput_google_docs_inserttablerow"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_inserttablerow", "ActionOutput_google_docs_inserttablerow"],
+            "output": [
+                "ActionOutput_google_docs_inserttablerow"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_inserttablerow",
+                "ActionOutput_google_docs_inserttablerow"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1271,7 +1565,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "tableStartLocationIndex", "rowIndex", "columnIndex", "insertBelow"],
+                        "required": [
+                            "documentId",
+                            "tableStartLocationIndex",
+                            "rowIndex",
+                            "columnIndex",
+                            "insertBelow"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_inserttablerow": {
@@ -1284,7 +1584,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1297,9 +1599,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_inserttable",
             "name": "insert-table",
-            "output": ["ActionOutput_google_docs_inserttable"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_inserttable", "ActionOutput_google_docs_inserttable"],
+            "output": [
+                "ActionOutput_google_docs_inserttable"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_inserttable",
+                "ActionOutput_google_docs_inserttable"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1336,7 +1645,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["index"],
+                                "required": [
+                                    "index"
+                                ],
                                 "additionalProperties": false
                             },
                             "endOfSegmentLocation": {
@@ -1350,7 +1661,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId", "rows", "columns"],
+                        "required": [
+                            "documentId",
+                            "rows",
+                            "columns"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_inserttable": {
@@ -1381,11 +1696,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["index"],
+                                "required": [
+                                    "index"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId", "rows", "columns"],
+                        "required": [
+                            "documentId",
+                            "rows",
+                            "columns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1398,9 +1719,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_inserttext",
             "name": "insert-text",
-            "output": ["ActionOutput_google_docs_inserttext"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_inserttext", "ActionOutput_google_docs_inserttext"],
+            "output": [
+                "ActionOutput_google_docs_inserttext"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_inserttext",
+                "ActionOutput_google_docs_inserttext"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1434,7 +1762,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["index"],
+                                "required": [
+                                    "index"
+                                ],
                                 "additionalProperties": false
                             },
                             "endOfSegmentLocation": {
@@ -1453,7 +1783,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId", "text"],
+                        "required": [
+                            "documentId",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_inserttext": {
@@ -1483,9 +1816,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_listrevisions",
             "name": "list-revisions",
-            "output": ["ActionOutput_google_docs_listrevisions"],
-            "scopes": ["https://www.googleapis.com/auth/drive.readonly"],
-            "usedModels": ["ActionInput_google_docs_listrevisions", "ActionOutput_google_docs_listrevisions"],
+            "output": [
+                "ActionOutput_google_docs_listrevisions"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_listrevisions",
+                "ActionOutput_google_docs_listrevisions"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1501,7 +1841,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_listrevisions": {
@@ -1549,7 +1891,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1557,7 +1901,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["revisions"],
+                        "required": [
+                            "revisions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1570,9 +1916,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_mergetablecells",
             "name": "merge-table-cells",
-            "output": ["ActionOutput_google_docs_mergetablecells"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_mergetablecells", "ActionOutput_google_docs_mergetablecells"],
+            "output": [
+                "ActionOutput_google_docs_mergetablecells"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_mergetablecells",
+                "ActionOutput_google_docs_mergetablecells"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1597,7 +1950,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["index"],
+                                "required": [
+                                    "index"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The location of the table in the document"
                             },
@@ -1626,7 +1981,14 @@
                                 "description": "The number of columns in the range. Example: 2"
                             }
                         },
-                        "required": ["documentId", "tableStartLocation", "rowIndex", "columnIndex", "rowSpan", "columnSpan"],
+                        "required": [
+                            "documentId",
+                            "tableStartLocation",
+                            "rowIndex",
+                            "columnIndex",
+                            "rowSpan",
+                            "columnSpan"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_mergetablecells": {
@@ -1639,7 +2001,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "merged"],
+                        "required": [
+                            "documentId",
+                            "merged"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1652,9 +2017,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_pintableheaderrows",
             "name": "pin-table-header-rows",
-            "output": ["ActionOutput_google_docs_pintableheaderrows"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_pintableheaderrows", "ActionOutput_google_docs_pintableheaderrows"],
+            "output": [
+                "ActionOutput_google_docs_pintableheaderrows"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_pintableheaderrows",
+                "ActionOutput_google_docs_pintableheaderrows"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1678,7 +2050,11 @@
                                 "description": "The number of rows to pin as header rows. Use 0 to unpin. Example: 1"
                             }
                         },
-                        "required": ["documentId", "tableStartLocation", "pinnedHeaderRowsCount"],
+                        "required": [
+                            "documentId",
+                            "tableStartLocation",
+                            "pinnedHeaderRowsCount"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_pintableheaderrows": {
@@ -1699,7 +2075,9 @@
                                 }
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1712,9 +2090,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_replacealltext",
             "name": "replace-all-text",
-            "output": ["ActionOutput_google_docs_replacealltext"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_replacealltext", "ActionOutput_google_docs_replacealltext"],
+            "output": [
+                "ActionOutput_google_docs_replacealltext"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_replacealltext",
+                "ActionOutput_google_docs_replacealltext"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1746,7 +2131,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "searchText", "replacementText"],
+                        "required": [
+                            "documentId",
+                            "searchText",
+                            "replacementText"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_replacealltext": {
@@ -1765,7 +2154,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["occurrencesChanged", "documentId"],
+                        "required": [
+                            "occurrencesChanged",
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1778,9 +2170,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_replaceimage",
             "name": "replace-image",
-            "output": ["ActionOutput_google_docs_replaceimage"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_replaceimage", "ActionOutput_google_docs_replaceimage"],
+            "output": [
+                "ActionOutput_google_docs_replaceimage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_replaceimage",
+                "ActionOutput_google_docs_replaceimage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1802,14 +2201,20 @@
                             "imageReplaceMethod": {
                                 "description": "Replacement method. CENTER_CROP scales and centers the image to fill the original bounds.",
                                 "type": "string",
-                                "enum": ["CENTER_CROP"]
+                                "enum": [
+                                    "CENTER_CROP"
+                                ]
                             },
                             "tabId": {
                                 "description": "The tab containing the image. When omitted, the first tab is used.",
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "imageObjectId", "uri"],
+                        "required": [
+                            "documentId",
+                            "imageObjectId",
+                            "uri"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_replaceimage": {
@@ -1836,7 +2241,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1849,9 +2256,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_replacenamedrangecontent",
             "name": "replace-named-range-content",
-            "output": ["ActionOutput_google_docs_replacenamedrangecontent"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_replacenamedrangecontent", "ActionOutput_google_docs_replacenamedrangecontent"],
+            "output": [
+                "ActionOutput_google_docs_replacenamedrangecontent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_replacenamedrangecontent",
+                "ActionOutput_google_docs_replacenamedrangecontent"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1871,7 +2285,11 @@
                                 "description": "Replacement text to insert into the named range."
                             }
                         },
-                        "required": ["document_id", "named_range_id", "text"],
+                        "required": [
+                            "document_id",
+                            "named_range_id",
+                            "text"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_replacenamedrangecontent": {
@@ -1890,7 +2308,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["document_id", "named_range_id", "replaced"],
+                        "required": [
+                            "document_id",
+                            "named_range_id",
+                            "replaced"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1903,9 +2325,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_unmergetablecells",
             "name": "unmerge-table-cells",
-            "output": ["ActionOutput_google_docs_unmergetablecells"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_unmergetablecells", "ActionOutput_google_docs_unmergetablecells"],
+            "output": [
+                "ActionOutput_google_docs_unmergetablecells"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_unmergetablecells",
+                "ActionOutput_google_docs_unmergetablecells"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1940,7 +2369,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["index"],
+                                                "required": [
+                                                    "index"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "rowIndex": {
@@ -1956,7 +2387,11 @@
                                                 "description": "The zero-based column index of the starting cell."
                                             }
                                         },
-                                        "required": ["tableStartLocation", "rowIndex", "columnIndex"],
+                                        "required": [
+                                            "tableStartLocation",
+                                            "rowIndex",
+                                            "columnIndex"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "rowSpan": {
@@ -1972,11 +2407,16 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["tableCellLocation"],
+                                "required": [
+                                    "tableCellLocation"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId", "tableRange"],
+                        "required": [
+                            "documentId",
+                            "tableRange"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_unmergetablecells": {
@@ -2009,7 +2449,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2022,9 +2464,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updatedocumentstyle",
             "name": "update-document-style",
-            "output": ["ActionOutput_google_docs_updatedocumentstyle"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updatedocumentstyle", "ActionOutput_google_docs_updatedocumentstyle"],
+            "output": [
+                "ActionOutput_google_docs_updatedocumentstyle"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updatedocumentstyle",
+                "ActionOutput_google_docs_updatedocumentstyle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2055,7 +2504,10 @@
                                                 "description": "The unit of the dimension. Example: \"PT\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginBottom": {
@@ -2071,7 +2523,10 @@
                                                 "description": "The unit of the dimension. Example: \"PT\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginLeft": {
@@ -2087,7 +2542,10 @@
                                                 "description": "The unit of the dimension. Example: \"PT\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginRight": {
@@ -2103,7 +2561,10 @@
                                                 "description": "The unit of the dimension. Example: \"PT\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "pageSize": {
@@ -2122,7 +2583,10 @@
                                                         "description": "The unit of the dimension. Example: \"PT\""
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "height": {
@@ -2137,11 +2601,17 @@
                                                         "description": "The unit of the dimension. Example: \"PT\""
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["width", "height"],
+                                        "required": [
+                                            "width",
+                                            "height"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "pageNumberStart": {
@@ -2193,7 +2663,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "fields", "documentStyle"],
+                        "required": [
+                            "documentId",
+                            "fields",
+                            "documentStyle"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updatedocumentstyle": {
@@ -2206,7 +2680,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["documentId", "updated"],
+                        "required": [
+                            "documentId",
+                            "updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2219,9 +2696,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updatedocumenttabproperties",
             "name": "update-document-tab-properties",
-            "output": ["ActionOutput_google_docs_updatedocumenttabproperties"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updatedocumenttabproperties", "ActionOutput_google_docs_updatedocumenttabproperties"],
+            "output": [
+                "ActionOutput_google_docs_updatedocumenttabproperties"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updatedocumenttabproperties",
+                "ActionOutput_google_docs_updatedocumenttabproperties"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2242,7 +2726,10 @@
                             },
                             "parentTabId": {
                                 "description": "New parent tab ID. Set to empty string for root-level.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "index": {
                                 "description": "New zero-based index within the parent.",
@@ -2252,10 +2739,16 @@
                             },
                             "iconEmoji": {
                                 "description": "Emoji icon for the tab.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["documentId", "tabId"],
+                        "required": [
+                            "documentId",
+                            "tabId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updatedocumenttabproperties": {
@@ -2274,7 +2767,11 @@
                                 }
                             }
                         },
-                        "required": ["documentId", "tabId", "updatedFields"],
+                        "required": [
+                            "documentId",
+                            "tabId",
+                            "updatedFields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2287,9 +2784,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updateparagraphstyle",
             "name": "update-paragraph-style",
-            "output": ["ActionOutput_google_docs_updateparagraphstyle"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updateparagraphstyle", "ActionOutput_google_docs_updateparagraphstyle"],
+            "output": [
+                "ActionOutput_google_docs_updateparagraphstyle"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updateparagraphstyle",
+                "ActionOutput_google_docs_updateparagraphstyle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2324,7 +2828,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["startIndex", "endIndex"],
+                                "required": [
+                                    "startIndex",
+                                    "endIndex"
+                                ],
                                 "additionalProperties": false
                             },
                             "fields": {
@@ -2364,7 +2871,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "spaceBelow": {
@@ -2377,7 +2887,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "indentFirstLine": {
@@ -2390,7 +2903,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "indentStart": {
@@ -2403,7 +2919,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "indentEnd": {
@@ -2416,14 +2935,22 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId", "range", "fields", "paragraphStyle"],
+                        "required": [
+                            "documentId",
+                            "range",
+                            "fields",
+                            "paragraphStyle"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updateparagraphstyle": {
@@ -2437,7 +2964,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["documentId", "replies"],
+                        "required": [
+                            "documentId",
+                            "replies"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2450,9 +2980,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updatesectionstyle",
             "name": "update-section-style",
-            "output": ["ActionOutput_google_docs_updatesectionstyle"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updatesectionstyle", "ActionOutput_google_docs_updatesectionstyle"],
+            "output": [
+                "ActionOutput_google_docs_updatesectionstyle"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updatesectionstyle",
+                "ActionOutput_google_docs_updatesectionstyle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2484,7 +3021,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginBottom": {
@@ -2497,7 +3037,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginLeft": {
@@ -2510,7 +3053,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginRight": {
@@ -2523,7 +3069,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginHeader": {
@@ -2536,7 +3085,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "marginFooter": {
@@ -2549,7 +3101,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "pageNumberStart": {
@@ -2582,7 +3137,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["magnitude", "unit"],
+                                                    "required": [
+                                                        "magnitude",
+                                                        "unit"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "width": {
@@ -2595,7 +3153,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["magnitude", "unit"],
+                                                    "required": [
+                                                        "magnitude",
+                                                        "unit"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -2611,7 +3172,13 @@
                                 "description": "Field mask specifying which fields to update. Example: \"marginTop\""
                             }
                         },
-                        "required": ["documentId", "startIndex", "endIndex", "sectionStyle", "fields"],
+                        "required": [
+                            "documentId",
+                            "startIndex",
+                            "endIndex",
+                            "sectionStyle",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updatesectionstyle": {
@@ -2625,7 +3192,10 @@
                                 "description": "Number of replies returned by the batch update."
                             }
                         },
-                        "required": ["documentId", "replyCount"],
+                        "required": [
+                            "documentId",
+                            "replyCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2638,9 +3208,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updatetablecellstyle",
             "name": "update-table-cell-style",
-            "output": ["ActionOutput_google_docs_updatetablecellstyle"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updatetablecellstyle", "ActionOutput_google_docs_updatetablecellstyle"],
+            "output": [
+                "ActionOutput_google_docs_updatetablecellstyle"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updatetablecellstyle",
+                "ActionOutput_google_docs_updatetablecellstyle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2673,7 +3250,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["index"],
+                                                "required": [
+                                                    "index"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "rowIndex": {
@@ -2685,7 +3264,11 @@
                                                 "description": "Zero-based column index of the starting cell."
                                             }
                                         },
-                                        "required": ["tableStartLocation", "rowIndex", "columnIndex"],
+                                        "required": [
+                                            "tableStartLocation",
+                                            "rowIndex",
+                                            "columnIndex"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "rowSpan": {
@@ -2697,7 +3280,9 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["tableCellLocation"],
+                                "required": [
+                                    "tableCellLocation"
+                                ],
                                 "additionalProperties": false
                             },
                             "tableCellStyle": {
@@ -2772,7 +3357,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "dashStyle": {
@@ -2823,7 +3411,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "dashStyle": {
@@ -2874,7 +3465,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "dashStyle": {
@@ -2925,7 +3519,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "dashStyle": {
@@ -2946,7 +3543,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "paddingRight": {
@@ -2960,7 +3560,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "paddingTop": {
@@ -2974,7 +3577,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "paddingBottom": {
@@ -2988,7 +3594,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "contentAlignment": {
@@ -3003,7 +3612,12 @@
                                 "description": "Field mask for properties to update. Example: \"backgroundColor\" or \"*\". The root tableCellStyle is implied."
                             }
                         },
-                        "required": ["documentId", "tableRange", "tableCellStyle", "fields"],
+                        "required": [
+                            "documentId",
+                            "tableRange",
+                            "tableCellStyle",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updatetablecellstyle": {
@@ -3017,7 +3631,9 @@
                                 "items": {}
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3030,9 +3646,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updatetablecolumnproperties",
             "name": "update-table-column-properties",
-            "output": ["ActionOutput_google_docs_updatetablecolumnproperties"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updatetablecolumnproperties", "ActionOutput_google_docs_updatetablecolumnproperties"],
+            "output": [
+                "ActionOutput_google_docs_updatetablecolumnproperties"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updatetablecolumnproperties",
+                "ActionOutput_google_docs_updatetablecolumnproperties"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3059,7 +3682,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["index"],
+                                "required": [
+                                    "index"
+                                ],
                                 "additionalProperties": false
                             },
                             "columnIndices": {
@@ -3077,14 +3702,22 @@
                             "widthType": {
                                 "description": "The width type of the column. Defaults to FIXED_WIDTH when width is provided.",
                                 "type": "string",
-                                "enum": ["EVENLY_DISTRIBUTED", "FIXED_WIDTH"]
+                                "enum": [
+                                    "EVENLY_DISTRIBUTED",
+                                    "FIXED_WIDTH"
+                                ]
                             },
                             "fields": {
                                 "description": "The fields that should be updated. Defaults to \"width,widthType\".",
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId", "tableStartLocation", "columnIndices", "width"],
+                        "required": [
+                            "documentId",
+                            "tableStartLocation",
+                            "columnIndices",
+                            "width"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updatetablecolumnproperties": {
@@ -3102,7 +3735,9 @@
                                 }
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3115,9 +3750,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updatetablerowstyle",
             "name": "update-table-row-style",
-            "output": ["ActionOutput_google_docs_updatetablerowstyle"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updatetablerowstyle", "ActionOutput_google_docs_updatetablerowstyle"],
+            "output": [
+                "ActionOutput_google_docs_updatetablerowstyle"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updatetablerowstyle",
+                "ActionOutput_google_docs_updatetablerowstyle"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3141,7 +3783,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["index"],
+                                "required": [
+                                    "index"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The location where the table starts in the document."
                             },
@@ -3165,7 +3809,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "preventOverflow": {
@@ -3183,7 +3830,12 @@
                                 "description": "Field mask for the row style update. Use \"*\" for all fields or specific fields like \"minRowHeight\"."
                             }
                         },
-                        "required": ["documentId", "tableStartLocation", "tableRowStyle", "fields"],
+                        "required": [
+                            "documentId",
+                            "tableStartLocation",
+                            "tableRowStyle",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updatetablerowstyle": {
@@ -3212,7 +3864,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3225,9 +3879,16 @@
             "endpoint": null,
             "input": "ActionInput_google_docs_updatetextstyle",
             "name": "update-text-style",
-            "output": ["ActionOutput_google_docs_updatetextstyle"],
-            "scopes": ["https://www.googleapis.com/auth/documents"],
-            "usedModels": ["ActionInput_google_docs_updatetextstyle", "ActionOutput_google_docs_updatetextstyle"],
+            "output": [
+                "ActionOutput_google_docs_updatetextstyle"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents"
+            ],
+            "usedModels": [
+                "ActionInput_google_docs_updatetextstyle",
+                "ActionOutput_google_docs_updatetextstyle"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3357,7 +4018,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["magnitude"],
+                                "required": [
+                                    "magnitude"
+                                ],
                                 "additionalProperties": false
                             },
                             "weightedFontFamily": {
@@ -3370,11 +4033,17 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["fontFamily"],
+                                "required": [
+                                    "fontFamily"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["documentId", "startIndex", "endIndex"],
+                        "required": [
+                            "documentId",
+                            "startIndex",
+                            "endIndex"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_docs_updatetextstyle": {
@@ -3387,7 +4056,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["documentId"],
+                        "required": [
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3408,12 +4079,19 @@
             ],
             "input": "SyncMetadata_google_docs_documentcontentbyid",
             "name": "document-content-by-id",
-            "output": ["DocumentContent"],
+            "output": [
+                "DocumentContent"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/documents.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/documents.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DocumentContent", "SyncMetadata_google_docs_documentcontentbyid"],
+            "usedModels": [
+                "DocumentContent",
+                "SyncMetadata_google_docs_documentcontentbyid"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3479,7 +4157,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_docs_documentcontentbyid": {
@@ -3492,12 +4172,16 @@
                                 }
                             }
                         },
-                        "required": ["documentIds"],
+                        "required": [
+                            "documentIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3511,12 +4195,19 @@
             ],
             "input": "SyncMetadata_google_docs_documentsfromdrivefolders",
             "name": "documents-from-drive-folders",
-            "output": ["FolderDocument"],
+            "output": [
+                "FolderDocument"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/drive.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FolderDocument", "SyncMetadata_google_docs_documentsfromdrivefolders"],
+            "usedModels": [
+                "FolderDocument",
+                "SyncMetadata_google_docs_documentsfromdrivefolders"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3569,7 +4260,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "documentId"],
+                        "required": [
+                            "id",
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_docs_documentsfromdrivefolders": {
@@ -3587,12 +4281,16 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["folderIds"],
+                        "required": [
+                            "folderIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3606,12 +4304,19 @@
             ],
             "input": "SyncMetadata_google_docs_documentsfromdrivequery",
             "name": "documents-from-drive-query",
-            "output": ["DriveQueryDocument"],
+            "output": [
+                "DriveQueryDocument"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/drive.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DriveQueryDocument", "SyncMetadata_google_docs_documentsfromdrivequery"],
+            "usedModels": [
+                "DriveQueryDocument",
+                "SyncMetadata_google_docs_documentsfromdrivequery"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3651,7 +4356,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_docs_documentsfromdrivequery": {
@@ -3665,7 +4372,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3679,12 +4388,19 @@
             ],
             "input": "SyncMetadata_google_docs_documentsfromshareddrives",
             "name": "documents-from-shared-drives",
-            "output": ["SharedDriveDocument"],
+            "output": [
+                "SharedDriveDocument"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/drive.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SharedDriveDocument", "SyncMetadata_google_docs_documentsfromshareddrives"],
+            "usedModels": [
+                "SharedDriveDocument",
+                "SyncMetadata_google_docs_documentsfromshareddrives"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3712,7 +4428,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "documentId"],
+                        "required": [
+                            "id",
+                            "documentId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_docs_documentsfromshareddrives": {
@@ -3725,12 +4444,16 @@
                                 }
                             }
                         },
-                        "required": ["sharedDriveIds"],
+                        "required": [
+                            "sharedDriveIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3744,12 +4467,19 @@
             ],
             "input": "SyncMetadata_google_docs_recentdocuments",
             "name": "recent-documents",
-            "output": ["RecentDocument"],
+            "output": [
+                "RecentDocument"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/drive.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/drive.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["RecentDocument", "SyncMetadata_google_docs_recentdocuments"],
+            "usedModels": [
+                "RecentDocument",
+                "SyncMetadata_google_docs_recentdocuments"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3780,7 +4510,11 @@
                             },
                             "body": {}
                         },
-                        "required": ["id", "name", "modifiedTime"],
+                        "required": [
+                            "id",
+                            "name",
+                            "modifiedTime"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_docs_recentdocuments": {
@@ -3796,7 +4530,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

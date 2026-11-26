@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_smartsheet_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_smartsheet_createuser"],
-            "scopes": ["ADMIN_USERS"],
-            "usedModels": ["ActionInput_smartsheet_createuser", "ActionOutput_smartsheet_createuser"],
+            "output": [
+                "ActionOutput_smartsheet_createuser"
+            ],
+            "scopes": [
+                "ADMIN_USERS"
+            ],
+            "usedModels": [
+                "ActionInput_smartsheet_createuser",
+                "ActionOutput_smartsheet_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -26,7 +33,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_smartsheet_createuser": {
@@ -45,7 +56,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -58,9 +74,16 @@
             "endpoint": null,
             "input": "ActionInput_smartsheet_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_smartsheet_deleteuser"],
-            "scopes": ["ADMIN_USERS"],
-            "usedModels": ["ActionInput_smartsheet_deleteuser", "ActionOutput_smartsheet_deleteuser"],
+            "output": [
+                "ActionOutput_smartsheet_deleteuser"
+            ],
+            "scopes": [
+                "ADMIN_USERS"
+            ],
+            "usedModels": [
+                "ActionInput_smartsheet_deleteuser",
+                "ActionOutput_smartsheet_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -71,7 +94,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_smartsheet_deleteuser": {
@@ -81,7 +106,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -94,9 +121,16 @@
             "endpoint": null,
             "input": "ActionInput_smartsheet_disableuser",
             "name": "disable-user",
-            "output": ["ActionOutput_smartsheet_disableuser"],
-            "scopes": ["ADMIN_USERS"],
-            "usedModels": ["ActionInput_smartsheet_disableuser", "ActionOutput_smartsheet_disableuser"],
+            "output": [
+                "ActionOutput_smartsheet_disableuser"
+            ],
+            "scopes": [
+                "ADMIN_USERS"
+            ],
+            "usedModels": [
+                "ActionInput_smartsheet_disableuser",
+                "ActionOutput_smartsheet_disableuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -107,7 +141,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_smartsheet_disableuser": {
@@ -117,7 +153,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -139,12 +177,19 @@
             ],
             "input": "SyncMetadata_smartsheet_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every 6 hours",
-            "scopes": ["READ_USERS"],
+            "scopes": [
+                "READ_USERS"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_smartsheet_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_smartsheet_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -165,7 +210,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_smartsheet_users": {
@@ -175,7 +225,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

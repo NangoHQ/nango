@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_createimage",
             "name": "create-image",
-            "output": ["ActionOutput_google_slides_createimage"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_createimage", "ActionOutput_google_slides_createimage"],
+            "output": [
+                "ActionOutput_google_slides_createimage"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_createimage",
+                "ActionOutput_google_slides_createimage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -45,11 +52,17 @@
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["EMU", "PT"],
+                                                "enum": [
+                                                    "EMU",
+                                                    "PT"
+                                                ],
                                                 "description": "The units for the magnitude: \"EMU\" (914400 EMU = 1 inch) or \"PT\" (points). Example: \"EMU\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "The width of the image."
                                     },
@@ -62,16 +75,25 @@
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["EMU", "PT"],
+                                                "enum": [
+                                                    "EMU",
+                                                    "PT"
+                                                ],
                                                 "description": "The units for the magnitude: \"EMU\" (914400 EMU = 1 inch) or \"PT\" (points). Example: \"EMU\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "The height of the image."
                                     }
                                 },
-                                "required": ["width", "height"],
+                                "required": [
+                                    "width",
+                                    "height"
+                                ],
                                 "additionalProperties": false
                             },
                             "transform": {
@@ -104,15 +126,24 @@
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "enum": ["EMU", "PT"],
+                                        "enum": [
+                                            "EMU",
+                                            "PT"
+                                        ],
                                         "description": "The units for the translate elements: \"EMU\" or \"PT\". Required by the API. Example: \"EMU\""
                                     }
                                 },
-                                "required": ["unit"],
+                                "required": [
+                                    "unit"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["presentationId", "pageObjectId", "url"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId",
+                            "url"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the presentation and slide to insert an image onto, the public image URL, and optional placement details."
                     },
@@ -124,7 +155,9 @@
                                 "description": "The object ID of the created image, usable in later requests to update or delete it."
                             }
                         },
-                        "required": ["objectId"],
+                        "required": [
+                            "objectId"
+                        ],
                         "additionalProperties": false,
                         "description": "The image created inside the presentation."
                     }
@@ -138,9 +171,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_createpresentation",
             "name": "create-presentation",
-            "output": ["ActionOutput_google_slides_createpresentation"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_createpresentation", "ActionOutput_google_slides_createpresentation"],
+            "output": [
+                "ActionOutput_google_slides_createpresentation"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_createpresentation",
+                "ActionOutput_google_slides_createpresentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -152,7 +192,9 @@
                                 "description": "Title for the new presentation. Example: \"Quarterly Review\""
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new, blank Google Slides presentation."
                     },
@@ -199,18 +241,26 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["objectId"],
+                                                "required": [
+                                                    "objectId"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["objectId"],
+                                    "required": [
+                                        "objectId"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Slides present in the new presentation. A freshly created deck always contains exactly one default slide."
                             }
                         },
-                        "required": ["presentationId", "title", "slides"],
+                        "required": [
+                            "presentationId",
+                            "title",
+                            "slides"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created Google Slides presentation, including its default slide and placeholder object IDs."
                     }
@@ -224,9 +274,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_createshape",
             "name": "create-shape",
-            "output": ["ActionOutput_google_slides_createshape"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_createshape", "ActionOutput_google_slides_createshape"],
+            "output": [
+                "ActionOutput_google_slides_createshape"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_createshape",
+                "ActionOutput_google_slides_createshape"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -262,11 +319,17 @@
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["EMU", "PT"],
+                                                "enum": [
+                                                    "EMU",
+                                                    "PT"
+                                                ],
                                                 "description": "Measurement unit: \"EMU\" (914400 EMU = 1 inch) or \"PT\" (points). Required by the API. Example: \"EMU\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Width of the element."
                                     },
@@ -279,16 +342,25 @@
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["EMU", "PT"],
+                                                "enum": [
+                                                    "EMU",
+                                                    "PT"
+                                                ],
                                                 "description": "Measurement unit: \"EMU\" (914400 EMU = 1 inch) or \"PT\" (points). Required by the API. Example: \"EMU\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Height of the element."
                                     }
                                 },
-                                "required": ["width", "height"],
+                                "required": [
+                                    "width",
+                                    "height"
+                                ],
                                 "additionalProperties": false
                             },
                             "transform": {
@@ -321,15 +393,24 @@
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "enum": ["EMU", "PT"],
+                                        "enum": [
+                                            "EMU",
+                                            "PT"
+                                        ],
                                         "description": "Measurement unit: \"EMU\" (914400 EMU = 1 inch) or \"PT\" (points). Required by the API. Example: \"EMU\""
                                     }
                                 },
-                                "required": ["unit"],
+                                "required": [
+                                    "unit"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["presentationId", "pageObjectId", "shapeType"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId",
+                            "shapeType"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for adding a new shape to a slide."
                     },
@@ -425,7 +506,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["presentationId", "pageObjectId", "objectId", "shapeType"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId",
+                            "objectId",
+                            "shapeType"
+                        ],
                         "additionalProperties": false,
                         "description": "The created shape, including its actual stored size and transform as read back from the slide."
                     }
@@ -439,9 +525,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_createslidewithcontent",
             "name": "create-slide-with-content",
-            "output": ["ActionOutput_google_slides_createslidewithcontent"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_createslidewithcontent", "ActionOutput_google_slides_createslidewithcontent"],
+            "output": [
+                "ActionOutput_google_slides_createslidewithcontent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_createslidewithcontent",
+                "ActionOutput_google_slides_createslidewithcontent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -488,7 +581,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["presentationId"],
+                        "required": [
+                            "presentationId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a slide with a title and body in a Google Slides presentation."
                     },
@@ -524,7 +619,13 @@
                                 "description": "Human-readable summary of the outcome, including a note when the layout had no title/body placeholders to fill."
                             }
                         },
-                        "required": ["slideObjectId", "predefinedLayout", "titleInserted", "bodyInserted", "message"],
+                        "required": [
+                            "slideObjectId",
+                            "predefinedLayout",
+                            "titleInserted",
+                            "bodyInserted",
+                            "message"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of creating a slide and inserting its title and body text."
                     }
@@ -538,9 +639,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_createslide",
             "name": "create-slide",
-            "output": ["ActionOutput_google_slides_createslide"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_createslide", "ActionOutput_google_slides_createslide"],
+            "output": [
+                "ActionOutput_google_slides_createslide"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_createslide",
+                "ActionOutput_google_slides_createslide"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -639,12 +747,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["objectId"],
+                                    "required": [
+                                        "objectId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["presentationId"],
+                        "required": [
+                            "presentationId"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for inserting a new slide into a presentation."
                     },
@@ -660,7 +772,10 @@
                                 "description": "Object ID of the newly created slide, as assigned by the provider or supplied in the request."
                             }
                         },
-                        "required": ["presentationId", "objectId"],
+                        "required": [
+                            "presentationId",
+                            "objectId"
+                        ],
                         "additionalProperties": false,
                         "description": "The presentation and the newly created slide."
                     }
@@ -674,9 +789,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_createtable",
             "name": "create-table",
-            "output": ["ActionOutput_google_slides_createtable"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_createtable", "ActionOutput_google_slides_createtable"],
+            "output": [
+                "ActionOutput_google_slides_createtable"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_createtable",
+                "ActionOutput_google_slides_createtable"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -720,11 +842,17 @@
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["EMU", "PT"],
+                                                "enum": [
+                                                    "EMU",
+                                                    "PT"
+                                                ],
                                                 "description": "The unit for magnitude: \"EMU\" (English Metric Units) or \"PT\" (points). Example: \"EMU\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Width of the table."
                                     },
@@ -737,16 +865,25 @@
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["EMU", "PT"],
+                                                "enum": [
+                                                    "EMU",
+                                                    "PT"
+                                                ],
                                                 "description": "The unit for magnitude: \"EMU\" (English Metric Units) or \"PT\" (points). Example: \"EMU\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "Height of the table."
                                     }
                                 },
-                                "required": ["width", "height"],
+                                "required": [
+                                    "width",
+                                    "height"
+                                ],
                                 "additionalProperties": false
                             },
                             "transform": {
@@ -779,15 +916,25 @@
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "enum": ["EMU", "PT"],
+                                        "enum": [
+                                            "EMU",
+                                            "PT"
+                                        ],
                                         "description": "The unit for the translation values: \"EMU\" or \"PT\". Required by the API. Example: \"EMU\""
                                     }
                                 },
-                                "required": ["unit"],
+                                "required": [
+                                    "unit"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["presentationId", "pageObjectId", "rows", "columns"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId",
+                            "rows",
+                            "columns"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for inserting a new table with a given row and column count onto a slide."
                     },
@@ -815,7 +962,13 @@
                                 "description": "The actual number of columns in the created table."
                             }
                         },
-                        "required": ["presentationId", "pageObjectId", "objectId", "rows", "columns"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId",
+                            "objectId",
+                            "rows",
+                            "columns"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created table and its verified location on the slide."
                     }
@@ -829,9 +982,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_createtextbox",
             "name": "create-text-box",
-            "output": ["ActionOutput_google_slides_createtextbox"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_createtextbox", "ActionOutput_google_slides_createtextbox"],
+            "output": [
+                "ActionOutput_google_slides_createtextbox"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_createtextbox",
+                "ActionOutput_google_slides_createtextbox"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -875,7 +1035,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["presentationId", "pageObjectId"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for creating a new, empty text box on a slide."
                     },
@@ -895,7 +1058,11 @@
                                 "description": "The object ID of the newly created text box, to be used for subsequent text edits."
                             }
                         },
-                        "required": ["presentationId", "pageObjectId", "objectId"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId",
+                            "objectId"
+                        ],
                         "additionalProperties": false,
                         "description": "The created text box and the slide it was added to."
                     }
@@ -909,9 +1076,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_deleteslide",
             "name": "delete-slide",
-            "output": ["ActionOutput_google_slides_deleteslide"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_deleteslide", "ActionOutput_google_slides_deleteslide"],
+            "output": [
+                "ActionOutput_google_slides_deleteslide"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_deleteslide",
+                "ActionOutput_google_slides_deleteslide"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -927,7 +1101,10 @@
                                 "description": "The object ID of the slide (or page element) to delete. Example: \"SLIDES_API1674887689_0\""
                             }
                         },
-                        "required": ["presentationId", "slideId"],
+                        "required": [
+                            "presentationId",
+                            "slideId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the presentation and the slide (or page element) to permanently remove from it."
                     },
@@ -947,7 +1124,11 @@
                                 "description": "True when the deletion request was accepted by the provider."
                             }
                         },
-                        "required": ["presentationId", "slideId", "success"],
+                        "required": [
+                            "presentationId",
+                            "slideId",
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the slide deletion request was accepted for the given presentation."
                     }
@@ -961,9 +1142,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_deletetablecolumn",
             "name": "delete-table-column",
-            "output": ["ActionOutput_google_slides_deletetablecolumn"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_deletetablecolumn", "ActionOutput_google_slides_deletetablecolumn"],
+            "output": [
+                "ActionOutput_google_slides_deletetablecolumn"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_deletetablecolumn",
+                "ActionOutput_google_slides_deletetablecolumn"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -994,12 +1182,19 @@
                                         "description": "Zero-based column index of the reference cell. The column containing this cell is deleted. Example: 1"
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false,
                                 "description": "A cell inside the table; the column containing this cell is the one that gets deleted."
                             }
                         },
-                        "required": ["presentationId", "tableObjectId", "cellLocation"],
+                        "required": [
+                            "presentationId",
+                            "tableObjectId",
+                            "cellLocation"
+                        ],
                         "additionalProperties": false,
                         "description": "Reference cell identifying the table column to delete."
                     },
@@ -1019,7 +1214,11 @@
                                 "description": "True when the Google Slides API accepted the deleteTableColumn request (HTTP 200)."
                             }
                         },
-                        "required": ["presentationId", "tableObjectId", "success"],
+                        "required": [
+                            "presentationId",
+                            "tableObjectId",
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of deleting a table column."
                     }
@@ -1033,9 +1232,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_deletetablerow",
             "name": "delete-table-row",
-            "output": ["ActionOutput_google_slides_deletetablerow"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_deletetablerow", "ActionOutput_google_slides_deletetablerow"],
+            "output": [
+                "ActionOutput_google_slides_deletetablerow"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_deletetablerow",
+                "ActionOutput_google_slides_deletetablerow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1066,12 +1272,19 @@
                                         "description": "Zero-based column index of the reference cell. Example: 0"
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false,
                                 "description": "A cell inside the table; the row containing this cell is the one that gets deleted."
                             }
                         },
-                        "required": ["presentationId", "tableObjectId", "cellLocation"],
+                        "required": [
+                            "presentationId",
+                            "tableObjectId",
+                            "cellLocation"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the table row to delete via a reference cell inside that row."
                     },
@@ -1091,7 +1304,11 @@
                                 "description": "True when the Google Slides API accepted the deleteTableRow request."
                             }
                         },
-                        "required": ["presentationId", "tableObjectId", "success"],
+                        "required": [
+                            "presentationId",
+                            "tableObjectId",
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the batchUpdate that deleted the table row."
                     }
@@ -1105,9 +1322,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_deletetext",
             "name": "delete-text",
-            "output": ["ActionOutput_google_slides_deletetext"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_deletetext", "ActionOutput_google_slides_deletetext"],
+            "output": [
+                "ActionOutput_google_slides_deletetext"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_deletetext",
+                "ActionOutput_google_slides_deletetext"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1127,7 +1351,11 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["FIXED_RANGE", "FROM_START_INDEX", "ALL"],
+                                        "enum": [
+                                            "FIXED_RANGE",
+                                            "FROM_START_INDEX",
+                                            "ALL"
+                                        ],
                                         "description": "How the text range is selected: FIXED_RANGE uses startIndex and endIndex, FROM_START_INDEX deletes from startIndex to the end, and ALL deletes the entire text."
                                     },
                                     "startIndex": {
@@ -1143,7 +1371,9 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The range of text to delete within the target object."
                             },
@@ -1164,11 +1394,18 @@
                                         "description": "0-based column index of the target table cell."
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["presentationId", "objectId", "textRange"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "textRange"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for deleting a range of text from a shape or table cell in a Google Slides presentation."
                     },
@@ -1188,7 +1425,11 @@
                                 "description": "True when the provider accepted the delete-text request."
                             }
                         },
-                        "required": ["presentationId", "objectId", "success"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the delete-text request, reporting whether the provider accepted it."
                     }
@@ -1202,9 +1443,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_duplicateslide",
             "name": "duplicate-slide",
-            "output": ["ActionOutput_google_slides_duplicateslide"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_duplicateslide", "ActionOutput_google_slides_duplicateslide"],
+            "output": [
+                "ActionOutput_google_slides_duplicateslide"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_duplicateslide",
+                "ActionOutput_google_slides_duplicateslide"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1220,7 +1468,10 @@
                                 "description": "The object ID of the slide (or page element such as a shape, image, table, or group) to duplicate. Example: \"p\""
                             }
                         },
-                        "required": ["presentationId", "objectId"],
+                        "required": [
+                            "presentationId",
+                            "objectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the presentation and the slide or page element to duplicate."
                     },
@@ -1236,7 +1487,10 @@
                                 "description": "The object ID of the newly created duplicate, inserted immediately after the original."
                             }
                         },
-                        "required": ["presentationId", "duplicatedObjectId"],
+                        "required": [
+                            "presentationId",
+                            "duplicatedObjectId"
+                        ],
                         "additionalProperties": false,
                         "description": "The presentation that was updated and the object ID of the new duplicate."
                     }
@@ -1250,9 +1504,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_findandreplacewithreport",
             "name": "find-and-replace-with-report",
-            "output": ["ActionOutput_google_slides_findandreplacewithreport"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_findandreplacewithreport", "ActionOutput_google_slides_findandreplacewithreport"],
+            "output": [
+                "ActionOutput_google_slides_findandreplacewithreport"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_findandreplacewithreport",
+                "ActionOutput_google_slides_findandreplacewithreport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1284,7 +1545,11 @@
                                 }
                             }
                         },
-                        "required": ["presentationId", "searchText", "replaceText"],
+                        "required": [
+                            "presentationId",
+                            "searchText",
+                            "replaceText"
+                        ],
                         "additionalProperties": false,
                         "description": "Text to find and replace, optionally scoped to specific slides."
                     },
@@ -1308,7 +1573,12 @@
                                 "description": "Occurrences of replaceText present in the presentation after the update."
                             }
                         },
-                        "required": ["occurrencesChanged", "preCount", "postSearchTextCount", "postReplaceTextCount"],
+                        "required": [
+                            "occurrencesChanged",
+                            "preCount",
+                            "postSearchTextCount",
+                            "postReplaceTextCount"
+                        ],
                         "additionalProperties": false,
                         "description": "The replacement count reported by the provider alongside independent before/after occurrence counts."
                     }
@@ -1322,9 +1592,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_getpresentation",
             "name": "get-presentation",
-            "output": ["ActionOutput_google_slides_getpresentation"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_getpresentation", "ActionOutput_google_slides_getpresentation"],
+            "output": [
+                "ActionOutput_google_slides_getpresentation"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_getpresentation",
+                "ActionOutput_google_slides_getpresentation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1340,7 +1617,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["presentationId"],
+                        "required": [
+                            "presentationId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the presentation to fetch by its Google Slides presentation ID."
                     },
@@ -1501,7 +1780,9 @@
                                                         "description": "Speaker notes content, present when the element carries speaker notes."
                                                     }
                                                 },
-                                                "required": ["objectId"],
+                                                "required": [
+                                                    "objectId"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1521,7 +1802,9 @@
                                             "description": "Notes-specific properties such as the speaker notes shape."
                                         }
                                     },
-                                    "required": ["objectId"],
+                                    "required": [
+                                        "objectId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1622,7 +1905,9 @@
                                                         "description": "Speaker notes content, present when the element carries speaker notes."
                                                     }
                                                 },
-                                                "required": ["objectId"],
+                                                "required": [
+                                                    "objectId"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1642,7 +1927,9 @@
                                             "description": "Notes-specific properties such as the speaker notes shape."
                                         }
                                     },
-                                    "required": ["objectId"],
+                                    "required": [
+                                        "objectId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1743,7 +2030,9 @@
                                                         "description": "Speaker notes content, present when the element carries speaker notes."
                                                     }
                                                 },
-                                                "required": ["objectId"],
+                                                "required": [
+                                                    "objectId"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1763,7 +2052,9 @@
                                             "description": "Notes-specific properties such as the speaker notes shape."
                                         }
                                     },
-                                    "required": ["objectId"],
+                                    "required": [
+                                        "objectId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1862,7 +2153,9 @@
                                                     "description": "Speaker notes content, present when the element carries speaker notes."
                                                 }
                                             },
-                                            "required": ["objectId"],
+                                            "required": [
+                                                "objectId"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1882,11 +2175,15 @@
                                         "description": "Notes-specific properties such as the speaker notes shape."
                                     }
                                 },
-                                "required": ["objectId"],
+                                "required": [
+                                    "objectId"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["presentationId"],
+                        "required": [
+                            "presentationId"
+                        ],
                         "additionalProperties": {},
                         "description": "The structure of a Google Slides presentation (limited to the requested fields when a field mask is given), including its slides, page elements, masters, layouts, and notes master."
                     }
@@ -1900,9 +2197,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_getslidefullcontent",
             "name": "get-slide-full-content",
-            "output": ["ActionOutput_google_slides_getslidefullcontent"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_getslidefullcontent", "ActionOutput_google_slides_getslidefullcontent"],
+            "output": [
+                "ActionOutput_google_slides_getslidefullcontent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_getslidefullcontent",
+                "ActionOutput_google_slides_getslidefullcontent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1918,7 +2222,10 @@
                                 "description": "The object ID of the slide (page) to read. Example: \"slide_test_1\"."
                             }
                         },
-                        "required": ["presentationId", "pageId"],
+                        "required": [
+                            "presentationId",
+                            "pageId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the presentation and the slide (page) whose content should be summarized."
                     },
@@ -1960,7 +2267,9 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["objectId"],
+                                "required": [
+                                    "objectId"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The requested slide with its page-level metadata."
                             },
@@ -1990,13 +2299,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["objectId", "kind"],
+                                    "required": [
+                                        "objectId",
+                                        "kind"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Readable summary of every page element on the slide, with group children listed right after their group (at any nesting depth). Empty when the slide has no page elements."
                             }
                         },
-                        "required": ["slide", "elements"],
+                        "required": [
+                            "slide",
+                            "elements"
+                        ],
                         "additionalProperties": false,
                         "description": "The requested slide merged with a readable summary of each of its page elements."
                     }
@@ -2010,9 +2325,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_getslidethumbnail",
             "name": "get-slide-thumbnail",
-            "output": ["ActionOutput_google_slides_getslidethumbnail"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_getslidethumbnail", "ActionOutput_google_slides_getslidethumbnail"],
+            "output": [
+                "ActionOutput_google_slides_getslidethumbnail"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_getslidethumbnail",
+                "ActionOutput_google_slides_getslidethumbnail"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2030,15 +2352,25 @@
                             "mimeType": {
                                 "description": "Image format of the thumbnail. Defaults to PNG when omitted.",
                                 "type": "string",
-                                "enum": ["PNG"]
+                                "enum": [
+                                    "PNG"
+                                ]
                             },
                             "thumbnailSize": {
                                 "description": "Predefined thumbnail width: LARGE is 1600px, MEDIUM is 800px, SMALL is 200px. The server picks a size when omitted.",
                                 "type": "string",
-                                "enum": ["THUMBNAIL_SIZE_UNSPECIFIED", "LARGE", "MEDIUM", "SMALL"]
+                                "enum": [
+                                    "THUMBNAIL_SIZE_UNSPECIFIED",
+                                    "LARGE",
+                                    "MEDIUM",
+                                    "SMALL"
+                                ]
                             }
                         },
-                        "required": ["presentationId", "pageId"],
+                        "required": [
+                            "presentationId",
+                            "pageId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the presentation slide to render and the optional thumbnail format and size."
                     },
@@ -2058,7 +2390,11 @@
                                 "description": "Short-lived signed URL pointing to the thumbnail image bytes (about a 30 minute lifetime)."
                             }
                         },
-                        "required": ["width", "height", "contentUrl"],
+                        "required": [
+                            "width",
+                            "height",
+                            "contentUrl"
+                        ],
                         "additionalProperties": false,
                         "description": "Metadata for the rendered slide thumbnail, including its dimensions and a signed image URL."
                     }
@@ -2072,9 +2408,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_getslide",
             "name": "get-slide",
-            "output": ["ActionOutput_google_slides_getslide"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_getslide", "ActionOutput_google_slides_getslide"],
+            "output": [
+                "ActionOutput_google_slides_getslide"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_getslide",
+                "ActionOutput_google_slides_getslide"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2090,7 +2433,10 @@
                                 "description": "Object ID of the page to fetch, such as a slide, layout, master, or notes page. Example: \"slide_1\""
                             }
                         },
-                        "required": ["presentationId", "pageId"],
+                        "required": [
+                            "presentationId",
+                            "pageId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the presentation and the page to fetch from Google Slides."
                     },
@@ -2347,7 +2693,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["objectId"],
+                                    "required": [
+                                        "objectId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2388,7 +2736,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["objectId"],
+                        "required": [
+                            "objectId"
+                        ],
                         "additionalProperties": {},
                         "description": "A Google Slides page, which can be a slide, layout, master, notes page, or notes master."
                     }
@@ -2402,9 +2752,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_groupobjects",
             "name": "group-objects",
-            "output": ["ActionOutput_google_slides_groupobjects"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_groupobjects", "ActionOutput_google_slides_groupobjects"],
+            "output": [
+                "ActionOutput_google_slides_groupobjects"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_groupobjects",
+                "ActionOutput_google_slides_groupobjects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2428,7 +2785,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["presentationId", "childrenObjectIds"],
+                        "required": [
+                            "presentationId",
+                            "childrenObjectIds"
+                        ],
                         "additionalProperties": false,
                         "description": "Groups two or more page elements on a slide into a single group."
                     },
@@ -2444,7 +2804,10 @@
                                 "description": "The object ID of the newly created group page element."
                             }
                         },
-                        "required": ["presentationId", "objectId"],
+                        "required": [
+                            "presentationId",
+                            "objectId"
+                        ],
                         "additionalProperties": false,
                         "description": "The group page element that was created."
                     }
@@ -2458,9 +2821,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_inserttablecolumns",
             "name": "insert-table-columns",
-            "output": ["ActionOutput_google_slides_inserttablecolumns"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_inserttablecolumns", "ActionOutput_google_slides_inserttablecolumns"],
+            "output": [
+                "ActionOutput_google_slides_inserttablecolumns"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_inserttablecolumns",
+                "ActionOutput_google_slides_inserttablecolumns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2491,7 +2861,10 @@
                                         "description": "Zero-based column index of the reference cell. Example: 1"
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The reference cell next to which the new columns are inserted."
                             },
@@ -2506,7 +2879,12 @@
                                 "description": "The number of columns to insert. Maximum 20 per request. Example: 1"
                             }
                         },
-                        "required": ["presentationId", "tableObjectId", "cellLocation", "number"],
+                        "required": [
+                            "presentationId",
+                            "tableObjectId",
+                            "cellLocation",
+                            "number"
+                        ],
                         "additionalProperties": false,
                         "description": "The table and reference cell where new columns should be inserted."
                     },
@@ -2518,7 +2896,9 @@
                                 "description": "The ID of the presentation that was modified."
                             }
                         },
-                        "required": ["presentationId"],
+                        "required": [
+                            "presentationId"
+                        ],
                         "additionalProperties": false,
                         "description": "The presentation that was modified by the inserted columns."
                     }
@@ -2532,9 +2912,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_inserttablerows",
             "name": "insert-table-rows",
-            "output": ["ActionOutput_google_slides_inserttablerows"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_inserttablerows", "ActionOutput_google_slides_inserttablerows"],
+            "output": [
+                "ActionOutput_google_slides_inserttablerows"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_inserttablerows",
+                "ActionOutput_google_slides_inserttablerows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2565,7 +2952,10 @@
                                         "description": "Zero-based column index of the reference cell. Example: 0"
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The reference table cell used as the insertion anchor. A new row is inserted above or below the row that contains this cell."
                             },
@@ -2580,7 +2970,13 @@
                                 "description": "Number of rows to insert, from 1 to 20 (the API caps a single request at 20 rows). Example: 2"
                             }
                         },
-                        "required": ["presentationId", "tableObjectId", "cellLocation", "insertBelow", "number"],
+                        "required": [
+                            "presentationId",
+                            "tableObjectId",
+                            "cellLocation",
+                            "insertBelow",
+                            "number"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for inserting one or more rows into an existing table in a Google Slides presentation."
                     },
@@ -2616,7 +3012,15 @@
                                 "description": "The total number of columns in the table after the insertion."
                             }
                         },
-                        "required": ["presentationId", "pageObjectId", "tableObjectId", "insertBelow", "rowsInserted", "rowCount", "columnCount"],
+                        "required": [
+                            "presentationId",
+                            "pageObjectId",
+                            "tableObjectId",
+                            "insertBelow",
+                            "rowsInserted",
+                            "rowCount",
+                            "columnCount"
+                        ],
                         "additionalProperties": false,
                         "description": "The outcome of the insert, including the table location and its row and column counts after the rows were added."
                     }
@@ -2630,9 +3034,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_inserttext",
             "name": "insert-text",
-            "output": ["ActionOutput_google_slides_inserttext"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_inserttext", "ActionOutput_google_slides_inserttext"],
+            "output": [
+                "ActionOutput_google_slides_inserttext"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_inserttext",
+                "ActionOutput_google_slides_inserttext"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2674,11 +3085,19 @@
                                         "description": "The 0-based column index of the target cell within the table."
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["presentationId", "objectId", "text", "insertionIndex"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "text",
+                            "insertionIndex"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for inserting text into a shape or table cell of a Google Slides presentation."
                     },
@@ -2710,7 +3129,13 @@
                                 "description": "Whether a follow-up read confirmed the inserted text is present in the target."
                             }
                         },
-                        "required": ["presentationId", "objectId", "insertedText", "insertionIndex", "verified"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "insertedText",
+                            "insertionIndex",
+                            "verified"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the text insert, including the full text of the target after the write and whether the insert was verified."
                     }
@@ -2724,9 +3149,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_moveslide",
             "name": "move-slide",
-            "output": ["ActionOutput_google_slides_moveslide"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_moveslide", "ActionOutput_google_slides_moveslide"],
+            "output": [
+                "ActionOutput_google_slides_moveslide"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_moveslide",
+                "ActionOutput_google_slides_moveslide"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2752,7 +3184,11 @@
                                 "description": "Zero-based index where the slides should be inserted, evaluated against the slide order before the move takes place. Example: 0"
                             }
                         },
-                        "required": ["presentationId", "slideObjectIds", "insertionIndex"],
+                        "required": [
+                            "presentationId",
+                            "slideObjectIds",
+                            "insertionIndex"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for moving one or more slides to a new position in a presentation."
                     },
@@ -2784,7 +3220,12 @@
                                 "description": "Object IDs of all slides in the presentation, in their new order after the move."
                             }
                         },
-                        "required": ["presentationId", "movedSlideObjectIds", "insertionIndex", "slideOrder"],
+                        "required": [
+                            "presentationId",
+                            "movedSlideObjectIds",
+                            "insertionIndex",
+                            "slideOrder"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the slide move, including the resulting slide order read back from the presentation."
                     }
@@ -2798,9 +3239,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_replacealltext",
             "name": "replace-all-text",
-            "output": ["ActionOutput_google_slides_replacealltext"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_replacealltext", "ActionOutput_google_slides_replacealltext"],
+            "output": [
+                "ActionOutput_google_slides_replacealltext"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_replacealltext",
+                "ActionOutput_google_slides_replacealltext"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2835,7 +3283,11 @@
                                 }
                             }
                         },
-                        "required": ["presentationId", "searchText", "replacementText"],
+                        "required": [
+                            "presentationId",
+                            "searchText",
+                            "replacementText"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for replacing every match of a string across a presentation or specific slides."
                     },
@@ -2855,7 +3307,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["presentationId", "occurrencesChanged"],
+                        "required": [
+                            "presentationId",
+                            "occurrencesChanged"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the text replacement, including how many occurrences were changed."
                     }
@@ -2869,9 +3324,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_updatepageelementtransform",
             "name": "update-page-element-transform",
-            "output": ["ActionOutput_google_slides_updatepageelementtransform"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_updatepageelementtransform", "ActionOutput_google_slides_updatepageelementtransform"],
+            "output": [
+                "ActionOutput_google_slides_updatepageelementtransform"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_updatepageelementtransform",
+                "ActionOutput_google_slides_updatepageelementtransform"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2888,7 +3350,10 @@
                             },
                             "applyMode": {
                                 "type": "string",
-                                "enum": ["ABSOLUTE", "RELATIVE"],
+                                "enum": [
+                                    "ABSOLUTE",
+                                    "RELATIVE"
+                                ],
                                 "description": "ABSOLUTE replaces the element transform outright (omitted parameters become 0); RELATIVE composes the given transform onto the existing one."
                             },
                             "transform": {
@@ -2920,16 +3385,26 @@
                                     },
                                     "unit": {
                                         "type": "string",
-                                        "enum": ["EMU", "PT"],
+                                        "enum": [
+                                            "EMU",
+                                            "PT"
+                                        ],
                                         "description": "Unit for the translate values: EMU (English Metric Units) or PT (points). The API requires a unit."
                                     }
                                 },
-                                "required": ["unit"],
+                                "required": [
+                                    "unit"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Affine transform to apply to the page element."
                             }
                         },
-                        "required": ["presentationId", "objectId", "applyMode", "transform"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "applyMode",
+                            "transform"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating the transform of a page element in a Google Slides presentation."
                     },
@@ -2945,7 +3420,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["presentationId"],
+                        "required": [
+                            "presentationId"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of applying a page element transform update."
                     }
@@ -2959,9 +3436,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_updateshapeproperties",
             "name": "update-shape-properties",
-            "output": ["ActionOutput_google_slides_updateshapeproperties"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_updateshapeproperties", "ActionOutput_google_slides_updateshapeproperties"],
+            "output": [
+                "ActionOutput_google_slides_updateshapeproperties"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_updateshapeproperties",
+                "ActionOutput_google_slides_updateshapeproperties"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2990,7 +3474,11 @@
                                             "propertyState": {
                                                 "description": "Whether the background fill is rendered; set to \"NOT_RENDERED\" to remove the shape fill.",
                                                 "type": "string",
-                                                "enum": ["RENDERED", "NOT_RENDERED", "INHERIT"]
+                                                "enum": [
+                                                    "RENDERED",
+                                                    "NOT_RENDERED",
+                                                    "INHERIT"
+                                                ]
                                             },
                                             "solidFill": {
                                                 "description": "Solid color fill for the shape background.",
@@ -3017,7 +3505,11 @@
                                                                         "description": "Blue component of the color, from 0.0 to 1.0. Example: 0.9."
                                                                     }
                                                                 },
-                                                                "required": ["red", "green", "blue"],
+                                                                "required": [
+                                                                    "red",
+                                                                    "green",
+                                                                    "blue"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             "themeColor": {
@@ -3089,7 +3581,11 @@
                                                                                 "description": "Blue component of the color, from 0.0 to 1.0. Example: 0.9."
                                                                             }
                                                                         },
-                                                                        "required": ["red", "green", "blue"],
+                                                                        "required": [
+                                                                            "red",
+                                                                            "green",
+                                                                            "blue"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     "themeColor": {
@@ -3138,22 +3634,40 @@
                                                     },
                                                     "unit": {
                                                         "type": "string",
-                                                        "enum": ["EMU", "PT"],
+                                                        "enum": [
+                                                            "EMU",
+                                                            "PT"
+                                                        ],
                                                         "description": "The unit of the dimension: \"EMU\" or \"PT\". Example: \"PT\"."
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "dashStyle": {
                                                 "description": "The dash style of the outline.",
                                                 "type": "string",
-                                                "enum": ["DASH_STYLE_UNSPECIFIED", "SOLID", "DOT", "DASH", "DASH_DOT", "LONG_DASH", "LONG_DASH_DOT"]
+                                                "enum": [
+                                                    "DASH_STYLE_UNSPECIFIED",
+                                                    "SOLID",
+                                                    "DOT",
+                                                    "DASH",
+                                                    "DASH_DOT",
+                                                    "LONG_DASH",
+                                                    "LONG_DASH_DOT"
+                                                ]
                                             },
                                             "propertyState": {
                                                 "description": "Whether the outline is rendered; set to \"NOT_RENDERED\" to remove the outline.",
                                                 "type": "string",
-                                                "enum": ["RENDERED", "NOT_RENDERED", "INHERIT"]
+                                                "enum": [
+                                                    "RENDERED",
+                                                    "NOT_RENDERED",
+                                                    "INHERIT"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3161,7 +3675,12 @@
                                     "contentAlignment": {
                                         "description": "Vertical alignment of the shape content. Example: \"MIDDLE\".",
                                         "type": "string",
-                                        "enum": ["CONTENT_ALIGNMENT_UNSPECIFIED", "TOP", "MIDDLE", "BOTTOM"]
+                                        "enum": [
+                                            "CONTENT_ALIGNMENT_UNSPECIFIED",
+                                            "TOP",
+                                            "MIDDLE",
+                                            "BOTTOM"
+                                        ]
                                     },
                                     "autofit": {
                                         "description": "The autofit properties of the shape.",
@@ -3170,7 +3689,10 @@
                                             "autofitType": {
                                                 "description": "The autofit type of the shape; only \"NONE\" is accepted on write requests.",
                                                 "type": "string",
-                                                "enum": ["AUTOFIT_TYPE_UNSPECIFIED", "NONE"]
+                                                "enum": [
+                                                    "AUTOFIT_TYPE_UNSPECIFIED",
+                                                    "NONE"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3180,7 +3702,12 @@
                                 "description": "The shape properties to apply; only the fields listed in \"fields\" are updated."
                             }
                         },
-                        "required": ["presentationId", "objectId", "fields", "shapeProperties"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "fields",
+                            "shapeProperties"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating a shape's background fill, outline, or content alignment in a Google Slides presentation."
                     },
@@ -3209,7 +3736,11 @@
                                             "propertyState": {
                                                 "description": "Whether the background fill is rendered; set to \"NOT_RENDERED\" to remove the shape fill.",
                                                 "type": "string",
-                                                "enum": ["RENDERED", "NOT_RENDERED", "INHERIT"]
+                                                "enum": [
+                                                    "RENDERED",
+                                                    "NOT_RENDERED",
+                                                    "INHERIT"
+                                                ]
                                             },
                                             "solidFill": {
                                                 "description": "Solid color fill for the shape background.",
@@ -3236,7 +3767,11 @@
                                                                         "description": "Blue component of the color, from 0.0 to 1.0. Example: 0.9."
                                                                     }
                                                                 },
-                                                                "required": ["red", "green", "blue"],
+                                                                "required": [
+                                                                    "red",
+                                                                    "green",
+                                                                    "blue"
+                                                                ],
                                                                 "additionalProperties": false
                                                             },
                                                             "themeColor": {
@@ -3308,7 +3843,11 @@
                                                                                 "description": "Blue component of the color, from 0.0 to 1.0. Example: 0.9."
                                                                             }
                                                                         },
-                                                                        "required": ["red", "green", "blue"],
+                                                                        "required": [
+                                                                            "red",
+                                                                            "green",
+                                                                            "blue"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     "themeColor": {
@@ -3357,22 +3896,40 @@
                                                     },
                                                     "unit": {
                                                         "type": "string",
-                                                        "enum": ["EMU", "PT"],
+                                                        "enum": [
+                                                            "EMU",
+                                                            "PT"
+                                                        ],
                                                         "description": "The unit of the dimension: \"EMU\" or \"PT\". Example: \"PT\"."
                                                     }
                                                 },
-                                                "required": ["magnitude", "unit"],
+                                                "required": [
+                                                    "magnitude",
+                                                    "unit"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "dashStyle": {
                                                 "description": "The dash style of the outline.",
                                                 "type": "string",
-                                                "enum": ["DASH_STYLE_UNSPECIFIED", "SOLID", "DOT", "DASH", "DASH_DOT", "LONG_DASH", "LONG_DASH_DOT"]
+                                                "enum": [
+                                                    "DASH_STYLE_UNSPECIFIED",
+                                                    "SOLID",
+                                                    "DOT",
+                                                    "DASH",
+                                                    "DASH_DOT",
+                                                    "LONG_DASH",
+                                                    "LONG_DASH_DOT"
+                                                ]
                                             },
                                             "propertyState": {
                                                 "description": "Whether the outline is rendered; set to \"NOT_RENDERED\" to remove the outline.",
                                                 "type": "string",
-                                                "enum": ["RENDERED", "NOT_RENDERED", "INHERIT"]
+                                                "enum": [
+                                                    "RENDERED",
+                                                    "NOT_RENDERED",
+                                                    "INHERIT"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3380,7 +3937,12 @@
                                     "contentAlignment": {
                                         "description": "Vertical alignment of the shape content. Example: \"MIDDLE\".",
                                         "type": "string",
-                                        "enum": ["CONTENT_ALIGNMENT_UNSPECIFIED", "TOP", "MIDDLE", "BOTTOM"]
+                                        "enum": [
+                                            "CONTENT_ALIGNMENT_UNSPECIFIED",
+                                            "TOP",
+                                            "MIDDLE",
+                                            "BOTTOM"
+                                        ]
                                     },
                                     "autofit": {
                                         "description": "The autofit properties of the shape.",
@@ -3389,7 +3951,10 @@
                                             "autofitType": {
                                                 "description": "The autofit type of the shape; only \"NONE\" is accepted on write requests.",
                                                 "type": "string",
-                                                "enum": ["AUTOFIT_TYPE_UNSPECIFIED", "NONE"]
+                                                "enum": [
+                                                    "AUTOFIT_TYPE_UNSPECIFIED",
+                                                    "NONE"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -3399,7 +3964,12 @@
                                 "description": "The shape properties that were requested for update."
                             }
                         },
-                        "required": ["presentationId", "objectId", "fields", "shapeProperties"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "fields",
+                            "shapeProperties"
+                        ],
                         "additionalProperties": false,
                         "description": "The presentation and shape that were targeted, plus the shape properties that were requested for update."
                     }
@@ -3413,9 +3983,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_updateslideproperties",
             "name": "update-slide-properties",
-            "output": ["ActionOutput_google_slides_updateslideproperties"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_updateslideproperties", "ActionOutput_google_slides_updateslideproperties"],
+            "output": [
+                "ActionOutput_google_slides_updateslideproperties"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_updateslideproperties",
+                "ActionOutput_google_slides_updateslideproperties"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3435,7 +4012,11 @@
                                 "description": "Whether the slide should be skipped during slideshow playback. Set true to exclude the slide from the presentation without deleting it."
                             }
                         },
-                        "required": ["presentationId", "slideObjectId", "isSkipped"],
+                        "required": [
+                            "presentationId",
+                            "slideObjectId",
+                            "isSkipped"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating the properties of a slide in a Google Slides presentation."
                     },
@@ -3463,7 +4044,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["presentationId", "slideObjectId", "isSkipped"],
+                        "required": [
+                            "presentationId",
+                            "slideObjectId",
+                            "isSkipped"
+                        ],
                         "additionalProperties": false,
                         "description": "The slide properties confirmed after the update, including the skip state."
                     }
@@ -3477,9 +4062,16 @@
             "endpoint": null,
             "input": "ActionInput_google_slides_updatetextstyle",
             "name": "update-text-style",
-            "output": ["ActionOutput_google_slides_updatetextstyle"],
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
-            "usedModels": ["ActionInput_google_slides_updatetextstyle", "ActionOutput_google_slides_updatetextstyle"],
+            "output": [
+                "ActionOutput_google_slides_updatetextstyle"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
+            "usedModels": [
+                "ActionInput_google_slides_updatetextstyle",
+                "ActionOutput_google_slides_updatetextstyle"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3520,7 +4112,11 @@
                                     "baselineOffset": {
                                         "description": "Vertical offset of the text from its normal baseline.",
                                         "type": "string",
-                                        "enum": ["NONE", "SUPERSCRIPT", "SUBSCRIPT"]
+                                        "enum": [
+                                            "NONE",
+                                            "SUPERSCRIPT",
+                                            "SUBSCRIPT"
+                                        ]
                                     },
                                     "fontSize": {
                                         "description": "Font size as a Slides Dimension. Example: { \"magnitude\": 18, \"unit\": \"PT\" }",
@@ -3533,11 +4129,17 @@
                                             },
                                             "unit": {
                                                 "type": "string",
-                                                "enum": ["PT", "EMU"],
+                                                "enum": [
+                                                    "PT",
+                                                    "EMU"
+                                                ],
                                                 "description": "Unit for the magnitude: \"PT\" (points) or \"EMU\" (12700 EMU = 1 point). Example: \"PT\""
                                             }
                                         },
-                                        "required": ["magnitude", "unit"],
+                                        "required": [
+                                            "magnitude",
+                                            "unit"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "weightedFontFamily": {
@@ -3555,7 +4157,9 @@
                                                 "maximum": 900
                                             }
                                         },
-                                        "required": ["fontFamily"],
+                                        "required": [
+                                            "fontFamily"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "foregroundColor": {
@@ -3589,7 +4193,11 @@
                                                                 "description": "Blue component, from 0.0 to 1.0."
                                                             }
                                                         },
-                                                        "required": ["red", "green", "blue"],
+                                                        "required": [
+                                                            "red",
+                                                            "green",
+                                                            "blue"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "themeColor": {
@@ -3651,7 +4259,11 @@
                                                                 "description": "Blue component, from 0.0 to 1.0."
                                                             }
                                                         },
-                                                        "required": ["red", "green", "blue"],
+                                                        "required": [
+                                                            "red",
+                                                            "green",
+                                                            "blue"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "themeColor": {
@@ -3693,7 +4305,12 @@
                                             "relativeLink": {
                                                 "description": "Another slide to link to by relative position.",
                                                 "type": "string",
-                                                "enum": ["NEXT_SLIDE", "PREVIOUS_SLIDE", "FIRST_SLIDE", "LAST_SLIDE"]
+                                                "enum": [
+                                                    "NEXT_SLIDE",
+                                                    "PREVIOUS_SLIDE",
+                                                    "FIRST_SLIDE",
+                                                    "LAST_SLIDE"
+                                                ]
                                             },
                                             "pageObjectId": {
                                                 "description": "Object ID of a page in the presentation to link to.",
@@ -3719,7 +4336,11 @@
                                     "type": {
                                         "description": "Kind of range. Defaults to ALL (the whole text) when omitted, and is inferred from startIndex/endIndex when those are given.",
                                         "type": "string",
-                                        "enum": ["ALL", "FIXED_RANGE", "FROM_START_INDEX"]
+                                        "enum": [
+                                            "ALL",
+                                            "FIXED_RANGE",
+                                            "FROM_START_INDEX"
+                                        ]
                                     },
                                     "startIndex": {
                                         "description": "Zero-based start offset in Unicode code units. Required for FIXED_RANGE and FROM_START_INDEX.",
@@ -3753,7 +4374,10 @@
                                         "description": "Zero-based column index of the cell within the table."
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false
                             },
                             "fields": {
@@ -3761,7 +4385,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["presentationId", "objectId", "style"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "style"
+                        ],
                         "additionalProperties": false,
                         "description": "Character formatting to apply to a range of text in a Google Slides presentation."
                     },
@@ -3785,7 +4413,11 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["ALL", "FIXED_RANGE", "FROM_START_INDEX"],
+                                        "enum": [
+                                            "ALL",
+                                            "FIXED_RANGE",
+                                            "FROM_START_INDEX"
+                                        ],
                                         "description": "The concrete kind of range that was applied."
                                     },
                                     "startIndex": {
@@ -3801,7 +4433,9 @@
                                         "maximum": 9007199254740991
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The text range that was styled, normalized to a concrete range type."
                             },
@@ -3822,11 +4456,19 @@
                                         "description": "Zero-based column index of the cell within the table."
                                     }
                                 },
-                                "required": ["rowIndex", "columnIndex"],
+                                "required": [
+                                    "rowIndex",
+                                    "columnIndex"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["presentationId", "objectId", "fields", "textRange"],
+                        "required": [
+                            "presentationId",
+                            "objectId",
+                            "fields",
+                            "textRange"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation of the character formatting that was applied to the target text range."
                     }
@@ -3843,12 +4485,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_slides_presentationslidesbyid",
             "name": "presentation-slides-by-id",
-            "output": ["Presentation"],
+            "output": [
+                "Presentation"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/presentations"],
+            "scopes": [
+                "https://www.googleapis.com/auth/presentations"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Presentation", "SyncMetadata_google_slides_presentationslidesbyid"],
+            "usedModels": [
+                "Presentation",
+                "SyncMetadata_google_slides_presentationslidesbyid"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4066,7 +4715,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A Google Slides presentation with its slides, page elements, masters and layouts."
                     },
@@ -4082,7 +4733,9 @@
                                 "description": "The list of Google Slides presentation IDs to fetch and emit as sync records."
                             }
                         },
-                        "required": ["presentationIds"],
+                        "required": [
+                            "presentationIds"
+                        ],
                         "additionalProperties": false,
                         "description": "Connection metadata that supplies the Google Slides presentation IDs this sync should fetch."
                     }

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_zoho_desk_createcontact"],
-            "scopes": ["Desk.contacts.CREATE"],
-            "usedModels": ["ActionInput_zoho_desk_createcontact", "ActionOutput_zoho_desk_createcontact"],
+            "output": [
+                "ActionOutput_zoho_desk_createcontact"
+            ],
+            "scopes": [
+                "Desk.contacts.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_createcontact",
+                "ActionOutput_zoho_desk_createcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -89,7 +96,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["lastName"],
+                        "required": [
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_createcontact": {
@@ -178,7 +187,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "customerHappiness": {
@@ -197,7 +208,10 @@
                                 "additionalProperties": false
                             },
                             "isFollowing": {
-                                "type": ["string", "boolean"]
+                                "type": [
+                                    "string",
+                                    "boolean"
+                                ]
                             },
                             "isAnonymous": {
                                 "type": "boolean"
@@ -216,7 +230,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -229,9 +245,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_createticket",
             "name": "create-ticket",
-            "output": ["ActionOutput_zoho_desk_createticket"],
-            "scopes": ["Desk.tickets.CREATE"],
-            "usedModels": ["ActionInput_zoho_desk_createticket", "ActionOutput_zoho_desk_createticket"],
+            "output": [
+                "ActionOutput_zoho_desk_createticket"
+            ],
+            "scopes": [
+                "Desk.tickets.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_createticket",
+                "ActionOutput_zoho_desk_createticket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -329,7 +352,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["subject", "departmentId", "contactId"],
+                        "required": [
+                            "subject",
+                            "departmentId",
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_createticket": {
@@ -428,7 +455,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -441,9 +470,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_deleteticket",
             "name": "delete-ticket",
-            "output": ["ActionOutput_zoho_desk_deleteticket"],
-            "scopes": ["Desk.tickets.DELETE"],
-            "usedModels": ["ActionInput_zoho_desk_deleteticket", "ActionOutput_zoho_desk_deleteticket"],
+            "output": [
+                "ActionOutput_zoho_desk_deleteticket"
+            ],
+            "scopes": [
+                "Desk.tickets.DELETE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_deleteticket",
+                "ActionOutput_zoho_desk_deleteticket"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -455,7 +491,9 @@
                                 "description": "Ticket ID to delete. Example: \"123456789\""
                             }
                         },
-                        "required": ["ticket_id"],
+                        "required": [
+                            "ticket_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_deleteticket": {
@@ -468,7 +506,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["ticket_id", "success"],
+                        "required": [
+                            "ticket_id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -481,9 +522,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_getticket",
             "name": "get-ticket",
-            "output": ["ActionOutput_zoho_desk_getticket"],
-            "scopes": ["Desk.tickets.READ"],
-            "usedModels": ["ActionInput_zoho_desk_getticket", "ActionOutput_zoho_desk_getticket"],
+            "output": [
+                "ActionOutput_zoho_desk_getticket"
+            ],
+            "scopes": [
+                "Desk.tickets.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_getticket",
+                "ActionOutput_zoho_desk_getticket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -495,7 +543,9 @@
                                 "description": "Ticket ID. Example: \"1892000000042034\""
                             }
                         },
-                        "required": ["ticketId"],
+                        "required": [
+                            "ticketId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_getticket": {
@@ -517,7 +567,10 @@
                                 "type": "string"
                             },
                             "priority": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "departmentId": {
                                 "type": "string"
@@ -526,10 +579,16 @@
                                 "type": "string"
                             },
                             "assigneeId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "productId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdTime": {
                                 "type": "string"
@@ -538,13 +597,22 @@
                                 "type": "string"
                             },
                             "dueDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "closedTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "onholdTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "channel": {
                                 "type": "string"
@@ -553,13 +621,22 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "webUrl": {
                                 "type": "string"
@@ -574,13 +651,19 @@
                                 "type": "boolean"
                             },
                             "isDeleted": {
-                                "type": ["boolean", "string"]
+                                "type": [
+                                    "boolean",
+                                    "string"
+                                ]
                             },
                             "isOverDue": {
                                 "type": "boolean"
                             },
                             "isFollowing": {
-                                "type": ["boolean", "string"]
+                                "type": [
+                                    "boolean",
+                                    "string"
+                                ]
                             },
                             "threadCount": {
                                 "type": "string"
@@ -607,16 +690,28 @@
                                 "type": "string"
                             },
                             "resolution": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "classification": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "subCategory": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "category": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "source": {
                                 "type": "object",
@@ -780,7 +875,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -793,9 +890,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_listaccounts",
             "name": "list-accounts",
-            "output": ["ActionOutput_zoho_desk_listaccounts"],
-            "scopes": ["Desk.basic.READ"],
-            "usedModels": ["ActionInput_zoho_desk_listaccounts", "ActionOutput_zoho_desk_listaccounts"],
+            "output": [
+                "ActionOutput_zoho_desk_listaccounts"
+            ],
+            "scopes": [
+                "Desk.basic.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_listaccounts",
+                "ActionOutput_zoho_desk_listaccounts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -846,7 +950,10 @@
                                             "type": "string"
                                         },
                                         "zohoCRMAccount": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "customerHappiness": {
                                             "type": "object",
@@ -864,7 +971,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -872,7 +981,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -885,9 +996,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_listagents",
             "name": "list-agents",
-            "output": ["ActionOutput_zoho_desk_listagents"],
-            "scopes": ["Desk.basic.READ"],
-            "usedModels": ["ActionInput_zoho_desk_listagents", "ActionOutput_zoho_desk_listagents"],
+            "output": [
+                "ActionOutput_zoho_desk_listagents"
+            ],
+            "scopes": [
+                "Desk.basic.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_listagents",
+                "ActionOutput_zoho_desk_listagents"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -956,7 +1074,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -964,7 +1084,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -977,9 +1099,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_listarticles",
             "name": "list-articles",
-            "output": ["ActionOutput_zoho_desk_listarticles"],
-            "scopes": ["Desk.articles.READ"],
-            "usedModels": ["ActionInput_zoho_desk_listarticles", "ActionOutput_zoho_desk_listarticles"],
+            "output": [
+                "ActionOutput_zoho_desk_listarticles"
+            ],
+            "scopes": [
+                "Desk.articles.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_listarticles",
+                "ActionOutput_zoho_desk_listarticles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1087,16 +1216,28 @@
                                                     "type": "string"
                                                 },
                                                 "name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "photoURL": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "status": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "zuid": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -1108,16 +1249,24 @@
                                                     "type": "string"
                                                 },
                                                 "name": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "locale": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1125,7 +1274,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1138,9 +1289,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_zoho_desk_listcontacts"],
-            "scopes": ["Desk.contacts.READ"],
-            "usedModels": ["ActionInput_zoho_desk_listcontacts", "ActionOutput_zoho_desk_listcontacts"],
+            "output": [
+                "ActionOutput_zoho_desk_listcontacts"
+            ],
+            "scopes": [
+                "Desk.contacts.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_listcontacts",
+                "ActionOutput_zoho_desk_listcontacts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1166,31 +1324,57 @@
                                             "type": "string"
                                         },
                                         "firstName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "mobile": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "accountId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "modifiedTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1198,7 +1382,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1211,9 +1397,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_listdepartments",
             "name": "list-departments",
-            "output": ["ActionOutput_zoho_desk_listdepartments"],
-            "scopes": ["Desk.settings.READ"],
-            "usedModels": ["ActionInput_zoho_desk_listdepartments", "ActionOutput_zoho_desk_listdepartments"],
+            "output": [
+                "ActionOutput_zoho_desk_listdepartments"
+            ],
+            "scopes": [
+                "Desk.settings.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_listdepartments",
+                "ActionOutput_zoho_desk_listdepartments"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1249,7 +1442,10 @@
                                         },
                                         "description": {
                                             "description": "Department description",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdTime": {
                                             "description": "ISO timestamp when the department was created",
@@ -1292,7 +1488,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1301,7 +1500,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1314,9 +1515,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_listticketthreads",
             "name": "list-ticket-threads",
-            "output": ["ActionOutput_zoho_desk_listticketthreads"],
-            "scopes": ["Desk.tickets.READ"],
-            "usedModels": ["ActionInput_zoho_desk_listticketthreads", "ActionOutput_zoho_desk_listticketthreads"],
+            "output": [
+                "ActionOutput_zoho_desk_listticketthreads"
+            ],
+            "scopes": [
+                "Desk.tickets.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_listticketthreads",
+                "ActionOutput_zoho_desk_listticketthreads"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1336,7 +1544,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["ticketId"],
+                        "required": [
+                            "ticketId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_listticketthreads": {
@@ -1381,7 +1591,10 @@
                                                     "type": "string"
                                                 },
                                                 "photoURL": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "type": {
                                                     "type": "string"
@@ -1399,10 +1612,16 @@
                                             "type": "string"
                                         },
                                         "sentiment": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "aspects": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "channelRelatedInfo": {
                                             "anyOf": [
@@ -1421,7 +1640,10 @@
                                             ]
                                         },
                                         "lastRatingIconURL": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "readReceipts": {
                                             "anyOf": [
@@ -1443,16 +1665,28 @@
                                             "type": "object",
                                             "properties": {
                                                 "extId": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "appName": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "appPhotoURL": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "permalink": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "type": {
                                                     "type": "string"
@@ -1485,7 +1719,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1494,7 +1730,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["threads"],
+                        "required": [
+                            "threads"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1507,9 +1745,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_listtickets",
             "name": "list-tickets",
-            "output": ["ActionOutput_zoho_desk_listtickets"],
-            "scopes": ["Desk.tickets.READ"],
-            "usedModels": ["ActionInput_zoho_desk_listtickets", "ActionOutput_zoho_desk_listtickets"],
+            "output": [
+                "ActionOutput_zoho_desk_listtickets"
+            ],
+            "scopes": [
+                "Desk.tickets.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_listtickets",
+                "ActionOutput_zoho_desk_listtickets"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1648,7 +1893,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1656,7 +1903,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1669,9 +1918,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_sendticketreply",
             "name": "send-ticket-reply",
-            "output": ["ActionOutput_zoho_desk_sendticketreply"],
-            "scopes": ["Desk.tickets.UPDATE"],
-            "usedModels": ["ActionInput_zoho_desk_sendticketreply", "ActionOutput_zoho_desk_sendticketreply"],
+            "output": [
+                "ActionOutput_zoho_desk_sendticketreply"
+            ],
+            "scopes": [
+                "Desk.tickets.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_sendticketreply",
+                "ActionOutput_zoho_desk_sendticketreply"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1734,7 +1990,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["ticket_id", "content"],
+                        "required": [
+                            "ticket_id",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_sendticketreply": {
@@ -1774,7 +2033,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1815,19 +2076,31 @@
                                 "type": "object",
                                 "properties": {
                                     "appName": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "extId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "type": {
                                         "type": "string"
                                     },
                                     "permalink": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "appPhotoURL": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -1878,7 +2151,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1891,9 +2166,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_zoho_desk_updatecontact"],
-            "scopes": ["Desk.contacts.UPDATE"],
-            "usedModels": ["ActionInput_zoho_desk_updatecontact", "ActionOutput_zoho_desk_updatecontact"],
+            "output": [
+                "ActionOutput_zoho_desk_updatecontact"
+            ],
+            "scopes": [
+                "Desk.contacts.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_updatecontact",
+                "ActionOutput_zoho_desk_updatecontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1937,7 +2219,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["contactId"],
+                        "required": [
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_updatecontact": {
@@ -1983,7 +2267,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1996,9 +2282,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_desk_updateticket",
             "name": "update-ticket",
-            "output": ["ActionOutput_zoho_desk_updateticket"],
-            "scopes": ["Desk.tickets.UPDATE"],
-            "usedModels": ["ActionInput_zoho_desk_updateticket", "ActionOutput_zoho_desk_updateticket"],
+            "output": [
+                "ActionOutput_zoho_desk_updateticket"
+            ],
+            "scopes": [
+                "Desk.tickets.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_desk_updateticket",
+                "ActionOutput_zoho_desk_updateticket"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2086,7 +2379,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["ticketId"],
+                        "required": [
+                            "ticketId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_desk_updateticket": {
@@ -2209,7 +2504,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2231,12 +2528,18 @@
             ],
             "input": null,
             "name": "accounts",
-            "output": ["Account"],
+            "output": [
+                "Account"
+            ],
             "runs": "every hour",
-            "scopes": ["Desk.basic.READ"],
+            "scopes": [
+                "Desk.basic.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Account"],
+            "usedModels": [
+                "Account"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2280,12 +2583,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "accountName"],
+                        "required": [
+                            "id",
+                            "accountName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2299,12 +2607,18 @@
             ],
             "input": null,
             "name": "agents",
-            "output": ["Agent"],
+            "output": [
+                "Agent"
+            ],
             "runs": "every hour",
-            "scopes": ["Desk.basic.READ"],
+            "scopes": [
+                "Desk.basic.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Agent"],
+            "usedModels": [
+                "Agent"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2352,12 +2666,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2371,12 +2689,18 @@
             ],
             "input": null,
             "name": "articles",
-            "output": ["Article"],
+            "output": [
+                "Article"
+            ],
             "runs": "every hour",
-            "scopes": ["Desk.articles.READ"],
+            "scopes": [
+                "Desk.articles.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Article"],
+            "usedModels": [
+                "Article"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2439,12 +2763,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2458,12 +2786,18 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
-            "scopes": ["Desk.contacts.READ"],
+            "scopes": [
+                "Desk.contacts.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2586,12 +2920,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2605,12 +2943,18 @@
             ],
             "input": null,
             "name": "departments",
-            "output": ["Department"],
+            "output": [
+                "Department"
+            ],
             "runs": "every hour",
-            "scopes": ["Desk.settings.READ"],
+            "scopes": [
+                "Desk.settings.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Department"],
+            "usedModels": [
+                "Department"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2658,12 +3002,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2677,12 +3026,18 @@
             ],
             "input": null,
             "name": "tickets",
-            "output": ["Ticket"],
+            "output": [
+                "Ticket"
+            ],
             "runs": "every hour",
-            "scopes": ["Desk.tickets.READ"],
+            "scopes": [
+                "Desk.tickets.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Ticket"],
+            "usedModels": [
+                "Ticket"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2760,12 +3115,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

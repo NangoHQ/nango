@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_archivemessage",
             "name": "archive-message",
-            "output": ["ActionOutput_zoho_mail_archivemessage"],
-            "scopes": ["ZohoMail.messages.UPDATE"],
-            "usedModels": ["ActionInput_zoho_mail_archivemessage", "ActionOutput_zoho_mail_archivemessage"],
+            "output": [
+                "ActionOutput_zoho_mail_archivemessage"
+            ],
+            "scopes": [
+                "ZohoMail.messages.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_archivemessage",
+                "ActionOutput_zoho_mail_archivemessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "Message ID to archive. Example: \"1781108289537154100\""
                             }
                         },
-                        "required": ["accountId", "messageId"],
+                        "required": [
+                            "accountId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_archivemessage": {
@@ -38,7 +48,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -51,9 +63,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_createdraft",
             "name": "create-draft",
-            "output": ["ActionOutput_zoho_mail_createdraft"],
-            "scopes": ["ZohoMail.messages.CREATE"],
-            "usedModels": ["ActionInput_zoho_mail_createdraft", "ActionOutput_zoho_mail_createdraft"],
+            "output": [
+                "ActionOutput_zoho_mail_createdraft"
+            ],
+            "scopes": [
+                "ZohoMail.messages.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_createdraft",
+                "ActionOutput_zoho_mail_createdraft"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -82,7 +101,10 @@
                             },
                             "mailFormat": {
                                 "type": "string",
-                                "enum": ["html", "plaintext"],
+                                "enum": [
+                                    "html",
+                                    "plaintext"
+                                ],
                                 "description": "Format of the email content. Example: \"html\""
                             },
                             "ccAddress": {
@@ -94,7 +116,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId", "fromAddress", "toAddress", "subject", "content", "mailFormat"],
+                        "required": [
+                            "accountId",
+                            "fromAddress",
+                            "toAddress",
+                            "subject",
+                            "content",
+                            "mailFormat"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_createdraft": {
@@ -107,7 +136,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -120,9 +151,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_zoho_mail_createfolder"],
-            "scopes": ["ZohoMail.folders.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_createfolder", "ActionOutput_zoho_mail_createfolder"],
+            "output": [
+                "ActionOutput_zoho_mail_createfolder"
+            ],
+            "scopes": [
+                "ZohoMail.folders.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_createfolder",
+                "ActionOutput_zoho_mail_createfolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -142,7 +180,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId", "folderName"],
+                        "required": [
+                            "accountId",
+                            "folderName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_createfolder": {
@@ -173,7 +214,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folderId", "folderName"],
+                        "required": [
+                            "folderId",
+                            "folderName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -186,9 +230,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_createlabel",
             "name": "create-label",
-            "output": ["ActionOutput_zoho_mail_createlabel"],
-            "scopes": ["ZohoMail.tags.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_createlabel", "ActionOutput_zoho_mail_createlabel"],
+            "output": [
+                "ActionOutput_zoho_mail_createlabel"
+            ],
+            "scopes": [
+                "ZohoMail.tags.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_createlabel",
+                "ActionOutput_zoho_mail_createlabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -209,7 +260,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId", "labelName"],
+                        "required": [
+                            "accountId",
+                            "labelName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_createlabel": {
@@ -237,9 +291,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_createsignature",
             "name": "create-signature",
-            "output": ["ActionOutput_zoho_mail_createsignature"],
-            "scopes": ["ZohoMail.accounts.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_createsignature", "ActionOutput_zoho_mail_createsignature"],
+            "output": [
+                "ActionOutput_zoho_mail_createsignature"
+            ],
+            "scopes": [
+                "ZohoMail.accounts.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_createsignature",
+                "ActionOutput_zoho_mail_createsignature"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -272,7 +333,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name", "content", "position"],
+                        "required": [
+                            "name",
+                            "content",
+                            "position"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_createsignature": {
@@ -294,7 +359,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "signatureType", "position", "content"],
+                        "required": [
+                            "id",
+                            "name",
+                            "signatureType",
+                            "position",
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -307,9 +378,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_zoho_mail_createtask"],
-            "scopes": ["ZohoMail.tasks.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_createtask", "ActionOutput_zoho_mail_createtask"],
+            "output": [
+                "ActionOutput_zoho_mail_createtask"
+            ],
+            "scopes": [
+                "ZohoMail.tasks.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_createtask",
+                "ActionOutput_zoho_mail_createtask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -327,12 +405,19 @@
                             "priority": {
                                 "description": "Priority of the task. Example: \"low\"",
                                 "type": "string",
-                                "enum": ["high", "medium", "low"]
+                                "enum": [
+                                    "high",
+                                    "medium",
+                                    "low"
+                                ]
                             },
                             "status": {
                                 "description": "Status of the task. Example: \"inprogress\"",
                                 "type": "string",
-                                "enum": ["inprogress", "completed"]
+                                "enum": [
+                                    "inprogress",
+                                    "completed"
+                                ]
                             },
                             "dueDate": {
                                 "description": "Due date in DD/MM/YYYY format. Example: \"23/01/2024\"",
@@ -351,7 +436,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["title"],
+                        "required": [
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_createtask": {
@@ -387,13 +474,21 @@
                                         "type": "object",
                                         "properties": {
                                             "id": {
-                                                "type": ["string", "number"]
+                                                "type": [
+                                                    "string",
+                                                    "number"
+                                                ]
                                             },
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -407,13 +502,21 @@
                                         "type": "object",
                                         "properties": {
                                             "id": {
-                                                "type": ["string", "number"]
+                                                "type": [
+                                                    "string",
+                                                    "number"
+                                                ]
                                             },
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -427,10 +530,16 @@
                                         "type": "object",
                                         "properties": {
                                             "id": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -441,7 +550,10 @@
                                 ]
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -454,9 +566,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_deletefolder",
             "name": "delete-folder",
-            "output": ["ActionOutput_zoho_mail_deletefolder"],
-            "scopes": ["ZohoMail.folders.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_deletefolder", "ActionOutput_zoho_mail_deletefolder"],
+            "output": [
+                "ActionOutput_zoho_mail_deletefolder"
+            ],
+            "scopes": [
+                "ZohoMail.folders.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_deletefolder",
+                "ActionOutput_zoho_mail_deletefolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -472,7 +591,10 @@
                                 "description": "The ID of the folder to delete. Example: \"4845214000000010002\""
                             }
                         },
-                        "required": ["accountId", "folderId"],
+                        "required": [
+                            "accountId",
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_deletefolder": {
@@ -488,7 +610,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "code", "description"],
+                        "required": [
+                            "success",
+                            "code",
+                            "description"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -501,9 +627,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_deletelabel",
             "name": "delete-label",
-            "output": ["ActionOutput_zoho_mail_deletelabel"],
-            "scopes": ["ZohoMail.tags.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_deletelabel", "ActionOutput_zoho_mail_deletelabel"],
+            "output": [
+                "ActionOutput_zoho_mail_deletelabel"
+            ],
+            "scopes": [
+                "ZohoMail.tags.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_deletelabel",
+                "ActionOutput_zoho_mail_deletelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -519,7 +652,10 @@
                                 "description": "Label ID. Example: \"1234567890123456789\""
                             }
                         },
-                        "required": ["accountId", "labelId"],
+                        "required": [
+                            "accountId",
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_deletelabel": {
@@ -529,7 +665,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -542,9 +680,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_deletemessage",
             "name": "delete-message",
-            "output": ["ActionOutput_zoho_mail_deletemessage"],
-            "scopes": ["ZohoMail.messages.DELETE"],
-            "usedModels": ["ActionInput_zoho_mail_deletemessage", "ActionOutput_zoho_mail_deletemessage"],
+            "output": [
+                "ActionOutput_zoho_mail_deletemessage"
+            ],
+            "scopes": [
+                "ZohoMail.messages.DELETE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_deletemessage",
+                "ActionOutput_zoho_mail_deletemessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -568,7 +713,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["accountId", "folderId", "messageId"],
+                        "required": [
+                            "accountId",
+                            "folderId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_deletemessage": {
@@ -584,7 +733,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "description"],
+                        "required": [
+                            "code",
+                            "description"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -597,9 +749,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_deletesignature",
             "name": "delete-signature",
-            "output": ["ActionOutput_zoho_mail_deletesignature"],
-            "scopes": ["ZohoMail.accounts.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_deletesignature", "ActionOutput_zoho_mail_deletesignature"],
+            "output": [
+                "ActionOutput_zoho_mail_deletesignature"
+            ],
+            "scopes": [
+                "ZohoMail.accounts.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_deletesignature",
+                "ActionOutput_zoho_mail_deletesignature"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -611,7 +770,9 @@
                                 "description": "Signature ID to delete. Example: \"2442552000000167007\""
                             }
                         },
-                        "required": ["signatureId"],
+                        "required": [
+                            "signatureId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_deletesignature": {
@@ -627,7 +788,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -640,9 +803,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_zoho_mail_deletetask"],
-            "scopes": ["ZohoMail.tasks.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_deletetask", "ActionOutput_zoho_mail_deletetask"],
+            "output": [
+                "ActionOutput_zoho_mail_deletetask"
+            ],
+            "scopes": [
+                "ZohoMail.tasks.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_deletetask",
+                "ActionOutput_zoho_mail_deletetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -654,7 +824,9 @@
                                 "description": "The unique identifier of the task to delete. Example: \"1781108295426155000\""
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_deletetask": {
@@ -664,7 +836,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -677,9 +851,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_flagmessage",
             "name": "flag-message",
-            "output": ["ActionOutput_zoho_mail_flagmessage"],
-            "scopes": ["ZohoMail.messages.UPDATE"],
-            "usedModels": ["ActionInput_zoho_mail_flagmessage", "ActionOutput_zoho_mail_flagmessage"],
+            "output": [
+                "ActionOutput_zoho_mail_flagmessage"
+            ],
+            "scopes": [
+                "ZohoMail.messages.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_flagmessage",
+                "ActionOutput_zoho_mail_flagmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -699,7 +880,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["accountId", "messageId"],
+                        "required": [
+                            "accountId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_flagmessage": {
@@ -715,7 +899,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -728,9 +914,17 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_forwardemail",
             "name": "forward-email",
-            "output": ["ActionOutput_zoho_mail_forwardemail"],
-            "scopes": ["ZohoMail.messages.READ", "ZohoMail.messages.CREATE"],
-            "usedModels": ["ActionInput_zoho_mail_forwardemail", "ActionOutput_zoho_mail_forwardemail"],
+            "output": [
+                "ActionOutput_zoho_mail_forwardemail"
+            ],
+            "scopes": [
+                "ZohoMail.messages.READ",
+                "ZohoMail.messages.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_forwardemail",
+                "ActionOutput_zoho_mail_forwardemail"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -762,7 +956,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId", "folderId", "messageId", "fromAddress", "toAddress"],
+                        "required": [
+                            "accountId",
+                            "folderId",
+                            "messageId",
+                            "fromAddress",
+                            "toAddress"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_forwardemail": {
@@ -778,7 +978,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -791,9 +993,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_getaccount",
             "name": "get-account",
-            "output": ["ActionOutput_zoho_mail_getaccount"],
-            "scopes": ["ZohoMail.accounts.READ"],
-            "usedModels": ["ActionInput_zoho_mail_getaccount", "ActionOutput_zoho_mail_getaccount"],
+            "output": [
+                "ActionOutput_zoho_mail_getaccount"
+            ],
+            "scopes": [
+                "ZohoMail.accounts.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_getaccount",
+                "ActionOutput_zoho_mail_getaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -805,7 +1014,9 @@
                                 "description": "The unique ID of the account to retrieve. Example: \"4845214000000008002\""
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_getaccount": {
@@ -863,7 +1074,12 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["isAlias", "isPrimary", "mailId", "isConfirmed"],
+                                    "required": [
+                                        "isAlias",
+                                        "isPrimary",
+                                        "mailId",
+                                        "isConfirmed"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1093,7 +1309,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1106,9 +1324,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_getfolder",
             "name": "get-folder",
-            "output": ["ActionOutput_zoho_mail_getfolder"],
-            "scopes": ["ZohoMail.folders.READ"],
-            "usedModels": ["ActionInput_zoho_mail_getfolder", "ActionOutput_zoho_mail_getfolder"],
+            "output": [
+                "ActionOutput_zoho_mail_getfolder"
+            ],
+            "scopes": [
+                "ZohoMail.folders.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_getfolder",
+                "ActionOutput_zoho_mail_getfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1124,7 +1349,10 @@
                                 "description": "Folder ID. Example: \"4845214000000008008\""
                             }
                         },
-                        "required": ["accountId", "folderId"],
+                        "required": [
+                            "accountId",
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_getfolder": {
@@ -1167,9 +1395,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_getlabel",
             "name": "get-label",
-            "output": ["ActionOutput_zoho_mail_getlabel"],
-            "scopes": ["ZohoMail.tags.READ"],
-            "usedModels": ["ActionInput_zoho_mail_getlabel", "ActionOutput_zoho_mail_getlabel"],
+            "output": [
+                "ActionOutput_zoho_mail_getlabel"
+            ],
+            "scopes": [
+                "ZohoMail.tags.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_getlabel",
+                "ActionOutput_zoho_mail_getlabel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1185,7 +1420,10 @@
                                 "description": "Label ID to retrieve. Example: \"2674552000000009029\""
                             }
                         },
-                        "required": ["accountId", "labelId"],
+                        "required": [
+                            "accountId",
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_getlabel": {
@@ -1210,7 +1448,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["labelId"],
+                        "required": [
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1223,9 +1463,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_getmessagecontent",
             "name": "get-message-content",
-            "output": ["ActionOutput_zoho_mail_getmessagecontent"],
-            "scopes": ["ZohoMail.messages.READ"],
-            "usedModels": ["ActionInput_zoho_mail_getmessagecontent", "ActionOutput_zoho_mail_getmessagecontent"],
+            "output": [
+                "ActionOutput_zoho_mail_getmessagecontent"
+            ],
+            "scopes": [
+                "ZohoMail.messages.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_getmessagecontent",
+                "ActionOutput_zoho_mail_getmessagecontent"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1245,7 +1492,11 @@
                                 "description": "Message ID to retrieve content for. Example: \"1781108289537154100\""
                             }
                         },
-                        "required": ["accountId", "folderId", "messageId"],
+                        "required": [
+                            "accountId",
+                            "folderId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_getmessagecontent": {
@@ -1270,9 +1521,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_getmessage",
             "name": "get-message",
-            "output": ["ActionOutput_zoho_mail_getmessage"],
-            "scopes": ["ZohoMail.messages.READ"],
-            "usedModels": ["ActionInput_zoho_mail_getmessage", "ActionOutput_zoho_mail_getmessage"],
+            "output": [
+                "ActionOutput_zoho_mail_getmessage"
+            ],
+            "scopes": [
+                "ZohoMail.messages.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_getmessage",
+                "ActionOutput_zoho_mail_getmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1292,7 +1550,11 @@
                                 "description": "Message ID to retrieve. Example: \"1781108289537154100\""
                             }
                         },
-                        "required": ["accountId", "folderId", "messageId"],
+                        "required": [
+                            "accountId",
+                            "folderId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_getmessage": {
@@ -1371,9 +1633,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_getsignature",
             "name": "get-signature",
-            "output": ["ActionOutput_zoho_mail_getsignature"],
-            "scopes": ["ZohoMail.accounts.READ"],
-            "usedModels": ["ActionInput_zoho_mail_getsignature", "ActionOutput_zoho_mail_getsignature"],
+            "output": [
+                "ActionOutput_zoho_mail_getsignature"
+            ],
+            "scopes": [
+                "ZohoMail.accounts.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_getsignature",
+                "ActionOutput_zoho_mail_getsignature"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1409,12 +1678,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["signatures"],
+                        "required": [
+                            "signatures"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1427,9 +1700,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_zoho_mail_gettask"],
-            "scopes": ["ZohoMail.tasks.READ"],
-            "usedModels": ["ActionInput_zoho_mail_gettask", "ActionOutput_zoho_mail_gettask"],
+            "output": [
+                "ActionOutput_zoho_mail_gettask"
+            ],
+            "scopes": [
+                "ZohoMail.tasks.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_gettask",
+                "ActionOutput_zoho_mail_gettask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1441,7 +1721,9 @@
                                 "description": "The unique identifier of the personal task. Example: \"1781108259800155000\""
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_gettask": {
@@ -1561,7 +1843,10 @@
                                 ]
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1574,9 +1859,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_listaccounts",
             "name": "list-accounts",
-            "output": ["ActionOutput_zoho_mail_listaccounts"],
-            "scopes": ["ZohoMail.accounts.READ"],
-            "usedModels": ["ActionInput_zoho_mail_listaccounts", "ActionOutput_zoho_mail_listaccounts"],
+            "output": [
+                "ActionOutput_zoho_mail_listaccounts"
+            ],
+            "scopes": [
+                "ZohoMail.accounts.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_listaccounts",
+                "ActionOutput_zoho_mail_listaccounts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1906,12 +2198,16 @@
                                             }
                                         }
                                     },
-                                    "required": ["accountId"],
+                                    "required": [
+                                        "accountId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["accounts"],
+                        "required": [
+                            "accounts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1924,9 +2220,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_listfolders",
             "name": "list-folders",
-            "output": ["ActionOutput_zoho_mail_listfolders"],
-            "scopes": ["ZohoMail.folders.READ"],
-            "usedModels": ["ActionInput_zoho_mail_listfolders", "ActionOutput_zoho_mail_listfolders"],
+            "output": [
+                "ActionOutput_zoho_mail_listfolders"
+            ],
+            "scopes": [
+                "ZohoMail.folders.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_listfolders",
+                "ActionOutput_zoho_mail_listfolders"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1938,7 +2241,9 @@
                                 "description": "Zoho Mail account ID. Example: \"4845214000000008002\""
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_listfolders": {
@@ -1974,12 +2279,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["folderId", "folderName", "folderType", "path", "isArchived", "imapAccess", "uri"],
+                                    "required": [
+                                        "folderId",
+                                        "folderName",
+                                        "folderType",
+                                        "path",
+                                        "isArchived",
+                                        "imapAccess",
+                                        "uri"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1992,9 +2307,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_listlabels",
             "name": "list-labels",
-            "output": ["ActionOutput_zoho_mail_listlabels"],
-            "scopes": ["ZohoMail.tags.READ"],
-            "usedModels": ["ActionInput_zoho_mail_listlabels", "ActionOutput_zoho_mail_listlabels"],
+            "output": [
+                "ActionOutput_zoho_mail_listlabels"
+            ],
+            "scopes": [
+                "ZohoMail.tags.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_listlabels",
+                "ActionOutput_zoho_mail_listlabels"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2006,7 +2328,9 @@
                                 "description": "Account ID. Example: \"4845214000000008002\""
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_listlabels": {
@@ -2036,12 +2360,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["labelId"],
+                                    "required": [
+                                        "labelId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["labels"],
+                        "required": [
+                            "labels"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2054,9 +2382,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_listmessages",
             "name": "list-messages",
-            "output": ["ActionOutput_zoho_mail_listmessages"],
-            "scopes": ["ZohoMail.messages.READ"],
-            "usedModels": ["ActionInput_zoho_mail_listmessages", "ActionOutput_zoho_mail_listmessages"],
+            "output": [
+                "ActionOutput_zoho_mail_listmessages"
+            ],
+            "scopes": [
+                "ZohoMail.messages.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_listmessages",
+                "ActionOutput_zoho_mail_listmessages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2087,7 +2422,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["accountId", "folderId"],
+                        "required": [
+                            "accountId",
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_listmessages": {
@@ -2159,7 +2497,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["messageId"],
+                                    "required": [
+                                        "messageId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2167,7 +2507,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2180,9 +2522,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_zoho_mail_listtasks"],
-            "scopes": ["ZohoMail.tasks.READ"],
-            "usedModels": ["ActionInput_zoho_mail_listtasks", "ActionOutput_zoho_mail_listtasks"],
+            "output": [
+                "ActionOutput_zoho_mail_listtasks"
+            ],
+            "scopes": [
+                "ZohoMail.tasks.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_listtasks",
+                "ActionOutput_zoho_mail_listtasks"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2241,7 +2590,10 @@
                                                     "type": "string"
                                                 },
                                                 "id": {
-                                                    "type": ["string", "number"]
+                                                    "type": [
+                                                        "string",
+                                                        "number"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
@@ -2255,7 +2607,10 @@
                                                             "type": "string"
                                                         },
                                                         "id": {
-                                                            "type": ["string", "number"]
+                                                            "type": [
+                                                                "string",
+                                                                "number"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -2284,7 +2639,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2292,7 +2650,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2305,9 +2665,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_markmessageread",
             "name": "mark-message-read",
-            "output": ["ActionOutput_zoho_mail_markmessageread"],
-            "scopes": ["ZohoMail.messages.UPDATE"],
-            "usedModels": ["ActionInput_zoho_mail_markmessageread", "ActionOutput_zoho_mail_markmessageread"],
+            "output": [
+                "ActionOutput_zoho_mail_markmessageread"
+            ],
+            "scopes": [
+                "ZohoMail.messages.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_markmessageread",
+                "ActionOutput_zoho_mail_markmessageread"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2323,7 +2690,10 @@
                                 "description": "Message ID to mark as read. Example: \"1781108289537154100\""
                             }
                         },
-                        "required": ["accountId", "messageId"],
+                        "required": [
+                            "accountId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_markmessageread": {
@@ -2333,7 +2703,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2346,9 +2718,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_markmessageunread",
             "name": "mark-message-unread",
-            "output": ["ActionOutput_zoho_mail_markmessageunread"],
-            "scopes": ["ZohoMail.messages.UPDATE"],
-            "usedModels": ["ActionInput_zoho_mail_markmessageunread", "ActionOutput_zoho_mail_markmessageunread"],
+            "output": [
+                "ActionOutput_zoho_mail_markmessageunread"
+            ],
+            "scopes": [
+                "ZohoMail.messages.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_markmessageunread",
+                "ActionOutput_zoho_mail_markmessageunread"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2364,7 +2743,10 @@
                                 "description": "Message ID to mark as unread. Example: \"1781108289537154100\""
                             }
                         },
-                        "required": ["accountId", "messageId"],
+                        "required": [
+                            "accountId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_markmessageunread": {
@@ -2374,7 +2756,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2387,9 +2771,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_movemessage",
             "name": "move-message",
-            "output": ["ActionOutput_zoho_mail_movemessage"],
-            "scopes": ["ZohoMail.messages.UPDATE"],
-            "usedModels": ["ActionInput_zoho_mail_movemessage", "ActionOutput_zoho_mail_movemessage"],
+            "output": [
+                "ActionOutput_zoho_mail_movemessage"
+            ],
+            "scopes": [
+                "ZohoMail.messages.UPDATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_movemessage",
+                "ActionOutput_zoho_mail_movemessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2409,7 +2800,11 @@
                                 "description": "Target folder ID. Example: \"4845214000000010001\""
                             }
                         },
-                        "required": ["accountId", "messageId", "targetFolderId"],
+                        "required": [
+                            "accountId",
+                            "messageId",
+                            "targetFolderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_movemessage": {
@@ -2425,7 +2820,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2438,9 +2835,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_replytoemail",
             "name": "reply-to-email",
-            "output": ["ActionOutput_zoho_mail_replytoemail"],
-            "scopes": ["ZohoMail.messages.CREATE"],
-            "usedModels": ["ActionInput_zoho_mail_replytoemail", "ActionOutput_zoho_mail_replytoemail"],
+            "output": [
+                "ActionOutput_zoho_mail_replytoemail"
+            ],
+            "scopes": [
+                "ZohoMail.messages.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_replytoemail",
+                "ActionOutput_zoho_mail_replytoemail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2465,7 +2869,10 @@
                             },
                             "action": {
                                 "type": "string",
-                                "enum": ["reply", "replyall"],
+                                "enum": [
+                                    "reply",
+                                    "replyall"
+                                ],
                                 "description": "Reply type: reply or replyall"
                             },
                             "content": {
@@ -2473,7 +2880,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId", "messageId", "fromAddress", "toAddress", "action"],
+                        "required": [
+                            "accountId",
+                            "messageId",
+                            "fromAddress",
+                            "toAddress",
+                            "action"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_replytoemail": {
@@ -2499,7 +2912,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["messageId"],
+                        "required": [
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2512,9 +2927,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_searchmessages",
             "name": "search-messages",
-            "output": ["ActionOutput_zoho_mail_searchmessages"],
-            "scopes": ["ZohoMail.messages.READ"],
-            "usedModels": ["ActionInput_zoho_mail_searchmessages", "ActionOutput_zoho_mail_searchmessages"],
+            "output": [
+                "ActionOutput_zoho_mail_searchmessages"
+            ],
+            "scopes": [
+                "ZohoMail.messages.READ"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_searchmessages",
+                "ActionOutput_zoho_mail_searchmessages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2548,7 +2970,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["accountId", "searchKey"],
+                        "required": [
+                            "accountId",
+                            "searchKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_searchmessages": {
@@ -2593,7 +3018,10 @@
                                             "type": "string"
                                         },
                                         "hasAttachment": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "threadId": {
                                             "type": "string"
@@ -2602,7 +3030,10 @@
                                             "type": "string"
                                         },
                                         "flagid": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "priority": {
                                             "type": "string"
@@ -2621,7 +3052,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2634,9 +3067,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_sendemail",
             "name": "send-email",
-            "output": ["ActionOutput_zoho_mail_sendemail"],
-            "scopes": ["ZohoMail.messages.CREATE"],
-            "usedModels": ["ActionInput_zoho_mail_sendemail", "ActionOutput_zoho_mail_sendemail"],
+            "output": [
+                "ActionOutput_zoho_mail_sendemail"
+            ],
+            "scopes": [
+                "ZohoMail.messages.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_sendemail",
+                "ActionOutput_zoho_mail_sendemail"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -2679,10 +3119,19 @@
                             "mailFormat": {
                                 "description": "Email format: \"html\" or \"plaintext\". Example: \"html\"",
                                 "type": "string",
-                                "enum": ["html", "plaintext"]
+                                "enum": [
+                                    "html",
+                                    "plaintext"
+                                ]
                             }
                         },
-                        "required": ["accountId", "fromAddress", "toAddress", "subject", "content"],
+                        "required": [
+                            "accountId",
+                            "fromAddress",
+                            "toAddress",
+                            "subject",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_sendemail": {
@@ -2700,7 +3149,10 @@
                                 "description": "Additional response data from the API"
                             }
                         },
-                        "required": ["statusCode", "statusDescription"],
+                        "required": [
+                            "statusCode",
+                            "statusDescription"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2713,9 +3165,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_updatefolder",
             "name": "update-folder",
-            "output": ["ActionOutput_zoho_mail_updatefolder"],
-            "scopes": ["ZohoMail.folders.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_updatefolder", "ActionOutput_zoho_mail_updatefolder"],
+            "output": [
+                "ActionOutput_zoho_mail_updatefolder"
+            ],
+            "scopes": [
+                "ZohoMail.folders.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_updatefolder",
+                "ActionOutput_zoho_mail_updatefolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2732,7 +3191,10 @@
                             },
                             "mode": {
                                 "type": "string",
-                                "enum": ["rename", "move"],
+                                "enum": [
+                                    "rename",
+                                    "move"
+                                ],
                                 "description": "Update mode: rename or move"
                             },
                             "folderName": {
@@ -2748,7 +3210,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["accountId", "folderId", "mode"],
+                        "required": [
+                            "accountId",
+                            "folderId",
+                            "mode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_updatefolder": {
@@ -2764,11 +3230,16 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["code", "description"],
+                                "required": [
+                                    "code",
+                                    "description"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2781,9 +3252,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_updatelabel",
             "name": "update-label",
-            "output": ["ActionOutput_zoho_mail_updatelabel"],
-            "scopes": ["ZohoMail.tags.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_updatelabel", "ActionOutput_zoho_mail_updatelabel"],
+            "output": [
+                "ActionOutput_zoho_mail_updatelabel"
+            ],
+            "scopes": [
+                "ZohoMail.tags.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_updatelabel",
+                "ActionOutput_zoho_mail_updatelabel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2808,7 +3286,10 @@
                                 "pattern": "^#[0-9A-Fa-f]{6}$"
                             }
                         },
-                        "required": ["accountId", "labelId"],
+                        "required": [
+                            "accountId",
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_updatelabel": {
@@ -2824,7 +3305,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2837,9 +3320,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_updatesignature",
             "name": "update-signature",
-            "output": ["ActionOutput_zoho_mail_updatesignature"],
-            "scopes": ["ZohoMail.accounts.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_updatesignature", "ActionOutput_zoho_mail_updatesignature"],
+            "output": [
+                "ActionOutput_zoho_mail_updatesignature"
+            ],
+            "scopes": [
+                "ZohoMail.accounts.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_updatesignature",
+                "ActionOutput_zoho_mail_updatesignature"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2873,7 +3363,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "content", "position"],
+                        "required": [
+                            "id",
+                            "name",
+                            "content",
+                            "position"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_updatesignature": {
@@ -2895,7 +3390,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "content", "position", "signatureType"],
+                        "required": [
+                            "id",
+                            "name",
+                            "content",
+                            "position",
+                            "signatureType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2908,9 +3409,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_zoho_mail_updatetask"],
-            "scopes": ["ZohoMail.tasks.ALL"],
-            "usedModels": ["ActionInput_zoho_mail_updatetask", "ActionOutput_zoho_mail_updatetask"],
+            "output": [
+                "ActionOutput_zoho_mail_updatetask"
+            ],
+            "scopes": [
+                "ZohoMail.tasks.ALL"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_updatetask",
+                "ActionOutput_zoho_mail_updatetask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2932,7 +3440,10 @@
                             "status": {
                                 "description": "New status for the task.",
                                 "type": "string",
-                                "enum": ["inprogress", "completed"]
+                                "enum": [
+                                    "inprogress",
+                                    "completed"
+                                ]
                             },
                             "dueDate": {
                                 "description": "New due date for the task. Format: DD/MM/YYYY.",
@@ -2941,7 +3452,11 @@
                             "priority": {
                                 "description": "New priority for the task.",
                                 "type": "string",
-                                "enum": ["high", "medium", "low"]
+                                "enum": [
+                                    "high",
+                                    "medium",
+                                    "low"
+                                ]
                             },
                             "reminderDate": {
                                 "description": "Reminder date and time in ISO 8601 format.",
@@ -2956,7 +3471,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_updatetask": {
@@ -2974,7 +3491,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["taskId", "success"],
+                        "required": [
+                            "taskId",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2987,9 +3507,16 @@
             "endpoint": null,
             "input": "ActionInput_zoho_mail_uploadattachment",
             "name": "upload-attachment",
-            "output": ["ActionOutput_zoho_mail_uploadattachment"],
-            "scopes": ["ZohoMail.messages.CREATE"],
-            "usedModels": ["ActionInput_zoho_mail_uploadattachment", "ActionOutput_zoho_mail_uploadattachment"],
+            "output": [
+                "ActionOutput_zoho_mail_uploadattachment"
+            ],
+            "scopes": [
+                "ZohoMail.messages.CREATE"
+            ],
+            "usedModels": [
+                "ActionInput_zoho_mail_uploadattachment",
+                "ActionOutput_zoho_mail_uploadattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3013,7 +3540,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["accountId", "fileName", "fileContent"],
+                        "required": [
+                            "accountId",
+                            "fileName",
+                            "fileContent"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_zoho_mail_uploadattachment": {
@@ -3035,7 +3566,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["storeName", "attachmentPath", "attachmentName"],
+                        "required": [
+                            "storeName",
+                            "attachmentPath",
+                            "attachmentName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3056,12 +3591,18 @@
             ],
             "input": null,
             "name": "accounts",
-            "output": ["Account"],
+            "output": [
+                "Account"
+            ],
             "runs": "every hour",
-            "scopes": ["ZohoMail.accounts.READ"],
+            "scopes": [
+                "ZohoMail.accounts.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Account"],
+            "usedModels": [
+                "Account"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3088,7 +3629,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3107,12 +3650,19 @@
             ],
             "input": null,
             "name": "folders",
-            "output": ["Folder"],
+            "output": [
+                "Folder"
+            ],
             "runs": "every hour",
-            "scopes": ["ZohoMail.accounts.READ", "ZohoMail.folders.READ"],
+            "scopes": [
+                "ZohoMail.accounts.READ",
+                "ZohoMail.folders.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Folder"],
+            "usedModels": [
+                "Folder"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3151,12 +3701,21 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "folderId", "accountId", "folderName", "folderType", "path"],
+                        "required": [
+                            "id",
+                            "folderId",
+                            "accountId",
+                            "folderName",
+                            "folderType",
+                            "path"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3170,12 +3729,19 @@
             ],
             "input": null,
             "name": "labels",
-            "output": ["Label"],
+            "output": [
+                "Label"
+            ],
             "runs": "every hour",
-            "scopes": ["ZohoMail.accounts.READ", "ZohoMail.tags.READ"],
+            "scopes": [
+                "ZohoMail.accounts.READ",
+                "ZohoMail.tags.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Label"],
+            "usedModels": [
+                "Label"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3208,12 +3774,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "accountId", "labelId"],
+                        "required": [
+                            "id",
+                            "accountId",
+                            "labelId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3227,12 +3799,20 @@
             ],
             "input": null,
             "name": "messages",
-            "output": ["Message"],
+            "output": [
+                "Message"
+            ],
             "runs": "every hour",
-            "scopes": ["ZohoMail.accounts.READ", "ZohoMail.folders.READ", "ZohoMail.messages.READ"],
+            "scopes": [
+                "ZohoMail.accounts.READ",
+                "ZohoMail.folders.READ",
+                "ZohoMail.messages.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Message"],
+            "usedModels": [
+                "Message"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3283,12 +3863,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3302,12 +3886,18 @@
             ],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["ZohoMail.tasks.READ"],
+            "scopes": [
+                "ZohoMail.tasks.READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3361,12 +3951,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

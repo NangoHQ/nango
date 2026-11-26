@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_accounts_createblockedwords",
             "name": "create-blocked-words",
-            "output": ["ActionOutput_tiktok_accounts_createblockedwords"],
+            "output": [
+                "ActionOutput_tiktok_accounts_createblockedwords"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_accounts_createblockedwords", "ActionOutput_tiktok_accounts_createblockedwords"],
+            "usedModels": [
+                "ActionInput_tiktok_accounts_createblockedwords",
+                "ActionOutput_tiktok_accounts_createblockedwords"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +34,10 @@
                                 "description": "Words to add to the blocked word list."
                             }
                         },
-                        "required": ["advertiser_id", "blocked_words"],
+                        "required": [
+                            "advertiser_id",
+                            "blocked_words"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_accounts_createblockedwords": {
@@ -45,7 +53,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -58,9 +68,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_accounts_createidentity",
             "name": "create-identity",
-            "output": ["ActionOutput_tiktok_accounts_createidentity"],
+            "output": [
+                "ActionOutput_tiktok_accounts_createidentity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_accounts_createidentity", "ActionOutput_tiktok_accounts_createidentity"],
+            "usedModels": [
+                "ActionInput_tiktok_accounts_createidentity",
+                "ActionOutput_tiktok_accounts_createidentity"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -80,7 +95,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "display_name"],
+                        "required": [
+                            "advertiser_id",
+                            "display_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_accounts_createidentity": {
@@ -90,7 +108,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["identity_id"],
+                        "required": [
+                            "identity_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -103,9 +123,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_accounts_deleteblockedwords",
             "name": "delete-blocked-words",
-            "output": ["ActionOutput_tiktok_accounts_deleteblockedwords"],
+            "output": [
+                "ActionOutput_tiktok_accounts_deleteblockedwords"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_accounts_deleteblockedwords", "ActionOutput_tiktok_accounts_deleteblockedwords"],
+            "usedModels": [
+                "ActionInput_tiktok_accounts_deleteblockedwords",
+                "ActionOutput_tiktok_accounts_deleteblockedwords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -124,7 +149,10 @@
                                 "description": "Blocked words to delete. Example: [\"spam\", \"offensive\"]"
                             }
                         },
-                        "required": ["advertiser_id", "blocked_words"],
+                        "required": [
+                            "advertiser_id",
+                            "blocked_words"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_accounts_deleteblockedwords": {
@@ -137,7 +165,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -150,9 +180,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_accounts_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_tiktok_accounts_deletecomment"],
+            "output": [
+                "ActionOutput_tiktok_accounts_deletecomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_accounts_deletecomment", "ActionOutput_tiktok_accounts_deletecomment"],
+            "usedModels": [
+                "ActionInput_tiktok_accounts_deletecomment",
+                "ActionOutput_tiktok_accounts_deletecomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -184,7 +219,14 @@
                                 "description": "Identity ID. Example: \"123456789\""
                             }
                         },
-                        "required": ["advertiser_id", "ad_id", "tiktok_item_id", "comment_id", "identity_type", "identity_id"],
+                        "required": [
+                            "advertiser_id",
+                            "ad_id",
+                            "tiktok_item_id",
+                            "comment_id",
+                            "identity_type",
+                            "identity_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_accounts_deletecomment": {
@@ -203,7 +245,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -216,9 +260,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_accounts_getidentity",
             "name": "get-identity",
-            "output": ["ActionOutput_tiktok_accounts_getidentity"],
+            "output": [
+                "ActionOutput_tiktok_accounts_getidentity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_accounts_getidentity", "ActionOutput_tiktok_accounts_getidentity"],
+            "usedModels": [
+                "ActionInput_tiktok_accounts_getidentity",
+                "ActionOutput_tiktok_accounts_getidentity"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -238,7 +287,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["advertiser_id", "identity_id"],
+                        "required": [
+                            "advertiser_id",
+                            "identity_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_accounts_getidentity": {
@@ -275,7 +327,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["identity_id", "identity_type"],
+                        "required": [
+                            "identity_id",
+                            "identity_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -288,9 +343,14 @@
             "endpoint": null,
             "input": "ActionInput_tiktok_accounts_listblockedwords",
             "name": "list-blocked-words",
-            "output": ["ActionOutput_tiktok_accounts_listblockedwords"],
+            "output": [
+                "ActionOutput_tiktok_accounts_listblockedwords"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_tiktok_accounts_listblockedwords", "ActionOutput_tiktok_accounts_listblockedwords"],
+            "usedModels": [
+                "ActionInput_tiktok_accounts_listblockedwords",
+                "ActionOutput_tiktok_accounts_listblockedwords"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -310,7 +370,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_tiktok_accounts_listblockedwords": {
@@ -341,7 +403,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["blocked_words"],
+                        "required": [
+                            "blocked_words"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -362,12 +426,16 @@
             ],
             "input": null,
             "name": "comments",
-            "output": ["Comment"],
+            "output": [
+                "Comment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Comment"],
+            "usedModels": [
+                "Comment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -409,12 +477,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "video_id"],
+                        "required": [
+                            "id",
+                            "video_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -428,12 +501,17 @@
             ],
             "input": "SyncMetadata_tiktok_accounts_identities",
             "name": "identities",
-            "output": ["Identity"],
+            "output": [
+                "Identity"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Identity", "SyncMetadata_tiktok_accounts_identities"],
+            "usedModels": [
+                "Identity",
+                "SyncMetadata_tiktok_accounts_identities"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -462,7 +540,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "identity_id", "identity_type"],
+                        "required": [
+                            "id",
+                            "identity_id",
+                            "identity_type"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_tiktok_accounts_identities": {
@@ -473,12 +555,16 @@
                                 "description": "TikTok advertiser ID"
                             }
                         },
-                        "required": ["advertiser_id"],
+                        "required": [
+                            "advertiser_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

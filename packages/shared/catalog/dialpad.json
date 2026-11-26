@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_dialpad_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_dialpad_createuser"],
+            "output": [
+                "ActionOutput_dialpad_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dialpad_createuser", "ActionOutput_dialpad_createuser"],
+            "usedModels": [
+                "ActionInput_dialpad_createuser",
+                "ActionOutput_dialpad_createuser"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -35,7 +40,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["firstName", "lastName", "email"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dialpad_createuser": {
@@ -54,7 +63,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -67,9 +81,14 @@
             "endpoint": null,
             "input": "ActionInput_dialpad_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_dialpad_deleteuser"],
+            "output": [
+                "ActionOutput_dialpad_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_dialpad_deleteuser", "ActionOutput_dialpad_deleteuser"],
+            "usedModels": [
+                "ActionInput_dialpad_deleteuser",
+                "ActionOutput_dialpad_deleteuser"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -80,7 +99,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dialpad_deleteuser": {
@@ -90,7 +111,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -112,12 +135,17 @@
             ],
             "input": "SyncMetadata_dialpad_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_dialpad_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_dialpad_users"
+            ],
             "version": "2.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -138,7 +166,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_dialpad_users": {

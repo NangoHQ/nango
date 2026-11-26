@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_assignorganizationrolepermission",
             "name": "assign-organization-role-permission",
-            "output": ["ActionOutput_clerk_assignorganizationrolepermission"],
+            "output": [
+                "ActionOutput_clerk_assignorganizationrolepermission"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_assignorganizationrolepermission", "ActionOutput_clerk_assignorganizationrolepermission"],
+            "usedModels": [
+                "ActionInput_clerk_assignorganizationrolepermission",
+                "ActionOutput_clerk_assignorganizationrolepermission"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +30,10 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_role_id", "permission_id"],
+                        "required": [
+                            "organization_role_id",
+                            "permission_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_assignorganizationrolepermission": {
@@ -44,7 +52,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "permissions": {
                                 "type": "array",
@@ -61,7 +72,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -72,7 +85,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "key"],
+                        "required": [
+                            "id",
+                            "name",
+                            "key"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -85,9 +102,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createemailaddress",
             "name": "create-email-address",
-            "output": ["ActionOutput_clerk_createemailaddress"],
+            "output": [
+                "ActionOutput_clerk_createemailaddress"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createemailaddress", "ActionOutput_clerk_createemailaddress"],
+            "usedModels": [
+                "ActionInput_clerk_createemailaddress",
+                "ActionOutput_clerk_createemailaddress"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -113,7 +135,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["user_id", "email_address"],
+                        "required": [
+                            "user_id",
+                            "email_address"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_createemailaddress": {
@@ -159,7 +184,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -170,7 +198,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "email_address"],
+                        "required": [
+                            "id",
+                            "email_address"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -183,9 +214,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createorganizationdomain",
             "name": "create-organization-domain",
-            "output": ["ActionOutput_clerk_createorganizationdomain"],
+            "output": [
+                "ActionOutput_clerk_createorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createorganizationdomain", "ActionOutput_clerk_createorganizationdomain"],
+            "usedModels": [
+                "ActionInput_clerk_createorganizationdomain",
+                "ActionOutput_clerk_createorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -201,13 +237,22 @@
                             },
                             "enrollment_mode": {
                                 "type": "string",
-                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                "enum": [
+                                    "manual_invitation",
+                                    "automatic_invitation",
+                                    "automatic_suggestion",
+                                    "enterprise_sso"
+                                ]
                             },
                             "verified": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["organization_id", "name", "enrollment_mode"],
+                        "required": [
+                            "organization_id",
+                            "name",
+                            "enrollment_mode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_createorganizationdomain": {
@@ -227,7 +272,12 @@
                             },
                             "enrollment_mode": {
                                 "type": "string",
-                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                "enum": [
+                                    "manual_invitation",
+                                    "automatic_invitation",
+                                    "automatic_suggestion",
+                                    "enterprise_sso"
+                                ]
                             },
                             "affiliation_verification": {
                                 "anyOf": [
@@ -277,7 +327,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -290,9 +343,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createorganizationinvitation",
             "name": "create-organization-invitation",
-            "output": ["ActionOutput_clerk_createorganizationinvitation"],
+            "output": [
+                "ActionOutput_clerk_createorganizationinvitation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createorganizationinvitation", "ActionOutput_clerk_createorganizationinvitation"],
+            "usedModels": [
+                "ActionInput_clerk_createorganizationinvitation",
+                "ActionOutput_clerk_createorganizationinvitation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -341,7 +399,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["organization_id", "email_address", "role"],
+                        "required": [
+                            "organization_id",
+                            "email_address",
+                            "role"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_createorganizationinvitation": {
@@ -364,7 +426,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "revoked", "expired"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "revoked",
+                                    "expired"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -373,7 +440,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "email_address"],
+                        "required": [
+                            "id",
+                            "email_address"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -386,9 +456,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createorganizationmembership",
             "name": "create-organization-membership",
-            "output": ["ActionOutput_clerk_createorganizationmembership"],
+            "output": [
+                "ActionOutput_clerk_createorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createorganizationmembership", "ActionOutput_clerk_createorganizationmembership"],
+            "usedModels": [
+                "ActionInput_clerk_createorganizationmembership",
+                "ActionOutput_clerk_createorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -421,7 +496,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["organization_id", "user_id", "role"],
+                        "required": [
+                            "organization_id",
+                            "user_id",
+                            "role"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_createorganizationmembership": {
@@ -440,7 +519,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "public_user_data": {
@@ -450,7 +531,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["user_id"],
+                                "required": [
+                                    "user_id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "role": {
@@ -469,7 +552,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -482,9 +567,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createorganizationrole",
             "name": "create-organization-role",
-            "output": ["ActionOutput_clerk_createorganizationrole"],
+            "output": [
+                "ActionOutput_clerk_createorganizationrole"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createorganizationrole", "ActionOutput_clerk_createorganizationrole"],
+            "usedModels": [
+                "ActionInput_clerk_createorganizationrole",
+                "ActionOutput_clerk_createorganizationrole"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -510,7 +600,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "key"],
+                        "required": [
+                            "name",
+                            "key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_createorganizationrole": {
@@ -529,7 +622,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "permissions": {
                                 "type": "array",
@@ -546,7 +642,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -557,7 +655,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "key"],
+                        "required": [
+                            "id",
+                            "name",
+                            "key"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -570,9 +672,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createorganization",
             "name": "create-organization",
-            "output": ["ActionOutput_clerk_createorganization"],
+            "output": [
+                "ActionOutput_clerk_createorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createorganization", "ActionOutput_clerk_createorganization"],
+            "usedModels": [
+                "ActionInput_clerk_createorganization",
+                "ActionOutput_clerk_createorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -609,7 +716,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_createorganization": {
@@ -673,7 +782,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "slug"],
+                        "required": [
+                            "id",
+                            "name",
+                            "slug"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -686,9 +799,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createphonenumber",
             "name": "create-phone-number",
-            "output": ["ActionOutput_clerk_createphonenumber"],
+            "output": [
+                "ActionOutput_clerk_createphonenumber"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createphonenumber", "ActionOutput_clerk_createphonenumber"],
+            "usedModels": [
+                "ActionInput_clerk_createphonenumber",
+                "ActionOutput_clerk_createphonenumber"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -712,7 +830,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["user_id", "phone_number"],
+                        "required": [
+                            "user_id",
+                            "phone_number"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_createphonenumber": {
@@ -761,7 +882,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -772,7 +896,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "phone_number"],
+                        "required": [
+                            "id",
+                            "phone_number"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -785,9 +912,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_clerk_createuser"],
+            "output": [
+                "ActionOutput_clerk_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_createuser", "ActionOutput_clerk_createuser"],
+            "usedModels": [
+                "ActionInput_clerk_createuser",
+                "ActionOutput_clerk_createuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -876,25 +1008,43 @@
                                 "type": "string"
                             },
                             "username": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "image_url": {
                                 "type": "string"
                             },
                             "primary_email_address_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "primary_phone_number_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "banned": {
                                 "type": "boolean"
@@ -909,10 +1059,15 @@
                                 "type": "number"
                             },
                             "locale": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -925,9 +1080,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_deleteemailaddress",
             "name": "delete-email-address",
-            "output": ["ActionOutput_clerk_deleteemailaddress"],
+            "output": [
+                "ActionOutput_clerk_deleteemailaddress"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_deleteemailaddress", "ActionOutput_clerk_deleteemailaddress"],
+            "usedModels": [
+                "ActionInput_clerk_deleteemailaddress",
+                "ActionOutput_clerk_deleteemailaddress"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -939,7 +1099,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["email_address_id"],
+                        "required": [
+                            "email_address_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_deleteemailaddress": {
@@ -952,7 +1114,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -965,9 +1130,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_deleteorganizationdomain",
             "name": "delete-organization-domain",
-            "output": ["ActionOutput_clerk_deleteorganizationdomain"],
+            "output": [
+                "ActionOutput_clerk_deleteorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_deleteorganizationdomain", "ActionOutput_clerk_deleteorganizationdomain"],
+            "usedModels": [
+                "ActionInput_clerk_deleteorganizationdomain",
+                "ActionOutput_clerk_deleteorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -983,7 +1153,10 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_id", "domain_id"],
+                        "required": [
+                            "organization_id",
+                            "domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_deleteorganizationdomain": {
@@ -996,7 +1169,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1009,9 +1185,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_deleteorganizationmembership",
             "name": "delete-organization-membership",
-            "output": ["ActionOutput_clerk_deleteorganizationmembership"],
+            "output": [
+                "ActionOutput_clerk_deleteorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_deleteorganizationmembership", "ActionOutput_clerk_deleteorganizationmembership"],
+            "usedModels": [
+                "ActionInput_clerk_deleteorganizationmembership",
+                "ActionOutput_clerk_deleteorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1027,7 +1208,10 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_id", "user_id"],
+                        "required": [
+                            "organization_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_deleteorganizationmembership": {
@@ -1040,7 +1224,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1053,9 +1240,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_deleteorganizationrole",
             "name": "delete-organization-role",
-            "output": ["ActionOutput_clerk_deleteorganizationrole"],
+            "output": [
+                "ActionOutput_clerk_deleteorganizationrole"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_deleteorganizationrole", "ActionOutput_clerk_deleteorganizationrole"],
+            "usedModels": [
+                "ActionInput_clerk_deleteorganizationrole",
+                "ActionOutput_clerk_deleteorganizationrole"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1067,7 +1259,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_role_id"],
+                        "required": [
+                            "organization_role_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_deleteorganizationrole": {
@@ -1080,7 +1274,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1093,9 +1290,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_deleteorganization",
             "name": "delete-organization",
-            "output": ["ActionOutput_clerk_deleteorganization"],
+            "output": [
+                "ActionOutput_clerk_deleteorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_deleteorganization", "ActionOutput_clerk_deleteorganization"],
+            "usedModels": [
+                "ActionInput_clerk_deleteorganization",
+                "ActionOutput_clerk_deleteorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1107,7 +1309,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_deleteorganization": {
@@ -1120,7 +1324,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1133,9 +1340,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_deletephonenumber",
             "name": "delete-phone-number",
-            "output": ["ActionOutput_clerk_deletephonenumber"],
+            "output": [
+                "ActionOutput_clerk_deletephonenumber"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_deletephonenumber", "ActionOutput_clerk_deletephonenumber"],
+            "usedModels": [
+                "ActionInput_clerk_deletephonenumber",
+                "ActionOutput_clerk_deletephonenumber"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1147,7 +1359,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["phone_number_id"],
+                        "required": [
+                            "phone_number_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_deletephonenumber": {
@@ -1160,7 +1374,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1173,9 +1390,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_clerk_deleteuser"],
+            "output": [
+                "ActionOutput_clerk_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_deleteuser", "ActionOutput_clerk_deleteuser"],
+            "usedModels": [
+                "ActionInput_clerk_deleteuser",
+                "ActionOutput_clerk_deleteuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1187,7 +1409,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_deleteuser": {
@@ -1200,7 +1424,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1213,9 +1440,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_getemailaddress",
             "name": "get-email-address",
-            "output": ["ActionOutput_clerk_getemailaddress"],
+            "output": [
+                "ActionOutput_clerk_getemailaddress"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_getemailaddress", "ActionOutput_clerk_getemailaddress"],
+            "usedModels": [
+                "ActionInput_clerk_getemailaddress",
+                "ActionOutput_clerk_getemailaddress"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1227,7 +1459,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["email_address_id"],
+                        "required": [
+                            "email_address_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_getemailaddress": {
@@ -1273,7 +1507,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1284,7 +1521,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "email_address"],
+                        "required": [
+                            "id",
+                            "email_address"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1297,9 +1537,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_getorganizationinvitation",
             "name": "get-organization-invitation",
-            "output": ["ActionOutput_clerk_getorganizationinvitation"],
+            "output": [
+                "ActionOutput_clerk_getorganizationinvitation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_getorganizationinvitation", "ActionOutput_clerk_getorganizationinvitation"],
+            "usedModels": [
+                "ActionInput_clerk_getorganizationinvitation",
+                "ActionOutput_clerk_getorganizationinvitation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1315,7 +1560,10 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_id", "invitation_id"],
+                        "required": [
+                            "organization_id",
+                            "invitation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_getorganizationinvitation": {
@@ -1338,7 +1586,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "revoked", "expired"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "revoked",
+                                    "expired"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -1347,7 +1600,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "email_address"],
+                        "required": [
+                            "id",
+                            "email_address"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1360,9 +1616,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_getorganizationrole",
             "name": "get-organization-role",
-            "output": ["ActionOutput_clerk_getorganizationrole"],
+            "output": [
+                "ActionOutput_clerk_getorganizationrole"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_getorganizationrole", "ActionOutput_clerk_getorganizationrole"],
+            "usedModels": [
+                "ActionInput_clerk_getorganizationrole",
+                "ActionOutput_clerk_getorganizationrole"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1374,7 +1635,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_role_id"],
+                        "required": [
+                            "organization_role_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_getorganizationrole": {
@@ -1393,7 +1656,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "permissions": {
                                 "type": "array",
@@ -1410,7 +1676,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1421,7 +1689,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "key"],
+                        "required": [
+                            "id",
+                            "name",
+                            "key"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1434,9 +1706,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_clerk_getorganization"],
+            "output": [
+                "ActionOutput_clerk_getorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_getorganization", "ActionOutput_clerk_getorganization"],
+            "usedModels": [
+                "ActionInput_clerk_getorganization",
+                "ActionOutput_clerk_getorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1451,7 +1728,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_getorganization": {
@@ -1515,7 +1794,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "slug"],
+                        "required": [
+                            "id",
+                            "name",
+                            "slug"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1528,9 +1811,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_getphonenumber",
             "name": "get-phone-number",
-            "output": ["ActionOutput_clerk_getphonenumber"],
+            "output": [
+                "ActionOutput_clerk_getphonenumber"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_getphonenumber", "ActionOutput_clerk_getphonenumber"],
+            "usedModels": [
+                "ActionInput_clerk_getphonenumber",
+                "ActionOutput_clerk_getphonenumber"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1542,7 +1830,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["phone_number_id"],
+                        "required": [
+                            "phone_number_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_getphonenumber": {
@@ -1591,7 +1881,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1602,7 +1895,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "phone_number"],
+                        "required": [
+                            "id",
+                            "phone_number"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1615,9 +1911,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_getsession",
             "name": "get-session",
-            "output": ["ActionOutput_clerk_getsession"],
+            "output": [
+                "ActionOutput_clerk_getsession"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_getsession", "ActionOutput_clerk_getsession"],
+            "usedModels": [
+                "ActionInput_clerk_getsession",
+                "ActionOutput_clerk_getsession"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1629,7 +1930,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["session_id"],
+                        "required": [
+                            "session_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_getsession": {
@@ -1649,7 +1952,15 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                                "enum": [
+                                    "abandoned",
+                                    "active",
+                                    "ended",
+                                    "expired",
+                                    "removed",
+                                    "replaced",
+                                    "revoked"
+                                ]
                             },
                             "last_active_at": {
                                 "type": "number"
@@ -1667,7 +1978,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "user_id"],
+                        "required": [
+                            "id",
+                            "user_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1680,9 +1994,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_clerk_getuser"],
+            "output": [
+                "ActionOutput_clerk_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_getuser", "ActionOutput_clerk_getuser"],
+            "usedModels": [
+                "ActionInput_clerk_getuser",
+                "ActionOutput_clerk_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1695,7 +2014,9 @@
                                 "description": "Clerk user ID. Example: \"user_2abc123\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_getuser": {
@@ -1708,25 +2029,43 @@
                                 "type": "string"
                             },
                             "username": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "image_url": {
                                 "type": "string"
                             },
                             "primary_email_address_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "primary_phone_number_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "banned": {
                                 "type": "boolean"
@@ -1741,10 +2080,15 @@
                                 "type": "number"
                             },
                             "locale": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1757,9 +2101,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_listorganizationdomains",
             "name": "list-organization-domains",
-            "output": ["ActionOutput_clerk_listorganizationdomains"],
+            "output": [
+                "ActionOutput_clerk_listorganizationdomains"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_listorganizationdomains", "ActionOutput_clerk_listorganizationdomains"],
+            "usedModels": [
+                "ActionInput_clerk_listorganizationdomains",
+                "ActionOutput_clerk_listorganizationdomains"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1784,10 +2133,17 @@
                             },
                             "enrollment_mode": {
                                 "type": "string",
-                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                "enum": [
+                                    "manual_invitation",
+                                    "automatic_invitation",
+                                    "automatic_suggestion",
+                                    "enterprise_sso"
+                                ]
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_listorganizationdomains": {
@@ -1812,7 +2168,12 @@
                                         },
                                         "enrollment_mode": {
                                             "type": "string",
-                                            "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                            "enum": [
+                                                "manual_invitation",
+                                                "automatic_invitation",
+                                                "automatic_suggestion",
+                                                "enterprise_sso"
+                                            ]
                                         },
                                         "affiliation_verification": {
                                             "anyOf": [
@@ -1862,7 +2223,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1873,7 +2237,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1886,9 +2253,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_listorganizationinvitations",
             "name": "list-organization-invitations",
-            "output": ["ActionOutput_clerk_listorganizationinvitations"],
+            "output": [
+                "ActionOutput_clerk_listorganizationinvitations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_listorganizationinvitations", "ActionOutput_clerk_listorganizationinvitations"],
+            "usedModels": [
+                "ActionInput_clerk_listorganizationinvitations",
+                "ActionOutput_clerk_listorganizationinvitations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1910,7 +2282,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "revoked", "expired"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "revoked",
+                                    "expired"
+                                ]
                             },
                             "email_address": {
                                 "type": "string"
@@ -1919,7 +2296,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_listorganizationinvitations": {
@@ -1947,7 +2326,12 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["pending", "accepted", "revoked", "expired"]
+                                            "enum": [
+                                                "pending",
+                                                "accepted",
+                                                "revoked",
+                                                "expired"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "number"
@@ -1956,7 +2340,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "email_address"],
+                                    "required": [
+                                        "id",
+                                        "email_address"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1967,7 +2354,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1980,9 +2370,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_listorganizationmemberships",
             "name": "list-organization-memberships",
-            "output": ["ActionOutput_clerk_listorganizationmemberships"],
+            "output": [
+                "ActionOutput_clerk_listorganizationmemberships"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_listorganizationmemberships", "ActionOutput_clerk_listorganizationmemberships"],
+            "usedModels": [
+                "ActionInput_clerk_listorganizationmemberships",
+                "ActionOutput_clerk_listorganizationmemberships"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2077,7 +2472,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_listorganizationmemberships": {
@@ -2101,7 +2498,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "public_user_data": {
@@ -2111,7 +2510,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["user_id"],
+                                            "required": [
+                                                "user_id"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "role": {
@@ -2130,7 +2531,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2141,7 +2544,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2154,9 +2560,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_listorganizationroles",
             "name": "list-organization-roles",
-            "output": ["ActionOutput_clerk_listorganizationroles"],
+            "output": [
+                "ActionOutput_clerk_listorganizationroles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_listorganizationroles", "ActionOutput_clerk_listorganizationroles"],
+            "usedModels": [
+                "ActionInput_clerk_listorganizationroles",
+                "ActionOutput_clerk_listorganizationroles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2202,7 +2613,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "permissions": {
                                             "type": "array",
@@ -2219,7 +2633,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -2230,7 +2646,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "key"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "key"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2241,7 +2661,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2254,9 +2677,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_clerk_listorganizations"],
+            "output": [
+                "ActionOutput_clerk_listorganizations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_listorganizations", "ActionOutput_clerk_listorganizations"],
+            "usedModels": [
+                "ActionInput_clerk_listorganizations",
+                "ActionOutput_clerk_listorganizations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2357,7 +2785,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "slug"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "slug"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2368,7 +2800,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2381,9 +2816,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_listsessions",
             "name": "list-sessions",
-            "output": ["ActionOutput_clerk_listsessions"],
+            "output": [
+                "ActionOutput_clerk_listsessions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_listsessions", "ActionOutput_clerk_listsessions"],
+            "usedModels": [
+                "ActionInput_clerk_listsessions",
+                "ActionOutput_clerk_listsessions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2409,7 +2849,15 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                                "enum": [
+                                    "abandoned",
+                                    "active",
+                                    "ended",
+                                    "expired",
+                                    "removed",
+                                    "replaced",
+                                    "revoked"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -2436,7 +2884,15 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                                            "enum": [
+                                                "abandoned",
+                                                "active",
+                                                "ended",
+                                                "expired",
+                                                "removed",
+                                                "replaced",
+                                                "revoked"
+                                            ]
                                         },
                                         "last_active_at": {
                                             "type": "number"
@@ -2454,7 +2910,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "user_id"],
+                                    "required": [
+                                        "id",
+                                        "user_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2462,7 +2921,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2475,9 +2936,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_clerk_listusers"],
+            "output": [
+                "ActionOutput_clerk_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_listusers", "ActionOutput_clerk_listusers"],
+            "usedModels": [
+                "ActionInput_clerk_listusers",
+                "ActionOutput_clerk_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2592,25 +3058,43 @@
                                             "type": "string"
                                         },
                                         "username": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "first_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "last_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "image_url": {
                                             "type": "string"
                                         },
                                         "primary_email_address_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "primary_phone_number_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "external_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "banned": {
                                             "type": "boolean"
@@ -2625,10 +3109,15 @@
                                             "type": "number"
                                         },
                                         "locale": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2639,7 +3128,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2652,9 +3144,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_removeorganizationrolepermission",
             "name": "remove-organization-role-permission",
-            "output": ["ActionOutput_clerk_removeorganizationrolepermission"],
+            "output": [
+                "ActionOutput_clerk_removeorganizationrolepermission"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_removeorganizationrolepermission", "ActionOutput_clerk_removeorganizationrolepermission"],
+            "usedModels": [
+                "ActionInput_clerk_removeorganizationrolepermission",
+                "ActionOutput_clerk_removeorganizationrolepermission"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2670,7 +3167,10 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_role_id", "permission_id"],
+                        "required": [
+                            "organization_role_id",
+                            "permission_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_removeorganizationrolepermission": {
@@ -2683,7 +3183,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2696,9 +3199,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_revokeorganizationinvitation",
             "name": "revoke-organization-invitation",
-            "output": ["ActionOutput_clerk_revokeorganizationinvitation"],
+            "output": [
+                "ActionOutput_clerk_revokeorganizationinvitation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_revokeorganizationinvitation", "ActionOutput_clerk_revokeorganizationinvitation"],
+            "usedModels": [
+                "ActionInput_clerk_revokeorganizationinvitation",
+                "ActionOutput_clerk_revokeorganizationinvitation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2717,7 +3225,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id", "invitation_id"],
+                        "required": [
+                            "organization_id",
+                            "invitation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_revokeorganizationinvitation": {
@@ -2740,7 +3251,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["pending", "accepted", "revoked", "expired"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "revoked",
+                                    "expired"
+                                ]
                             },
                             "created_at": {
                                 "type": "number"
@@ -2749,7 +3265,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "email_address"],
+                        "required": [
+                            "id",
+                            "email_address"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2762,9 +3281,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_revokesession",
             "name": "revoke-session",
-            "output": ["ActionOutput_clerk_revokesession"],
+            "output": [
+                "ActionOutput_clerk_revokesession"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_revokesession", "ActionOutput_clerk_revokesession"],
+            "usedModels": [
+                "ActionInput_clerk_revokesession",
+                "ActionOutput_clerk_revokesession"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2776,7 +3300,9 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["session_id"],
+                        "required": [
+                            "session_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_revokesession": {
@@ -2796,7 +3322,15 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["abandoned", "active", "ended", "expired", "removed", "replaced", "revoked"]
+                                "enum": [
+                                    "abandoned",
+                                    "active",
+                                    "ended",
+                                    "expired",
+                                    "removed",
+                                    "replaced",
+                                    "revoked"
+                                ]
                             },
                             "last_active_at": {
                                 "type": "number"
@@ -2814,7 +3348,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "user_id"],
+                        "required": [
+                            "id",
+                            "user_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2827,9 +3364,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updateemailaddress",
             "name": "update-email-address",
-            "output": ["ActionOutput_clerk_updateemailaddress"],
+            "output": [
+                "ActionOutput_clerk_updateemailaddress"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updateemailaddress", "ActionOutput_clerk_updateemailaddress"],
+            "usedModels": [
+                "ActionInput_clerk_updateemailaddress",
+                "ActionOutput_clerk_updateemailaddress"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2850,7 +3392,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email_address_id"],
+                        "required": [
+                            "email_address_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updateemailaddress": {
@@ -2896,7 +3440,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2907,7 +3454,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "email_address"],
+                        "required": [
+                            "id",
+                            "email_address"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2920,9 +3470,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updateorganizationdomain",
             "name": "update-organization-domain",
-            "output": ["ActionOutput_clerk_updateorganizationdomain"],
+            "output": [
+                "ActionOutput_clerk_updateorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updateorganizationdomain", "ActionOutput_clerk_updateorganizationdomain"],
+            "usedModels": [
+                "ActionInput_clerk_updateorganizationdomain",
+                "ActionOutput_clerk_updateorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2939,13 +3494,21 @@
                             },
                             "enrollment_mode": {
                                 "type": "string",
-                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                "enum": [
+                                    "manual_invitation",
+                                    "automatic_invitation",
+                                    "automatic_suggestion",
+                                    "enterprise_sso"
+                                ]
                             },
                             "verified": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["organization_id", "domain_id"],
+                        "required": [
+                            "organization_id",
+                            "domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updateorganizationdomain": {
@@ -2965,7 +3528,12 @@
                             },
                             "enrollment_mode": {
                                 "type": "string",
-                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                "enum": [
+                                    "manual_invitation",
+                                    "automatic_invitation",
+                                    "automatic_suggestion",
+                                    "enterprise_sso"
+                                ]
                             },
                             "affiliation_verification": {
                                 "anyOf": [
@@ -3015,7 +3583,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3028,9 +3599,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updateorganizationmembershipmetadata",
             "name": "update-organization-membership-metadata",
-            "output": ["ActionOutput_clerk_updateorganizationmembershipmetadata"],
+            "output": [
+                "ActionOutput_clerk_updateorganizationmembershipmetadata"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updateorganizationmembershipmetadata", "ActionOutput_clerk_updateorganizationmembershipmetadata"],
+            "usedModels": [
+                "ActionInput_clerk_updateorganizationmembershipmetadata",
+                "ActionOutput_clerk_updateorganizationmembershipmetadata"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3060,7 +3636,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["organization_id", "user_id"],
+                        "required": [
+                            "organization_id",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updateorganizationmembershipmetadata": {
@@ -3079,7 +3658,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "public_user_data": {
@@ -3089,7 +3670,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["user_id"],
+                                "required": [
+                                    "user_id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "role": {
@@ -3108,7 +3691,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3121,9 +3706,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updateorganizationmembership",
             "name": "update-organization-membership",
-            "output": ["ActionOutput_clerk_updateorganizationmembership"],
+            "output": [
+                "ActionOutput_clerk_updateorganizationmembership"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updateorganizationmembership", "ActionOutput_clerk_updateorganizationmembership"],
+            "usedModels": [
+                "ActionInput_clerk_updateorganizationmembership",
+                "ActionOutput_clerk_updateorganizationmembership"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3142,7 +3732,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id", "user_id", "role"],
+                        "required": [
+                            "organization_id",
+                            "user_id",
+                            "role"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updateorganizationmembership": {
@@ -3161,7 +3755,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "public_user_data": {
@@ -3171,7 +3767,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["user_id"],
+                                "required": [
+                                    "user_id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "role": {
@@ -3190,7 +3788,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3203,9 +3803,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updateorganizationrole",
             "name": "update-organization-role",
-            "output": ["ActionOutput_clerk_updateorganizationrole"],
+            "output": [
+                "ActionOutput_clerk_updateorganizationrole"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updateorganizationrole", "ActionOutput_clerk_updateorganizationrole"],
+            "usedModels": [
+                "ActionInput_clerk_updateorganizationrole",
+                "ActionOutput_clerk_updateorganizationrole"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3232,7 +3837,9 @@
                                 }
                             }
                         },
-                        "required": ["organization_role_id"],
+                        "required": [
+                            "organization_role_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updateorganizationrole": {
@@ -3251,7 +3858,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "permissions": {
                                 "type": "array",
@@ -3268,7 +3878,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3279,7 +3891,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "key"],
+                        "required": [
+                            "id",
+                            "name",
+                            "key"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3292,9 +3908,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updateorganization",
             "name": "update-organization",
-            "output": ["ActionOutput_clerk_updateorganization"],
+            "output": [
+                "ActionOutput_clerk_updateorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updateorganization", "ActionOutput_clerk_updateorganization"],
+            "usedModels": [
+                "ActionInput_clerk_updateorganization",
+                "ActionOutput_clerk_updateorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3328,7 +3949,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updateorganization": {
@@ -3392,7 +4015,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "slug"],
+                        "required": [
+                            "id",
+                            "name",
+                            "slug"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3405,9 +4032,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updatephonenumber",
             "name": "update-phone-number",
-            "output": ["ActionOutput_clerk_updatephonenumber"],
+            "output": [
+                "ActionOutput_clerk_updatephonenumber"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updatephonenumber", "ActionOutput_clerk_updatephonenumber"],
+            "usedModels": [
+                "ActionInput_clerk_updatephonenumber",
+                "ActionOutput_clerk_updatephonenumber"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3428,7 +4060,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["phone_number_id"],
+                        "required": [
+                            "phone_number_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updatephonenumber": {
@@ -3477,7 +4111,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3488,7 +4125,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "phone_number"],
+                        "required": [
+                            "id",
+                            "phone_number"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3501,9 +4141,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_clerk_updateuser"],
+            "output": [
+                "ActionOutput_clerk_updateuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_updateuser", "ActionOutput_clerk_updateuser"],
+            "usedModels": [
+                "ActionInput_clerk_updateuser",
+                "ActionOutput_clerk_updateuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3516,15 +4161,24 @@
                             },
                             "first_name": {
                                 "description": "Pass null to clear the first name.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
                                 "description": "Pass null to clear the last name.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "username": {
                                 "description": "Pass null to clear the username.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "password": {
                                 "type": "string",
@@ -3538,14 +4192,22 @@
                             },
                             "external_id": {
                                 "description": "Pass null to clear the external ID.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "locale": {
                                 "description": "Pass null to clear the locale.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_updateuser": {
@@ -3558,25 +4220,43 @@
                                 "type": "string"
                             },
                             "username": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "first_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "last_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "image_url": {
                                 "type": "string"
                             },
                             "primary_email_address_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "primary_phone_number_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "external_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "banned": {
                                 "type": "boolean"
@@ -3591,10 +4271,15 @@
                                 "type": "number"
                             },
                             "locale": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3607,9 +4292,14 @@
             "endpoint": null,
             "input": "ActionInput_clerk_verifyorganizationdomain",
             "name": "verify-organization-domain",
-            "output": ["ActionOutput_clerk_verifyorganizationdomain"],
+            "output": [
+                "ActionOutput_clerk_verifyorganizationdomain"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_clerk_verifyorganizationdomain", "ActionOutput_clerk_verifyorganizationdomain"],
+            "usedModels": [
+                "ActionInput_clerk_verifyorganizationdomain",
+                "ActionOutput_clerk_verifyorganizationdomain"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3625,7 +4315,10 @@
                                 "minLength": 1
                             }
                         },
-                        "required": ["organization_id", "domain_id"],
+                        "required": [
+                            "organization_id",
+                            "domain_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_clerk_verifyorganizationdomain": {
@@ -3645,7 +4338,12 @@
                             },
                             "enrollment_mode": {
                                 "type": "string",
-                                "enum": ["manual_invitation", "automatic_invitation", "automatic_suggestion", "enterprise_sso"]
+                                "enum": [
+                                    "manual_invitation",
+                                    "automatic_invitation",
+                                    "automatic_suggestion",
+                                    "enterprise_sso"
+                                ]
                             },
                             "affiliation_verification": {
                                 "anyOf": [
@@ -3695,7 +4393,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }

@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_perimeter81_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_perimeter81_createuser"],
+            "output": [
+                "ActionOutput_perimeter81_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_perimeter81_createuser", "ActionOutput_perimeter81_createuser"],
+            "usedModels": [
+                "ActionInput_perimeter81_createuser",
+                "ActionOutput_perimeter81_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -62,7 +67,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["firstName", "lastName", "email", "accessGroups"],
+                        "required": [
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "accessGroups"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_perimeter81_createuser": {
@@ -81,7 +91,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -94,9 +109,14 @@
             "endpoint": null,
             "input": "ActionInput_perimeter81_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_perimeter81_deleteuser"],
+            "output": [
+                "ActionOutput_perimeter81_deleteuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_perimeter81_deleteuser", "ActionOutput_perimeter81_deleteuser"],
+            "usedModels": [
+                "ActionInput_perimeter81_deleteuser",
+                "ActionOutput_perimeter81_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -107,7 +127,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_perimeter81_deleteuser": {
@@ -117,7 +139,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -139,12 +163,17 @@
             ],
             "input": "SyncMetadata_perimeter81_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_perimeter81_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_perimeter81_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -165,7 +194,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_perimeter81_users": {

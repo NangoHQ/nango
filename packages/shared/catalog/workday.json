@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_getjobprofile",
             "name": "get-job-profile",
-            "output": ["ActionOutput_workday_getjobprofile"],
+            "output": [
+                "ActionOutput_workday_getjobprofile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_getjobprofile", "ActionOutput_workday_getjobprofile"],
+            "usedModels": [
+                "ActionInput_workday_getjobprofile",
+                "ActionOutput_workday_getjobprofile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -21,7 +26,9 @@
                                 "description": "Job_Profile_ID. Example: \"JOB_PROFILE_001\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workday_getjobprofile": {
@@ -52,7 +59,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -65,9 +75,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_getlocation",
             "name": "get-location",
-            "output": ["ActionOutput_workday_getlocation"],
+            "output": [
+                "ActionOutput_workday_getlocation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_getlocation", "ActionOutput_workday_getlocation"],
+            "usedModels": [
+                "ActionInput_workday_getlocation",
+                "ActionOutput_workday_getlocation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -79,7 +94,9 @@
                                 "description": "Location_ID. Example: \"San_Francisco_Site\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workday_getlocation": {
@@ -101,7 +118,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "inactive"],
+                        "required": [
+                            "id",
+                            "name",
+                            "inactive"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -114,9 +135,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_workday_getorganization"],
+            "output": [
+                "ActionOutput_workday_getorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_getorganization", "ActionOutput_workday_getorganization"],
+            "usedModels": [
+                "ActionInput_workday_getorganization",
+                "ActionOutput_workday_getorganization"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -128,7 +154,9 @@
                                 "description": "Organization_Reference_ID. Example: \"HRIS_matrix\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workday_getorganization": {
@@ -153,7 +181,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -166,9 +197,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_getposition",
             "name": "get-position",
-            "output": ["ActionOutput_workday_getposition"],
+            "output": [
+                "ActionOutput_workday_getposition"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_getposition", "ActionOutput_workday_getposition"],
+            "usedModels": [
+                "ActionInput_workday_getposition",
+                "ActionOutput_workday_getposition"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -180,7 +216,9 @@
                                 "description": "Position_ID. Example: \"P-00030\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workday_getposition": {
@@ -214,7 +252,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -227,9 +268,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_getworker",
             "name": "get-worker",
-            "output": ["ActionOutput_workday_getworker"],
+            "output": [
+                "ActionOutput_workday_getworker"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_getworker", "ActionOutput_workday_getworker"],
+            "usedModels": [
+                "ActionInput_workday_getworker",
+                "ActionOutput_workday_getworker"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -241,7 +287,9 @@
                                 "description": "Employee_ID. Example: \"21001\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_workday_getworker": {
@@ -269,7 +317,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -282,9 +332,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_listjobprofiles",
             "name": "list-job-profiles",
-            "output": ["ActionOutput_workday_listjobprofiles"],
+            "output": [
+                "ActionOutput_workday_listjobprofiles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_listjobprofiles", "ActionOutput_workday_listjobprofiles"],
+            "usedModels": [
+                "ActionInput_workday_listjobprofiles",
+                "ActionOutput_workday_listjobprofiles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -325,7 +380,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "inactive"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "inactive"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -333,7 +392,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -346,9 +407,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_listlocations",
             "name": "list-locations",
-            "output": ["ActionOutput_workday_listlocations"],
+            "output": [
+                "ActionOutput_workday_listlocations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_listlocations", "ActionOutput_workday_listlocations"],
+            "usedModels": [
+                "ActionInput_workday_listlocations",
+                "ActionOutput_workday_listlocations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -389,7 +455,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "inactive"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "inactive"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -398,7 +468,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -411,9 +483,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_workday_listorganizations"],
+            "output": [
+                "ActionOutput_workday_listorganizations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_listorganizations", "ActionOutput_workday_listorganizations"],
+            "usedModels": [
+                "ActionInput_workday_listorganizations",
+                "ActionOutput_workday_listorganizations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -457,7 +534,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "inactive"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "inactive"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -465,7 +546,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -478,9 +561,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_listpositions",
             "name": "list-positions",
-            "output": ["ActionOutput_workday_listpositions"],
+            "output": [
+                "ActionOutput_workday_listpositions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_listpositions", "ActionOutput_workday_listpositions"],
+            "usedModels": [
+                "ActionInput_workday_listpositions",
+                "ActionOutput_workday_listpositions"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -534,12 +622,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "title", "inactive"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "inactive"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -552,9 +646,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_listworkers",
             "name": "list-workers",
-            "output": ["ActionOutput_workday_listworkers"],
+            "output": [
+                "ActionOutput_workday_listworkers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_listworkers", "ActionOutput_workday_listworkers"],
+            "usedModels": [
+                "ActionInput_workday_listworkers",
+                "ActionOutput_workday_listworkers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -628,7 +727,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -636,7 +737,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -657,12 +760,16 @@
             ],
             "input": null,
             "name": "employees",
-            "output": ["Employee"],
+            "output": [
+                "Employee"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Employee"],
+            "usedModels": [
+                "Employee"
+            ],
             "version": "3.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -725,7 +832,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -744,12 +853,16 @@
             ],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -783,7 +896,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "inactive"],
+                        "required": [
+                            "id",
+                            "name",
+                            "inactive"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -802,12 +919,16 @@
             ],
             "input": null,
             "name": "job-profiles",
-            "output": ["JobProfile"],
+            "output": [
+                "JobProfile"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["JobProfile"],
+            "usedModels": [
+                "JobProfile"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -846,7 +967,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "active"],
+                        "required": [
+                            "id",
+                            "name",
+                            "active"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -865,12 +990,16 @@
             ],
             "input": null,
             "name": "locations",
-            "output": ["Location"],
+            "output": [
+                "Location"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Location"],
+            "usedModels": [
+                "Location"
+            ],
             "version": "2.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -900,7 +1029,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -919,12 +1051,16 @@
             ],
             "input": null,
             "name": "organizations",
-            "output": ["Organization"],
+            "output": [
+                "Organization"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Organization"],
+            "usedModels": [
+                "Organization"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -957,7 +1093,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "inactive"],
+                        "required": [
+                            "id",
+                            "name",
+                            "inactive"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -976,12 +1116,16 @@
             ],
             "input": null,
             "name": "positions",
-            "output": ["Position"],
+            "output": [
+                "Position"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Position"],
+            "usedModels": [
+                "Position"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1062,7 +1206,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1081,12 +1227,16 @@
             ],
             "input": null,
             "name": "workers",
-            "output": ["Worker"],
+            "output": [
+                "Worker"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Worker"],
+            "usedModels": [
+                "Worker"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1163,12 +1313,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

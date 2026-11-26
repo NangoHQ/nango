@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_cancelstatement",
             "name": "cancel-statement",
-            "output": ["ActionOutput_snowflake_jwt_cancelstatement"],
+            "output": [
+                "ActionOutput_snowflake_jwt_cancelstatement"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_cancelstatement", "ActionOutput_snowflake_jwt_cancelstatement"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_cancelstatement",
+                "ActionOutput_snowflake_jwt_cancelstatement"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -21,7 +26,9 @@
                                 "description": "The statement handle returned by Snowflake when a statement is submitted. Example: \"01c4d2c3-0001-e881-001c-d6c3000130ea\""
                             }
                         },
-                        "required": ["statement_handle"],
+                        "required": [
+                            "statement_handle"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_cancelstatement": {
@@ -34,7 +41,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["code", "message"],
+                        "required": [
+                            "code",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -47,9 +57,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_executestatement",
             "name": "execute-statement",
-            "output": ["ActionOutput_snowflake_jwt_executestatement"],
+            "output": [
+                "ActionOutput_snowflake_jwt_executestatement"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_executestatement", "ActionOutput_snowflake_jwt_executestatement"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_executestatement",
+                "ActionOutput_snowflake_jwt_executestatement"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -89,12 +104,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "value"],
+                                    "required": [
+                                        "type",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["statement"],
+                        "required": [
+                            "statement"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_executestatement": {
@@ -154,25 +174,44 @@
                                                     "type": "string"
                                                 },
                                                 "scale": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "precision": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "length": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "nullable": {
                                                     "type": "boolean"
                                                 },
                                                 "byteLength": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "collation": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["name", "type", "nullable"],
+                                            "required": [
+                                                "name",
+                                                "type",
+                                                "nullable"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -191,7 +230,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["rowCount", "uncompressedSize"],
+                                            "required": [
+                                                "rowCount",
+                                                "uncompressedSize"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -230,7 +272,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["code", "message", "statementHandle", "statementStatusUrl"],
+                        "required": [
+                            "code",
+                            "message",
+                            "statementHandle",
+                            "statementStatusUrl"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -243,9 +290,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_getstatementresult",
             "name": "get-statement-result",
-            "output": ["ActionOutput_snowflake_jwt_getstatementresult"],
+            "output": [
+                "ActionOutput_snowflake_jwt_getstatementresult"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_getstatementresult", "ActionOutput_snowflake_jwt_getstatementresult"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_getstatementresult",
+                "ActionOutput_snowflake_jwt_getstatementresult"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -261,7 +313,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["statement_handle"],
+                        "required": [
+                            "statement_handle"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_getstatementresult": {
@@ -303,7 +357,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["name", "type"],
+                                    "required": [
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -318,7 +375,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["statement_handle"],
+                        "required": [
+                            "statement_handle"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -331,9 +390,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_getstatementstatus",
             "name": "get-statement-status",
-            "output": ["ActionOutput_snowflake_jwt_getstatementstatus"],
+            "output": [
+                "ActionOutput_snowflake_jwt_getstatementstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_getstatementstatus", "ActionOutput_snowflake_jwt_getstatementstatus"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_getstatementstatus",
+                "ActionOutput_snowflake_jwt_getstatementstatus"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -345,7 +409,9 @@
                                 "description": "The handle of the SQL statement to check. Example: \"01c4d2c3-0001-e881-001c-d6c3000130ea\""
                             }
                         },
-                        "required": ["statementHandle"],
+                        "required": [
+                            "statementHandle"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_getstatementstatus": {
@@ -399,25 +465,43 @@
                                                     "type": "string"
                                                 },
                                                 "scale": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "precision": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "length": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "byteLength": {
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "nullable": {
                                                     "type": "boolean"
                                                 },
                                                 "collation": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["name", "type"],
+                                            "required": [
+                                                "name",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -436,7 +520,10 @@
                                                     "type": "number"
                                                 }
                                             },
-                                            "required": ["rowCount", "uncompressedSize"],
+                                            "required": [
+                                                "rowCount",
+                                                "uncompressedSize"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -451,7 +538,9 @@
                                 }
                             }
                         },
-                        "required": ["statementHandle"],
+                        "required": [
+                            "statementHandle"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -464,9 +553,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listcolumns",
             "name": "list-columns",
-            "output": ["ActionOutput_snowflake_jwt_listcolumns"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listcolumns"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listcolumns", "ActionOutput_snowflake_jwt_listcolumns"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listcolumns",
+                "ActionOutput_snowflake_jwt_listcolumns"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -486,7 +580,11 @@
                                 "description": "Table name. Example: \"CUSTOMERS\""
                             }
                         },
-                        "required": ["database", "schema", "table"],
+                        "required": [
+                            "database",
+                            "schema",
+                            "table"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_listcolumns": {
@@ -522,12 +620,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["table_name", "schema_name", "column_name", "data_type", "nullable", "kind"],
+                                    "required": [
+                                        "table_name",
+                                        "schema_name",
+                                        "column_name",
+                                        "data_type",
+                                        "nullable",
+                                        "kind"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["columns"],
+                        "required": [
+                            "columns"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -540,9 +647,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listdatabases",
             "name": "list-databases",
-            "output": ["ActionOutput_snowflake_jwt_listdatabases"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listdatabases"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listdatabases", "ActionOutput_snowflake_jwt_listdatabases"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listdatabases",
+                "ActionOutput_snowflake_jwt_listdatabases"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -560,39 +672,67 @@
                                     "type": "object",
                                     "properties": {
                                         "created_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
                                         },
                                         "is_default": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_current": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "origin": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "owner": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "comment": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "retention_time": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "kind": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["databases"],
+                        "required": [
+                            "databases"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -605,9 +745,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listroles",
             "name": "list-roles",
-            "output": ["ActionOutput_snowflake_jwt_listroles"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listroles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listroles", "ActionOutput_snowflake_jwt_listroles"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listroles",
+                "ActionOutput_snowflake_jwt_listroles"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -655,12 +800,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "is_default", "is_current", "is_inherited"],
+                                    "required": [
+                                        "name",
+                                        "is_default",
+                                        "is_current",
+                                        "is_inherited"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["roles"],
+                        "required": [
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -673,9 +825,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listschemas",
             "name": "list-schemas",
-            "output": ["ActionOutput_snowflake_jwt_listschemas"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listschemas"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listschemas", "ActionOutput_snowflake_jwt_listschemas"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listschemas",
+                "ActionOutput_snowflake_jwt_listschemas"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -687,7 +844,9 @@
                                 "description": "Database name. Example: \"NANGO_TEST_DB\""
                             }
                         },
-                        "required": ["database"],
+                        "required": [
+                            "database"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_listschemas": {
@@ -731,12 +890,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "is_default", "is_current", "database_name", "owner"],
+                                    "required": [
+                                        "name",
+                                        "is_default",
+                                        "is_current",
+                                        "database_name",
+                                        "owner"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["schemas"],
+                        "required": [
+                            "schemas"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -749,9 +916,16 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_liststages",
             "name": "list-stages",
-            "output": ["ActionOutput_snowflake_jwt_liststages"],
-            "scopes": ["sql_api"],
-            "usedModels": ["ActionInput_snowflake_jwt_liststages", "ActionOutput_snowflake_jwt_liststages"],
+            "output": [
+                "ActionOutput_snowflake_jwt_liststages"
+            ],
+            "scopes": [
+                "sql_api"
+            ],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_liststages",
+                "ActionOutput_snowflake_jwt_liststages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -763,7 +937,9 @@
                                 "description": "Database name. Example: \"NANGO_TEST_DB\""
                             }
                         },
-                        "required": ["database"],
+                        "required": [
+                            "database"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_liststages": {
@@ -815,7 +991,9 @@
                                 }
                             }
                         },
-                        "required": ["stages"],
+                        "required": [
+                            "stages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -828,9 +1006,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_liststreams",
             "name": "list-streams",
-            "output": ["ActionOutput_snowflake_jwt_liststreams"],
+            "output": [
+                "ActionOutput_snowflake_jwt_liststreams"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_liststreams", "ActionOutput_snowflake_jwt_liststreams"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_liststreams",
+                "ActionOutput_snowflake_jwt_liststreams"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -842,7 +1025,9 @@
                                 "description": "Database name to list streams from. Example: \"NANGO_TEST_DB\""
                             }
                         },
-                        "required": ["database"],
+                        "required": [
+                            "database"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_liststreams": {
@@ -891,7 +1076,9 @@
                                 }
                             }
                         },
-                        "required": ["streams"],
+                        "required": [
+                            "streams"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -904,9 +1091,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listtables",
             "name": "list-tables",
-            "output": ["ActionOutput_snowflake_jwt_listtables"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listtables"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listtables", "ActionOutput_snowflake_jwt_listtables"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listtables",
+                "ActionOutput_snowflake_jwt_listtables"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -922,7 +1114,10 @@
                                 "description": "Schema name. Example: \"SALES\""
                             }
                         },
-                        "required": ["database", "schema"],
+                        "required": [
+                            "database",
+                            "schema"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_listtables": {
@@ -967,12 +1162,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["tables"],
+                        "required": [
+                            "tables"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -985,9 +1184,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_snowflake_jwt_listtasks"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listtasks"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listtasks", "ActionOutput_snowflake_jwt_listtasks"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listtasks",
+                "ActionOutput_snowflake_jwt_listtasks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -999,7 +1203,9 @@
                                 "description": "Database name to list tasks from. Example: \"NANGO_TEST_DB\""
                             }
                         },
-                        "required": ["database"],
+                        "required": [
+                            "database"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_listtasks": {
@@ -1045,7 +1251,9 @@
                                 }
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1058,9 +1266,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_snowflake_jwt_listusers"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listusers", "ActionOutput_snowflake_jwt_listusers"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listusers",
+                "ActionOutput_snowflake_jwt_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1123,12 +1336,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1141,9 +1358,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listviews",
             "name": "list-views",
-            "output": ["ActionOutput_snowflake_jwt_listviews"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listviews"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listviews", "ActionOutput_snowflake_jwt_listviews"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listviews",
+                "ActionOutput_snowflake_jwt_listviews"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1159,7 +1381,10 @@
                                 "description": "Schema name. Example: \"SALES\""
                             }
                         },
-                        "required": ["database_name", "schema_name"],
+                        "required": [
+                            "database_name",
+                            "schema_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_snowflake_jwt_listviews": {
@@ -1201,12 +1426,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["created_on", "name", "database_name", "schema_name", "is_secure", "is_materialized"],
+                                    "required": [
+                                        "created_on",
+                                        "name",
+                                        "database_name",
+                                        "schema_name",
+                                        "is_secure",
+                                        "is_materialized"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1219,9 +1453,14 @@
             "endpoint": null,
             "input": "ActionInput_snowflake_jwt_listwarehouses",
             "name": "list-warehouses",
-            "output": ["ActionOutput_snowflake_jwt_listwarehouses"],
+            "output": [
+                "ActionOutput_snowflake_jwt_listwarehouses"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_snowflake_jwt_listwarehouses", "ActionOutput_snowflake_jwt_listwarehouses"],
+            "usedModels": [
+                "ActionInput_snowflake_jwt_listwarehouses",
+                "ActionOutput_snowflake_jwt_listwarehouses"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1308,7 +1547,9 @@
                                 }
                             }
                         },
-                        "required": ["warehouses"],
+                        "required": [
+                            "warehouses"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1329,12 +1570,16 @@
             ],
             "input": null,
             "name": "columns",
-            "output": ["Column"],
+            "output": [
+                "Column"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Column"],
+            "usedModels": [
+                "Column"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1397,12 +1642,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "database_name", "schema_name", "table_name", "column_name"],
+                        "required": [
+                            "id",
+                            "database_name",
+                            "schema_name",
+                            "table_name",
+                            "column_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1416,12 +1669,16 @@
             ],
             "input": null,
             "name": "databases",
-            "output": ["Database"],
+            "output": [
+                "Database"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Database"],
+            "usedModels": [
+                "Database"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1448,12 +1705,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1467,12 +1729,17 @@
             ],
             "input": "SyncMetadata_snowflake_jwt_queryresults",
             "name": "query-results",
-            "output": ["QueryResult"],
+            "output": [
+                "QueryResult"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["QueryResult", "SyncMetadata_snowflake_jwt_queryresults"],
+            "usedModels": [
+                "QueryResult",
+                "SyncMetadata_snowflake_jwt_queryresults"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1491,7 +1758,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "row_data"],
+                        "required": [
+                            "id",
+                            "row_data"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_snowflake_jwt_queryresults": {
@@ -1522,12 +1792,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["query", "incremental_column", "id_column"],
+                        "required": [
+                            "query",
+                            "incremental_column",
+                            "id_column"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1541,12 +1817,16 @@
             ],
             "input": null,
             "name": "roles",
-            "output": ["Role"],
+            "output": [
+                "Role"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Role"],
+            "usedModels": [
+                "Role"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1594,12 +1874,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "created_on"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1613,12 +1899,16 @@
             ],
             "input": null,
             "name": "schemas",
-            "output": ["Schema"],
+            "output": [
+                "Schema"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Schema"],
+            "usedModels": [
+                "Schema"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1649,12 +1939,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "database_name", "name"],
+                        "required": [
+                            "id",
+                            "database_name",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1668,12 +1964,17 @@
             ],
             "input": "SyncMetadata_snowflake_jwt_tables",
             "name": "tables",
-            "output": ["Table"],
+            "output": [
+                "Table"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Table", "SyncMetadata_snowflake_jwt_tables"],
+            "usedModels": [
+                "Table",
+                "SyncMetadata_snowflake_jwt_tables"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1694,10 +1995,16 @@
                                 "type": "string"
                             },
                             "rows": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "bytes": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "is_external": {
                                 "type": "string"
@@ -1712,7 +2019,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "database_name", "schema_name"],
+                        "required": [
+                            "id",
+                            "name",
+                            "database_name",
+                            "schema_name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_snowflake_jwt_tables": {
@@ -1729,7 +2041,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1743,12 +2057,16 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1793,12 +2111,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1812,12 +2134,17 @@
             ],
             "input": "SyncMetadata_snowflake_jwt_views",
             "name": "views",
-            "output": ["View"],
+            "output": [
+                "View"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["View", "SyncMetadata_snowflake_jwt_views"],
+            "usedModels": [
+                "View",
+                "SyncMetadata_snowflake_jwt_views"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1856,7 +2183,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "database_name", "schema_name"],
+                        "required": [
+                            "id",
+                            "name",
+                            "database_name",
+                            "schema_name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_snowflake_jwt_views": {
@@ -1874,7 +2206,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["database", "schema"],
+                                    "required": [
+                                        "database",
+                                        "schema"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -1883,7 +2218,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

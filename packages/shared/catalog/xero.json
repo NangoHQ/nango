@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_createaccount",
             "name": "create-account",
-            "output": ["ActionOutput_xero_createaccount"],
-            "scopes": ["accounting.settings"],
-            "usedModels": ["ActionInput_xero_createaccount", "ActionOutput_xero_createaccount"],
+            "output": [
+                "ActionOutput_xero_createaccount"
+            ],
+            "scopes": [
+                "accounting.settings"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createaccount",
+                "ActionOutput_xero_createaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -49,7 +56,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["Code", "Name", "Type"],
+                        "required": [
+                            "Code",
+                            "Name",
+                            "Type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createaccount": {
@@ -86,7 +97,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["AccountID", "Code", "Name", "Type"],
+                        "required": [
+                            "AccountID",
+                            "Code",
+                            "Name",
+                            "Type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -99,9 +115,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_createbanktransaction",
             "name": "create-bank-transaction",
-            "output": ["ActionOutput_xero_createbanktransaction"],
-            "scopes": ["accounting.banktransactions"],
-            "usedModels": ["ActionInput_xero_createbanktransaction", "ActionOutput_xero_createbanktransaction"],
+            "output": [
+                "ActionOutput_xero_createbanktransaction"
+            ],
+            "scopes": [
+                "accounting.banktransactions"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createbanktransaction",
+                "ActionOutput_xero_createbanktransaction"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -110,7 +133,10 @@
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "enum": ["SPEND", "RECEIVE"],
+                                "enum": [
+                                    "SPEND",
+                                    "RECEIVE"
+                                ],
                                 "description": "Type of bank transaction. Example: \"SPEND\""
                             },
                             "contact_id": {
@@ -160,13 +186,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["description", "account_code"],
+                                    "required": [
+                                        "description",
+                                        "account_code"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Line items for the transaction"
                             }
                         },
-                        "required": ["type", "contact_id", "date", "line_items"],
+                        "required": [
+                            "type",
+                            "contact_id",
+                            "date",
+                            "line_items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createbanktransaction": {
@@ -254,7 +288,11 @@
                                 }
                             }
                         },
-                        "required": ["bank_transaction_id", "type", "status"],
+                        "required": [
+                            "bank_transaction_id",
+                            "type",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -267,9 +305,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_xero_createcontact"],
-            "scopes": ["accounting.contacts"],
-            "usedModels": ["ActionInput_xero_createcontact", "ActionOutput_xero_createcontact"],
+            "output": [
+                "ActionOutput_xero_createcontact"
+            ],
+            "scopes": [
+                "accounting.contacts"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createcontact",
+                "ActionOutput_xero_createcontact"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -342,7 +387,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["AddressType"],
+                                    "required": [
+                                        "AddressType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -364,7 +411,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["PhoneType"],
+                                    "required": [
+                                        "PhoneType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -390,7 +439,9 @@
                                 }
                             }
                         },
-                        "required": ["Name"],
+                        "required": [
+                            "Name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createcontact": {
@@ -427,7 +478,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["Name"],
+                        "required": [
+                            "Name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -440,9 +493,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_createcreditnote",
             "name": "create-credit-note",
-            "output": ["ActionOutput_xero_createcreditnote"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_createcreditnote", "ActionOutput_xero_createcreditnote"],
+            "output": [
+                "ActionOutput_xero_createcreditnote"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createcreditnote",
+                "ActionOutput_xero_createcreditnote"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -455,7 +515,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["ACCPAYCREDIT", "ACCRECCREDIT"],
+                                "enum": [
+                                    "ACCPAYCREDIT",
+                                    "ACCRECCREDIT"
+                                ],
                                 "description": "Credit note type"
                             },
                             "date": {
@@ -493,7 +556,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["description", "quantity", "unit_amount", "account_code"],
+                                    "required": [
+                                        "description",
+                                        "quantity",
+                                        "unit_amount",
+                                        "account_code"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Line items for the credit note"
@@ -505,15 +573,28 @@
                             "status": {
                                 "description": "Status of the credit note",
                                 "type": "string",
-                                "enum": ["DRAFT", "SUBMITTED", "AUTHORISED"]
+                                "enum": [
+                                    "DRAFT",
+                                    "SUBMITTED",
+                                    "AUTHORISED"
+                                ]
                             },
                             "line_amount_types": {
                                 "description": "Line amount types",
                                 "type": "string",
-                                "enum": ["Exclusive", "Inclusive", "NoTax"]
+                                "enum": [
+                                    "Exclusive",
+                                    "Inclusive",
+                                    "NoTax"
+                                ]
                             }
                         },
-                        "required": ["contact_id", "type", "date", "line_items"],
+                        "required": [
+                            "contact_id",
+                            "type",
+                            "date",
+                            "line_items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createcreditnote": {
@@ -625,7 +706,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["credit_note"],
+                        "required": [
+                            "credit_note"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -638,9 +721,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_createinvoice",
             "name": "create-invoice",
-            "output": ["ActionOutput_xero_createinvoice"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_createinvoice", "ActionOutput_xero_createinvoice"],
+            "output": [
+                "ActionOutput_xero_createinvoice"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createinvoice",
+                "ActionOutput_xero_createinvoice"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -649,7 +739,10 @@
                         "properties": {
                             "type": {
                                 "type": "string",
-                                "enum": ["ACCREC", "ACCPAY"]
+                                "enum": [
+                                    "ACCREC",
+                                    "ACCPAY"
+                                ]
                             },
                             "contact_id": {
                                 "type": "string"
@@ -662,7 +755,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["DRAFT", "SUBMITTED", "AUTHORISED"]
+                                "enum": [
+                                    "DRAFT",
+                                    "SUBMITTED",
+                                    "AUTHORISED"
+                                ]
                             },
                             "reference": {
                                 "type": "string"
@@ -691,12 +788,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["description", "quantity", "unit_amount", "account_code"],
+                                    "required": [
+                                        "description",
+                                        "quantity",
+                                        "unit_amount",
+                                        "account_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["type", "contact_id", "date", "line_items"],
+                        "required": [
+                            "type",
+                            "contact_id",
+                            "date",
+                            "line_items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createinvoice": {
@@ -750,7 +857,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["description", "quantity", "unit_amount", "account_code"],
+                                    "required": [
+                                        "description",
+                                        "quantity",
+                                        "unit_amount",
+                                        "account_code"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -764,7 +876,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "type", "status", "contact_id"],
+                        "required": [
+                            "id",
+                            "type",
+                            "status",
+                            "contact_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -777,9 +894,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_createitem",
             "name": "create-item",
-            "output": ["ActionOutput_xero_createitem"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_createitem", "ActionOutput_xero_createitem"],
+            "output": [
+                "ActionOutput_xero_createitem"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createitem",
+                "ActionOutput_xero_createitem"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -861,7 +985,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["code"],
+                        "required": [
+                            "code"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createitem": {
@@ -942,7 +1068,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["itemId", "code"],
+                        "required": [
+                            "itemId",
+                            "code"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -955,9 +1084,17 @@
             "endpoint": null,
             "input": "ActionInput_xero_createpayment",
             "name": "create-payment",
-            "output": ["ActionOutput_xero_createpayment"],
-            "scopes": ["accounting.payments", "accounting.settings.read"],
-            "usedModels": ["ActionInput_xero_createpayment", "ActionOutput_xero_createpayment"],
+            "output": [
+                "ActionOutput_xero_createpayment"
+            ],
+            "scopes": [
+                "accounting.payments",
+                "accounting.settings.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createpayment",
+                "ActionOutput_xero_createpayment"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -997,7 +1134,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["date", "amount"],
+                        "required": [
+                            "date",
+                            "amount"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createpayment": {
@@ -1094,9 +1234,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_createpurchaseorder",
             "name": "create-purchase-order",
-            "output": ["ActionOutput_xero_createpurchaseorder"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_createpurchaseorder", "ActionOutput_xero_createpurchaseorder"],
+            "output": [
+                "ActionOutput_xero_createpurchaseorder"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_createpurchaseorder",
+                "ActionOutput_xero_createpurchaseorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1138,13 +1285,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["description", "quantity", "unit_amount"],
+                                    "required": [
+                                        "description",
+                                        "quantity",
+                                        "unit_amount"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Line items for the purchase order."
                             }
                         },
-                        "required": ["contact_id", "line_items"],
+                        "required": [
+                            "contact_id",
+                            "line_items"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_createpurchaseorder": {
@@ -1211,9 +1365,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getaccount",
             "name": "get-account",
-            "output": ["ActionOutput_xero_getaccount"],
-            "scopes": ["accounting.settings.read"],
-            "usedModels": ["ActionInput_xero_getaccount", "ActionOutput_xero_getaccount"],
+            "output": [
+                "ActionOutput_xero_getaccount"
+            ],
+            "scopes": [
+                "accounting.settings.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getaccount",
+                "ActionOutput_xero_getaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1225,7 +1386,9 @@
                                 "description": "Xero Account ID. Example: \"297c2dc5-cc47-4afd-8ec8-74990b8761e5\""
                             }
                         },
-                        "required": ["accountId"],
+                        "required": [
+                            "accountId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getaccount": {
@@ -1289,7 +1452,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["AccountID"],
+                        "required": [
+                            "AccountID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1302,9 +1467,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getbanktransaction",
             "name": "get-bank-transaction",
-            "output": ["ActionOutput_xero_getbanktransaction"],
-            "scopes": ["accounting.banktransactions.read"],
-            "usedModels": ["ActionInput_xero_getbanktransaction", "ActionOutput_xero_getbanktransaction"],
+            "output": [
+                "ActionOutput_xero_getbanktransaction"
+            ],
+            "scopes": [
+                "accounting.banktransactions.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getbanktransaction",
+                "ActionOutput_xero_getbanktransaction"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1316,7 +1488,9 @@
                                 "description": "The unique identifier of the bank transaction to retrieve. Example: \"db54aab0-ad40-4ced-bcff-0940ba20db2c\""
                             }
                         },
-                        "required": ["BankTransactionID"],
+                        "required": [
+                            "BankTransactionID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getbanktransaction": {
@@ -1422,7 +1596,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["BankTransactionID"],
+                        "required": [
+                            "BankTransactionID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1435,9 +1611,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_xero_getcontact"],
-            "scopes": ["accounting.contacts.read"],
-            "usedModels": ["ActionInput_xero_getcontact", "ActionOutput_xero_getcontact"],
+            "output": [
+                "ActionOutput_xero_getcontact"
+            ],
+            "scopes": [
+                "accounting.contacts.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getcontact",
+                "ActionOutput_xero_getcontact"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1449,7 +1632,9 @@
                                 "description": "Xero Contact ID. Example: \"ba205489-48cf-484b-9781-d52d493bxxxxx\""
                             }
                         },
-                        "required": ["contactId"],
+                        "required": [
+                            "contactId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getcontact": {
@@ -1561,7 +1746,10 @@
                                 }
                             }
                         },
-                        "required": ["contactId", "name"],
+                        "required": [
+                            "contactId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1574,9 +1762,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getcreditnote",
             "name": "get-credit-note",
-            "output": ["ActionOutput_xero_getcreditnote"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_getcreditnote", "ActionOutput_xero_getcreditnote"],
+            "output": [
+                "ActionOutput_xero_getcreditnote"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getcreditnote",
+                "ActionOutput_xero_getcreditnote"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1588,7 +1783,9 @@
                                 "description": "The unique identifier (GUID) of the credit note to retrieve. Example: \"00000000-0000-0000-0000-000000000000\""
                             }
                         },
-                        "required": ["credit_note_id"],
+                        "required": [
+                            "credit_note_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getcreditnote": {
@@ -1700,7 +1897,9 @@
                                 }
                             }
                         },
-                        "required": ["credit_note_id"],
+                        "required": [
+                            "credit_note_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1713,9 +1912,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getinvoice",
             "name": "get-invoice",
-            "output": ["ActionOutput_xero_getinvoice"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_getinvoice", "ActionOutput_xero_getinvoice"],
+            "output": [
+                "ActionOutput_xero_getinvoice"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getinvoice",
+                "ActionOutput_xero_getinvoice"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1727,7 +1933,9 @@
                                 "description": "The Xero InvoiceID. Example: \"00000000-0000-0000-0000-000000000000\""
                             }
                         },
-                        "required": ["InvoiceID"],
+                        "required": [
+                            "InvoiceID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getinvoice": {
@@ -1800,7 +2008,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["InvoiceID"],
+                        "required": [
+                            "InvoiceID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1813,9 +2023,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getitem",
             "name": "get-item",
-            "output": ["ActionOutput_xero_getitem"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_getitem", "ActionOutput_xero_getitem"],
+            "output": [
+                "ActionOutput_xero_getitem"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getitem",
+                "ActionOutput_xero_getitem"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1827,7 +2044,9 @@
                                 "description": "The Xero ItemID to retrieve. Example: \"8fecd03b-d211-491a-a3bb-7203920abac7\""
                             }
                         },
-                        "required": ["itemId"],
+                        "required": [
+                            "itemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getitem": {
@@ -1903,7 +2122,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["ItemID"],
+                        "required": [
+                            "ItemID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1916,9 +2137,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getpayment",
             "name": "get-payment",
-            "output": ["ActionOutput_xero_getpayment"],
-            "scopes": ["accounting.payments.read"],
-            "usedModels": ["ActionInput_xero_getpayment", "ActionOutput_xero_getpayment"],
+            "output": [
+                "ActionOutput_xero_getpayment"
+            ],
+            "scopes": [
+                "accounting.payments.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getpayment",
+                "ActionOutput_xero_getpayment"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -1932,7 +2160,9 @@
                                 "description": "The Xero PaymentID to retrieve. Example: \"99ea7f6b-c513-4066-bc27-b7c65dcd76c2\""
                             }
                         },
-                        "required": ["paymentId"],
+                        "required": [
+                            "paymentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getpayment": {
@@ -2083,9 +2313,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_getpurchaseorder",
             "name": "get-purchase-order",
-            "output": ["ActionOutput_xero_getpurchaseorder"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_getpurchaseorder", "ActionOutput_xero_getpurchaseorder"],
+            "output": [
+                "ActionOutput_xero_getpurchaseorder"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_getpurchaseorder",
+                "ActionOutput_xero_getpurchaseorder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2097,7 +2334,9 @@
                                 "description": "Xero PurchaseOrderID. Example: \"15369a9f-17b6-4235-83c4-0029256d1c37\""
                             }
                         },
-                        "required": ["purchaseOrderId"],
+                        "required": [
+                            "purchaseOrderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_getpurchaseorder": {
@@ -2183,7 +2422,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["PurchaseOrderID"],
+                        "required": [
+                            "PurchaseOrderID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2196,9 +2437,14 @@
             "endpoint": null,
             "input": "ActionInput_xero_gettenants",
             "name": "get-tenants",
-            "output": ["ActionOutput_xero_gettenants"],
+            "output": [
+                "ActionOutput_xero_gettenants"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_xero_gettenants", "ActionOutput_xero_gettenants"],
+            "usedModels": [
+                "ActionInput_xero_gettenants",
+                "ActionOutput_xero_gettenants"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2235,12 +2481,22 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "authEventId", "tenantId", "tenantType", "tenantName", "createdDateUtc", "updatedDateUtc"],
+                                    "required": [
+                                        "id",
+                                        "authEventId",
+                                        "tenantId",
+                                        "tenantType",
+                                        "tenantName",
+                                        "createdDateUtc",
+                                        "updatedDateUtc"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["tenants"],
+                        "required": [
+                            "tenants"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2253,9 +2509,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listaccounts",
             "name": "list-accounts",
-            "output": ["ActionOutput_xero_listaccounts"],
-            "scopes": ["accounting.settings.read"],
-            "usedModels": ["ActionInput_xero_listaccounts", "ActionOutput_xero_listaccounts"],
+            "output": [
+                "ActionOutput_xero_listaccounts"
+            ],
+            "scopes": [
+                "accounting.settings.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listaccounts",
+                "ActionOutput_xero_listaccounts"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -2350,13 +2613,18 @@
                                             "type": "string"
                                         },
                                         "SystemAccount": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "AddToWatchlist": {
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["AccountID"],
+                                    "required": [
+                                        "AccountID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2365,7 +2633,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2378,9 +2648,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listbanktransactions",
             "name": "list-bank-transactions",
-            "output": ["ActionOutput_xero_listbanktransactions"],
-            "scopes": ["accounting.banktransactions.read"],
-            "usedModels": ["ActionInput_xero_listbanktransactions", "ActionOutput_xero_listbanktransactions"],
+            "output": [
+                "ActionOutput_xero_listbanktransactions"
+            ],
+            "scopes": [
+                "accounting.banktransactions.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listbanktransactions",
+                "ActionOutput_xero_listbanktransactions"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2421,7 +2698,10 @@
                                             "type": "string"
                                         },
                                         "Reference": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "Status": {
                                             "type": "string"
@@ -2450,13 +2730,22 @@
                                             "type": "string"
                                         },
                                         "SubTotal": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "TotalTax": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "Total": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "BankAccount": {
                                             "anyOf": [
@@ -2473,7 +2762,10 @@
                                             ]
                                         },
                                         "IsReconciled": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "LineItems": {
                                             "anyOf": [
@@ -2493,7 +2785,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["BankTransactionID"],
+                                    "required": [
+                                        "BankTransactionID"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2501,7 +2795,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["bank_transactions"],
+                        "required": [
+                            "bank_transactions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2514,9 +2810,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_xero_listcontacts"],
-            "scopes": ["accounting.contacts.read"],
-            "usedModels": ["ActionInput_xero_listcontacts", "ActionOutput_xero_listcontacts"],
+            "output": [
+                "ActionOutput_xero_listcontacts"
+            ],
+            "scopes": [
+                "accounting.contacts.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listcontacts",
+                "ActionOutput_xero_listcontacts"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2599,7 +2902,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["ContactID"],
+                                    "required": [
+                                        "ContactID"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2607,7 +2912,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["contacts"],
+                        "required": [
+                            "contacts"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2620,9 +2927,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listcreditnotes",
             "name": "list-credit-notes",
-            "output": ["ActionOutput_xero_listcreditnotes"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_listcreditnotes", "ActionOutput_xero_listcreditnotes"],
+            "output": [
+                "ActionOutput_xero_listcreditnotes"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listcreditnotes",
+                "ActionOutput_xero_listcreditnotes"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2818,7 +3132,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["CreditNotes"],
+                        "required": [
+                            "CreditNotes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2831,9 +3147,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listinvoices",
             "name": "list-invoices",
-            "output": ["ActionOutput_xero_listinvoices"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_listinvoices", "ActionOutput_xero_listinvoices"],
+            "output": [
+                "ActionOutput_xero_listinvoices"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listinvoices",
+                "ActionOutput_xero_listinvoices"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2874,7 +3197,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["invoices"],
+                        "required": [
+                            "invoices"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2887,9 +3212,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listitems",
             "name": "list-items",
-            "output": ["ActionOutput_xero_listitems"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_listitems", "ActionOutput_xero_listitems"],
+            "output": [
+                "ActionOutput_xero_listitems"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listitems",
+                "ActionOutput_xero_listitems"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2993,7 +3325,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["item_id"],
+                                    "required": [
+                                        "item_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3001,7 +3335,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3014,9 +3350,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listpayments",
             "name": "list-payments",
-            "output": ["ActionOutput_xero_listpayments"],
-            "scopes": ["accounting.payments.read"],
-            "usedModels": ["ActionInput_xero_listpayments", "ActionOutput_xero_listpayments"],
+            "output": [
+                "ActionOutput_xero_listpayments"
+            ],
+            "scopes": [
+                "accounting.payments.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listpayments",
+                "ActionOutput_xero_listpayments"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -3159,7 +3502,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["Payments"],
+                        "required": [
+                            "Payments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3172,9 +3517,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_listpurchaseorders",
             "name": "list-purchase-orders",
-            "output": ["ActionOutput_xero_listpurchaseorders"],
-            "scopes": ["accounting.invoices.read"],
-            "usedModels": ["ActionInput_xero_listpurchaseorders", "ActionOutput_xero_listpurchaseorders"],
+            "output": [
+                "ActionOutput_xero_listpurchaseorders"
+            ],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
+            "usedModels": [
+                "ActionInput_xero_listpurchaseorders",
+                "ActionOutput_xero_listpurchaseorders"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3262,7 +3614,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["PurchaseOrderID", "Status"],
+                                    "required": [
+                                        "PurchaseOrderID",
+                                        "Status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3270,7 +3625,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["PurchaseOrders"],
+                        "required": [
+                            "PurchaseOrders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3283,9 +3640,14 @@
             "endpoint": null,
             "input": "ActionInput_xero_listtenants",
             "name": "list-tenants",
-            "output": ["ActionOutput_xero_listtenants"],
+            "output": [
+                "ActionOutput_xero_listtenants"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_xero_listtenants", "ActionOutput_xero_listtenants"],
+            "usedModels": [
+                "ActionInput_xero_listtenants",
+                "ActionOutput_xero_listtenants"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3315,12 +3677,18 @@
                                             "description": "Xero tenant type. Example: \"ORGANISATION\""
                                         }
                                     },
-                                    "required": ["tenantId", "tenantName", "tenantType"],
+                                    "required": [
+                                        "tenantId",
+                                        "tenantName",
+                                        "tenantType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["tenants"],
+                        "required": [
+                            "tenants"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3333,9 +3701,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_updateaccount",
             "name": "update-account",
-            "output": ["ActionOutput_xero_updateaccount"],
-            "scopes": ["accounting.settings"],
-            "usedModels": ["ActionInput_xero_updateaccount", "ActionOutput_xero_updateaccount"],
+            "output": [
+                "ActionOutput_xero_updateaccount"
+            ],
+            "scopes": [
+                "accounting.settings"
+            ],
+            "usedModels": [
+                "ActionInput_xero_updateaccount",
+                "ActionOutput_xero_updateaccount"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -3403,7 +3778,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["account_id"],
+                        "required": [
+                            "account_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_updateaccount": {
@@ -3449,13 +3826,18 @@
                                 "type": "string"
                             },
                             "system_account": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "has_attachments": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["account_id"],
+                        "required": [
+                            "account_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3468,9 +3850,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_updatebanktransaction",
             "name": "update-bank-transaction",
-            "output": ["ActionOutput_xero_updatebanktransaction"],
-            "scopes": ["accounting.banktransactions"],
-            "usedModels": ["ActionInput_xero_updatebanktransaction", "ActionOutput_xero_updatebanktransaction"],
+            "output": [
+                "ActionOutput_xero_updatebanktransaction"
+            ],
+            "scopes": [
+                "accounting.banktransactions"
+            ],
+            "usedModels": [
+                "ActionInput_xero_updatebanktransaction",
+                "ActionOutput_xero_updatebanktransaction"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -3530,7 +3919,9 @@
                                 }
                             }
                         },
-                        "required": ["bank_transaction_id"],
+                        "required": [
+                            "bank_transaction_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_updatebanktransaction": {
@@ -3570,7 +3961,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["bank_transaction_id"],
+                        "required": [
+                            "bank_transaction_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3583,9 +3976,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_xero_updatecontact"],
-            "scopes": ["accounting.contacts"],
-            "usedModels": ["ActionInput_xero_updatecontact", "ActionOutput_xero_updatecontact"],
+            "output": [
+                "ActionOutput_xero_updatecontact"
+            ],
+            "scopes": [
+                "accounting.contacts"
+            ],
+            "usedModels": [
+                "ActionInput_xero_updatecontact",
+                "ActionOutput_xero_updatecontact"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -3667,7 +4067,9 @@
                                 }
                             }
                         },
-                        "required": ["ContactID"],
+                        "required": [
+                            "ContactID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_updatecontact": {
@@ -3692,7 +4094,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["ContactID"],
+                        "required": [
+                            "ContactID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3705,9 +4109,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_updatecreditnote",
             "name": "update-credit-note",
-            "output": ["ActionOutput_xero_updatecreditnote"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_updatecreditnote", "ActionOutput_xero_updatecreditnote"],
+            "output": [
+                "ActionOutput_xero_updatecreditnote"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_updatecreditnote",
+                "ActionOutput_xero_updatecreditnote"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -3743,7 +4154,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["CreditNoteID"],
+                        "required": [
+                            "CreditNoteID"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_updatecreditnote": {
@@ -3789,7 +4202,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["CreditNoteID"],
+                        "required": [
+                            "CreditNoteID"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3802,9 +4217,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_updateinvoice",
             "name": "update-invoice",
-            "output": ["ActionOutput_xero_updateinvoice"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_updateinvoice", "ActionOutput_xero_updateinvoice"],
+            "output": [
+                "ActionOutput_xero_updateinvoice"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_updateinvoice",
+                "ActionOutput_xero_updateinvoice"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -3818,7 +4240,9 @@
                                 "description": "The Xero Invoice ID to update."
                             }
                         },
-                        "required": ["InvoiceID"],
+                        "required": [
+                            "InvoiceID"
+                        ],
                         "additionalProperties": {}
                     },
                     "ActionOutput_xero_updateinvoice": {
@@ -3846,7 +4270,10 @@
                                 "type": "string"
                             },
                             "Reference": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "CurrencyCode": {
                                 "type": "string"
@@ -3935,7 +4362,9 @@
                                 }
                             }
                         },
-                        "required": ["InvoiceID"],
+                        "required": [
+                            "InvoiceID"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3948,9 +4377,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_updateitem",
             "name": "update-item",
-            "output": ["ActionOutput_xero_updateitem"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_updateitem", "ActionOutput_xero_updateitem"],
+            "output": [
+                "ActionOutput_xero_updateitem"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_updateitem",
+                "ActionOutput_xero_updateitem"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -4096,16 +4532,22 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["Message"],
+                                            "required": [
+                                                "Message"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["ItemID"],
+                                "required": [
+                                    "ItemID"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["item"],
+                        "required": [
+                            "item"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4118,9 +4560,16 @@
             "endpoint": null,
             "input": "ActionInput_xero_updatepurchaseorder",
             "name": "update-purchase-order",
-            "output": ["ActionOutput_xero_updatepurchaseorder"],
-            "scopes": ["accounting.invoices"],
-            "usedModels": ["ActionInput_xero_updatepurchaseorder", "ActionOutput_xero_updatepurchaseorder"],
+            "output": [
+                "ActionOutput_xero_updatepurchaseorder"
+            ],
+            "scopes": [
+                "accounting.invoices"
+            ],
+            "usedModels": [
+                "ActionInput_xero_updatepurchaseorder",
+                "ActionOutput_xero_updatepurchaseorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4237,7 +4686,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["purchase_order_id"],
+                        "required": [
+                            "purchase_order_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_xero_updatepurchaseorder": {
@@ -4498,7 +4949,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4519,12 +4972,18 @@
             ],
             "input": null,
             "name": "accounts",
-            "output": ["Account"],
+            "output": [
+                "Account"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.settings.read"],
+            "scopes": [
+                "accounting.settings.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Account"],
+            "usedModels": [
+                "Account"
+            ],
             "version": "3.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4591,12 +5050,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4610,12 +5073,18 @@
             ],
             "input": null,
             "name": "bank-transactions",
-            "output": ["BankTransaction"],
+            "output": [
+                "BankTransaction"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.banktransactions.read"],
+            "scopes": [
+                "accounting.banktransactions.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BankTransaction"],
+            "usedModels": [
+                "BankTransaction"
+            ],
             "version": "3.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4657,12 +5126,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4676,12 +5149,18 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.contacts.read"],
+            "scopes": [
+                "accounting.contacts.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "3.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4726,12 +5205,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4745,12 +5229,18 @@
             ],
             "input": null,
             "name": "credit-notes",
-            "output": ["CreditNote"],
+            "output": [
+                "CreditNote"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.invoices.read"],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CreditNote"],
+            "usedModels": [
+                "CreditNote"
+            ],
             "version": "3.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4821,12 +5311,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4841,12 +5335,18 @@
             ],
             "input": null,
             "name": "general-ledger",
-            "output": ["GeneralLedger"],
+            "output": [
+                "GeneralLedger"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.journals.read"],
+            "scopes": [
+                "accounting.journals.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GeneralLedger"],
+            "usedModels": [
+                "GeneralLedger"
+            ],
             "version": "3.2.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4858,22 +5358,37 @@
                                 "type": "string"
                             },
                             "date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "number": {
                                 "type": "number"
                             },
                             "reference": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sourceId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sourceType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "lines": {
                                 "type": "array",
@@ -4932,7 +5447,13 @@
                                                         "items": {}
                                                     }
                                                 },
-                                                "required": ["name", "option", "trackingCategoryId", "trackingOptionId", "options"],
+                                                "required": [
+                                                    "name",
+                                                    "option",
+                                                    "trackingCategoryId",
+                                                    "trackingOptionId",
+                                                    "options"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
@@ -4952,12 +5473,23 @@
                                 }
                             }
                         },
-                        "required": ["id", "date", "number", "reference", "sourceId", "sourceType", "createdDate", "lines"],
+                        "required": [
+                            "id",
+                            "date",
+                            "number",
+                            "reference",
+                            "sourceId",
+                            "sourceType",
+                            "createdDate",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4971,12 +5503,18 @@
             ],
             "input": null,
             "name": "invoices",
-            "output": ["Invoice"],
+            "output": [
+                "Invoice"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.invoices.read"],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invoice"],
+            "usedModels": [
+                "Invoice"
+            ],
             "version": "3.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5033,12 +5571,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5052,12 +5594,18 @@
             ],
             "input": null,
             "name": "items",
-            "output": ["Item"],
+            "output": [
+                "Item"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.invoices.read"],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Item"],
+            "usedModels": [
+                "Item"
+            ],
             "version": "3.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5081,12 +5629,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5100,12 +5653,18 @@
             ],
             "input": null,
             "name": "organisations",
-            "output": ["Organisation"],
+            "output": [
+                "Organisation"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.settings.read"],
+            "scopes": [
+                "accounting.settings.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Organisation"],
+            "usedModels": [
+                "Organisation"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5165,7 +5724,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5184,12 +5745,18 @@
             ],
             "input": null,
             "name": "payments",
-            "output": ["Payment"],
+            "output": [
+                "Payment"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.payments.read"],
+            "scopes": [
+                "accounting.payments.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Payment"],
+            "usedModels": [
+                "Payment"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5243,12 +5810,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status", "updated_date_utc"],
+                        "required": [
+                            "id",
+                            "status",
+                            "updated_date_utc"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5262,12 +5835,18 @@
             ],
             "input": null,
             "name": "purchase-orders",
-            "output": ["PurchaseOrder"],
+            "output": [
+                "PurchaseOrder"
+            ],
             "runs": "every hour",
-            "scopes": ["accounting.invoices.read"],
+            "scopes": [
+                "accounting.invoices.read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PurchaseOrder"],
+            "usedModels": [
+                "PurchaseOrder"
+            ],
             "version": "3.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5318,12 +5897,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status", "updated_date_utc"],
+                        "required": [
+                            "id",
+                            "status",
+                            "updated_date_utc"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_addproblemcomment",
             "name": "add-problem-comment",
-            "output": ["ActionOutput_dynatrace_addproblemcomment"],
-            "scopes": ["problems.write"],
-            "usedModels": ["ActionInput_dynatrace_addproblemcomment", "ActionOutput_dynatrace_addproblemcomment"],
+            "output": [
+                "ActionOutput_dynatrace_addproblemcomment"
+            ],
+            "scopes": [
+                "problems.write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_addproblemcomment",
+                "ActionOutput_dynatrace_addproblemcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["problemId", "message"],
+                        "required": [
+                            "problemId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_addproblemcomment": {
@@ -45,7 +55,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["problemId", "message"],
+                        "required": [
+                            "problemId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -58,9 +71,17 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_deleteproblemcomment",
             "name": "delete-problem-comment",
-            "output": ["ActionOutput_dynatrace_deleteproblemcomment"],
-            "scopes": ["problems.read", "problems.write"],
-            "usedModels": ["ActionInput_dynatrace_deleteproblemcomment", "ActionOutput_dynatrace_deleteproblemcomment"],
+            "output": [
+                "ActionOutput_dynatrace_deleteproblemcomment"
+            ],
+            "scopes": [
+                "problems.read",
+                "problems.write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_deleteproblemcomment",
+                "ActionOutput_dynatrace_deleteproblemcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -76,7 +97,10 @@
                                 "description": "Dynatrace problem comment ID. Example: \"12345\""
                             }
                         },
-                        "required": ["problemId", "commentId"],
+                        "required": [
+                            "problemId",
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_deleteproblemcomment": {
@@ -92,7 +116,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "problemId", "commentId"],
+                        "required": [
+                            "success",
+                            "problemId",
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -105,9 +133,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_getentity",
             "name": "get-entity",
-            "output": ["ActionOutput_dynatrace_getentity"],
-            "scopes": ["entities.read"],
-            "usedModels": ["ActionInput_dynatrace_getentity", "ActionOutput_dynatrace_getentity"],
+            "output": [
+                "ActionOutput_dynatrace_getentity"
+            ],
+            "scopes": [
+                "entities.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_getentity",
+                "ActionOutput_dynatrace_getentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -119,7 +154,9 @@
                                 "description": "Entity ID. Example: \"HOST-1234567890ABCDEF\""
                             }
                         },
-                        "required": ["entityId"],
+                        "required": [
+                            "entityId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_getentity": {
@@ -160,7 +197,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["entityId"],
+                        "required": [
+                            "entityId"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -173,9 +212,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_getmetricdescriptor",
             "name": "get-metric-descriptor",
-            "output": ["ActionOutput_dynatrace_getmetricdescriptor"],
-            "scopes": ["metrics.read"],
-            "usedModels": ["ActionInput_dynatrace_getmetricdescriptor", "ActionOutput_dynatrace_getmetricdescriptor"],
+            "output": [
+                "ActionOutput_dynatrace_getmetricdescriptor"
+            ],
+            "scopes": [
+                "metrics.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_getmetricdescriptor",
+                "ActionOutput_dynatrace_getmetricdescriptor"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -187,7 +233,9 @@
                                 "description": "The fully qualified key of the metric. Example: \"builtin:host.cpu.usage\""
                             }
                         },
-                        "required": ["metricKey"],
+                        "required": [
+                            "metricKey"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_getmetricdescriptor": {
@@ -250,19 +298,31 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "displayName": {
                                             "type": "string"
                                         },
                                         "index": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["key", "name", "displayName", "index", "type"],
+                                    "required": [
+                                        "key",
+                                        "name",
+                                        "displayName",
+                                        "index",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -300,9 +360,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_getproblem",
             "name": "get-problem",
-            "output": ["ActionOutput_dynatrace_getproblem"],
-            "scopes": ["problems.read"],
-            "usedModels": ["ActionInput_dynatrace_getproblem", "ActionOutput_dynatrace_getproblem"],
+            "output": [
+                "ActionOutput_dynatrace_getproblem"
+            ],
+            "scopes": [
+                "problems.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_getproblem",
+                "ActionOutput_dynatrace_getproblem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -314,7 +381,9 @@
                                 "description": "The ID of the problem to retrieve. Example: \"6853744532401203457_1785946260000V2\""
                             }
                         },
-                        "required": ["problemId"],
+                        "required": [
+                            "problemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_getproblem": {
@@ -353,14 +422,20 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type"],
+                                            "required": [
+                                                "id",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "name": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["entityId", "name"],
+                                    "required": [
+                                        "entityId",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -379,14 +454,20 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type"],
+                                            "required": [
+                                                "id",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "name": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["entityId", "name"],
+                                    "required": [
+                                        "entityId",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -405,14 +486,20 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "name": {
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["entityId", "name"],
+                                        "required": [
+                                            "entityId",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -442,7 +529,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["context", "key", "stringRepresentation"],
+                                    "required": [
+                                        "context",
+                                        "key",
+                                        "stringRepresentation"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -486,14 +577,20 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["id", "type"],
+                                                            "required": [
+                                                                "id",
+                                                                "type"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "name": {
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["entityId", "name"],
+                                                    "required": [
+                                                        "entityId",
+                                                        "name"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "groupingEntity": {
@@ -511,14 +608,20 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["id", "type"],
+                                                                    "required": [
+                                                                        "id",
+                                                                        "type"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 },
                                                                 "name": {
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["entityId", "name"],
+                                                            "required": [
+                                                                "entityId",
+                                                                "name"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -536,7 +639,10 @@
                                                     "type": "string"
                                                 },
                                                 "aggregationType": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "valueBeforeChangePoint": {
                                                     "type": "number"
@@ -558,12 +664,22 @@
                                                 },
                                                 "data": {}
                                             },
-                                            "required": ["evidenceType", "displayName", "entity", "rootCauseRelevant", "startTime", "endTime"],
+                                            "required": [
+                                                "evidenceType",
+                                                "displayName",
+                                                "entity",
+                                                "rootCauseRelevant",
+                                                "startTime",
+                                                "endTime"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["totalCount", "details"],
+                                "required": [
+                                    "totalCount",
+                                    "details"
+                                ],
                                 "additionalProperties": false
                             },
                             "recentComments": {
@@ -593,12 +709,20 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "createdAtTimestamp", "content", "authorName"],
+                                            "required": [
+                                                "id",
+                                                "createdAtTimestamp",
+                                                "content",
+                                                "authorName"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["totalCount", "comments"],
+                                "required": [
+                                    "totalCount",
+                                    "comments"
+                                ],
                                 "additionalProperties": false
                             },
                             "impactAnalysis": {
@@ -609,7 +733,9 @@
                                         "items": {}
                                     }
                                 },
-                                "required": ["impacts"],
+                                "required": [
+                                    "impacts"
+                                ],
                                 "additionalProperties": false
                             }
                         },
@@ -640,9 +766,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_getsecurityproblem",
             "name": "get-security-problem",
-            "output": ["ActionOutput_dynatrace_getsecurityproblem"],
-            "scopes": ["securityProblems.read"],
-            "usedModels": ["ActionInput_dynatrace_getsecurityproblem", "ActionOutput_dynatrace_getsecurityproblem"],
+            "output": [
+                "ActionOutput_dynatrace_getsecurityproblem"
+            ],
+            "scopes": [
+                "securityProblems.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_getsecurityproblem",
+                "ActionOutput_dynatrace_getsecurityproblem"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -654,7 +787,9 @@
                                 "description": "The ID of the security problem. Example: \"7412525767433554374\" or \"S-7\""
                             }
                         },
-                        "required": ["securityProblemId"],
+                        "required": [
+                            "securityProblemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_getsecurityproblem": {
@@ -1012,7 +1147,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["securityProblemId"],
+                        "required": [
+                            "securityProblemId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1025,9 +1162,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_getslo",
             "name": "get-slo",
-            "output": ["ActionOutput_dynatrace_getslo"],
-            "scopes": ["slo.read"],
-            "usedModels": ["ActionInput_dynatrace_getslo", "ActionOutput_dynatrace_getslo"],
+            "output": [
+                "ActionOutput_dynatrace_getslo"
+            ],
+            "scopes": [
+                "slo.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_getslo",
+                "ActionOutput_dynatrace_getslo"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1039,7 +1183,9 @@
                                 "description": "The ID of the required SLO. Example: \"123e4567-e89b-42d3-a456-556642440000\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_getslo": {
@@ -1157,7 +1303,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1170,9 +1318,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_ingestevents",
             "name": "ingest-events",
-            "output": ["ActionOutput_dynatrace_ingestevents"],
-            "scopes": ["events.ingest"],
-            "usedModels": ["ActionInput_dynatrace_ingestevents", "ActionOutput_dynatrace_ingestevents"],
+            "output": [
+                "ActionOutput_dynatrace_ingestevents"
+            ],
+            "scopes": [
+                "events.ingest"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_ingestevents",
+                "ActionOutput_dynatrace_ingestevents"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1211,7 +1366,11 @@
                                     "type": "string"
                                 },
                                 "additionalProperties": {
-                                    "type": ["string", "number", "boolean"]
+                                    "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                    ]
                                 }
                             },
                             "startTime": {
@@ -1233,7 +1392,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["eventType", "title"],
+                        "required": [
+                            "eventType",
+                            "title"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_ingestevents": {
@@ -1252,15 +1414,26 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["OK", "INVALID_ENTITY_TYPE", "INVALID_METADATA", "INVALID_TIMESTAMPS"]
+                                            "enum": [
+                                                "OK",
+                                                "INVALID_ENTITY_TYPE",
+                                                "INVALID_METADATA",
+                                                "INVALID_TIMESTAMPS"
+                                            ]
                                         }
                                     },
-                                    "required": ["correlationId", "status"],
+                                    "required": [
+                                        "correlationId",
+                                        "status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["reportCount", "eventIngestResults"],
+                        "required": [
+                            "reportCount",
+                            "eventIngestResults"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1273,9 +1446,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listapitokens",
             "name": "list-api-tokens",
-            "output": ["ActionOutput_dynatrace_listapitokens"],
-            "scopes": ["apiTokens.read"],
-            "usedModels": ["ActionInput_dynatrace_listapitokens", "ActionOutput_dynatrace_listapitokens"],
+            "output": [
+                "ActionOutput_dynatrace_listapitokens"
+            ],
+            "scopes": [
+                "apiTokens.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listapitokens",
+                "ActionOutput_dynatrace_listapitokens"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1341,7 +1521,12 @@
                                         },
                                         "additionalMetadata": {}
                                     },
-                                    "required": ["id", "name", "enabled", "owner"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "enabled",
+                                        "owner"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1355,7 +1540,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "pageSize", "totalCount"],
+                        "required": [
+                            "items",
+                            "pageSize",
+                            "totalCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1368,9 +1557,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listentities",
             "name": "list-entities",
-            "output": ["ActionOutput_dynatrace_listentities"],
-            "scopes": ["entities.read"],
-            "usedModels": ["ActionInput_dynatrace_listentities", "ActionOutput_dynatrace_listentities"],
+            "output": [
+                "ActionOutput_dynatrace_listentities"
+            ],
+            "scopes": [
+                "entities.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listentities",
+                "ActionOutput_dynatrace_listentities"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1416,7 +1612,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["entityId", "type"],
+                                    "required": [
+                                        "entityId",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1430,7 +1629,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["entities"],
+                        "required": [
+                            "entities"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1443,9 +1644,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listentitytypes",
             "name": "list-entity-types",
-            "output": ["ActionOutput_dynatrace_listentitytypes"],
-            "scopes": ["entities.read"],
-            "usedModels": ["ActionInput_dynatrace_listentitytypes", "ActionOutput_dynatrace_listentitytypes"],
+            "output": [
+                "ActionOutput_dynatrace_listentitytypes"
+            ],
+            "scopes": [
+                "entities.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listentitytypes",
+                "ActionOutput_dynatrace_listentitytypes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1491,7 +1699,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1510,7 +1721,10 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["id", "toTypes"],
+                                                "required": [
+                                                    "id",
+                                                    "toTypes"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
@@ -1529,12 +1743,17 @@
                                                         }
                                                     }
                                                 },
-                                                "required": ["id", "fromTypes"],
+                                                "required": [
+                                                    "id",
+                                                    "fromTypes"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         }
                                     },
-                                    "required": ["type"],
+                                    "required": [
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1542,7 +1761,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1555,9 +1776,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_dynatrace_listevents"],
-            "scopes": ["events.read"],
-            "usedModels": ["ActionInput_dynatrace_listevents", "ActionOutput_dynatrace_listevents"],
+            "output": [
+                "ActionOutput_dynatrace_listevents"
+            ],
+            "scopes": [
+                "events.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listevents",
+                "ActionOutput_dynatrace_listevents"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1605,7 +1833,10 @@
                                             "type": "string"
                                         },
                                         "endTime": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "entityId": {
                                             "type": "object",
@@ -1620,14 +1851,19 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "type"],
+                                                    "required": [
+                                                        "id",
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "name": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["entityId"],
+                                            "required": [
+                                                "entityId"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "entityTags": {
@@ -1713,7 +1949,10 @@
                                 }
                             },
                             "nextPageKey": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "pageSize": {
                                 "type": "number"
@@ -1728,7 +1967,9 @@
                                 }
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1741,9 +1982,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listmetrics",
             "name": "list-metrics",
-            "output": ["ActionOutput_dynatrace_listmetrics"],
-            "scopes": ["metrics.read"],
-            "usedModels": ["ActionInput_dynatrace_listmetrics", "ActionOutput_dynatrace_listmetrics"],
+            "output": [
+                "ActionOutput_dynatrace_listmetrics"
+            ],
+            "scopes": [
+                "metrics.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listmetrics",
+                "ActionOutput_dynatrace_listmetrics"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1827,7 +2075,10 @@
                                                         "type": "string"
                                                     },
                                                     "name": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "index": {
                                                         "anyOf": [
@@ -1876,7 +2127,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["metricId"],
+                                    "required": [
+                                        "metricId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1895,7 +2148,9 @@
                                 }
                             }
                         },
-                        "required": ["metrics"],
+                        "required": [
+                            "metrics"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1908,9 +2163,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listnetworkzones",
             "name": "list-network-zones",
-            "output": ["ActionOutput_dynatrace_listnetworkzones"],
-            "scopes": ["networkZones.read"],
-            "usedModels": ["ActionInput_dynatrace_listnetworkzones", "ActionOutput_dynatrace_listnetworkzones"],
+            "output": [
+                "ActionOutput_dynatrace_listnetworkzones"
+            ],
+            "scopes": [
+                "networkZones.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listnetworkzones",
+                "ActionOutput_dynatrace_listnetworkzones"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1961,12 +2223,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1979,9 +2245,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listproblemcomments",
             "name": "list-problem-comments",
-            "output": ["ActionOutput_dynatrace_listproblemcomments"],
-            "scopes": ["problems.read"],
-            "usedModels": ["ActionInput_dynatrace_listproblemcomments", "ActionOutput_dynatrace_listproblemcomments"],
+            "output": [
+                "ActionOutput_dynatrace_listproblemcomments"
+            ],
+            "scopes": [
+                "problems.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listproblemcomments",
+                "ActionOutput_dynatrace_listproblemcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1997,7 +2270,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["problemId"],
+                        "required": [
+                            "problemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_listproblemcomments": {
@@ -2024,7 +2299,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "createdAtTimestamp", "content", "authorName"],
+                                    "required": [
+                                        "id",
+                                        "createdAtTimestamp",
+                                        "content",
+                                        "authorName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2035,7 +2315,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["comments", "totalCount"],
+                        "required": [
+                            "comments",
+                            "totalCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2048,9 +2331,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listproblems",
             "name": "list-problems",
-            "output": ["ActionOutput_dynatrace_listproblems"],
-            "scopes": ["problems.read"],
-            "usedModels": ["ActionInput_dynatrace_listproblems", "ActionOutput_dynatrace_listproblems"],
+            "output": [
+                "ActionOutput_dynatrace_listproblems"
+            ],
+            "scopes": [
+                "problems.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listproblems",
+                "ActionOutput_dynatrace_listproblems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2137,14 +2427,19 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "type"],
+                                                        "required": [
+                                                            "id",
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "name": {
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["entityId"],
+                                                "required": [
+                                                    "entityId"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2163,14 +2458,19 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "type"],
+                                                        "required": [
+                                                            "id",
+                                                            "type"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "name": {
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["entityId"],
+                                                "required": [
+                                                    "entityId"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2189,14 +2489,19 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["id", "type"],
+                                                            "required": [
+                                                                "id",
+                                                                "type"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "name": {
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["entityId"],
+                                                    "required": [
+                                                        "entityId"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2237,7 +2542,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2253,7 +2561,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2267,7 +2578,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["displayId", "problemId"],
+                                            "required": [
+                                                "displayId",
+                                                "problemId"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "evidenceDetails": {
@@ -2310,7 +2624,15 @@
                                             }
                                         }
                                     },
-                                    "required": ["problemId", "displayId", "title", "severityLevel", "status", "startTime", "endTime"],
+                                    "required": [
+                                        "problemId",
+                                        "displayId",
+                                        "title",
+                                        "severityLevel",
+                                        "status",
+                                        "startTime",
+                                        "endTime"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2330,7 +2652,11 @@
                                 }
                             }
                         },
-                        "required": ["problems", "totalCount", "pageSize"],
+                        "required": [
+                            "problems",
+                            "totalCount",
+                            "pageSize"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2343,9 +2669,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listreleases",
             "name": "list-releases",
-            "output": ["ActionOutput_dynatrace_listreleases"],
-            "scopes": ["releases.read"],
-            "usedModels": ["ActionInput_dynatrace_listreleases", "ActionOutput_dynatrace_listreleases"],
+            "output": [
+                "ActionOutput_dynatrace_listreleases"
+            ],
+            "scopes": [
+                "releases.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listreleases",
+                "ActionOutput_dynatrace_listreleases"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2436,7 +2769,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2449,9 +2784,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listsecurityproblems",
             "name": "list-security-problems",
-            "output": ["ActionOutput_dynatrace_listsecurityproblems"],
-            "scopes": ["securityProblems.read"],
-            "usedModels": ["ActionInput_dynatrace_listsecurityproblems", "ActionOutput_dynatrace_listsecurityproblems"],
+            "output": [
+                "ActionOutput_dynatrace_listsecurityproblems"
+            ],
+            "scopes": [
+                "securityProblems.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listsecurityproblems",
+                "ActionOutput_dynatrace_listsecurityproblems"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2610,7 +2952,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2657,7 +3002,15 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["securityProblemId", "displayId", "status", "muted", "externalVulnerabilityId", "vulnerabilityType", "title"],
+                                    "required": [
+                                        "securityProblemId",
+                                        "displayId",
+                                        "status",
+                                        "muted",
+                                        "externalVulnerabilityId",
+                                        "vulnerabilityType",
+                                        "title"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2671,7 +3024,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "pageSize", "totalCount"],
+                        "required": [
+                            "items",
+                            "pageSize",
+                            "totalCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2684,9 +3041,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listsettingsobjects",
             "name": "list-settings-objects",
-            "output": ["ActionOutput_dynatrace_listsettingsobjects"],
-            "scopes": ["settings.read"],
-            "usedModels": ["ActionInput_dynatrace_listsettingsobjects", "ActionOutput_dynatrace_listsettingsobjects"],
+            "output": [
+                "ActionOutput_dynatrace_listsettingsobjects"
+            ],
+            "scopes": [
+                "settings.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listsettingsobjects",
+                "ActionOutput_dynatrace_listsettingsobjects"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2706,7 +3070,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["schemaId"],
+                        "required": [
+                            "schemaId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_listsettingsobjects": {
@@ -2767,7 +3133,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "resourceContext": {
@@ -2837,7 +3205,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["objectId"],
+                                    "required": [
+                                        "objectId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2851,7 +3221,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2864,9 +3236,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listsettingsschemas",
             "name": "list-settings-schemas",
-            "output": ["ActionOutput_dynatrace_listsettingsschemas"],
-            "scopes": ["settings.read"],
-            "usedModels": ["ActionInput_dynatrace_listsettingsschemas", "ActionOutput_dynatrace_listsettingsschemas"],
+            "output": [
+                "ActionOutput_dynatrace_listsettingsschemas"
+            ],
+            "scopes": [
+                "settings.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listsettingsschemas",
+                "ActionOutput_dynatrace_listsettingsschemas"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2893,19 +3272,35 @@
                                             "type": "string"
                                         },
                                         "maturity": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "multiObject": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "ordered": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "ownerBasedAccessControl": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["schemaId", "displayName", "latestSchemaVersion"],
+                                    "required": [
+                                        "schemaId",
+                                        "displayName",
+                                        "latestSchemaVersion"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2913,7 +3308,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items", "totalCount"],
+                        "required": [
+                            "items",
+                            "totalCount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2926,9 +3324,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_listslos",
             "name": "list-slos",
-            "output": ["ActionOutput_dynatrace_listslos"],
-            "scopes": ["slo.read"],
-            "usedModels": ["ActionInput_dynatrace_listslos", "ActionOutput_dynatrace_listslos"],
+            "output": [
+                "ActionOutput_dynatrace_listslos"
+            ],
+            "scopes": [
+                "slo.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_listslos",
+                "ActionOutput_dynatrace_listslos"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2952,17 +3357,27 @@
                             "sort": {
                                 "description": "Sort by name in ascending or descending order.",
                                 "type": "string",
-                                "enum": ["name", "-name"]
+                                "enum": [
+                                    "name",
+                                    "-name"
+                                ]
                             },
                             "enabledSlos": {
                                 "description": "Filter by enabled status: true, false, or all.",
                                 "type": "string",
-                                "enum": ["true", "false", "all"]
+                                "enum": [
+                                    "true",
+                                    "false",
+                                    "all"
+                                ]
                             },
                             "evaluate": {
                                 "description": "Whether to evaluate SLOs. When true, maximum pageSize is 25.",
                                 "type": "string",
-                                "enum": ["true", "false"]
+                                "enum": [
+                                    "true",
+                                    "false"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3091,7 +3506,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3104,7 +3522,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3117,9 +3537,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_querymetricdata",
             "name": "query-metric-data",
-            "output": ["ActionOutput_dynatrace_querymetricdata"],
-            "scopes": ["metrics.read"],
-            "usedModels": ["ActionInput_dynatrace_querymetricdata", "ActionOutput_dynatrace_querymetricdata"],
+            "output": [
+                "ActionOutput_dynatrace_querymetricdata"
+            ],
+            "scopes": [
+                "metrics.read"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_querymetricdata",
+                "ActionOutput_dynatrace_querymetricdata"
+            ],
             "version": "1.1.0",
             "json_schema": {
                 "definitions": {
@@ -3155,7 +3582,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["metricSelector"],
+                        "required": [
+                            "metricSelector"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_querymetricdata": {
@@ -3165,7 +3594,10 @@
                                 "type": "number"
                             },
                             "nextPageKey": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "resolution": {
                                 "type": "string"
@@ -3207,7 +3639,10 @@
                                                     "values": {
                                                         "type": "array",
                                                         "items": {
-                                                            "type": ["number", "null"]
+                                                            "type": [
+                                                                "number",
+                                                                "null"
+                                                            ]
                                                         }
                                                     }
                                                 },
@@ -3227,7 +3662,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["metricId", "data"],
+                                    "required": [
+                                        "metricId",
+                                        "data"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3238,7 +3676,9 @@
                                 }
                             }
                         },
-                        "required": ["result"],
+                        "required": [
+                            "result"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3251,9 +3691,16 @@
             "endpoint": null,
             "input": "ActionInput_dynatrace_updateproblemcomment",
             "name": "update-problem-comment",
-            "output": ["ActionOutput_dynatrace_updateproblemcomment"],
-            "scopes": ["problems.write"],
-            "usedModels": ["ActionInput_dynatrace_updateproblemcomment", "ActionOutput_dynatrace_updateproblemcomment"],
+            "output": [
+                "ActionOutput_dynatrace_updateproblemcomment"
+            ],
+            "scopes": [
+                "problems.write"
+            ],
+            "usedModels": [
+                "ActionInput_dynatrace_updateproblemcomment",
+                "ActionOutput_dynatrace_updateproblemcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3277,7 +3724,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["problemId", "commentId", "message"],
+                        "required": [
+                            "problemId",
+                            "commentId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_dynatrace_updateproblemcomment": {
@@ -3293,7 +3744,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["problemId", "commentId", "updated"],
+                        "required": [
+                            "problemId",
+                            "commentId",
+                            "updated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3309,12 +3764,16 @@
             "endpoints": [],
             "input": null,
             "name": "entities",
-            "output": ["Entity"],
+            "output": [
+                "Entity"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Entity"],
+            "usedModels": [
+                "Entity"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3346,12 +3805,18 @@
                                 "items": {}
                             }
                         },
-                        "required": ["id", "entityId", "type"],
+                        "required": [
+                            "id",
+                            "entityId",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3360,12 +3825,16 @@
             "endpoints": [],
             "input": null,
             "name": "problems",
-            "output": ["Problem"],
+            "output": [
+                "Problem"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Problem"],
+            "usedModels": [
+                "Problem"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3567,12 +4036,19 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "problemId", "title", "status"],
+                        "required": [
+                            "id",
+                            "problemId",
+                            "title",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

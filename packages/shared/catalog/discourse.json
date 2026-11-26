@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_discourse_createcategory",
             "name": "create-category",
-            "output": ["ActionOutput_discourse_createcategory"],
+            "output": [
+                "ActionOutput_discourse_createcategory"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discourse_createcategory", "ActionOutput_discourse_createcategory"],
+            "usedModels": [
+                "ActionInput_discourse_createcategory",
+                "ActionOutput_discourse_createcategory"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -35,7 +40,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discourse_createcategory": {
@@ -51,13 +58,22 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "slug": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "color", "description", "slug"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "description",
+                            "slug"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -70,9 +86,14 @@
             "endpoint": null,
             "input": "ActionInput_discourse_createtopic",
             "name": "create-topic",
-            "output": ["ActionOutput_discourse_createtopic"],
+            "output": [
+                "ActionOutput_discourse_createtopic"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discourse_createtopic", "ActionOutput_discourse_createtopic"],
+            "usedModels": [
+                "ActionInput_discourse_createtopic",
+                "ActionOutput_discourse_createtopic"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -89,7 +110,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["title", "category", "raw"],
+                        "required": [
+                            "title",
+                            "category",
+                            "raw"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discourse_createtopic": {
@@ -105,7 +130,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "content"],
+                        "required": [
+                            "id",
+                            "name",
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -118,9 +147,14 @@
             "endpoint": null,
             "input": "ActionInput_discourse_updatetopicstatus",
             "name": "update-topic-status",
-            "output": ["ActionOutput_discourse_updatetopicstatus"],
+            "output": [
+                "ActionOutput_discourse_updatetopicstatus"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_discourse_updatetopicstatus", "ActionOutput_discourse_updatetopicstatus"],
+            "usedModels": [
+                "ActionInput_discourse_updatetopicstatus",
+                "ActionOutput_discourse_updatetopicstatus"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -155,13 +189,21 @@
                                 ]
                             },
                             "enabled": {
-                                "anyOf": [{}, {}]
+                                "anyOf": [
+                                    {},
+                                    {}
+                                ]
                             },
                             "until": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status", "enabled", "until"],
+                        "required": [
+                            "id",
+                            "status",
+                            "enabled",
+                            "until"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_discourse_updatetopicstatus": {
@@ -174,7 +216,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "result"],
+                        "required": [
+                            "success",
+                            "result"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -195,12 +240,17 @@
             ],
             "input": "SyncMetadata_discourse_activeusers",
             "name": "active-users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every 1 hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_discourse_activeusers"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_discourse_activeusers"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -221,7 +271,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "username", "name", "admin"],
+                        "required": [
+                            "id",
+                            "username",
+                            "name",
+                            "admin"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discourse_activeusers": {
@@ -246,12 +301,17 @@
             ],
             "input": "SyncMetadata_discourse_categories",
             "name": "categories",
-            "output": ["Category"],
+            "output": [
+                "Category"
+            ],
             "runs": "every week",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Category", "SyncMetadata_discourse_categories"],
+            "usedModels": [
+                "Category",
+                "SyncMetadata_discourse_categories"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -269,13 +329,22 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "slug": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "color", "description", "slug"],
+                        "required": [
+                            "id",
+                            "name",
+                            "color",
+                            "description",
+                            "slug"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_discourse_categories": {

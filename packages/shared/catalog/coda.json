@@ -10,9 +10,14 @@
             },
             "input": "ActionInput_coda_addpermission",
             "name": "add-permission",
-            "output": ["ActionOutput_coda_addpermission"],
+            "output": [
+                "ActionOutput_coda_addpermission"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_addpermission", "ActionOutput_coda_addpermission"],
+            "usedModels": [
+                "ActionInput_coda_addpermission",
+                "ActionOutput_coda_addpermission"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,12 +30,19 @@
                             },
                             "access": {
                                 "type": "string",
-                                "enum": ["readonly", "write", "comment"],
+                                "enum": [
+                                    "readonly",
+                                    "write",
+                                    "comment"
+                                ],
                                 "description": "Access level to grant."
                             },
                             "principalType": {
                                 "type": "string",
-                                "enum": ["email", "anyone"],
+                                "enum": [
+                                    "email",
+                                    "anyone"
+                                ],
                                 "description": "Type of principal to share with."
                             },
                             "email": {
@@ -42,7 +54,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["docId", "access", "principalType"],
+                        "required": [
+                            "docId",
+                            "access",
+                            "principalType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_addpermission": {
@@ -79,9 +95,14 @@
             "endpoint": null,
             "input": "ActionInput_coda_createdoc",
             "name": "create-doc",
-            "output": ["ActionOutput_coda_createdoc"],
+            "output": [
+                "ActionOutput_coda_createdoc"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_createdoc", "ActionOutput_coda_createdoc"],
+            "usedModels": [
+                "ActionInput_coda_createdoc",
+                "ActionOutput_coda_createdoc"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -152,7 +173,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "folder": {
@@ -171,7 +195,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "workspaceId": {
@@ -229,7 +256,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "published": {
@@ -274,7 +304,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "href", "browserLink", "name", "owner", "ownerName", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "type",
+                            "href",
+                            "browserLink",
+                            "name",
+                            "owner",
+                            "ownerName",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -290,9 +330,14 @@
             },
             "input": "ActionInput_coda_createpage",
             "name": "create-page",
-            "output": ["ActionOutput_coda_createpage"],
+            "output": [
+                "ActionOutput_coda_createpage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_createpage", "ActionOutput_coda_createpage"],
+            "usedModels": [
+                "ActionInput_coda_createpage",
+                "ActionOutput_coda_createpage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -324,7 +369,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId", "name"],
+                        "required": [
+                            "docId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_createpage": {
@@ -340,7 +388,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "requestId", "completed"],
+                        "required": [
+                            "id",
+                            "requestId",
+                            "completed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -356,9 +408,14 @@
             },
             "input": "ActionInput_coda_deletedoc",
             "name": "delete-doc",
-            "output": ["ActionOutput_coda_deletedoc"],
+            "output": [
+                "ActionOutput_coda_deletedoc"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_deletedoc", "ActionOutput_coda_deletedoc"],
+            "usedModels": [
+                "ActionInput_coda_deletedoc",
+                "ActionOutput_coda_deletedoc"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -370,7 +427,9 @@
                                 "description": "The ID of the doc to delete. Example: \"a97K6uAljP\""
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_deletedoc": {
@@ -380,7 +439,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -396,9 +457,14 @@
             },
             "input": "ActionInput_coda_deletepage",
             "name": "delete-page",
-            "output": ["ActionOutput_coda_deletepage"],
+            "output": [
+                "ActionOutput_coda_deletepage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_deletepage", "ActionOutput_coda_deletepage"],
+            "usedModels": [
+                "ActionInput_coda_deletepage",
+                "ActionOutput_coda_deletepage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -414,7 +480,10 @@
                                 "description": "Page ID or name. Example: \"canvas-taIuEN56H1\""
                             }
                         },
-                        "required": ["docId", "pageIdOrName"],
+                        "required": [
+                            "docId",
+                            "pageIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_deletepage": {
@@ -430,7 +499,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "requestId", "completed"],
+                        "required": [
+                            "id",
+                            "requestId",
+                            "completed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -446,9 +519,14 @@
             },
             "input": "ActionInput_coda_deleterow",
             "name": "delete-row",
-            "output": ["ActionOutput_coda_deleterow"],
+            "output": [
+                "ActionOutput_coda_deleterow"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_deleterow", "ActionOutput_coda_deleterow"],
+            "usedModels": [
+                "ActionInput_coda_deleterow",
+                "ActionOutput_coda_deleterow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -468,7 +546,11 @@
                                 "description": "The ID or name of the row to delete. Example: \"i-123\""
                             }
                         },
-                        "required": ["docId", "tableIdOrName", "rowIdOrName"],
+                        "required": [
+                            "docId",
+                            "tableIdOrName",
+                            "rowIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_deleterow": {
@@ -479,7 +561,9 @@
                                 "description": "The async request ID for tracking the mutation status."
                             }
                         },
-                        "required": ["requestId"],
+                        "required": [
+                            "requestId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -492,9 +576,14 @@
             "endpoint": null,
             "input": "ActionInput_coda_deleterows",
             "name": "delete-rows",
-            "output": ["ActionOutput_coda_deleterows"],
+            "output": [
+                "ActionOutput_coda_deleterows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_deleterows", "ActionOutput_coda_deleterows"],
+            "usedModels": [
+                "ActionInput_coda_deleterows",
+                "ActionOutput_coda_deleterows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -519,7 +608,11 @@
                                 "description": "The IDs of the rows to delete. Up to 100 row IDs per call."
                             }
                         },
-                        "required": ["docId", "tableIdOrName", "rowIds"],
+                        "required": [
+                            "docId",
+                            "tableIdOrName",
+                            "rowIds"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_deleterows": {
@@ -530,7 +623,9 @@
                                 "description": "The mutation request ID for tracking async completion."
                             }
                         },
-                        "required": ["requestId"],
+                        "required": [
+                            "requestId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -546,9 +641,14 @@
             },
             "input": "ActionInput_coda_getcolumn",
             "name": "get-column",
-            "output": ["ActionOutput_coda_getcolumn"],
+            "output": [
+                "ActionOutput_coda_getcolumn"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_getcolumn", "ActionOutput_coda_getcolumn"],
+            "usedModels": [
+                "ActionInput_coda_getcolumn",
+                "ActionOutput_coda_getcolumn"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -568,7 +668,11 @@
                                 "description": "ID or name of the column. Example: \"c-tuVwxYz\""
                             }
                         },
-                        "required": ["docId", "tableId", "columnId"],
+                        "required": [
+                            "docId",
+                            "tableId",
+                            "columnId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getcolumn": {
@@ -643,11 +747,23 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["id", "type", "tableType", "href", "browserLink", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "tableType",
+                                    "href",
+                                    "browserLink",
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "type", "name", "href"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name",
+                            "href"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -660,9 +776,14 @@
             "endpoint": null,
             "input": "ActionInput_coda_getcontrol",
             "name": "get-control",
-            "output": ["ActionOutput_coda_getcontrol"],
+            "output": [
+                "ActionOutput_coda_getcontrol"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_getcontrol", "ActionOutput_coda_getcontrol"],
+            "usedModels": [
+                "ActionInput_coda_getcontrol",
+                "ActionOutput_coda_getcontrol"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -678,7 +799,10 @@
                                 "description": "ID or name of the control. Example: \"ctrl-F38u5bVLOn\""
                             }
                         },
-                        "required": ["docId", "controlIdOrName"],
+                        "required": [
+                            "docId",
+                            "controlIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getcontrol": {
@@ -713,11 +837,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "href", "name", "controlType"],
+                        "required": [
+                            "id",
+                            "type",
+                            "href",
+                            "name",
+                            "controlType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -733,9 +866,14 @@
             },
             "input": "ActionInput_coda_getdoc",
             "name": "get-doc",
-            "output": ["ActionOutput_coda_getdoc"],
+            "output": [
+                "ActionOutput_coda_getdoc"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_getdoc", "ActionOutput_coda_getdoc"],
+            "usedModels": [
+                "ActionInput_coda_getdoc",
+                "ActionOutput_coda_getdoc"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -747,7 +885,9 @@
                                 "description": "ID of the Coda doc. Example: \"AbCDeFGH\""
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getdoc": {
@@ -907,7 +1047,17 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "href", "browserLink", "name", "owner", "ownerName", "createdAt", "updatedAt"],
+                        "required": [
+                            "id",
+                            "type",
+                            "href",
+                            "browserLink",
+                            "name",
+                            "owner",
+                            "ownerName",
+                            "createdAt",
+                            "updatedAt"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -923,9 +1073,14 @@
             },
             "input": "ActionInput_coda_getformula",
             "name": "get-formula",
-            "output": ["ActionOutput_coda_getformula"],
+            "output": [
+                "ActionOutput_coda_getformula"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_getformula", "ActionOutput_coda_getformula"],
+            "usedModels": [
+                "ActionInput_coda_getformula",
+                "ActionOutput_coda_getformula"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -941,7 +1096,10 @@
                                 "description": "ID or name of the formula. Example: \"f-fgHijkLm\""
                             }
                         },
-                        "required": ["docId", "formulaIdOrName"],
+                        "required": [
+                            "docId",
+                            "formulaIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getformula": {
@@ -962,12 +1120,20 @@
                             "value": {
                                 "anyOf": [
                                     {
-                                        "type": ["string", "number", "boolean"]
+                                        "type": [
+                                            "string",
+                                            "number",
+                                            "boolean"
+                                        ]
                                     },
                                     {
                                         "type": "array",
                                         "items": {
-                                            "type": ["string", "number", "boolean"]
+                                            "type": [
+                                                "string",
+                                                "number",
+                                                "boolean"
+                                            ]
                                         }
                                     },
                                     {
@@ -975,7 +1141,11 @@
                                         "items": {
                                             "type": "array",
                                             "items": {
-                                                "type": ["string", "number", "boolean"]
+                                                "type": [
+                                                    "string",
+                                                    "number",
+                                                    "boolean"
+                                                ]
                                             }
                                         }
                                     }
@@ -1000,11 +1170,23 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "href", "browserLink", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "href",
+                                    "browserLink",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "href", "name", "value"],
+                        "required": [
+                            "id",
+                            "type",
+                            "href",
+                            "name",
+                            "value"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1017,9 +1199,16 @@
             "endpoint": null,
             "input": "ActionInput_coda_getmutationstatus",
             "name": "get-mutation-status",
-            "output": ["ActionOutput_coda_getmutationstatus"],
-            "scopes": ["doc:read"],
-            "usedModels": ["ActionInput_coda_getmutationstatus", "ActionOutput_coda_getmutationstatus"],
+            "output": [
+                "ActionOutput_coda_getmutationstatus"
+            ],
+            "scopes": [
+                "doc:read"
+            ],
+            "usedModels": [
+                "ActionInput_coda_getmutationstatus",
+                "ActionOutput_coda_getmutationstatus"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1031,7 +1220,9 @@
                                 "description": "The requestId returned by an async mutation such as page create/update/delete or row upsert. Example: \"request-123\""
                             }
                         },
-                        "required": ["requestId"],
+                        "required": [
+                            "requestId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getmutationstatus": {
@@ -1041,7 +1232,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["completed"],
+                        "required": [
+                            "completed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1057,9 +1250,14 @@
             },
             "input": "ActionInput_coda_getpage",
             "name": "get-page",
-            "output": ["ActionOutput_coda_getpage"],
+            "output": [
+                "ActionOutput_coda_getpage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_getpage", "ActionOutput_coda_getpage"],
+            "usedModels": [
+                "ActionInput_coda_getpage",
+                "ActionOutput_coda_getpage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1075,7 +1273,10 @@
                                 "description": "Page ID or page name. Example: \"canvas-51lnQjKXyv\""
                             }
                         },
-                        "required": ["docId", "pageIdOrName"],
+                        "required": [
+                            "docId",
+                            "pageIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getpage": {
@@ -1126,7 +1327,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type", "href", "browserLink", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "href",
+                                        "browserLink",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1185,7 +1392,13 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "href", "browserLink", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "href",
+                                    "browserLink",
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             },
                             "authors": {
@@ -1234,7 +1447,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "type", "name"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1250,9 +1467,16 @@
             },
             "input": "ActionInput_coda_getrow",
             "name": "get-row",
-            "output": ["ActionOutput_coda_getrow"],
-            "scopes": ["doc:read"],
-            "usedModels": ["ActionInput_coda_getrow", "ActionOutput_coda_getrow"],
+            "output": [
+                "ActionOutput_coda_getrow"
+            ],
+            "scopes": [
+                "doc:read"
+            ],
+            "usedModels": [
+                "ActionInput_coda_getrow",
+                "ActionOutput_coda_getrow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1278,10 +1502,18 @@
                             "valueFormat": {
                                 "description": "The format that cell values are returned as.",
                                 "type": "string",
-                                "enum": ["simple", "simpleWithArrays", "rich"]
+                                "enum": [
+                                    "simple",
+                                    "simpleWithArrays",
+                                    "rich"
+                                ]
                             }
                         },
-                        "required": ["docId", "tableIdOrName", "rowIdOrName"],
+                        "required": [
+                            "docId",
+                            "tableIdOrName",
+                            "rowIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getrow": {
@@ -1358,15 +1590,24 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "type"],
+                                        "required": [
+                                            "id",
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1379,9 +1620,16 @@
             "endpoint": null,
             "input": "ActionInput_coda_getsharingmetadata",
             "name": "get-sharing-metadata",
-            "output": ["ActionOutput_coda_getsharingmetadata"],
-            "scopes": ["read:docs"],
-            "usedModels": ["ActionInput_coda_getsharingmetadata", "ActionOutput_coda_getsharingmetadata"],
+            "output": [
+                "ActionOutput_coda_getsharingmetadata"
+            ],
+            "scopes": [
+                "read:docs"
+            ],
+            "usedModels": [
+                "ActionInput_coda_getsharingmetadata",
+                "ActionOutput_coda_getsharingmetadata"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1393,7 +1641,9 @@
                                 "description": "Doc ID. Example: \"L_hgEASd6n\""
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_getsharingmetadata": {
@@ -1412,7 +1662,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["canShare", "canShareWithWorkspace", "canShareWithOrg", "canCopy"],
+                        "required": [
+                            "canShare",
+                            "canShareWithWorkspace",
+                            "canShareWithOrg",
+                            "canCopy"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1428,9 +1683,14 @@
             },
             "input": "ActionInput_coda_gettable",
             "name": "get-table",
-            "output": ["ActionOutput_coda_gettable"],
+            "output": [
+                "ActionOutput_coda_gettable"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_gettable", "ActionOutput_coda_gettable"],
+            "usedModels": [
+                "ActionInput_coda_gettable",
+                "ActionOutput_coda_gettable"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1446,7 +1706,10 @@
                                 "description": "ID or name of the table. Example: \"grid-pqRst-U\""
                             }
                         },
-                        "required": ["docId", "tableIdOrName"],
+                        "required": [
+                            "docId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_gettable": {
@@ -1489,7 +1752,13 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "href", "browserLink", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "href",
+                                    "browserLink",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "displayColumn": {
@@ -1505,7 +1774,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "href"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "href"
+                                ],
                                 "additionalProperties": false
                             },
                             "rowCount": {
@@ -1529,14 +1802,21 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type", "href"],
+                                            "required": [
+                                                "id",
+                                                "type",
+                                                "href"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "direction": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["column", "direction"],
+                                    "required": [
+                                        "column",
+                                        "direction"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1592,11 +1872,24 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "type", "href", "browserLink", "name"],
+                                        "required": [
+                                            "id",
+                                            "type",
+                                            "href",
+                                            "browserLink",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["id", "type", "tableType", "href", "browserLink", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "tableType",
+                                    "href",
+                                    "browserLink",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "filter": {
@@ -1618,7 +1911,13 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["valid", "isVolatile", "hasUserFormula", "hasTodayFormula", "hasNowFormula"],
+                                "required": [
+                                    "valid",
+                                    "isVolatile",
+                                    "hasUserFormula",
+                                    "hasTodayFormula",
+                                    "hasNowFormula"
+                                ],
                                 "additionalProperties": false
                             }
                         },
@@ -1652,9 +1951,14 @@
             },
             "input": "ActionInput_coda_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_coda_getuser"],
+            "output": [
+                "ActionOutput_coda_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_getuser", "ActionOutput_coda_getuser"],
+            "usedModels": [
+                "ActionInput_coda_getuser",
+                "ActionOutput_coda_getuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1697,11 +2001,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["name", "loginId", "tokenName", "scoped", "workspace"],
+                        "required": [
+                            "name",
+                            "loginId",
+                            "tokenName",
+                            "scoped",
+                            "workspace"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1714,9 +2027,16 @@
             "endpoint": null,
             "input": "ActionInput_coda_listcategories",
             "name": "list-categories",
-            "output": ["ActionOutput_coda_listcategories"],
-            "scopes": ["doc:read"],
-            "usedModels": ["ActionInput_coda_listcategories", "ActionOutput_coda_listcategories"],
+            "output": [
+                "ActionOutput_coda_listcategories"
+            ],
+            "scopes": [
+                "doc:read"
+            ],
+            "usedModels": [
+                "ActionInput_coda_listcategories",
+                "ActionOutput_coda_listcategories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1737,12 +2057,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1758,9 +2082,14 @@
             },
             "input": "ActionInput_coda_listcolumns",
             "name": "list-columns",
-            "output": ["ActionOutput_coda_listcolumns"],
+            "output": [
+                "ActionOutput_coda_listcolumns"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_listcolumns", "ActionOutput_coda_listcolumns"],
+            "usedModels": [
+                "ActionInput_coda_listcolumns",
+                "ActionOutput_coda_listcolumns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1790,7 +2119,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId", "tableId"],
+                        "required": [
+                            "docId",
+                            "tableId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_listcolumns": {
@@ -1827,7 +2159,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "type", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1835,7 +2171,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1851,9 +2189,16 @@
             },
             "input": "ActionInput_coda_listcontrols",
             "name": "list-controls",
-            "output": ["ActionOutput_coda_listcontrols"],
-            "scopes": ["doc:read"],
-            "usedModels": ["ActionInput_coda_listcontrols", "ActionOutput_coda_listcontrols"],
+            "output": [
+                "ActionOutput_coda_listcontrols"
+            ],
+            "scopes": [
+                "doc:read"
+            ],
+            "usedModels": [
+                "ActionInput_coda_listcontrols",
+                "ActionOutput_coda_listcontrols"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1867,7 +2212,10 @@
                             "sortBy": {
                                 "description": "Sort order for controls. Example: \"name\"",
                                 "type": "string",
-                                "enum": ["name", "createdAt"]
+                                "enum": [
+                                    "name",
+                                    "createdAt"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of results to return. Example: 25",
@@ -1880,7 +2228,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_listcontrols": {
@@ -1925,11 +2275,20 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type", "href"],
+                                            "required": [
+                                                "id",
+                                                "type",
+                                                "href"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type", "href", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "href",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1940,7 +2299,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1956,9 +2317,14 @@
             },
             "input": "ActionInput_coda_listdocanalytics",
             "name": "list-doc-analytics",
-            "output": ["ActionOutput_coda_listdocanalytics"],
+            "output": [
+                "ActionOutput_coda_listdocanalytics"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_listdocanalytics", "ActionOutput_coda_listdocanalytics"],
+            "usedModels": [
+                "ActionInput_coda_listdocanalytics",
+                "ActionOutput_coda_listdocanalytics"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2044,7 +2410,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "metrics": {
@@ -2106,7 +2474,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2122,9 +2492,14 @@
             },
             "input": "ActionInput_coda_listdocs",
             "name": "list-docs",
-            "output": ["ActionOutput_coda_listdocs"],
+            "output": [
+                "ActionOutput_coda_listdocs"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_listdocs", "ActionOutput_coda_listdocs"],
+            "usedModels": [
+                "ActionInput_coda_listdocs",
+                "ActionOutput_coda_listdocs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2198,7 +2573,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type", "href", "browserLink", "name", "owner", "ownerName", "createdAt", "updatedAt"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "href",
+                                        "browserLink",
+                                        "name",
+                                        "owner",
+                                        "ownerName",
+                                        "createdAt",
+                                        "updatedAt"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2206,7 +2591,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2222,9 +2609,14 @@
             },
             "input": "ActionInput_coda_listformulas",
             "name": "list-formulas",
-            "output": ["ActionOutput_coda_listformulas"],
+            "output": [
+                "ActionOutput_coda_listformulas"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_listformulas", "ActionOutput_coda_listformulas"],
+            "usedModels": [
+                "ActionInput_coda_listformulas",
+                "ActionOutput_coda_listformulas"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2238,7 +2630,10 @@
                             "sortBy": {
                                 "description": "Sort order: name or createdAt",
                                 "type": "string",
-                                "enum": ["name", "createdAt"]
+                                "enum": [
+                                    "name",
+                                    "createdAt"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of results per page",
@@ -2249,7 +2644,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_listformulas": {
@@ -2291,11 +2688,22 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type", "href", "browserLink", "name"],
+                                            "required": [
+                                                "id",
+                                                "type",
+                                                "href",
+                                                "browserLink",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type", "href", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "href",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2303,7 +2711,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2316,9 +2726,16 @@
             "endpoint": null,
             "input": "ActionInput_coda_listpages",
             "name": "list-pages",
-            "output": ["ActionOutput_coda_listpages"],
-            "scopes": ["doc:read"],
-            "usedModels": ["ActionInput_coda_listpages", "ActionOutput_coda_listpages"],
+            "output": [
+                "ActionOutput_coda_listpages"
+            ],
+            "scopes": [
+                "doc:read"
+            ],
+            "usedModels": [
+                "ActionInput_coda_listpages",
+                "ActionOutput_coda_listpages"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2338,7 +2755,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_listpages": {
@@ -2391,7 +2810,13 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "type", "href", "browserLink", "name"],
+                                                "required": [
+                                                    "id",
+                                                    "type",
+                                                    "href",
+                                                    "browserLink",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2453,7 +2878,13 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type", "href", "browserLink", "name"],
+                                            "required": [
+                                                "id",
+                                                "type",
+                                                "href",
+                                                "browserLink",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "authors": {
@@ -2529,7 +2960,17 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type", "href", "name", "isHidden", "isEffectivelyHidden", "browserLink", "children", "contentType"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "href",
+                                        "name",
+                                        "isHidden",
+                                        "isEffectivelyHidden",
+                                        "browserLink",
+                                        "children",
+                                        "contentType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2537,7 +2978,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2553,9 +2996,16 @@
             },
             "input": "ActionInput_coda_listpermissions",
             "name": "list-permissions",
-            "output": ["ActionOutput_coda_listpermissions"],
-            "scopes": ["write"],
-            "usedModels": ["ActionInput_coda_listpermissions", "ActionOutput_coda_listpermissions"],
+            "output": [
+                "ActionOutput_coda_listpermissions"
+            ],
+            "scopes": [
+                "write"
+            ],
+            "usedModels": [
+                "ActionInput_coda_listpermissions",
+                "ActionOutput_coda_listpermissions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2575,7 +3025,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_listpermissions": {
@@ -2602,11 +3054,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "access", "principal"],
+                                    "required": [
+                                        "id",
+                                        "access",
+                                        "principal"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2614,7 +3072,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2630,9 +3090,14 @@
             },
             "input": "ActionInput_coda_listrows",
             "name": "list-rows",
-            "output": ["ActionOutput_coda_listrows"],
+            "output": [
+                "ActionOutput_coda_listrows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_listrows", "ActionOutput_coda_listrows"],
+            "usedModels": [
+                "ActionInput_coda_listrows",
+                "ActionOutput_coda_listrows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2654,12 +3119,21 @@
                             "valueFormat": {
                                 "description": "The format that cell values are returned as",
                                 "type": "string",
-                                "enum": ["simple", "simpleWithArrays", "rich"]
+                                "enum": [
+                                    "simple",
+                                    "simpleWithArrays",
+                                    "rich"
+                                ]
                             },
                             "sortBy": {
                                 "description": "Specifies the sort order of the rows returned",
                                 "type": "string",
-                                "enum": ["natural", "id", "createdAt", "updatedAt"]
+                                "enum": [
+                                    "natural",
+                                    "id",
+                                    "createdAt",
+                                    "updatedAt"
+                                ]
                             },
                             "visibleOnly": {
                                 "description": "If true, returns only visible rows and columns for the table",
@@ -2678,7 +3152,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId", "tableIdOrName"],
+                        "required": [
+                            "docId",
+                            "tableIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_listrows": {
@@ -2721,7 +3198,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "type", "href"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "href"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2738,7 +3219,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2754,9 +3237,14 @@
             },
             "input": "ActionInput_coda_listtables",
             "name": "list-tables",
-            "output": ["ActionOutput_coda_listtables"],
+            "output": [
+                "ActionOutput_coda_listtables"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_listtables", "ActionOutput_coda_listtables"],
+            "usedModels": [
+                "ActionInput_coda_listtables",
+                "ActionOutput_coda_listtables"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2770,12 +3258,20 @@
                             "tableType": {
                                 "description": "Single table type to filter by. Do not use comma-separated values.",
                                 "type": "string",
-                                "enum": ["table", "view", "formula", "detail"]
+                                "enum": [
+                                    "table",
+                                    "view",
+                                    "formula",
+                                    "detail"
+                                ]
                             },
                             "sortBy": {
                                 "description": "Sort order for results.",
                                 "type": "string",
-                                "enum": ["name", "createdAt"]
+                                "enum": [
+                                    "name",
+                                    "createdAt"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of results to return.",
@@ -2788,7 +3284,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_listtables": {
@@ -2836,11 +3334,23 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type", "href", "browserLink", "name"],
+                                            "required": [
+                                                "id",
+                                                "type",
+                                                "href",
+                                                "browserLink",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type", "href", "browserLink", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "href",
+                                        "browserLink",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2848,7 +3358,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2861,9 +3373,16 @@
             "endpoint": null,
             "input": "ActionInput_coda_updatepage",
             "name": "update-page",
-            "output": ["ActionOutput_coda_updatepage"],
-            "scopes": ["doc:write"],
-            "usedModels": ["ActionInput_coda_updatepage", "ActionOutput_coda_updatepage"],
+            "output": [
+                "ActionOutput_coda_updatepage"
+            ],
+            "scopes": [
+                "doc:write"
+            ],
+            "usedModels": [
+                "ActionInput_coda_updatepage",
+                "ActionOutput_coda_updatepage"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2895,7 +3414,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId", "pageIdOrName"],
+                        "required": [
+                            "docId",
+                            "pageIdOrName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_updatepage": {
@@ -2911,7 +3433,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "requestId", "completed"],
+                        "required": [
+                            "id",
+                            "requestId",
+                            "completed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2924,9 +3450,16 @@
             "endpoint": null,
             "input": "ActionInput_coda_updaterow",
             "name": "update-row",
-            "output": ["ActionOutput_coda_updaterow"],
-            "scopes": ["doc:write"],
-            "usedModels": ["ActionInput_coda_updaterow", "ActionOutput_coda_updaterow"],
+            "output": [
+                "ActionOutput_coda_updaterow"
+            ],
+            "scopes": [
+                "doc:write"
+            ],
+            "usedModels": [
+                "ActionInput_coda_updaterow",
+                "ActionOutput_coda_updaterow"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2959,13 +3492,21 @@
                                             "description": "New value for the cell."
                                         }
                                     },
-                                    "required": ["column", "value"],
+                                    "required": [
+                                        "column",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Cells to update."
                             }
                         },
-                        "required": ["docId", "tableIdOrName", "rowIdOrName", "cells"],
+                        "required": [
+                            "docId",
+                            "tableIdOrName",
+                            "rowIdOrName",
+                            "cells"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_updaterow": {
@@ -2978,7 +3519,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "requestId"],
+                        "required": [
+                            "id",
+                            "requestId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2991,9 +3535,14 @@
             "endpoint": null,
             "input": "ActionInput_coda_upsertrows",
             "name": "upsert-rows",
-            "output": ["ActionOutput_coda_upsertrows"],
+            "output": [
+                "ActionOutput_coda_upsertrows"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_coda_upsertrows", "ActionOutput_coda_upsertrows"],
+            "usedModels": [
+                "ActionInput_coda_upsertrows",
+                "ActionOutput_coda_upsertrows"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3026,13 +3575,18 @@
                                                         "description": "The cell value."
                                                     }
                                                 },
-                                                "required": ["column", "value"],
+                                                "required": [
+                                                    "column",
+                                                    "value"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "description": "The cells to set for this row."
                                         }
                                     },
-                                    "required": ["cells"],
+                                    "required": [
+                                        "cells"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The rows to insert or upsert."
@@ -3045,7 +3599,11 @@
                                 }
                             }
                         },
-                        "required": ["docId", "tableId", "rows"],
+                        "required": [
+                            "docId",
+                            "tableId",
+                            "rows"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_coda_upsertrows": {
@@ -3071,7 +3629,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["requestId", "completed"],
+                        "required": [
+                            "requestId",
+                            "completed"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3092,12 +3653,17 @@
             ],
             "input": "SyncMetadata_coda_columns",
             "name": "columns",
-            "output": ["Column"],
+            "output": [
+                "Column"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Column", "SyncMetadata_coda_columns"],
+            "usedModels": [
+                "Column",
+                "SyncMetadata_coda_columns"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3137,7 +3703,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_coda_columns": {
@@ -3150,12 +3719,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId", "tableId"],
+                        "required": [
+                            "docId",
+                            "tableId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3169,12 +3743,17 @@
             ],
             "input": "SyncMetadata_coda_controls",
             "name": "controls",
-            "output": ["Control"],
+            "output": [
+                "Control"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Control", "SyncMetadata_coda_controls"],
+            "usedModels": [
+                "Control",
+                "SyncMetadata_coda_controls"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3221,7 +3800,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_coda_controls": {
@@ -3232,12 +3813,16 @@
                                 "description": "ID of the doc to sync controls from"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3251,12 +3836,16 @@
             ],
             "input": null,
             "name": "docs",
-            "output": ["Doc"],
+            "output": [
+                "Doc"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Doc"],
+            "usedModels": [
+                "Doc"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3298,12 +3887,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3317,12 +3910,17 @@
             ],
             "input": "SyncMetadata_coda_formulas",
             "name": "formulas",
-            "output": ["Formula"],
+            "output": [
+                "Formula"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Formula", "SyncMetadata_coda_formulas"],
+            "usedModels": [
+                "Formula",
+                "SyncMetadata_coda_formulas"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3349,7 +3947,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_coda_formulas": {
@@ -3359,12 +3960,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3373,12 +3978,17 @@
             "endpoints": [],
             "input": "SyncMetadata_coda_pages",
             "name": "pages",
-            "output": ["Page"],
+            "output": [
+                "Page"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Page", "SyncMetadata_coda_pages"],
+            "usedModels": [
+                "Page",
+                "SyncMetadata_coda_pages"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3405,7 +4015,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_coda_pages": {
@@ -3415,12 +4027,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3434,12 +4050,17 @@
             ],
             "input": "SyncMetadata_coda_permissions",
             "name": "permissions",
-            "output": ["Permission"],
+            "output": [
+                "Permission"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Permission", "SyncMetadata_coda_permissions"],
+            "usedModels": [
+                "Permission",
+                "SyncMetadata_coda_permissions"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3487,7 +4108,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "permissionId", "access", "principalType"],
+                        "required": [
+                            "id",
+                            "permissionId",
+                            "access",
+                            "principalType"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_coda_permissions": {
@@ -3497,12 +4123,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3516,12 +4146,17 @@
             ],
             "input": "SyncMetadata_coda_rows",
             "name": "rows",
-            "output": ["Row"],
+            "output": [
+                "Row"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Row", "SyncMetadata_coda_rows"],
+            "usedModels": [
+                "Row",
+                "SyncMetadata_coda_rows"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3555,7 +4190,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_coda_rows": {
@@ -3570,12 +4207,17 @@
                                 "description": "The ID of the table to sync rows from"
                             }
                         },
-                        "required": ["docId", "tableId"],
+                        "required": [
+                            "docId",
+                            "tableId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3589,12 +4231,17 @@
             ],
             "input": "SyncMetadata_coda_tables",
             "name": "tables",
-            "output": ["Table"],
+            "output": [
+                "Table"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Table", "SyncMetadata_coda_tables"],
+            "usedModels": [
+                "Table",
+                "SyncMetadata_coda_tables"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3636,7 +4283,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_coda_tables": {
@@ -3646,12 +4296,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["docId"],
+                        "required": [
+                            "docId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

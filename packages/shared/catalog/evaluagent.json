@@ -14,12 +14,17 @@
             ],
             "input": "SyncMetadata_evaluagent_groups",
             "name": "groups",
-            "output": ["EvaluAgentGroup"],
+            "output": [
+                "EvaluAgentGroup"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EvaluAgentGroup", "SyncMetadata_evaluagent_groups"],
+            "usedModels": [
+                "EvaluAgentGroup",
+                "SyncMetadata_evaluagent_groups"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -49,7 +54,15 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "level", "active", "parent", "hasChildren", "isCustomReportingGroup"],
+                        "required": [
+                            "id",
+                            "name",
+                            "level",
+                            "active",
+                            "parent",
+                            "hasChildren",
+                            "isCustomReportingGroup"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_evaluagent_groups": {
@@ -73,12 +86,17 @@
             ],
             "input": "SyncMetadata_evaluagent_roles",
             "name": "roles",
-            "output": ["EvaluAgentRole"],
+            "output": [
+                "EvaluAgentRole"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EvaluAgentRole", "SyncMetadata_evaluagent_roles"],
+            "usedModels": [
+                "EvaluAgentRole",
+                "SyncMetadata_evaluagent_roles"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -96,7 +114,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "name"],
+                        "required": [
+                            "id",
+                            "title",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_evaluagent_roles": {
@@ -120,12 +142,17 @@
             ],
             "input": "SyncMetadata_evaluagent_users",
             "name": "users",
-            "output": ["EvaluAgentUser"],
+            "output": [
+                "EvaluAgentUser"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["EvaluAgentUser", "SyncMetadata_evaluagent_users"],
+            "usedModels": [
+                "EvaluAgentUser",
+                "SyncMetadata_evaluagent_users"
+            ],
             "version": "2.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -156,10 +183,22 @@
                                 "type": "boolean"
                             },
                             "thirdPartyId": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["id", "forename", "surname", "email", "username", "startDate", "active", "thirdPartyId"],
+                        "required": [
+                            "id",
+                            "forename",
+                            "surname",
+                            "email",
+                            "username",
+                            "startDate",
+                            "active",
+                            "thirdPartyId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_evaluagent_users": {

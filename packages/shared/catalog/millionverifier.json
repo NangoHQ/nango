@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_millionverifier_deletebulkfile",
             "name": "delete-bulk-file",
-            "output": ["ActionOutput_millionverifier_deletebulkfile"],
+            "output": [
+                "ActionOutput_millionverifier_deletebulkfile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_millionverifier_deletebulkfile", "ActionOutput_millionverifier_deletebulkfile"],
+            "usedModels": [
+                "ActionInput_millionverifier_deletebulkfile",
+                "ActionOutput_millionverifier_deletebulkfile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -21,7 +26,9 @@
                                 "description": "The ID of the bulk file to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_millionverifier_deletebulkfile": {
@@ -34,7 +41,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -47,9 +56,14 @@
             "endpoint": null,
             "input": "ActionInput_millionverifier_downloadbulkfilereport",
             "name": "download-bulk-file-report",
-            "output": ["ActionOutput_millionverifier_downloadbulkfilereport"],
+            "output": [
+                "ActionOutput_millionverifier_downloadbulkfilereport"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_millionverifier_downloadbulkfilereport", "ActionOutput_millionverifier_downloadbulkfilereport"],
+            "usedModels": [
+                "ActionInput_millionverifier_downloadbulkfilereport",
+                "ActionOutput_millionverifier_downloadbulkfilereport"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -62,7 +76,14 @@
                             },
                             "filter": {
                                 "type": "string",
-                                "enum": ["ok", "ok_and_catch_all", "unknown", "invalid", "all", "custom"],
+                                "enum": [
+                                    "ok",
+                                    "ok_and_catch_all",
+                                    "unknown",
+                                    "invalid",
+                                    "all",
+                                    "custom"
+                                ],
                                 "description": "Result filter preset. Example: \"all\""
                             },
                             "statuses": {
@@ -78,7 +99,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_id", "filter"],
+                        "required": [
+                            "file_id",
+                            "filter"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_millionverifier_downloadbulkfilereport": {
@@ -93,7 +117,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -106,9 +132,14 @@
             "endpoint": null,
             "input": "ActionInput_millionverifier_getbulkfileinfo",
             "name": "get-bulk-file-info",
-            "output": ["ActionOutput_millionverifier_getbulkfileinfo"],
+            "output": [
+                "ActionOutput_millionverifier_getbulkfileinfo"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_millionverifier_getbulkfileinfo", "ActionOutput_millionverifier_getbulkfileinfo"],
+            "usedModels": [
+                "ActionInput_millionverifier_getbulkfileinfo",
+                "ActionOutput_millionverifier_getbulkfileinfo"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -124,7 +155,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_millionverifier_getbulkfileinfo": {
@@ -188,7 +221,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_id", "file_name", "status", "unique_emails"],
+                        "required": [
+                            "file_id",
+                            "file_name",
+                            "status",
+                            "unique_emails"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -201,9 +239,14 @@
             "endpoint": null,
             "input": "ActionInput_millionverifier_getcredits",
             "name": "get-credits",
-            "output": ["ActionOutput_millionverifier_getcredits"],
+            "output": [
+                "ActionOutput_millionverifier_getcredits"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_millionverifier_getcredits", "ActionOutput_millionverifier_getcredits"],
+            "usedModels": [
+                "ActionInput_millionverifier_getcredits",
+                "ActionOutput_millionverifier_getcredits"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -228,7 +271,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["credits", "bulk_credits", "renewing_credits", "plan"],
+                        "required": [
+                            "credits",
+                            "bulk_credits",
+                            "renewing_credits",
+                            "plan"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -241,9 +289,14 @@
             "endpoint": null,
             "input": "ActionInput_millionverifier_listbulkfiles",
             "name": "list-bulk-files",
-            "output": ["ActionOutput_millionverifier_listbulkfiles"],
+            "output": [
+                "ActionOutput_millionverifier_listbulkfiles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_millionverifier_listbulkfiles", "ActionOutput_millionverifier_listbulkfiles"],
+            "usedModels": [
+                "ActionInput_millionverifier_listbulkfiles",
+                "ActionOutput_millionverifier_listbulkfiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -403,7 +456,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["files", "total"],
+                        "required": [
+                            "files",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -416,9 +472,14 @@
             "endpoint": null,
             "input": "ActionInput_millionverifier_stopbulkfile",
             "name": "stop-bulk-file",
-            "output": ["ActionOutput_millionverifier_stopbulkfile"],
+            "output": [
+                "ActionOutput_millionverifier_stopbulkfile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_millionverifier_stopbulkfile", "ActionOutput_millionverifier_stopbulkfile"],
+            "usedModels": [
+                "ActionInput_millionverifier_stopbulkfile",
+                "ActionOutput_millionverifier_stopbulkfile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -430,7 +491,9 @@
                                 "description": "The ID of the bulk file to stop processing. Example: \"940\""
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_millionverifier_stopbulkfile": {
@@ -443,7 +506,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -456,9 +521,14 @@
             "endpoint": null,
             "input": "ActionInput_millionverifier_verifyemail",
             "name": "verify-email",
-            "output": ["ActionOutput_millionverifier_verifyemail"],
+            "output": [
+                "ActionOutput_millionverifier_verifyemail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_millionverifier_verifyemail", "ActionOutput_millionverifier_verifyemail"],
+            "usedModels": [
+                "ActionInput_millionverifier_verifyemail",
+                "ActionOutput_millionverifier_verifyemail"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -476,7 +546,9 @@
                                 "maximum": 60
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_millionverifier_verifyemail": {
@@ -487,7 +559,10 @@
                             },
                             "quality": {
                                 "type": "string",
-                                "enum": ["good", "bad"]
+                                "enum": [
+                                    "good",
+                                    "bad"
+                                ]
                             },
                             "result": {
                                 "type": "string"
@@ -520,7 +595,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["email", "quality", "result", "resultcode", "subresult"],
+                        "required": [
+                            "email",
+                            "quality",
+                            "result",
+                            "resultcode",
+                            "subresult"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -536,12 +617,16 @@
             "endpoints": [],
             "input": null,
             "name": "bulk-files",
-            "output": ["BulkFile"],
+            "output": [
+                "BulkFile"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BulkFile"],
+            "usedModels": [
+                "BulkFile"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -610,12 +695,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "file_id", "updated_at"],
+                        "required": [
+                            "id",
+                            "file_id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

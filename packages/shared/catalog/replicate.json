@@ -49,7 +49,9 @@
                                 "description": "Opaque identifier of the prediction to cancel."
                             }
                         },
-                        "required": ["predictionId"],
+                        "required": [
+                            "predictionId"
+                        ],
                         "additionalProperties": false,
                         "description": "The prediction whose cancellation is requested."
                     },
@@ -66,7 +68,10 @@
                             },
                             "error": {
                                 "description": "Recorded model failure text or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "input": {
                                 "type": "object",
@@ -82,11 +87,21 @@
                             "source": {
                                 "description": "Recorded creation source.",
                                 "type": "string",
-                                "enum": ["web", "api"]
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"],
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ],
                                 "description": "Provider-reported current state; do not assume canceled merely because the request succeeded."
                             },
                             "webUrl": {
@@ -167,7 +182,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "error", "input", "output", "status", "modelId", "createdAt", "versionId", "dataRemoved"],
+                        "required": [
+                            "id",
+                            "error",
+                            "input",
+                            "output",
+                            "status",
+                            "modelId",
+                            "createdAt",
+                            "versionId",
+                            "dataRemoved"
+                        ],
                         "additionalProperties": false,
                         "description": "The provider-reported prediction immediately after the cancellation request, without polling."
                     }
@@ -227,7 +252,9 @@
                                 "description": "Opaque identifier of the training to cancel."
                             }
                         },
-                        "required": ["trainingId"],
+                        "required": [
+                            "trainingId"
+                        ],
                         "additionalProperties": false,
                         "description": "The training selected for cancellation."
                     },
@@ -244,7 +271,10 @@
                             },
                             "error": {
                                 "description": "Training failure message or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "input": {
                                 "description": "Recorded model-specific training inputs.",
@@ -279,12 +309,22 @@
                             "source": {
                                 "description": "Recorded creation source.",
                                 "type": "string",
-                                "enum": ["web", "api"]
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
                             },
                             "status": {
                                 "description": "Actual returned lifecycle state; success of the request does not itself establish canceled.",
                                 "type": "string",
-                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"]
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ]
                             },
                             "metrics": {
                                 "description": "Available duration metrics in seconds.",
@@ -342,7 +382,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The provider-reported training state returned by the cancellation request."
                     }
@@ -430,7 +472,14 @@
                                 "description": "Minimum instance count; must not exceed maxInstances."
                             }
                         },
-                        "required": ["name", "model", "hardware", "versionId", "maxInstances", "minInstances"],
+                        "required": [
+                            "name",
+                            "model",
+                            "hardware",
+                            "versionId",
+                            "maxInstances",
+                            "minInstances"
+                        ],
                         "additionalProperties": false,
                         "description": "Model version, hardware, and explicit scaling bounds for a new deployment."
                     },
@@ -495,7 +544,10 @@
                                     },
                                     "type": {
                                         "type": "string",
-                                        "enum": ["user", "organization"],
+                                        "enum": [
+                                            "user",
+                                            "organization"
+                                        ],
                                         "description": "Creator account type."
                                     },
                                     "username": {
@@ -513,11 +565,18 @@
                                         "format": "uri"
                                     }
                                 },
-                                "required": ["type", "username"],
+                                "required": [
+                                    "type",
+                                    "username"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "owner"],
+                        "required": [
+                            "id",
+                            "name",
+                            "owner"
+                        ],
                         "additionalProperties": false,
                         "description": "Created deployment identity and actual current release configuration, without a readiness guarantee."
                     }
@@ -600,7 +659,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["input", "deploymentId"],
+                        "required": [
+                            "input",
+                            "deploymentId"
+                        ],
                         "additionalProperties": false,
                         "description": "Deployment and model inputs for starting one prediction, with optional waiting and lifetime limits."
                     },
@@ -639,13 +701,20 @@
                                         "format": "uri"
                                     }
                                 },
-                                "required": ["get", "web", "cancel"],
+                                "required": [
+                                    "get",
+                                    "web",
+                                    "cancel"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Links for viewing and operating on this prediction."
                             },
                             "error": {
                                 "description": "Model failure explanation, or null when none is reported.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "input": {
                                 "type": "object",
@@ -667,11 +736,21 @@
                             "source": {
                                 "description": "Provider-reported creation source; omitted if absent.",
                                 "type": "string",
-                                "enum": ["web", "api"]
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"],
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ],
                                 "description": "Prediction lifecycle state; aborted means terminated before running, canceled means canceled during its lifetime."
                             },
                             "metrics": {
@@ -721,7 +800,18 @@
                                 "description": "Whether prediction output data has been deleted."
                             }
                         },
-                        "required": ["id", "urls", "error", "input", "model", "output", "status", "createdAt", "versionId", "dataRemoved"],
+                        "required": [
+                            "id",
+                            "urls",
+                            "error",
+                            "input",
+                            "model",
+                            "output",
+                            "status",
+                            "createdAt",
+                            "versionId",
+                            "dataRemoved"
+                        ],
                         "additionalProperties": false,
                         "description": "Created prediction state, model-defined values, lifecycle timestamps, and follow-up links."
                     }
@@ -809,7 +899,10 @@
                             },
                             "visibility": {
                                 "type": "string",
-                                "enum": ["public", "private"],
+                                "enum": [
+                                    "public",
+                                    "private"
+                                ],
                                 "description": "Public allows anyone to view and run; private restricts access to the owner and its members."
                             },
                             "description": {
@@ -822,7 +915,12 @@
                                 "format": "uri"
                             }
                         },
-                        "required": ["name", "owner", "hardware", "visibility"],
+                        "required": [
+                            "name",
+                            "owner",
+                            "hardware",
+                            "visibility"
+                        ],
                         "additionalProperties": false,
                         "description": "Owner, name, visibility, hardware, and optional metadata for a new model container."
                     },
@@ -847,7 +945,10 @@
                             },
                             "paperUrl": {
                                 "description": "Stored paper URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "runCount": {
                                 "description": "Provider-reported model run count.",
@@ -857,7 +958,10 @@
                             },
                             "githubUrl": {
                                 "description": "Stored source repository URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "isOfficial": {
                                 "description": "Official-maintenance flag, when returned.",
@@ -865,23 +969,39 @@
                             },
                             "licenseUrl": {
                                 "description": "Stored license URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "visibility": {
                                 "description": "Visibility returned by the provider.",
                                 "type": "string",
-                                "enum": ["public", "private"]
+                                "enum": [
+                                    "public",
+                                    "private"
+                                ]
                             },
                             "description": {
                                 "description": "Stored description or null if unset.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "coverImageUrl": {
                                 "description": "Stored cover image URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name", "owner"],
+                        "required": [
+                            "id",
+                            "name",
+                            "owner"
+                        ],
                         "additionalProperties": false,
                         "description": "Created model identity and stored metadata, without hardware, versions, or examples."
                     }
@@ -960,18 +1080,24 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["input"],
+                        "required": [
+                            "input"
+                        ],
                         "additionalProperties": false,
                         "description": "Inputs and target for starting one asynchronous prediction.",
                         "anyOf": [
                             {
-                                "required": ["modelId"],
+                                "required": [
+                                    "modelId"
+                                ],
                                 "properties": {
                                     "modelId": true
                                 }
                             },
                             {
-                                "required": ["versionId"],
+                                "required": [
+                                    "versionId"
+                                ],
                                 "properties": {
                                     "versionId": true
                                 }
@@ -991,7 +1117,10 @@
                             },
                             "error": {
                                 "description": "Model failure message, or null when none.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "input": {
                                 "type": "object",
@@ -1007,11 +1136,21 @@
                             "source": {
                                 "description": "Recorded creation source.",
                                 "type": "string",
-                                "enum": ["web", "api"]
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"],
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ],
                                 "description": "Current job lifecycle state, not a delivery guarantee."
                             },
                             "webUrl": {
@@ -1092,7 +1231,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "error", "input", "output", "status", "modelId", "createdAt", "versionId", "dataRemoved"],
+                        "required": [
+                            "id",
+                            "error",
+                            "input",
+                            "output",
+                            "status",
+                            "modelId",
+                            "createdAt",
+                            "versionId",
+                            "dataRemoved"
+                        ],
                         "additionalProperties": false,
                         "description": "Immediate prediction state returned by the provider without waiting for completion."
                     }
@@ -1170,7 +1319,12 @@
                                 "description": "Existing destination model in owner/name form, owned by the user or organization of this connection."
                             }
                         },
-                        "required": ["input", "modelId", "versionId", "destinationModelId"],
+                        "required": [
+                            "input",
+                            "modelId",
+                            "versionId",
+                            "destinationModelId"
+                        ],
                         "additionalProperties": false,
                         "description": "Source model version, existing publication destination, and model-specific training inputs."
                     },
@@ -1187,7 +1341,10 @@
                             },
                             "error": {
                                 "description": "Training failure message or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "input": {
                                 "description": "Model-specific training inputs recorded by the provider.",
@@ -1222,12 +1379,22 @@
                             "source": {
                                 "description": "Recorded creation source.",
                                 "type": "string",
-                                "enum": ["web", "api"]
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
                             },
                             "status": {
                                 "description": "Current lifecycle state, not a guarantee that training completed.",
                                 "type": "string",
-                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"]
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ]
                             },
                             "metrics": {
                                 "description": "Available duration metrics in seconds.",
@@ -1285,7 +1452,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Initial training state, with available lifecycle details and opaque trained-result references."
                     }
@@ -1345,7 +1514,9 @@
                                 "description": "Identifier of the deployment to delete, in owner/name form."
                             }
                         },
-                        "required": ["deploymentId"],
+                        "required": [
+                            "deploymentId"
+                        ],
                         "additionalProperties": false,
                         "description": "Deployment to delete after it has been offline and unused for at least 15 minutes."
                     },
@@ -1362,7 +1533,10 @@
                                 "description": "Deployment identifier submitted for deletion."
                             }
                         },
-                        "required": ["deleted", "deploymentId"],
+                        "required": [
+                            "deleted",
+                            "deploymentId"
+                        ],
                         "additionalProperties": false,
                         "description": "Acknowledgement of successful deployment deletion."
                     }
@@ -1422,7 +1596,9 @@
                                 "description": "Opaque ID of the file to delete."
                             }
                         },
-                        "required": ["fileId"],
+                        "required": [
+                            "fileId"
+                        ],
                         "additionalProperties": false,
                         "description": "The uploaded file to delete."
                     },
@@ -1439,7 +1615,10 @@
                                 "description": "True when the provider acknowledged successful deletion."
                             }
                         },
-                        "required": ["fileId", "deleted"],
+                        "required": [
+                            "fileId",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Acknowledgement that the uploaded file was deleted."
                     }
@@ -1499,7 +1678,9 @@
                                 "description": "Owned private model identifier in owner/name form; it must have no versions."
                             }
                         },
-                        "required": ["modelId"],
+                        "required": [
+                            "modelId"
+                        ],
                         "additionalProperties": false,
                         "description": "The owned private, version-free model container to delete."
                     },
@@ -1516,7 +1697,10 @@
                                 "description": "The provider confirmed deletion of the model container."
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Deletion receipt confirmed by the provider."
                     }
@@ -1581,7 +1765,10 @@
                                 "description": "Version to delete, including its associated predictions and output files."
                             }
                         },
-                        "required": ["modelId", "versionId"],
+                        "required": [
+                            "modelId",
+                            "versionId"
+                        ],
                         "additionalProperties": false,
                         "description": "The owned private model and version whose deletion is requested."
                     },
@@ -1602,7 +1789,11 @@
                                 "description": "The provider accepted asynchronous deletion; completion is not established."
                             }
                         },
-                        "required": ["id", "modelId", "deletionAccepted"],
+                        "required": [
+                            "id",
+                            "modelId",
+                            "deletionAccepted"
+                        ],
                         "additionalProperties": false,
                         "description": "Immediate acceptance of the version deletion request, not confirmation of completed deletion."
                     }
@@ -1663,7 +1854,9 @@
                                 "description": "Existing HTTPS Replicate signed file download URL, including owner, expiry and signature query values. Treated as a sensitive access credential."
                             }
                         },
-                        "required": ["downloadUrl"],
+                        "required": [
+                            "downloadUrl"
+                        ],
                         "additionalProperties": false,
                         "description": "The existing signed Replicate file download credential."
                     },
@@ -1690,7 +1883,11 @@
                                 "description": "Exact downloaded bytes in canonical padded base64; decode as binary, not text."
                             }
                         },
-                        "required": ["fileId", "sizeBytes", "contentBase64"],
+                        "required": [
+                            "fileId",
+                            "sizeBytes",
+                            "contentBase64"
+                        ],
                         "additionalProperties": false,
                         "description": "The complete original file bytes encoded as base64, with their exact byte count."
                     }
@@ -1756,7 +1953,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["user", "organization"],
+                                "enum": [
+                                    "user",
+                                    "organization"
+                                ],
                                 "description": "Whether the connected account is a user or organization."
                             },
                             "username": {
@@ -1774,7 +1974,10 @@
                                 "format": "uri"
                             }
                         },
-                        "required": ["type", "username"],
+                        "required": [
+                            "type",
+                            "username"
+                        ],
                         "additionalProperties": false,
                         "description": "The user or organization associated with the connection."
                     }
@@ -1834,7 +2037,9 @@
                                 "description": "Collection slug, such as super-resolution, obtained from list-collections."
                             }
                         },
-                        "required": ["collectionSlug"],
+                        "required": [
+                            "collectionSlug"
+                        ],
                         "additionalProperties": false,
                         "description": "Collection to retrieve by its discovered slug."
                     },
@@ -1916,11 +2121,17 @@
                                         "visibility": {
                                             "description": "Model access visibility.",
                                             "type": "string",
-                                            "enum": ["public", "private"]
+                                            "enum": [
+                                                "public",
+                                                "private"
+                                            ]
                                         },
                                         "description": {
                                             "description": "Model summary, null if unavailable; omitted if absent.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "coverImageUrl": {
                                             "description": "Cover image URL, null if unavailable; omitted if absent.",
@@ -1976,10 +2187,18 @@
                             },
                             "fullDescription": {
                                 "description": "Full Markdown description; null means no full description, and absence is preserved.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["name", "slug", "models", "description"],
+                        "required": [
+                            "name",
+                            "slug",
+                            "models",
+                            "description"
+                        ],
                         "additionalProperties": false,
                         "description": "Collection details, full Markdown description when supplied, and included models."
                     }
@@ -2044,7 +2263,9 @@
                                 "description": "Sensitive provider signing secret, preserved verbatim for webhook verification; not decoded or reformatted."
                             }
                         },
-                        "required": ["signingSecret"],
+                        "required": [
+                            "signingSecret"
+                        ],
                         "additionalProperties": false,
                         "description": "The existing default webhook signing secret for the connected account."
                     }
@@ -2104,7 +2325,9 @@
                                 "description": "Deployment identifier in owner/name form."
                             }
                         },
-                        "required": ["deploymentId"],
+                        "required": [
+                            "deploymentId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the deployment to retrieve."
                     },
@@ -2169,7 +2392,10 @@
                                     },
                                     "type": {
                                         "type": "string",
-                                        "enum": ["user", "organization"],
+                                        "enum": [
+                                            "user",
+                                            "organization"
+                                        ],
                                         "description": "Creator account type."
                                     },
                                     "username": {
@@ -2187,11 +2413,18 @@
                                         "format": "uri"
                                     }
                                 },
-                                "required": ["type", "username"],
+                                "required": [
+                                    "type",
+                                    "username"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "owner"],
+                        "required": [
+                            "id",
+                            "name",
+                            "owner"
+                        ],
                         "additionalProperties": false,
                         "description": "Deployment identity and its current release configuration."
                     }
@@ -2251,7 +2484,9 @@
                                 "description": "Opaque file ID from list-files or upload-file."
                             }
                         },
-                        "required": ["fileId"],
+                        "required": [
+                            "fileId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identify the uploaded file whose metadata should be retrieved."
                     },
@@ -2311,7 +2546,15 @@
                                 "format": "uri"
                             }
                         },
-                        "required": ["id", "metadata", "checksums", "createdAt", "expiresAt", "sizeBytes", "contentType"],
+                        "required": [
+                            "id",
+                            "metadata",
+                            "checksums",
+                            "createdAt",
+                            "expiresAt",
+                            "sizeBytes",
+                            "contentType"
+                        ],
                         "additionalProperties": false,
                         "description": "Uploaded file metadata, byte length, checksums, and provider-reported expiration."
                     }
@@ -2371,7 +2614,9 @@
                                 "description": "Model identifier in owner/name form."
                             }
                         },
-                        "required": ["modelId"],
+                        "required": [
+                            "modelId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identify the model to retrieve."
                     },
@@ -2396,7 +2641,10 @@
                             },
                             "paperUrl": {
                                 "description": "Paper URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "runCount": {
                                 "description": "Provider-reported model run count.",
@@ -2406,7 +2654,10 @@
                             },
                             "githubUrl": {
                                 "description": "Source repository URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "isOfficial": {
                                 "description": "Whether Replicate officially maintains the model.",
@@ -2414,20 +2665,32 @@
                             },
                             "licenseUrl": {
                                 "description": "License URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "visibility": {
                                 "description": "Model access visibility.",
                                 "type": "string",
-                                "enum": ["public", "private"]
+                                "enum": [
+                                    "public",
+                                    "private"
+                                ]
                             },
                             "description": {
                                 "description": "Author description, null if unset; omitted if unavailable.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "coverImageUrl": {
                                 "description": "Cover image URL or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "latestVersion": {
                                 "description": "Latest pushed version, null if none.",
@@ -2447,7 +2710,10 @@
                                             },
                                             "cogVersion": {
                                                 "description": "Build's Cog software version or null.",
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "openapiSchema": {
                                                 "description": "OpenAPI input/output schema document, preserving its native keys, or null.",
@@ -2497,7 +2763,14 @@
                                             "status": {
                                                 "description": "Prediction lifecycle state.",
                                                 "type": "string",
-                                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"]
+                                                "enum": [
+                                                    "starting",
+                                                    "processing",
+                                                    "succeeded",
+                                                    "failed",
+                                                    "canceled",
+                                                    "aborted"
+                                                ]
                                             },
                                             "modelId": {
                                                 "description": "Model identifier in owner/name form.",
@@ -2517,7 +2790,11 @@
                                 ]
                             }
                         },
-                        "required": ["id", "name", "owner"],
+                        "required": [
+                            "id",
+                            "name",
+                            "owner"
+                        ],
                         "additionalProperties": false,
                         "description": "Current model metadata, latest-version schema, and default example content."
                     }
@@ -2577,7 +2854,9 @@
                                 "description": "Model identifier in owner/name form."
                             }
                         },
-                        "required": ["modelId"],
+                        "required": [
+                            "modelId"
+                        ],
                         "additionalProperties": false,
                         "description": "The model whose author documentation should be read."
                     },
@@ -2593,7 +2872,10 @@
                                 "description": "Identifier of the model whose README was read."
                             }
                         },
-                        "required": ["readme", "modelId"],
+                        "required": [
+                            "readme",
+                            "modelId"
+                        ],
                         "additionalProperties": false,
                         "description": "The model identifier and its README as directly usable Markdown text."
                     }
@@ -2658,7 +2940,10 @@
                                 "description": "Opaque version identifier within the model."
                             }
                         },
-                        "required": ["modelId", "versionId"],
+                        "required": [
+                            "modelId",
+                            "versionId"
+                        ],
                         "additionalProperties": false,
                         "description": "The parent model and specific version to retrieve."
                     },
@@ -2681,7 +2966,10 @@
                             },
                             "cogVersion": {
                                 "description": "Cog build-tool version, or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "openapiSchema": {
                                 "description": "OpenAPI document for inputs and outputs, preserving native schema keys, or null.",
@@ -2699,7 +2987,10 @@
                                 ]
                             }
                         },
-                        "required": ["id", "modelId"],
+                        "required": [
+                            "id",
+                            "modelId"
+                        ],
                         "additionalProperties": false,
                         "description": "One model version and its complete OpenAPI input/output schema document."
                     }
@@ -2759,7 +3050,9 @@
                                 "description": "Opaque prediction identifier to inspect."
                             }
                         },
-                        "required": ["predictionId"],
+                        "required": [
+                            "predictionId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identify the prediction whose current state should be retrieved."
                     },
@@ -2776,7 +3069,10 @@
                             },
                             "error": {
                                 "description": "Failure message or null when none.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "input": {
                                 "type": "object",
@@ -2794,11 +3090,21 @@
                             "source": {
                                 "description": "Website or API creation source.",
                                 "type": "string",
-                                "enum": ["web", "api"]
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"],
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ],
                                 "description": "Current lifecycle state; aborted means termination before running."
                             },
                             "webUrl": {
@@ -2881,7 +3187,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "error", "input", "output", "status", "modelId", "createdAt", "versionId", "dataRemoved"],
+                        "required": [
+                            "id",
+                            "error",
+                            "input",
+                            "output",
+                            "status",
+                            "modelId",
+                            "createdAt",
+                            "versionId",
+                            "dataRemoved"
+                        ],
                         "additionalProperties": false,
                         "description": "Current prediction state, model data, logs, URLs and available native timing metrics."
                     }
@@ -2941,7 +3257,9 @@
                                 "description": "Opaque training identifier to inspect."
                             }
                         },
-                        "required": ["trainingId"],
+                        "required": [
+                            "trainingId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identify the training whose current state to retrieve."
                     },
@@ -2958,7 +3276,10 @@
                             },
                             "error": {
                                 "description": "Failure message or null.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "input": {
                                 "description": "Recorded model-specific training input values.",
@@ -2993,12 +3314,22 @@
                             "source": {
                                 "description": "Website or API creation source, when supplied.",
                                 "type": "string",
-                                "enum": ["web", "api"]
+                                "enum": [
+                                    "web",
+                                    "api"
+                                ]
                             },
                             "status": {
                                 "description": "Current lifecycle state; aborted means terminated before running.",
                                 "type": "string",
-                                "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"]
+                                "enum": [
+                                    "starting",
+                                    "processing",
+                                    "succeeded",
+                                    "failed",
+                                    "canceled",
+                                    "aborted"
+                                ]
                             },
                             "metrics": {
                                 "description": "Available duration metrics in seconds.",
@@ -3056,7 +3387,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Current training state with available logs, timing metrics, and unchanged result references."
                     }
@@ -3140,7 +3473,11 @@
                                             "description": "Short description of the collection."
                                         }
                                     },
-                                    "required": ["name", "slug", "description"],
+                                    "required": [
+                                        "name",
+                                        "slug",
+                                        "description"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A model collection summary."
                                 },
@@ -3151,7 +3488,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One provider-sized page of model collection summaries."
                     }
@@ -3280,7 +3619,10 @@
                                                 },
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["user", "organization"],
+                                                    "enum": [
+                                                        "user",
+                                                        "organization"
+                                                    ],
                                                     "description": "Creator account type."
                                                 },
                                                 "username": {
@@ -3298,11 +3640,18 @@
                                                     "format": "uri"
                                                 }
                                             },
-                                            "required": ["type", "username"],
+                                            "required": [
+                                                "type",
+                                                "username"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name", "owner"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "owner"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A deployment and its current release configuration."
                                 },
@@ -3313,7 +3662,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One provider-sized page of deployments and an optional continuation."
                     }
@@ -3437,7 +3788,15 @@
                                             "format": "uri"
                                         }
                                     },
-                                    "required": ["id", "metadata", "checksums", "createdAt", "expiresAt", "sizeBytes", "contentType"],
+                                    "required": [
+                                        "id",
+                                        "metadata",
+                                        "checksums",
+                                        "createdAt",
+                                        "expiresAt",
+                                        "sizeBytes",
+                                        "contentType"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "File metadata without file content bytes."
                                 },
@@ -3448,7 +3807,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One provider-sized page of file metadata with an optional continuation."
                     }
@@ -3522,14 +3883,19 @@
                                             "description": "Human-readable hardware name."
                                         }
                                     },
-                                    "required": ["sku", "name"],
+                                    "required": [
+                                        "sku",
+                                        "name"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A hardware catalog entry with its deployment SKU and display name."
                                 },
                                 "description": "Available hardware catalog entries in provider order."
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "The available hardware catalog returned by Replicate."
                     }
@@ -3594,7 +3960,9 @@
                                 "description": "Model whose author-saved examples are requested."
                             }
                         },
-                        "required": ["modelId"],
+                        "required": [
+                            "modelId"
+                        ],
                         "additionalProperties": false,
                         "description": "Select a model and optionally continue browsing its author-saved examples."
                     },
@@ -3616,7 +3984,10 @@
                                         },
                                         "error": {
                                             "description": "Model failure message, or null when none.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "input": {
                                             "type": "object",
@@ -3632,11 +4003,21 @@
                                         "source": {
                                             "description": "Whether created through the website or API.",
                                             "type": "string",
-                                            "enum": ["web", "api"]
+                                            "enum": [
+                                                "web",
+                                                "api"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"],
+                                            "enum": [
+                                                "starting",
+                                                "processing",
+                                                "succeeded",
+                                                "failed",
+                                                "canceled",
+                                                "aborted"
+                                            ],
                                             "description": "Prediction lifecycle state; aborted means terminated before running."
                                         },
                                         "webUrl": {
@@ -3717,7 +4098,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "error", "input", "output", "status", "modelId", "createdAt", "versionId", "dataRemoved"],
+                                    "required": [
+                                        "id",
+                                        "error",
+                                        "input",
+                                        "output",
+                                        "status",
+                                        "modelId",
+                                        "createdAt",
+                                        "versionId",
+                                        "dataRemoved"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "An author-saved example prediction with model-specific input and output preserved."
                                 },
@@ -3728,7 +4119,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One page of author-saved model examples and an optional scoped continuation."
                     }
@@ -3793,7 +4186,9 @@
                                 "description": "Model identifier in owner/name form."
                             }
                         },
-                        "required": ["modelId"],
+                        "required": [
+                            "modelId"
+                        ],
                         "additionalProperties": false,
                         "description": "Select a model and optionally continue its version collection."
                     },
@@ -3821,7 +4216,10 @@
                                         },
                                         "cogVersion": {
                                             "description": "Cog version used to build this model version, or null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "openapiSchema": {
                                             "description": "OpenAPI input/output document with native keys, or null; omitted if unavailable.",
@@ -3839,7 +4237,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "modelId"],
+                                    "required": [
+                                        "id",
+                                        "modelId"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A model version and its available input/output document."
                                 },
@@ -3850,7 +4251,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One newest-first page of model versions and an optional continuation."
                     }
@@ -3912,12 +4315,18 @@
                             "sortBy": {
                                 "description": "Whether to order by model creation or latest-version creation.",
                                 "type": "string",
-                                "enum": ["modelCreatedAt", "latestVersionCreatedAt"]
+                                "enum": [
+                                    "modelCreatedAt",
+                                    "latestVersionCreatedAt"
+                                ]
                             },
                             "sortDirection": {
                                 "description": "Ascending or descending chronological order.",
                                 "type": "string",
-                                "enum": ["asc", "desc"]
+                                "enum": [
+                                    "asc",
+                                    "desc"
+                                ]
                             }
                         },
                         "additionalProperties": false,
@@ -3949,7 +4358,10 @@
                                         },
                                         "paperUrl": {
                                             "description": "Research paper URL, or null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "runCount": {
                                             "description": "Provider-reported number of model runs.",
@@ -3959,7 +4371,10 @@
                                         },
                                         "githubUrl": {
                                             "description": "Source repository URL, or null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "isOfficial": {
                                             "description": "Whether Replicate officially maintains this model.",
@@ -3967,20 +4382,32 @@
                                         },
                                         "licenseUrl": {
                                             "description": "License URL, or null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "visibility": {
                                             "description": "Who may view and run the model.",
                                             "type": "string",
-                                            "enum": ["public", "private"]
+                                            "enum": [
+                                                "public",
+                                                "private"
+                                            ]
                                         },
                                         "description": {
                                             "description": "Author description; null means unset and omission means unavailable.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "coverImageUrl": {
                                             "description": "Cover image URL, or null when unset.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "latestVersion": {
                                             "description": "Most recently pushed version, null if none; omitted when unavailable.",
@@ -4000,7 +4427,10 @@
                                                         },
                                                         "cogVersion": {
                                                             "description": "Cog software version used to build the version, or null.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "openapiSchema": {
                                                             "description": "OpenAPI document describing model inputs and outputs, or null; keys retain OpenAPI spelling.",
@@ -4050,7 +4480,14 @@
                                                         "status": {
                                                             "description": "Prediction lifecycle state.",
                                                             "type": "string",
-                                                            "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"]
+                                                            "enum": [
+                                                                "starting",
+                                                                "processing",
+                                                                "succeeded",
+                                                                "failed",
+                                                                "canceled",
+                                                                "aborted"
+                                                            ]
                                                         },
                                                         "modelId": {
                                                             "description": "Model identifier in owner/name form.",
@@ -4070,7 +4507,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name", "owner"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "owner"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A public model with available metadata, latest version and compact default example."
                                 },
@@ -4081,7 +4522,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One provider page of public models and an optional scoped continuation."
                     }
@@ -4143,7 +4586,9 @@
                             "source": {
                                 "description": "Optional website-only filter, restricted by the provider to the last 14 days; omission includes API and website predictions.",
                                 "type": "string",
-                                "enum": ["web"]
+                                "enum": [
+                                    "web"
+                                ]
                             },
                             "createdAfter": {
                                 "description": "Inclusive creation lower bound as an RFC 3339 instant with explicit offset; omitted means no lower bound.",
@@ -4179,7 +4624,10 @@
                                         },
                                         "error": {
                                             "description": "Model failure message or null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "input": {
                                             "type": "object",
@@ -4195,11 +4643,21 @@
                                         "source": {
                                             "description": "Website or API creation source.",
                                             "type": "string",
-                                            "enum": ["web", "api"]
+                                            "enum": [
+                                                "web",
+                                                "api"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"],
+                                            "enum": [
+                                                "starting",
+                                                "processing",
+                                                "succeeded",
+                                                "failed",
+                                                "canceled",
+                                                "aborted"
+                                            ],
                                             "description": "Lifecycle state; aborted means terminated before running."
                                         },
                                         "webUrl": {
@@ -4280,7 +4738,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "error", "input", "output", "status", "modelId", "createdAt", "versionId", "dataRemoved"],
+                                    "required": [
+                                        "id",
+                                        "error",
+                                        "input",
+                                        "output",
+                                        "status",
+                                        "modelId",
+                                        "createdAt",
+                                        "versionId",
+                                        "dataRemoved"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "An account prediction with native model data and precision-preserving UTC lifecycle instants."
                                 },
@@ -4291,7 +4759,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One newest-first account-prediction page and its optional scoped continuation."
                     }
@@ -4372,7 +4842,10 @@
                                         },
                                         "error": {
                                             "description": "Failure message or null.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "input": {
                                             "description": "Model-specific training inputs with original keys.",
@@ -4407,12 +4880,22 @@
                                         "source": {
                                             "description": "Website or API creation source.",
                                             "type": "string",
-                                            "enum": ["web", "api"]
+                                            "enum": [
+                                                "web",
+                                                "api"
+                                            ]
                                         },
                                         "status": {
                                             "description": "Training lifecycle state; aborted means terminated before running.",
                                             "type": "string",
-                                            "enum": ["starting", "processing", "succeeded", "failed", "canceled", "aborted"]
+                                            "enum": [
+                                                "starting",
+                                                "processing",
+                                                "succeeded",
+                                                "failed",
+                                                "canceled",
+                                                "aborted"
+                                            ]
                                         },
                                         "metrics": {
                                             "description": "Available elapsed and compute duration metrics in seconds.",
@@ -4470,7 +4953,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A training job and its available lifecycle details."
                                 },
@@ -4481,7 +4966,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "One newest-first page of trainings with an optional continuation."
                     }
@@ -4547,7 +5034,9 @@
                                 "description": "Text search query evaluated by the provider."
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false,
                         "description": "Text query and optional model match limit for public resource discovery."
                     },
@@ -4595,7 +5084,10 @@
                                                         },
                                                         "paperUrl": {
                                                             "description": "Paper URL or null.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "runCount": {
                                                             "description": "Provider-reported model run count.",
@@ -4605,7 +5097,10 @@
                                                         },
                                                         "githubUrl": {
                                                             "description": "Source repository URL or null.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "isOfficial": {
                                                             "description": "Whether officially maintained by Replicate.",
@@ -4613,44 +5108,75 @@
                                                         },
                                                         "licenseUrl": {
                                                             "description": "License URL or null.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "visibility": {
                                                             "description": "Provider-reported visibility.",
                                                             "type": "string",
-                                                            "enum": ["public", "private"]
+                                                            "enum": [
+                                                                "public",
+                                                                "private"
+                                                            ]
                                                         },
                                                         "description": {
                                                             "description": "Author-written description or null.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "coverImageUrl": {
                                                             "description": "Cover image URL or null.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "latestVersionId": {
                                                             "description": "Latest-version identifier or null; omitted when the summary does not supply it.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "defaultExampleId": {
                                                             "description": "Default prediction identifier or null; omitted when the summary does not supply it.",
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["id", "name", "owner"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "owner"
+                                                    ],
                                                     "additionalProperties": false,
                                                     "description": "Matched public model and useful discovery metadata."
                                                 },
                                                 "score": {
                                                     "description": "Provider relevance score, with no invented scale or cross-category comparability.",
-                                                    "type": ["number", "null"]
+                                                    "type": [
+                                                        "number",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "generatedDescription": {
                                                     "description": "AI-generated detailed description, distinguished from author text.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["type", "model"],
+                                            "required": [
+                                                "type",
+                                                "model"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Public model search match with discovery metadata."
                                         },
@@ -4690,7 +5216,12 @@
                                                     "description": "Collection description."
                                                 }
                                             },
-                                            "required": ["id", "name", "type", "description"],
+                                            "required": [
+                                                "id",
+                                                "name",
+                                                "type",
+                                                "description"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Collection search match."
                                         },
@@ -4712,7 +5243,11 @@
                                                     "description": "Identifies a documentation search match."
                                                 }
                                             },
-                                            "required": ["url", "name", "type"],
+                                            "required": [
+                                                "url",
+                                                "name",
+                                                "type"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "Documentation search match."
                                         }
@@ -4726,7 +5261,10 @@
                                 "description": "Query actually evaluated by the provider."
                             }
                         },
-                        "required": ["items", "query"],
+                        "required": [
+                            "items",
+                            "query"
+                        ],
                         "additionalProperties": false,
                         "description": "Complete single search response containing typed public resource matches."
                     }
@@ -4808,30 +5346,40 @@
                                 "maximum": 5
                             }
                         },
-                        "required": ["deploymentId"],
+                        "required": [
+                            "deploymentId"
+                        ],
                         "additionalProperties": false,
                         "description": "An existing deployment and at least one setting to update, preserving omitted settings.",
                         "anyOf": [
                             {
-                                "required": ["versionId"],
+                                "required": [
+                                    "versionId"
+                                ],
                                 "properties": {
                                     "versionId": true
                                 }
                             },
                             {
-                                "required": ["hardware"],
+                                "required": [
+                                    "hardware"
+                                ],
                                 "properties": {
                                     "hardware": true
                                 }
                             },
                             {
-                                "required": ["minInstances"],
+                                "required": [
+                                    "minInstances"
+                                ],
                                 "properties": {
                                     "minInstances": true
                                 }
                             },
                             {
-                                "required": ["maxInstances"],
+                                "required": [
+                                    "maxInstances"
+                                ],
                                 "properties": {
                                     "maxInstances": true
                                 }
@@ -4899,7 +5447,10 @@
                                     },
                                     "type": {
                                         "type": "string",
-                                        "enum": ["user", "organization"],
+                                        "enum": [
+                                            "user",
+                                            "organization"
+                                        ],
                                         "description": "Creator account type."
                                     },
                                     "username": {
@@ -4917,11 +5468,18 @@
                                         "format": "uri"
                                     }
                                 },
-                                "required": ["type", "username"],
+                                "required": [
+                                    "type",
+                                    "username"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "owner"],
+                        "required": [
+                            "id",
+                            "name",
+                            "owner"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated deployment and its resulting current release, without waiting for readiness."
                     }
@@ -5013,7 +5571,10 @@
                                 "minProperties": 1
                             }
                         },
-                        "required": ["modelId", "changes"],
+                        "required": [
+                            "modelId",
+                            "changes"
+                        ],
                         "additionalProperties": false,
                         "description": "Identify an existing model and supply only the metadata to replace."
                     },
@@ -5030,22 +5591,36 @@
                             },
                             "paperUrl": {
                                 "description": "Stored paper URL or null, when returned.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "githubUrl": {
                                 "description": "Stored repository URL or null, when returned.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "licenseUrl": {
                                 "description": "Stored license URL or null, when returned.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
                                 "description": "Stored description, preserving empty or null clearing representation.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Updated model identity and provider-confirmed stored metadata."
                     }
@@ -5128,7 +5703,10 @@
                                 "description": "Exact original bytes in canonical padded base64, not a data URL; decoded size must be at most 10 MiB (10485760 bytes). Empty content denotes a zero-byte file."
                             }
                         },
-                        "required": ["filename", "contentBase64"],
+                        "required": [
+                            "filename",
+                            "contentBase64"
+                        ],
                         "additionalProperties": false,
                         "description": "Original file bytes, a UTF-8 filename, and optional MIME type and structured user metadata."
                     },
@@ -5185,7 +5763,15 @@
                                 "format": "uri"
                             }
                         },
-                        "required": ["id", "metadata", "checksums", "createdAt", "expiresAt", "sizeBytes", "contentType"],
+                        "required": [
+                            "id",
+                            "metadata",
+                            "checksums",
+                            "createdAt",
+                            "expiresAt",
+                            "sizeBytes",
+                            "contentType"
+                        ],
                         "additionalProperties": false,
                         "description": "Created expiring file metadata, checksums, exact byte size, and authoritative UTC timestamps."
                     }

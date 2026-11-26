@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_billcreate",
             "name": "bill-create",
-            "output": ["ActionOutput_netsuite_tba_billcreate"],
+            "output": [
+                "ActionOutput_netsuite_tba_billcreate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_billcreate", "ActionOutput_netsuite_tba_billcreate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_billcreate",
+                "ActionOutput_netsuite_tba_billcreate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -118,7 +123,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -162,7 +171,12 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["vendorId", "tranDate", "currency", "lines"],
+                        "required": [
+                            "vendorId",
+                            "tranDate",
+                            "currency",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_billcreate": {
@@ -172,7 +186,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -185,9 +201,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_billupdate",
             "name": "bill-update",
-            "output": ["ActionOutput_netsuite_tba_billupdate"],
+            "output": [
+                "ActionOutput_netsuite_tba_billupdate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_billupdate", "ActionOutput_netsuite_tba_billupdate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_billupdate",
+                "ActionOutput_netsuite_tba_billupdate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -299,7 +320,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -343,7 +368,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "lines"],
+                        "required": [
+                            "id",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_billupdate": {
@@ -353,7 +381,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -366,9 +396,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_creditnotecreate",
             "name": "credit-note-create",
-            "output": ["ActionOutput_netsuite_tba_creditnotecreate"],
+            "output": [
+                "ActionOutput_netsuite_tba_creditnotecreate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_creditnotecreate", "ActionOutput_netsuite_tba_creditnotecreate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_creditnotecreate",
+                "ActionOutput_netsuite_tba_creditnotecreate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -408,12 +443,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["customerId", "status", "currency", "lines"],
+                        "required": [
+                            "customerId",
+                            "status",
+                            "currency",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_creditnotecreate": {
@@ -423,7 +467,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -436,9 +482,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_creditnoteupdate",
             "name": "credit-note-update",
-            "output": ["ActionOutput_netsuite_tba_creditnoteupdate"],
+            "output": [
+                "ActionOutput_netsuite_tba_creditnoteupdate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_creditnoteupdate", "ActionOutput_netsuite_tba_creditnoteupdate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_creditnoteupdate",
+                "ActionOutput_netsuite_tba_creditnoteupdate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -478,7 +529,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -486,7 +541,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "status", "currency", "lines", "id"],
+                        "required": [
+                            "customerId",
+                            "status",
+                            "currency",
+                            "lines",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_creditnoteupdate": {
@@ -496,7 +557,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -509,9 +572,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_customercreate",
             "name": "customer-create",
-            "output": ["ActionOutput_netsuite_tba_customercreate"],
+            "output": [
+                "ActionOutput_netsuite_tba_customercreate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_customercreate", "ActionOutput_netsuite_tba_customercreate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_customercreate",
+                "ActionOutput_netsuite_tba_customercreate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -552,7 +620,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["externalId", "name"],
+                        "required": [
+                            "externalId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_customercreate": {
@@ -562,7 +633,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -575,9 +648,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_customerupdate",
             "name": "customer-update",
-            "output": ["ActionOutput_netsuite_tba_customerupdate"],
+            "output": [
+                "ActionOutput_netsuite_tba_customerupdate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_customerupdate", "ActionOutput_netsuite_tba_customerupdate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_customerupdate",
+                "ActionOutput_netsuite_tba_customerupdate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -621,7 +699,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_customerupdate": {
@@ -631,7 +711,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -644,9 +726,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_fetchfields",
             "name": "fetch-fields",
-            "output": ["ActionOutput_netsuite_tba_fetchfields"],
+            "output": [
+                "ActionOutput_netsuite_tba_fetchfields"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_fetchfields", "ActionOutput_netsuite_tba_fetchfields"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_fetchfields",
+                "ActionOutput_netsuite_tba_fetchfields"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -657,7 +744,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_fetchfields": {
@@ -901,9 +990,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_invoicecreate",
             "name": "invoice-create",
-            "output": ["ActionOutput_netsuite_tba_invoicecreate"],
+            "output": [
+                "ActionOutput_netsuite_tba_invoicecreate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_invoicecreate", "ActionOutput_netsuite_tba_invoicecreate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_invoicecreate",
+                "ActionOutput_netsuite_tba_invoicecreate"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -946,12 +1040,21 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["customerId", "currency", "status", "lines"],
+                        "required": [
+                            "customerId",
+                            "currency",
+                            "status",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_invoicecreate": {
@@ -961,7 +1064,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -974,9 +1079,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_invoiceupdate",
             "name": "invoice-update",
-            "output": ["ActionOutput_netsuite_tba_invoiceupdate"],
+            "output": [
+                "ActionOutput_netsuite_tba_invoiceupdate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_invoiceupdate", "ActionOutput_netsuite_tba_invoiceupdate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_invoiceupdate",
+                "ActionOutput_netsuite_tba_invoiceupdate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1019,7 +1129,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1030,7 +1144,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status", "lines", "id"],
+                        "required": [
+                            "status",
+                            "lines",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_invoiceupdate": {
@@ -1040,7 +1158,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1053,9 +1173,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_paymentcreate",
             "name": "payment-create",
-            "output": ["ActionOutput_netsuite_tba_paymentcreate"],
+            "output": [
+                "ActionOutput_netsuite_tba_paymentcreate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_paymentcreate", "ActionOutput_netsuite_tba_paymentcreate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_paymentcreate",
+                "ActionOutput_netsuite_tba_paymentcreate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1087,7 +1212,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "amount", "currency", "paymentReference", "applyTo", "status"],
+                        "required": [
+                            "customerId",
+                            "amount",
+                            "currency",
+                            "paymentReference",
+                            "applyTo",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_paymentcreate": {
@@ -1097,7 +1229,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1110,9 +1244,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_paymentupdate",
             "name": "payment-update",
-            "output": ["ActionOutput_netsuite_tba_paymentupdate"],
+            "output": [
+                "ActionOutput_netsuite_tba_paymentupdate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_paymentupdate", "ActionOutput_netsuite_tba_paymentupdate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_paymentupdate",
+                "ActionOutput_netsuite_tba_paymentupdate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1147,7 +1286,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "id"],
+                        "required": [
+                            "customerId",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_paymentupdate": {
@@ -1157,7 +1299,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1170,9 +1314,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_purchaseordercreate",
             "name": "purchase-order-create",
-            "output": ["ActionOutput_netsuite_tba_purchaseordercreate"],
+            "output": [
+                "ActionOutput_netsuite_tba_purchaseordercreate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_purchaseordercreate", "ActionOutput_netsuite_tba_purchaseordercreate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_purchaseordercreate",
+                "ActionOutput_netsuite_tba_purchaseordercreate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1258,7 +1407,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1351,7 +1504,13 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["vendorId", "status", "lines", "billingAddress", "shippingAddress"],
+                        "required": [
+                            "vendorId",
+                            "status",
+                            "lines",
+                            "billingAddress",
+                            "shippingAddress"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_purchaseordercreate": {
@@ -1361,7 +1520,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1374,9 +1535,14 @@
             "endpoint": null,
             "input": "ActionInput_netsuite_tba_purchaseorderupdate",
             "name": "purchase-order-update",
-            "output": ["ActionOutput_netsuite_tba_purchaseorderupdate"],
+            "output": [
+                "ActionOutput_netsuite_tba_purchaseorderupdate"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_netsuite_tba_purchaseorderupdate", "ActionOutput_netsuite_tba_purchaseorderupdate"],
+            "usedModels": [
+                "ActionInput_netsuite_tba_purchaseorderupdate",
+                "ActionOutput_netsuite_tba_purchaseorderupdate"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -1465,7 +1631,11 @@
                                             ]
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1572,7 +1742,10 @@
                                 ]
                             }
                         },
-                        "required": ["id", "lines"],
+                        "required": [
+                            "id",
+                            "lines"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_netsuite_tba_purchaseorderupdate": {
@@ -1582,7 +1755,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1604,12 +1779,17 @@
             ],
             "input": "SyncMetadata_netsuite_tba_creditnotes",
             "name": "credit-notes",
-            "output": ["NetsuiteCreditNote"],
+            "output": [
+                "NetsuiteCreditNote"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["NetsuiteCreditNote", "SyncMetadata_netsuite_tba_creditnotes"],
+            "usedModels": [
+                "NetsuiteCreditNote",
+                "SyncMetadata_netsuite_tba_creditnotes"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1627,7 +1807,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
                                 "type": "string"
@@ -1656,7 +1839,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1667,7 +1854,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "customerId", "currency", "description", "createdAt", "lines", "total", "status"],
+                        "required": [
+                            "id",
+                            "customerId",
+                            "currency",
+                            "description",
+                            "createdAt",
+                            "lines",
+                            "total",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_netsuite_tba_creditnotes": {
@@ -1681,7 +1877,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1696,12 +1894,17 @@
             ],
             "input": "SyncMetadata_netsuite_tba_customers",
             "name": "customers",
-            "output": ["NetsuiteCustomer"],
+            "output": [
+                "NetsuiteCustomer"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["NetsuiteCustomer", "SyncMetadata_netsuite_tba_customers"],
+            "usedModels": [
+                "NetsuiteCustomer",
+                "SyncMetadata_netsuite_tba_customers"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1713,37 +1916,67 @@
                                 "type": "string"
                             },
                             "externalId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
                                 "type": "string"
                             },
                             "email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "taxNumber": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "addressLine1": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "addressLine2": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "city": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "zip": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "country": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "state": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "required": [
@@ -1773,7 +2006,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1787,12 +2022,17 @@
             ],
             "input": "SyncMetadata_netsuite_tba_generalledger",
             "name": "general-ledger",
-            "output": ["GeneralLedger"],
+            "output": [
+                "GeneralLedger"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["GeneralLedger", "SyncMetadata_netsuite_tba_generalledger"],
+            "usedModels": [
+                "GeneralLedger",
+                "SyncMetadata_netsuite_tba_generalledger"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1837,7 +2077,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "lines": {
@@ -1867,7 +2110,13 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["journalLineId", "accountId", "accountName", "cleared", "description"],
+                                    "required": [
+                                        "journalLineId",
+                                        "accountId",
+                                        "accountName",
+                                        "cleared",
+                                        "description"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -1898,7 +2147,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1913,12 +2164,17 @@
             ],
             "input": "SyncMetadata_netsuite_tba_invoices",
             "name": "invoices",
-            "output": ["NetsuiteInvoice"],
+            "output": [
+                "NetsuiteInvoice"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["NetsuiteInvoice", "SyncMetadata_netsuite_tba_invoices"],
+            "usedModels": [
+                "NetsuiteInvoice",
+                "SyncMetadata_netsuite_tba_invoices"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1936,7 +2192,10 @@
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
                                 "type": "string"
@@ -1965,7 +2224,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["itemId", "quantity", "amount"],
+                                    "required": [
+                                        "itemId",
+                                        "quantity",
+                                        "amount"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1976,7 +2239,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "customerId", "currency", "description", "createdAt", "lines", "total", "status"],
+                        "required": [
+                            "id",
+                            "customerId",
+                            "currency",
+                            "description",
+                            "createdAt",
+                            "lines",
+                            "total",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_netsuite_tba_invoices": {
@@ -1990,7 +2262,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2004,12 +2278,17 @@
             ],
             "input": "SyncMetadata_netsuite_tba_locations",
             "name": "locations",
-            "output": ["NetsuiteLocation"],
+            "output": [
+                "NetsuiteLocation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["NetsuiteLocation", "SyncMetadata_netsuite_tba_locations"],
+            "usedModels": [
+                "NetsuiteLocation",
+                "SyncMetadata_netsuite_tba_locations"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2054,7 +2333,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["address1", "addressee", "addressText", "city", "country", "state", "zip"],
+                                "required": [
+                                    "address1",
+                                    "addressee",
+                                    "addressText",
+                                    "city",
+                                    "country",
+                                    "state",
+                                    "zip"
+                                ],
                                 "additionalProperties": false
                             },
                             "returnAddress": {
@@ -2067,17 +2354,31 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["addressText", "country"],
+                                "required": [
+                                    "addressText",
+                                    "country"
+                                ],
                                 "additionalProperties": false
                             },
                             "timeZone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "useBins": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "isInactive", "name", "lastModifiedDate", "address", "returnAddress", "useBins"],
+                        "required": [
+                            "id",
+                            "isInactive",
+                            "name",
+                            "lastModifiedDate",
+                            "address",
+                            "returnAddress",
+                            "useBins"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_netsuite_tba_locations": {
@@ -2091,7 +2392,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2106,12 +2409,17 @@
             ],
             "input": "SyncMetadata_netsuite_tba_payments",
             "name": "payments",
-            "output": ["NetsuitePayment"],
+            "output": [
+                "NetsuitePayment"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["NetsuitePayment", "SyncMetadata_netsuite_tba_payments"],
+            "usedModels": [
+                "NetsuitePayment",
+                "SyncMetadata_netsuite_tba_payments"
+            ],
             "version": "2.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2126,22 +2434,40 @@
                                 "type": "string"
                             },
                             "customerId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "amount": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "createdAt": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "currency": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "paymentReference": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "applyTo": {
                                 "type": "array",
@@ -2150,7 +2476,16 @@
                                 }
                             }
                         },
-                        "required": ["id", "customerId", "amount", "createdAt", "currency", "paymentReference", "status", "applyTo"],
+                        "required": [
+                            "id",
+                            "customerId",
+                            "amount",
+                            "createdAt",
+                            "currency",
+                            "paymentReference",
+                            "status",
+                            "applyTo"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_netsuite_tba_payments": {
@@ -2164,7 +2499,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

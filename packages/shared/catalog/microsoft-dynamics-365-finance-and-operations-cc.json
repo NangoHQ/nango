@@ -7,8 +7,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createcustomer",
             "name": "create-customer",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createcustomer"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createcustomer"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createcustomer",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createcustomer"
@@ -68,7 +72,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "organizationName", "customerGroupId", "salesCurrencyCode"],
+                        "required": [
+                            "dataAreaId",
+                            "organizationName",
+                            "customerGroupId",
+                            "salesCurrencyCode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createcustomer": {
@@ -114,7 +123,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerAccount", "organizationName", "customerGroupId", "salesCurrencyCode", "dataAreaId"],
+                        "required": [
+                            "customerAccount",
+                            "organizationName",
+                            "customerGroupId",
+                            "salesCurrencyCode",
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -127,8 +142,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createfreetextinvoice",
             "name": "create-free-text-invoice",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createfreetextinvoice"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createfreetextinvoice"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createfreetextinvoice",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createfreetextinvoice"
@@ -164,7 +183,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerAccount", "invoiceDate", "currencyCode"],
+                        "required": [
+                            "customerAccount",
+                            "invoiceDate",
+                            "currencyCode"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createfreetextinvoice": {
@@ -195,7 +218,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["invoiceIdentifier"],
+                        "required": [
+                            "invoiceIdentifier"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -208,8 +233,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createledgerjournal",
             "name": "create-ledger-journal",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createledgerjournal"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createledgerjournal"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createledgerjournal",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createledgerjournal"
@@ -229,7 +258,10 @@
                                 "description": "Existing journal name (setup) to use for the journal header. Example: \"EXPJRN\""
                             }
                         },
-                        "required": ["dataAreaId", "journalName"],
+                        "required": [
+                            "dataAreaId",
+                            "journalName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createledgerjournal": {
@@ -260,8 +292,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createpurchaseorder",
             "name": "create-purchase-order",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createpurchaseorder"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createpurchaseorder"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createpurchaseorder",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createpurchaseorder"
@@ -293,7 +329,13 @@
                                 "description": "Language ID. Example: \"en-us\""
                             }
                         },
-                        "required": ["dataAreaId", "orderVendorAccountNumber", "invoiceVendorAccountNumber", "currencyCode", "languageId"],
+                        "required": [
+                            "dataAreaId",
+                            "orderVendorAccountNumber",
+                            "invoiceVendorAccountNumber",
+                            "currencyCode",
+                            "languageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createpurchaseorder": {
@@ -330,8 +372,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createsalesorder",
             "name": "create-sales-order",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesorder"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesorder"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createsalesorder",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesorder"
@@ -379,7 +425,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["orderingCustomerAccountNumber", "invoiceCustomerAccountNumber", "currencyCode", "languageId", "dataAreaId"],
+                        "required": [
+                            "orderingCustomerAccountNumber",
+                            "invoiceCustomerAccountNumber",
+                            "currencyCode",
+                            "languageId",
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesorder": {
@@ -420,7 +472,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["orderingCustomerAccountNumber", "invoiceCustomerAccountNumber", "currencyCode", "languageId", "dataAreaId"],
+                        "required": [
+                            "orderingCustomerAccountNumber",
+                            "invoiceCustomerAccountNumber",
+                            "currencyCode",
+                            "languageId",
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -433,8 +491,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createsalesquotation",
             "name": "create-sales-quotation",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesquotation"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesquotation"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createsalesquotation",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesquotation"
@@ -467,7 +529,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "requestingCustomerAccountNumber", "currencyCode", "languageId", "skipOpportunityCreationPrompt"],
+                        "required": [
+                            "dataAreaId",
+                            "requestingCustomerAccountNumber",
+                            "currencyCode",
+                            "languageId",
+                            "skipOpportunityCreationPrompt"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createsalesquotation": {
@@ -489,7 +557,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "quotationNumber", "requestingCustomerAccountNumber", "currencyCode", "languageId"],
+                        "required": [
+                            "dataAreaId",
+                            "quotationNumber",
+                            "requestingCustomerAccountNumber",
+                            "currencyCode",
+                            "languageId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -502,8 +576,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createvendor",
             "name": "create-vendor",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createvendor"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createvendor"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_createvendor",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createvendor"
@@ -559,7 +637,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "VendorOrganizationName", "VendorGroupId"],
+                        "required": [
+                            "dataAreaId",
+                            "VendorOrganizationName",
+                            "VendorGroupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_createvendor": {
@@ -599,7 +681,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId"],
+                        "required": [
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -612,8 +696,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_deletefreetextinvoice",
             "name": "delete-free-text-invoice",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletefreetextinvoice"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletefreetextinvoice"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_deletefreetextinvoice",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletefreetextinvoice"
@@ -633,7 +721,10 @@
                                 "description": "Invoice identifier (numeric). Example: '5637144588'"
                             }
                         },
-                        "required": ["dataAreaId", "invoiceIdentifier"],
+                        "required": [
+                            "dataAreaId",
+                            "invoiceIdentifier"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletefreetextinvoice": {
@@ -649,7 +740,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "dataAreaId", "invoiceIdentifier"],
+                        "required": [
+                            "success",
+                            "dataAreaId",
+                            "invoiceIdentifier"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -662,8 +757,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_deleteledgerjournal",
             "name": "delete-ledger-journal",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deleteledgerjournal"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deleteledgerjournal"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_deleteledgerjournal",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deleteledgerjournal"
@@ -683,7 +782,10 @@
                                 "description": "Journal batch number of the ledger journal header to delete. Example: \"DAT-000015\""
                             }
                         },
-                        "required": ["dataAreaId", "journalBatchNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "journalBatchNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deleteledgerjournal": {
@@ -699,7 +801,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["dataAreaId", "journalBatchNumber", "deleted"],
+                        "required": [
+                            "dataAreaId",
+                            "journalBatchNumber",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -712,8 +818,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_deletesalesquotation",
             "name": "delete-sales-quotation",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletesalesquotation"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletesalesquotation"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_deletesalesquotation",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletesalesquotation"
@@ -733,7 +843,10 @@
                                 "description": "Sales quotation number to delete. Example: \"DAT-000005\""
                             }
                         },
-                        "required": ["dataAreaId", "salesQuotationNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "salesQuotationNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_deletesalesquotation": {
@@ -749,7 +862,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "dataAreaId", "salesQuotationNumber"],
+                        "required": [
+                            "success",
+                            "dataAreaId",
+                            "salesQuotationNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -762,8 +879,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getcustomerpaymentjournal",
             "name": "get-customer-payment-journal",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomerpaymentjournal"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomerpaymentjournal"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getcustomerpaymentjournal",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomerpaymentjournal"
@@ -783,7 +904,10 @@
                                 "description": "Journal batch number. Example: \"DAT-000007\""
                             }
                         },
-                        "required": ["dataAreaId", "journalBatchNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "journalBatchNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomerpaymentjournal": {
@@ -808,7 +932,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "JournalBatchNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "JournalBatchNumber"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -821,8 +948,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getcustomer",
             "name": "get-customer",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomer"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomer"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getcustomer",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomer"
@@ -842,7 +973,10 @@
                                 "description": "Customer account number. Example: \"DAT-000004\""
                             }
                         },
-                        "required": ["dataAreaId", "customerAccount"],
+                        "required": [
+                            "dataAreaId",
+                            "customerAccount"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getcustomer": {
@@ -855,55 +989,106 @@
                                 "type": "string"
                             },
                             "Name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "NameAlias": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "CustomerGroupId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "AddressCity": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "AddressCountryRegionId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "AddressZipCode": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "AddressState": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "PrimaryContactEmail": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "PrimaryContactPhone": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "CurrencyCode": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "PaymentTerms": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "SalesTaxGroup": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "IsOneTimeCustomer": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "IsProspect": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "IsActiveCustomer": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "CreditLimit": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "PartyNumber": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
                         "additionalProperties": {}
@@ -918,8 +1103,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getfreetextinvoice",
             "name": "get-free-text-invoice",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getfreetextinvoice"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getfreetextinvoice"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getfreetextinvoice",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getfreetextinvoice"
@@ -939,7 +1128,10 @@
                                 "description": "Numeric invoice identifier. Example: 5637144588"
                             }
                         },
-                        "required": ["dataAreaId", "invoiceIdentifier"],
+                        "required": [
+                            "dataAreaId",
+                            "invoiceIdentifier"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getfreetextinvoice": {
@@ -952,7 +1144,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["InvoiceIdentifier", "dataAreaId"],
+                        "required": [
+                            "InvoiceIdentifier",
+                            "dataAreaId"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -965,8 +1160,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getledgerjournal",
             "name": "get-ledger-journal",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getledgerjournal"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getledgerjournal"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getledgerjournal",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getledgerjournal"
@@ -986,7 +1185,10 @@
                                 "description": "Journal batch number identifier. Example: \"DAT-000015\""
                             }
                         },
-                        "required": ["dataAreaId", "journalBatchNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "journalBatchNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getledgerjournal": {
@@ -1005,28 +1207,52 @@
                                 "type": "string"
                             },
                             "AccountingCurrency": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "JournalName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "IntegrationKey": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "Description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "PostingLayer": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "IsPosted": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "JournalTotalCredit": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "JournalTotalDebit": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
                         "additionalProperties": {}
@@ -1041,8 +1267,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getpurchaseorder",
             "name": "get-purchase-order",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getpurchaseorder"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getpurchaseorder"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getpurchaseorder",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getpurchaseorder"
@@ -1062,7 +1292,10 @@
                                 "description": "Purchase order number. Example: \"DAT-000001\""
                             }
                         },
-                        "required": ["dataAreaId", "purchaseOrderNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "purchaseOrderNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getpurchaseorder": {
@@ -1075,7 +1308,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["PurchaseOrderNumber", "dataAreaId"],
+                        "required": [
+                            "PurchaseOrderNumber",
+                            "dataAreaId"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1088,8 +1324,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getreleasedproduct",
             "name": "get-released-product",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getreleasedproduct"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getreleasedproduct"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getreleasedproduct",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getreleasedproduct"
@@ -1109,7 +1349,10 @@
                                 "description": "Released product item number. May include leading or trailing whitespace. Example: ' RFI-TEST-001'"
                             }
                         },
-                        "required": ["dataAreaId", "itemNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "itemNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getreleasedproduct": {
@@ -1122,7 +1365,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "ItemNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "ItemNumber"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1135,8 +1381,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getsalesorder",
             "name": "get-sales-order",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesorder"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesorder"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getsalesorder",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesorder"
@@ -1156,7 +1406,10 @@
                                 "description": "Sales order number. Example: \"DAT-000001\""
                             }
                         },
-                        "required": ["dataAreaId", "salesOrderNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "salesOrderNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesorder": {
@@ -1174,8 +1427,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getsalesquotation",
             "name": "get-sales-quotation",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesquotation"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesquotation"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getsalesquotation",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesquotation"
@@ -1195,7 +1452,10 @@
                                 "description": "Sales quotation number. Example: \"DAT-000005\""
                             }
                         },
-                        "required": ["dataAreaId", "salesQuotationNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "salesQuotationNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getsalesquotation": {
@@ -1213,8 +1473,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getvendorpaymentjournal",
             "name": "get-vendor-payment-journal",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendorpaymentjournal"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendorpaymentjournal"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getvendorpaymentjournal",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendorpaymentjournal"
@@ -1234,7 +1498,10 @@
                                 "description": "Vendor payment journal batch number. Example: \"DAT-000015\""
                             }
                         },
-                        "required": ["dataAreaId", "journalBatchNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "journalBatchNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendorpaymentjournal": {
@@ -1274,8 +1541,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getvendor",
             "name": "get-vendor",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendor"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendor"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_getvendor",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendor"
@@ -1295,7 +1566,10 @@
                                 "description": "Vendor account number. Example: \"DAT-0000000002\""
                             }
                         },
-                        "required": ["dataAreaId", "vendorAccountNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "vendorAccountNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_getvendor": {
@@ -1308,7 +1582,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "VendorAccountNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "VendorAccountNumber"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1321,8 +1598,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listchartofaccounts",
             "name": "list-chart-of-accounts",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listchartofaccounts"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listchartofaccounts"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listchartofaccounts",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listchartofaccounts"
@@ -1369,7 +1650,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1382,8 +1665,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcurrencies",
             "name": "list-currencies",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcurrencies"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcurrencies"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcurrencies",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcurrencies"
@@ -1413,13 +1700,21 @@
                                             "type": "string"
                                         },
                                         "Name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "Symbol": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["CurrencyCode"],
+                                    "required": [
+                                        "CurrencyCode"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1427,7 +1722,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1440,8 +1737,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomergroups",
             "name": "list-customer-groups",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomergroups"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomergroups"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomergroups",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomergroups"
@@ -1475,13 +1776,18 @@
                                             "type": "string"
                                         },
                                         "Description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "dataAreaId": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["CustomerGroupId"],
+                                    "required": [
+                                        "CustomerGroupId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1489,7 +1795,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1502,8 +1810,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournallines",
             "name": "list-customer-payment-journal-lines",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournallines"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournallines"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournallines",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournallines"
@@ -1550,7 +1862,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1563,8 +1877,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournals",
             "name": "list-customer-payment-journals",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournals"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournals"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournals",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentjournals"
@@ -1626,7 +1944,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1639,8 +1959,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentmethods",
             "name": "list-customer-payment-methods",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentmethods"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentmethods"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentmethods",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomerpaymentmethods"
@@ -1728,7 +2052,10 @@
                                             "type": "string"
                                         },
                                         "SATPaymentType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "SumByPeriod": {
                                             "type": "string"
@@ -1828,7 +2155,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1841,8 +2170,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomers",
             "name": "list-customers",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomers"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomers"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listcustomers",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listcustomers"
@@ -1922,7 +2255,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["CustomerAccount"],
+                                    "required": [
+                                        "CustomerAccount"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1930,7 +2265,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customers"],
+                        "required": [
+                            "customers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1943,8 +2280,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoicelines",
             "name": "list-free-text-invoice-lines",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoicelines"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoicelines"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoicelines",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoicelines"
@@ -2028,7 +2369,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2041,8 +2384,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoices",
             "name": "list-free-text-invoices",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoices"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoices"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoices",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listfreetextinvoices"
@@ -2106,7 +2453,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["invoice_identifier", "data_area_id"],
+                                    "required": [
+                                        "invoice_identifier",
+                                        "data_area_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2114,7 +2464,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2127,8 +2479,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournallines",
             "name": "list-ledger-journal-lines",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournallines"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournallines"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournallines",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournallines"
@@ -2159,7 +2515,9 @@
                                 "maximum": 10000
                             }
                         },
-                        "required": ["dataAreaId"],
+                        "required": [
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournallines": {
@@ -2211,7 +2569,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2224,8 +2584,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournals",
             "name": "list-ledger-journals",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournals"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournals"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournals",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listledgerjournals"
@@ -2291,7 +2655,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2304,8 +2670,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listlegalentities",
             "name": "list-legal-entities",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listlegalentities"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listlegalentities"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listlegalentities",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listlegalentities"
@@ -2347,7 +2717,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["dataAreaId"],
+                                    "required": [
+                                        "dataAreaId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2355,7 +2727,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2368,8 +2742,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listmainaccounts",
             "name": "list-main-accounts",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listmainaccounts"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listmainaccounts"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listmainaccounts",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listmainaccounts"
@@ -2405,43 +2783,81 @@
                                             "type": "string"
                                         },
                                         "Name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ChartOfAccounts": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "AccountType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "MainAccountCategory": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "CurrencyCode": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ActiveFrom": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ActiveTo": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "OpeningAccount": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ClosingAccount": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ExchangeRateType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ReportingExchangeRateType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ConsolidationExchangeRateType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["MainAccountId"],
+                                    "required": [
+                                        "MainAccountId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2449,7 +2865,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2462,8 +2880,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listpaymentterms",
             "name": "list-payment-terms",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpaymentterms"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpaymentterms"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listpaymentterms",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpaymentterms"
@@ -2493,10 +2915,15 @@
                                             "type": "string"
                                         },
                                         "Description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["Name"],
+                                    "required": [
+                                        "Name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2504,7 +2931,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2517,8 +2946,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorderlines",
             "name": "list-purchase-order-lines",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorderlines"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorderlines"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorderlines",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorderlines"
@@ -2565,7 +2998,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2578,8 +3013,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorders",
             "name": "list-purchase-orders",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorders"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorders"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorders",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listpurchaseorders"
@@ -2624,7 +3063,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2637,8 +3078,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listreleasedproducts",
             "name": "list-released-products",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listreleasedproducts"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listreleasedproducts"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listreleasedproducts",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listreleasedproducts"
@@ -2679,28 +3124,51 @@
                                             "description": "Item number. May include leading or trailing whitespace."
                                         },
                                         "ProductName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ProductGroupId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ItemType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "UnitOfMeasureSymbol": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "SearchName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ProductNumber": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "dataAreaId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["ItemNumber"],
+                                    "required": [
+                                        "ItemNumber"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2708,7 +3176,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2721,8 +3191,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorderlines",
             "name": "list-sales-order-lines",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorderlines"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorderlines"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorderlines",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorderlines"
@@ -2811,7 +3285,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["dataAreaId", "SalesOrderNumber"],
+                                    "required": [
+                                        "dataAreaId",
+                                        "SalesOrderNumber"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2819,7 +3296,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2832,8 +3311,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorders",
             "name": "list-sales-orders",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorders"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorders"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorders",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesorders"
@@ -2882,7 +3365,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2895,8 +3380,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotationlines",
             "name": "list-sales-quotation-lines",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotationlines"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotationlines"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotationlines",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotationlines"
@@ -2920,7 +3409,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId"],
+                        "required": [
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotationlines": {
@@ -2940,7 +3431,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2953,8 +3446,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotations",
             "name": "list-sales-quotations",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotations"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotations"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotations",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listsalesquotations"
@@ -2997,7 +3494,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3010,8 +3509,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listtaxgroups",
             "name": "list-tax-groups",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listtaxgroups"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listtaxgroups"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listtaxgroups",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listtaxgroups"
@@ -3102,7 +3605,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["TaxGroupCode"],
+                                    "required": [
+                                        "TaxGroupCode"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3110,7 +3615,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3123,8 +3630,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listunitsofmeasure",
             "name": "list-units-of-measure",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listunitsofmeasure"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listunitsofmeasure"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listunitsofmeasure",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listunitsofmeasure"
@@ -3160,34 +3671,63 @@
                                             "type": "string"
                                         },
                                         "UnitDescription": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "UnitClass": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "DecimalPrecision": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "IsBaseUnit": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "IsFixedUnitSymbolAssigned": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "SystemOfUnits": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "IsSystemUnit": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "FixedUnitSymbolAssignment": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "NationalCode": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["UnitSymbol"],
+                                    "required": [
+                                        "UnitSymbol"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3195,7 +3735,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3208,8 +3750,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendorgroups",
             "name": "list-vendor-groups",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorgroups"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorgroups"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendorgroups",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorgroups"
@@ -3239,10 +3785,15 @@
                                             "type": "string"
                                         },
                                         "Description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["VendorGroupId"],
+                                    "required": [
+                                        "VendorGroupId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3250,7 +3801,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3263,8 +3816,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournallines",
             "name": "list-vendor-payment-journal-lines",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournallines"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournallines"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournallines",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournallines"
@@ -3402,7 +3959,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["dataAreaId", "JournalBatchNumber"],
+                                    "required": [
+                                        "dataAreaId",
+                                        "JournalBatchNumber"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3410,7 +3970,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3423,8 +3985,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournals",
             "name": "list-vendor-payment-journals",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournals"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournals"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournals",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendorpaymentjournals"
@@ -3466,7 +4032,10 @@
                                             "type": "string"
                                         },
                                         "Description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "IsPosted": {
                                             "type": "string"
@@ -3479,7 +4048,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3492,8 +4063,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendors",
             "name": "list-vendors",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendors"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendors"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listvendors",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listvendors"
@@ -3526,7 +4101,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3539,8 +4116,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listwarehouses",
             "name": "list-warehouses",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listwarehouses"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listwarehouses"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listwarehouses",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listwarehouses"
@@ -3592,7 +4173,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3605,8 +4188,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listworkers",
             "name": "list-workers",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listworkers"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listworkers"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_listworkers",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_listworkers"
@@ -3728,7 +4315,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3741,8 +4330,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatecustomer",
             "name": "update-customer",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatecustomer"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatecustomer"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatecustomer",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatecustomer"
@@ -3832,10 +4425,16 @@
                             "onHoldStatus": {
                                 "description": "On-hold status. Example: \"No\"",
                                 "type": "string",
-                                "enum": ["No", "Yes"]
+                                "enum": [
+                                    "No",
+                                    "Yes"
+                                ]
                             }
                         },
-                        "required": ["dataAreaId", "customerAccount"],
+                        "required": [
+                            "dataAreaId",
+                            "customerAccount"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatecustomer": {
@@ -3902,7 +4501,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "customerAccount"],
+                        "required": [
+                            "dataAreaId",
+                            "customerAccount"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3915,8 +4517,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatepurchaseorder",
             "name": "update-purchase-order",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatepurchaseorder"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatepurchaseorder"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatepurchaseorder",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatepurchaseorder"
@@ -3937,11 +4543,17 @@
                             },
                             "PurchaseOrderName": {
                                 "description": "Purchase order name or description",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "VendorOrderReference": {
                                 "description": "Vendor order reference number",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "RequestedDeliveryDate": {
                                 "description": "Requested delivery date in ISO 8601 format",
@@ -3959,7 +4571,10 @@
                             },
                             "AttentionInformation": {
                                 "description": "Attention information",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "OrderVendorAccountNumber": {
                                 "description": "Order vendor account number",
@@ -3982,7 +4597,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "PurchaseOrderNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "PurchaseOrderNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatepurchaseorder": {
@@ -4040,7 +4658,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "PurchaseOrderNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "PurchaseOrderNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4053,8 +4674,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatesalesorder",
             "name": "update-sales-order",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatesalesorder"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatesalesorder"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatesalesorder",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatesalesorder"
@@ -4098,7 +4723,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "salesOrderNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "salesOrderNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatesalesorder": {
@@ -4129,7 +4757,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataAreaId", "salesOrderNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "salesOrderNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4142,8 +4773,12 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatevendor",
             "name": "update-vendor",
-            "output": ["ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatevendor"],
-            "scopes": ["https://<environmentUrl>/.default"],
+            "output": [
+                "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatevendor"
+            ],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "usedModels": [
                 "ActionInput_microsoft_dynamics_365_finance_and_operations_cc_updatevendor",
                 "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatevendor"
@@ -4187,7 +4822,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["dataAreaId", "vendorAccountNumber"],
+                        "required": [
+                            "dataAreaId",
+                            "vendorAccountNumber"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_dynamics_365_finance_and_operations_cc_updatevendor": {
@@ -4227,12 +4865,18 @@
             "endpoints": [],
             "input": null,
             "name": "customer-payment-journals",
-            "output": ["CustomerPaymentJournalHeader"],
+            "output": [
+                "CustomerPaymentJournalHeader"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CustomerPaymentJournalHeader"],
+            "usedModels": [
+                "CustomerPaymentJournalHeader"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4274,12 +4918,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4288,12 +4936,18 @@
             "endpoints": [],
             "input": null,
             "name": "customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer"],
+            "usedModels": [
+                "Customer"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4353,12 +5007,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "customerAccount", "dataAreaId"],
+                        "required": [
+                            "id",
+                            "customerAccount",
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4367,12 +5027,18 @@
             "endpoints": [],
             "input": null,
             "name": "free-text-invoices",
-            "output": ["FreeTextInvoice"],
+            "output": [
+                "FreeTextInvoice"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["FreeTextInvoice"],
+            "usedModels": [
+                "FreeTextInvoice"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4408,12 +5074,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "dataAreaId", "invoiceIdentifier"],
+                        "required": [
+                            "id",
+                            "dataAreaId",
+                            "invoiceIdentifier"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4422,12 +5094,18 @@
             "endpoints": [],
             "input": null,
             "name": "ledger-journals",
-            "output": ["LedgerJournal"],
+            "output": [
+                "LedgerJournal"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LedgerJournal"],
+            "usedModels": [
+                "LedgerJournal"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4466,12 +5144,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "DataAreaId", "JournalBatchNumber"],
+                        "required": [
+                            "id",
+                            "DataAreaId",
+                            "JournalBatchNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4480,12 +5164,18 @@
             "endpoints": [],
             "input": null,
             "name": "legal-entities",
-            "output": ["LegalEntity"],
+            "output": [
+                "LegalEntity"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LegalEntity"],
+            "usedModels": [
+                "LegalEntity"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4569,12 +5259,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4583,12 +5277,18 @@
             "endpoints": [],
             "input": null,
             "name": "main-accounts",
-            "output": ["MainAccount"],
+            "output": [
+                "MainAccount"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MainAccount"],
+            "usedModels": [
+                "MainAccount"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4699,12 +5399,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4713,12 +5417,18 @@
             "endpoints": [],
             "input": null,
             "name": "purchase-order-lines",
-            "output": ["PurchaseOrderLine"],
+            "output": [
+                "PurchaseOrderLine"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PurchaseOrderLine"],
+            "usedModels": [
+                "PurchaseOrderLine"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4784,12 +5494,19 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "dataAreaId", "PurchaseOrderNumber", "LineNumber"],
+                        "required": [
+                            "id",
+                            "dataAreaId",
+                            "PurchaseOrderNumber",
+                            "LineNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4798,12 +5515,18 @@
             "endpoints": [],
             "input": null,
             "name": "purchase-orders",
-            "output": ["PurchaseOrder"],
+            "output": [
+                "PurchaseOrder"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PurchaseOrder"],
+            "usedModels": [
+                "PurchaseOrder"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4923,12 +5646,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "dataAreaId", "PurchaseOrderNumber"],
+                        "required": [
+                            "id",
+                            "dataAreaId",
+                            "PurchaseOrderNumber"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4937,12 +5666,18 @@
             "endpoints": [],
             "input": null,
             "name": "released-products",
-            "output": ["ReleasedProduct"],
+            "output": [
+                "ReleasedProduct"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ReleasedProduct"],
+            "usedModels": [
+                "ReleasedProduct"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4975,12 +5710,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "dataAreaId", "itemNumber"],
+                        "required": [
+                            "id",
+                            "dataAreaId",
+                            "itemNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4989,12 +5730,18 @@
             "endpoints": [],
             "input": null,
             "name": "sales-order-lines",
-            "output": ["SalesOrderLine"],
+            "output": [
+                "SalesOrderLine"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SalesOrderLine"],
+            "usedModels": [
+                "SalesOrderLine"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5039,16 +5786,25 @@
                                 "type": "string"
                             },
                             "orderedInventoryQuantity": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "salesPrice": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "salesUnit": {
                                 "type": "string"
                             },
                             "lineAmount": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "requestedReceiptDate": {
                                 "type": "string"
@@ -5063,12 +5819,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "dataAreaId", "salesOrderNumber", "lineNumber"],
+                        "required": [
+                            "id",
+                            "dataAreaId",
+                            "salesOrderNumber",
+                            "lineNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5077,12 +5840,18 @@
             "endpoints": [],
             "input": null,
             "name": "sales-orders",
-            "output": ["SalesOrder"],
+            "output": [
+                "SalesOrder"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SalesOrder"],
+            "usedModels": [
+                "SalesOrder"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5118,12 +5887,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "data_area_id", "sales_order_number"],
+                        "required": [
+                            "id",
+                            "data_area_id",
+                            "sales_order_number"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5132,12 +5907,18 @@
             "endpoints": [],
             "input": null,
             "name": "sales-quotations",
-            "output": ["SalesQuotation"],
+            "output": [
+                "SalesQuotation"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["SalesQuotation"],
+            "usedModels": [
+                "SalesQuotation"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5194,12 +5975,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "dataAreaId", "SalesQuotationNumber"],
+                        "required": [
+                            "id",
+                            "dataAreaId",
+                            "SalesQuotationNumber"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5208,12 +5995,18 @@
             "endpoints": [],
             "input": null,
             "name": "vendor-payment-journals",
-            "output": ["VendorPaymentJournal"],
+            "output": [
+                "VendorPaymentJournal"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["VendorPaymentJournal"],
+            "usedModels": [
+                "VendorPaymentJournal"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5255,12 +6048,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "dataAreaId", "JournalBatchNumber"],
+                        "required": [
+                            "id",
+                            "dataAreaId",
+                            "JournalBatchNumber"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5269,12 +6068,18 @@
             "endpoints": [],
             "input": null,
             "name": "vendors",
-            "output": ["Vendor"],
+            "output": [
+                "Vendor"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Vendor"],
+            "usedModels": [
+                "Vendor"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5319,12 +6124,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "VendorAccountNumber", "dataAreaId"],
+                        "required": [
+                            "id",
+                            "VendorAccountNumber",
+                            "dataAreaId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5333,12 +6144,18 @@
             "endpoints": [],
             "input": null,
             "name": "warehouses",
-            "output": ["Warehouse"],
+            "output": [
+                "Warehouse"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Warehouse"],
+            "usedModels": [
+                "Warehouse"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5362,12 +6179,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "warehouse_id", "data_area_id"],
+                        "required": [
+                            "id",
+                            "warehouse_id",
+                            "data_area_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5376,12 +6199,18 @@
             "endpoints": [],
             "input": null,
             "name": "workers",
-            "output": ["Worker"],
+            "output": [
+                "Worker"
+            ],
             "runs": "every hour",
-            "scopes": ["https://<environmentUrl>/.default"],
+            "scopes": [
+                "https://<environmentUrl>/.default"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Worker"],
+            "usedModels": [
+                "Worker"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5528,12 +6357,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "personnelNumber"],
+                        "required": [
+                            "id",
+                            "personnelNumber"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

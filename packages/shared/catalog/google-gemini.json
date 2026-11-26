@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_batchembedcontents",
             "name": "batch-embed-contents",
-            "output": ["ActionOutput_google_gemini_batchembedcontents"],
+            "output": [
+                "ActionOutput_google_gemini_batchembedcontents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_batchembedcontents", "ActionOutput_google_gemini_batchembedcontents"],
+            "usedModels": [
+                "ActionInput_google_gemini_batchembedcontents",
+                "ActionOutput_google_gemini_batchembedcontents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -46,13 +51,17 @@
                                             ]
                                         }
                                     },
-                                    "required": ["content"],
+                                    "required": [
+                                        "content"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of embed requests."
                             }
                         },
-                        "required": ["requests"],
+                        "required": [
+                            "requests"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_gemini_batchembedcontents": {
@@ -75,7 +84,9 @@
                                 "description": "The embeddings for each request, in the same order as provided in the batch request."
                             }
                         },
-                        "required": ["embeddings"],
+                        "required": [
+                            "embeddings"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -88,9 +99,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_counttokens",
             "name": "count-tokens",
-            "output": ["ActionOutput_google_gemini_counttokens"],
+            "output": [
+                "ActionOutput_google_gemini_counttokens"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_counttokens", "ActionOutput_google_gemini_counttokens"],
+            "usedModels": [
+                "ActionInput_google_gemini_counttokens",
+                "ActionOutput_google_gemini_counttokens"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -127,7 +143,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["mimeType", "data"],
+                                                        "required": [
+                                                            "mimeType",
+                                                            "data"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "fileData": {
@@ -140,7 +159,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["mimeType", "fileUri"],
+                                                        "required": [
+                                                            "mimeType",
+                                                            "fileUri"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -148,7 +170,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["parts"],
+                                    "required": [
+                                        "parts"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Input contents to tokenize."
@@ -178,7 +202,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["mimeType", "data"],
+                                                    "required": [
+                                                        "mimeType",
+                                                        "data"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "fileData": {
@@ -191,7 +218,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["mimeType", "fileUri"],
+                                                    "required": [
+                                                        "mimeType",
+                                                        "fileUri"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -199,11 +229,15 @@
                                         }
                                     }
                                 },
-                                "required": ["parts"],
+                                "required": [
+                                    "parts"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["contents"],
+                        "required": [
+                            "contents"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_gemini_counttokens": {
@@ -229,7 +263,9 @@
                                 }
                             }
                         },
-                        "required": ["totalTokens"],
+                        "required": [
+                            "totalTokens"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -242,9 +278,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_deletefile",
             "name": "delete-file",
-            "output": ["ActionOutput_google_gemini_deletefile"],
+            "output": [
+                "ActionOutput_google_gemini_deletefile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_deletefile", "ActionOutput_google_gemini_deletefile"],
+            "usedModels": [
+                "ActionInput_google_gemini_deletefile",
+                "ActionOutput_google_gemini_deletefile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -256,7 +297,9 @@
                                 "description": "File name. Example: \"files/abc123\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_gemini_deletefile": {
@@ -274,9 +317,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_embedcontent",
             "name": "embed-content",
-            "output": ["ActionOutput_google_gemini_embedcontent"],
+            "output": [
+                "ActionOutput_google_gemini_embedcontent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_embedcontent", "ActionOutput_google_gemini_embedcontent"],
+            "usedModels": [
+                "ActionInput_google_gemini_embedcontent",
+                "ActionOutput_google_gemini_embedcontent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -295,7 +343,14 @@
                             "taskType": {
                                 "description": "The task type for which the embeddings will be used.",
                                 "type": "string",
-                                "enum": ["RETRIEVAL_DOCUMENT", "RETRIEVAL_QUERY", "SEMANTIC_SIMILARITY", "CLASSIFICATION", "CLUSTERING", "CODE_RETRIEVAL_QUERY"]
+                                "enum": [
+                                    "RETRIEVAL_DOCUMENT",
+                                    "RETRIEVAL_QUERY",
+                                    "SEMANTIC_SIMILARITY",
+                                    "CLASSIFICATION",
+                                    "CLUSTERING",
+                                    "CODE_RETRIEVAL_QUERY"
+                                ]
                             },
                             "title": {
                                 "description": "An optional title for the text. Only applicable when taskType is RETRIEVAL_DOCUMENT.",
@@ -308,7 +363,9 @@
                                 "maximum": 3072
                             }
                         },
-                        "required": ["content"],
+                        "required": [
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_gemini_embedcontent": {
@@ -335,7 +392,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["values"],
+                        "required": [
+                            "values"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -348,9 +407,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_generatecontent",
             "name": "generate-content",
-            "output": ["ActionOutput_google_gemini_generatecontent"],
+            "output": [
+                "ActionOutput_google_gemini_generatecontent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_generatecontent", "ActionOutput_google_gemini_generatecontent"],
+            "usedModels": [
+                "ActionInput_google_gemini_generatecontent",
+                "ActionOutput_google_gemini_generatecontent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -381,7 +445,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["parts"],
+                                    "required": [
+                                        "parts"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -404,7 +470,9 @@
                                         }
                                     }
                                 },
-                                "required": ["parts"],
+                                "required": [
+                                    "parts"
+                                ],
                                 "additionalProperties": false
                             },
                             "generationConfig": {
@@ -445,7 +513,9 @@
                                 }
                             }
                         },
-                        "required": ["contents"],
+                        "required": [
+                            "contents"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_gemini_generatecontent": {
@@ -561,9 +631,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_getfile",
             "name": "get-file",
-            "output": ["ActionOutput_google_gemini_getfile"],
+            "output": [
+                "ActionOutput_google_gemini_getfile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_getfile", "ActionOutput_google_gemini_getfile"],
+            "usedModels": [
+                "ActionInput_google_gemini_getfile",
+                "ActionOutput_google_gemini_getfile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -575,7 +650,9 @@
                                 "description": "The name of the file to retrieve. Example: \"files/abc123\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_gemini_getfile": {
@@ -628,7 +705,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -641,9 +720,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_getmodel",
             "name": "get-model",
-            "output": ["ActionOutput_google_gemini_getmodel"],
+            "output": [
+                "ActionOutput_google_gemini_getmodel"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_getmodel", "ActionOutput_google_gemini_getmodel"],
+            "usedModels": [
+                "ActionInput_google_gemini_getmodel",
+                "ActionOutput_google_gemini_getmodel"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -655,7 +739,9 @@
                                 "description": "Model name. Example: \"gemini-2.5-flash\" or \"models/gemini-2.5-flash\""
                             }
                         },
-                        "required": ["model"],
+                        "required": [
+                            "model"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_gemini_getmodel": {
@@ -701,7 +787,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -714,9 +802,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_listcachedcontents",
             "name": "list-cached-contents",
-            "output": ["ActionOutput_google_gemini_listcachedcontents"],
+            "output": [
+                "ActionOutput_google_gemini_listcachedcontents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_listcachedcontents", "ActionOutput_google_gemini_listcachedcontents"],
+            "usedModels": [
+                "ActionInput_google_gemini_listcachedcontents",
+                "ActionOutput_google_gemini_listcachedcontents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -766,7 +859,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -774,7 +869,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -787,9 +884,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_listfiles",
             "name": "list-files",
-            "output": ["ActionOutput_google_gemini_listfiles"],
+            "output": [
+                "ActionOutput_google_gemini_listfiles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_listfiles", "ActionOutput_google_gemini_listfiles"],
+            "usedModels": [
+                "ActionInput_google_gemini_listfiles",
+                "ActionOutput_google_gemini_listfiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -862,7 +964,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -871,7 +975,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -884,9 +990,14 @@
             "endpoint": null,
             "input": "ActionInput_google_gemini_listmodels",
             "name": "list-models",
-            "output": ["ActionOutput_google_gemini_listmodels"],
+            "output": [
+                "ActionOutput_google_gemini_listmodels"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_google_gemini_listmodels", "ActionOutput_google_gemini_listmodels"],
+            "usedModels": [
+                "ActionInput_google_gemini_listmodels",
+                "ActionOutput_google_gemini_listmodels"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -949,7 +1060,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -957,7 +1070,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -973,12 +1088,16 @@
             "endpoints": [],
             "input": null,
             "name": "cached-contents",
-            "output": ["CachedContent"],
+            "output": [
+                "CachedContent"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CachedContent"],
+            "usedModels": [
+                "CachedContent"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1026,12 +1145,17 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1040,12 +1164,16 @@
             "endpoints": [],
             "input": null,
             "name": "models",
-            "output": ["Model"],
+            "output": [
+                "Model"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Model"],
+            "usedModels": [
+                "Model"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1093,12 +1221,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

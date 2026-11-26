@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_addtaskcomment",
             "name": "add-task-comment",
-            "output": ["ActionOutput_ticktick_addtaskcomment"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_addtaskcomment", "ActionOutput_ticktick_addtaskcomment"],
+            "output": [
+                "ActionOutput_ticktick_addtaskcomment"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_addtaskcomment",
+                "ActionOutput_ticktick_addtaskcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,11 @@
                                 "description": "Comment text to post on the task."
                             }
                         },
-                        "required": ["projectId", "taskId", "title"],
+                        "required": [
+                            "projectId",
+                            "taskId",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to comment on and the comment text to post."
                     },
@@ -50,11 +61,17 @@
                             },
                             "createdTime": {
                                 "description": "Creation timestamp. Returned as an epoch-millisecond integer, even though the API documents an ISO-8601 string.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "modifiedTime": {
                                 "description": "Last-modified timestamp. Returned as an epoch-millisecond integer, even though the API documents an ISO-8601 string.",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "replyCommentId": {
                                 "description": "Identifier of the comment this comment replies to, when present.",
@@ -65,7 +82,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "The comment that was created on the task."
                     }
@@ -79,9 +99,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_assigntask",
             "name": "assign-task",
-            "output": ["ActionOutput_ticktick_assigntask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_assigntask", "ActionOutput_ticktick_assigntask"],
+            "output": [
+                "ActionOutput_ticktick_assigntask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_assigntask",
+                "ActionOutput_ticktick_assigntask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -101,7 +128,11 @@
                                 "description": "Username of an existing member of the task's project to assign the task to. Example: \"member@example.com\"."
                             }
                         },
-                        "required": ["projectId", "taskId", "assigneeUsername"],
+                        "required": [
+                            "projectId",
+                            "taskId",
+                            "assigneeUsername"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to assign and the project member that should be assigned to it."
                     },
@@ -267,7 +298,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "projectId"],
+                        "required": [
+                            "id",
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "The task after assignment, including its current assigneeUsername."
                     }
@@ -281,9 +315,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_batchupserttasks",
             "name": "batch-upsert-tasks",
-            "output": ["ActionOutput_ticktick_batchupserttasks"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_batchupserttasks", "ActionOutput_ticktick_batchupserttasks"],
+            "output": [
+                "ActionOutput_ticktick_batchupserttasks"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_batchupserttasks",
+                "ActionOutput_ticktick_batchupserttasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -432,7 +473,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["projectId", "title"],
+                                    "required": [
+                                        "projectId",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -582,7 +626,10 @@
                                             "description": "Identifier of the existing task to update."
                                         }
                                     },
-                                    "required": ["projectId", "id"],
+                                    "required": [
+                                        "projectId",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -614,7 +661,10 @@
                                 "description": "Map of task ID to a per-task error code; empty when every task succeeded."
                             }
                         },
-                        "required": ["id2etag", "id2error"],
+                        "required": [
+                            "id2etag",
+                            "id2error"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the batch create/update operation, keyed by task ID."
                     }
@@ -628,9 +678,17 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_completetaskandverify",
             "name": "complete-task-and-verify",
-            "output": ["ActionOutput_ticktick_completetaskandverify"],
-            "scopes": ["tasks:write", "tasks:read"],
-            "usedModels": ["ActionInput_ticktick_completetaskandverify", "ActionOutput_ticktick_completetaskandverify"],
+            "output": [
+                "ActionOutput_ticktick_completetaskandverify"
+            ],
+            "scopes": [
+                "tasks:write",
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_completetaskandverify",
+                "ActionOutput_ticktick_completetaskandverify"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -646,7 +704,10 @@
                                 "description": "ID of the task to mark as completed. Example: \"63b7bebb91c0a5474805fcd4\""
                             }
                         },
-                        "required": ["projectId", "taskId"],
+                        "required": [
+                            "projectId",
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the TickTick task to complete and then read back to confirm its final state."
                     },
@@ -828,7 +889,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "projectId", "title", "status", "advancedToNextOccurrence"],
+                        "required": [
+                            "id",
+                            "projectId",
+                            "title",
+                            "status",
+                            "advancedToNextOccurrence"
+                        ],
                         "additionalProperties": false,
                         "description": "The task's confirmed final state after it was marked completed."
                     }
@@ -842,9 +909,17 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_completetask",
             "name": "complete-task",
-            "output": ["ActionOutput_ticktick_completetask"],
-            "scopes": ["tasks:read", "tasks:write"],
-            "usedModels": ["ActionInput_ticktick_completetask", "ActionOutput_ticktick_completetask"],
+            "output": [
+                "ActionOutput_ticktick_completetask"
+            ],
+            "scopes": [
+                "tasks:read",
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_completetask",
+                "ActionOutput_ticktick_completetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -860,7 +935,10 @@
                                 "description": "Identifier of the task to mark as completed. Example: \"6ac5b589bed7f77658a9a80a\"."
                             }
                         },
-                        "required": ["projectId", "taskId"],
+                        "required": [
+                            "projectId",
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifiers of the task to mark as completed."
                     },
@@ -1001,7 +1079,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "projectId"],
+                        "required": [
+                            "id",
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "The task as returned by the provider immediately after it was marked completed."
                     }
@@ -1015,9 +1096,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_completetasksbatch",
             "name": "complete-tasks-batch",
-            "output": ["ActionOutput_ticktick_completetasksbatch"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_completetasksbatch", "ActionOutput_ticktick_completetasksbatch"],
+            "output": [
+                "ActionOutput_ticktick_completetasksbatch"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_completetasksbatch",
+                "ActionOutput_ticktick_completetasksbatch"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1038,7 +1126,9 @@
                                 "description": "IDs of the tasks to complete in one call. The provider only processes the first 50 IDs."
                             }
                         },
-                        "required": ["taskIds"],
+                        "required": [
+                            "taskIds"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for completing up to 50 tasks in a single project in one call."
                     },
@@ -1059,7 +1149,10 @@
                                 "description": "Number of tasks reported as successfully completed."
                             }
                         },
-                        "required": ["completedTaskIds", "completedCount"],
+                        "required": [
+                            "completedTaskIds",
+                            "completedCount"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the batch task completion, listing the task IDs the provider completed."
                     }
@@ -1073,9 +1166,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_createcolumn",
             "name": "create-column",
-            "output": ["ActionOutput_ticktick_createcolumn"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_createcolumn", "ActionOutput_ticktick_createcolumn"],
+            "output": [
+                "ActionOutput_ticktick_createcolumn"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_createcolumn",
+                "ActionOutput_ticktick_createcolumn"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1093,7 +1193,10 @@
                                 "description": "Name of the new column, up to 64 characters (TickTick silently truncates longer names). Example: \"In Progress\""
                             }
                         },
-                        "required": ["projectId", "name"],
+                        "required": [
+                            "projectId",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new column (section) on a TickTick project."
                     },
@@ -1117,7 +1220,12 @@
                                 "description": "Zero-based position of the column within the project."
                             }
                         },
-                        "required": ["id", "projectId", "name", "sortOrder"],
+                        "required": [
+                            "id",
+                            "projectId",
+                            "name",
+                            "sortOrder"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created column (section) on the project."
                     }
@@ -1131,9 +1239,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_createprojectgroup",
             "name": "create-project-group",
-            "output": ["ActionOutput_ticktick_createprojectgroup"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_createprojectgroup", "ActionOutput_ticktick_createprojectgroup"],
+            "output": [
+                "ActionOutput_ticktick_createprojectgroup"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_createprojectgroup",
+                "ActionOutput_ticktick_createprojectgroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1147,7 +1262,9 @@
                                 "description": "Name of the project group (folder) to create. Maximum 64 characters. Example: \"Work\""
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new project group (folder)."
                     },
@@ -1175,7 +1292,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created project group."
                     }
@@ -1189,9 +1309,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_ticktick_createproject"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_createproject", "ActionOutput_ticktick_createproject"],
+            "output": [
+                "ActionOutput_ticktick_createproject"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_createproject",
+                "ActionOutput_ticktick_createproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1217,15 +1344,24 @@
                             "viewMode": {
                                 "description": "View mode of the project: \"list\", \"kanban\" or \"timeline\". Example: \"list\"",
                                 "type": "string",
-                                "enum": ["list", "kanban", "timeline"]
+                                "enum": [
+                                    "list",
+                                    "kanban",
+                                    "timeline"
+                                ]
                             },
                             "kind": {
                                 "description": "Kind of project: \"TASK\" or \"NOTE\". Example: \"TASK\"",
                                 "type": "string",
-                                "enum": ["TASK", "NOTE"]
+                                "enum": [
+                                    "TASK",
+                                    "NOTE"
+                                ]
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a new TickTick project."
                     },
@@ -1269,7 +1405,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created TickTick project."
                     }
@@ -1283,9 +1422,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_ticktick_createtask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_createtask", "ActionOutput_ticktick_createtask"],
+            "output": [
+                "ActionOutput_ticktick_createtask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_createtask",
+                "ActionOutput_ticktick_createtask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1385,12 +1531,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["title"],
+                                    "required": [
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["title", "projectId"],
+                        "required": [
+                            "title",
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for creating a new TickTick task."
                     },
@@ -1530,7 +1681,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "projectId", "title"],
+                        "required": [
+                            "id",
+                            "projectId",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "The newly created TickTick task, including its assigned ID."
                     }
@@ -1544,9 +1699,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_deleteprojectgroup",
             "name": "delete-project-group",
-            "output": ["ActionOutput_ticktick_deleteprojectgroup"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_deleteprojectgroup", "ActionOutput_ticktick_deleteprojectgroup"],
+            "output": [
+                "ActionOutput_ticktick_deleteprojectgroup"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_deleteprojectgroup",
+                "ActionOutput_ticktick_deleteprojectgroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1558,7 +1720,9 @@
                                 "description": "The ID of the project group (folder) to delete. Example: \"6436176a47fd2e05f26ef56e\""
                             }
                         },
-                        "required": ["projectGroupId"],
+                        "required": [
+                            "projectGroupId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the project group to delete."
                     },
@@ -1570,7 +1734,9 @@
                                 "description": "True when TickTick accepted the deletion request; TickTick also returns success for unknown or already-deleted groups, so this does not prove the group existed."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of deleting a project group."
                     }
@@ -1584,9 +1750,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_deleteproject",
             "name": "delete-project",
-            "output": ["ActionOutput_ticktick_deleteproject"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_deleteproject", "ActionOutput_ticktick_deleteproject"],
+            "output": [
+                "ActionOutput_ticktick_deleteproject"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_deleteproject",
+                "ActionOutput_ticktick_deleteproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1598,7 +1771,9 @@
                                 "description": "ID of the project to permanently delete. Example: \"6226ff9877acee87727f6bca\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for permanently deleting a TickTick project."
                     },
@@ -1614,7 +1789,10 @@
                                 "description": "True when TickTick accepted the deletion request; TickTick also returns success for unknown or already-deleted projects, so this does not prove the project existed."
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of permanently deleting a TickTick project."
                     }
@@ -1628,9 +1806,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_deletetaskcomment",
             "name": "delete-task-comment",
-            "output": ["ActionOutput_ticktick_deletetaskcomment"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_deletetaskcomment", "ActionOutput_ticktick_deletetaskcomment"],
+            "output": [
+                "ActionOutput_ticktick_deletetaskcomment"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_deletetaskcomment",
+                "ActionOutput_ticktick_deletetaskcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1650,7 +1835,11 @@
                                 "description": "Identifier of the comment to delete. Example: \"comment-1\""
                             }
                         },
-                        "required": ["projectId", "taskId", "commentId"],
+                        "required": [
+                            "projectId",
+                            "taskId",
+                            "commentId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifiers of the task comment to delete."
                     },
@@ -1662,7 +1851,9 @@
                                 "description": "True when TickTick accepted the deletion request; TickTick also returns success for unknown or already-deleted comments, so this does not prove the comment existed."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the comment deletion."
                     }
@@ -1676,9 +1867,17 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_deletetaskverified",
             "name": "delete-task-verified",
-            "output": ["ActionOutput_ticktick_deletetaskverified"],
-            "scopes": ["tasks:read", "tasks:write"],
-            "usedModels": ["ActionInput_ticktick_deletetaskverified", "ActionOutput_ticktick_deletetaskverified"],
+            "output": [
+                "ActionOutput_ticktick_deletetaskverified"
+            ],
+            "scopes": [
+                "tasks:read",
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_deletetaskverified",
+                "ActionOutput_ticktick_deletetaskverified"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1694,7 +1893,10 @@
                                 "description": "ID of the task to delete. Example: \"63b7bebb91c0a5474805fcd4\"."
                             }
                         },
-                        "required": ["projectId", "taskId"],
+                        "required": [
+                            "projectId",
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task to delete and the project that contains it."
                     },
@@ -1718,7 +1920,12 @@
                                 "description": "Number of tasks (open, completed or abandoned) the project still holds after the deletion; always below 200."
                             }
                         },
-                        "required": ["projectId", "taskId", "deleted", "remainingTaskCount"],
+                        "required": [
+                            "projectId",
+                            "taskId",
+                            "deleted",
+                            "remainingTaskCount"
+                        ],
                         "additionalProperties": false,
                         "description": "Confirmation that the requested task was deleted from its project."
                     }
@@ -1732,9 +1939,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_ticktick_deletetask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_deletetask", "ActionOutput_ticktick_deletetask"],
+            "output": [
+                "ActionOutput_ticktick_deletetask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_deletetask",
+                "ActionOutput_ticktick_deletetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1750,7 +1964,10 @@
                                 "description": "ID of the task to permanently delete. Example: \"6ac5b589bed7f77658a9a80a\""
                             }
                         },
-                        "required": ["projectId", "taskId"],
+                        "required": [
+                            "projectId",
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the project and task to permanently delete."
                     },
@@ -1762,7 +1979,9 @@
                                 "description": "True when the provider accepted the deletion request (HTTP 200 response)."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the task deletion request."
                     }
@@ -1776,9 +1995,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_filtertasks",
             "name": "filter-tasks",
-            "output": ["ActionOutput_ticktick_filtertasks"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_filtertasks", "ActionOutput_ticktick_filtertasks"],
+            "output": [
+                "ActionOutput_ticktick_filtertasks"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_filtertasks",
+                "ActionOutput_ticktick_filtertasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2019,13 +2245,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "projectId", "title"],
+                                    "required": [
+                                        "id",
+                                        "projectId",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Tasks matching the supplied filters, up to a maximum of 200."
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false,
                         "description": "Tasks that matched the supplied filters."
                     }
@@ -2039,9 +2271,17 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_findorcreatetaskinproject",
             "name": "find-or-create-task-in-project",
-            "output": ["ActionOutput_ticktick_findorcreatetaskinproject"],
-            "scopes": ["tasks:read", "tasks:write"],
-            "usedModels": ["ActionInput_ticktick_findorcreatetaskinproject", "ActionOutput_ticktick_findorcreatetaskinproject"],
+            "output": [
+                "ActionOutput_ticktick_findorcreatetaskinproject"
+            ],
+            "scopes": [
+                "tasks:read",
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_findorcreatetaskinproject",
+                "ActionOutput_ticktick_findorcreatetaskinproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2151,12 +2391,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["title"],
+                                    "required": [
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["projectName", "title"],
+                        "required": [
+                            "projectName",
+                            "title"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a task inside a project identified by name, creating the project first if no project with that name exists."
                     },
@@ -2315,12 +2560,21 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "projectId", "title"],
+                                "required": [
+                                    "id",
+                                    "projectId",
+                                    "title"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The task as returned by TickTick after creation."
                             }
                         },
-                        "required": ["projectId", "projectName", "projectCreated", "task"],
+                        "required": [
+                            "projectId",
+                            "projectName",
+                            "projectCreated",
+                            "task"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of creating a task in a named project, including the resolved project ID and whether the project was newly created."
                     }
@@ -2334,9 +2588,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_getprojectdata",
             "name": "get-project-data",
-            "output": ["ActionOutput_ticktick_getprojectdata"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_getprojectdata", "ActionOutput_ticktick_getprojectdata"],
+            "output": [
+                "ActionOutput_ticktick_getprojectdata"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_getprojectdata",
+                "ActionOutput_ticktick_getprojectdata"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2348,7 +2609,9 @@
                                 "description": "Identifier of the project to fetch. Example: \"6226ff9877acee87727f6bca\"."
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the project whose bundled data should be fetched."
                     },
@@ -2395,7 +2658,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The requested project."
                             },
@@ -2517,7 +2782,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2566,7 +2833,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The project's undone tasks only; completed and abandoned tasks are excluded."
@@ -2593,13 +2862,19 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Kanban columns configured on the project."
                             }
                         },
-                        "required": ["project", "tasks", "columns"],
+                        "required": [
+                            "project",
+                            "tasks",
+                            "columns"
+                        ],
                         "additionalProperties": false,
                         "description": "A project bundled with its undone tasks and kanban columns."
                     }
@@ -2613,9 +2888,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_getprojectmembers",
             "name": "get-project-members",
-            "output": ["ActionOutput_ticktick_getprojectmembers"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_getprojectmembers", "ActionOutput_ticktick_getprojectmembers"],
+            "output": [
+                "ActionOutput_ticktick_getprojectmembers"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_getprojectmembers",
+                "ActionOutput_ticktick_getprojectmembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2627,7 +2909,9 @@
                                 "description": "ID of the project whose members should be listed. Example: \"6ac5b589bed7f77658a9a803\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the members of a TickTick project."
                     },
@@ -2652,13 +2936,19 @@
                                             "description": "Whether this member is the connected TickTick user."
                                         }
                                     },
-                                    "required": ["username", "displayName", "self"],
+                                    "required": [
+                                        "username",
+                                        "displayName",
+                                        "self"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Members of the project, as returned by the provider."
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false,
                         "description": "Members of the requested TickTick project."
                     }
@@ -2672,9 +2962,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_ticktick_getproject"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_getproject", "ActionOutput_ticktick_getproject"],
+            "output": [
+                "ActionOutput_ticktick_getproject"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_getproject",
+                "ActionOutput_ticktick_getproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2686,7 +2983,9 @@
                                 "description": "TickTick project identifier. Example: \"6226ff9877acee87727f6bca\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single TickTick project by its ID."
                     },
@@ -2730,7 +3029,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "A single TickTick project."
                     }
@@ -2744,9 +3046,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_ticktick_gettask"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_gettask", "ActionOutput_ticktick_gettask"],
+            "output": [
+                "ActionOutput_ticktick_gettask"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_gettask",
+                "ActionOutput_ticktick_gettask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2762,7 +3071,10 @@
                                 "description": "Identifier of the task to retrieve. Example: \"6ac94f5a8f089f376a258555\""
                             }
                         },
-                        "required": ["projectId", "taskId"],
+                        "required": [
+                            "projectId",
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single task by its project ID and task ID."
                     },
@@ -2973,9 +3285,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_listcolumns",
             "name": "list-columns",
-            "output": ["ActionOutput_ticktick_listcolumns"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_listcolumns", "ActionOutput_ticktick_listcolumns"],
+            "output": [
+                "ActionOutput_ticktick_listcolumns"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_listcolumns",
+                "ActionOutput_ticktick_listcolumns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2987,7 +3306,9 @@
                                 "description": "Identifier of the project whose columns should be listed. Example: \"6ac5b589bed7f77658a9a803\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing the columns defined on a TickTick project."
                     },
@@ -3016,13 +3337,20 @@
                                             "description": "Sort order of the column within the project; lower values appear first."
                                         }
                                     },
-                                    "required": ["id", "projectId", "name", "sortOrder"],
+                                    "required": [
+                                        "id",
+                                        "projectId",
+                                        "name",
+                                        "sortOrder"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Columns (kanban sections) defined on the project."
                             }
                         },
-                        "required": ["columns"],
+                        "required": [
+                            "columns"
+                        ],
                         "additionalProperties": false,
                         "description": "The columns (kanban sections) defined on the requested project."
                     }
@@ -3036,9 +3364,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_listcompletedtasks",
             "name": "list-completed-tasks",
-            "output": ["ActionOutput_ticktick_listcompletedtasks"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_listcompletedtasks", "ActionOutput_ticktick_listcompletedtasks"],
+            "output": [
+                "ActionOutput_ticktick_listcompletedtasks"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_listcompletedtasks",
+                "ActionOutput_ticktick_listcompletedtasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3209,13 +3544,17 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Completed tasks matching the filters, up to 200 results."
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false,
                         "description": "Completed tasks matching the supplied filters."
                     }
@@ -3229,9 +3568,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_listprojectgroups",
             "name": "list-project-groups",
-            "output": ["ActionOutput_ticktick_listprojectgroups"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_listprojectgroups", "ActionOutput_ticktick_listprojectgroups"],
+            "output": [
+                "ActionOutput_ticktick_listprojectgroups"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_listprojectgroups",
+                "ActionOutput_ticktick_listprojectgroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3270,13 +3616,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The project groups (folders) belonging to the user."
                             }
                         },
-                        "required": ["groups"],
+                        "required": [
+                            "groups"
+                        ],
                         "additionalProperties": false,
                         "description": "List of the user's project groups."
                     }
@@ -3290,9 +3641,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_ticktick_listprojects"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_listprojects", "ActionOutput_ticktick_listprojects"],
+            "output": [
+                "ActionOutput_ticktick_listprojects"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_listprojects",
+                "ActionOutput_ticktick_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3356,7 +3714,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The projects (lists) returned for this page."
@@ -3368,7 +3729,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false,
                         "description": "A page of the user's projects (lists) plus the offset for the next page when one exists."
                     }
@@ -3382,9 +3745,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_listtaskcomments",
             "name": "list-task-comments",
-            "output": ["ActionOutput_ticktick_listtaskcomments"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_listtaskcomments", "ActionOutput_ticktick_listtaskcomments"],
+            "output": [
+                "ActionOutput_ticktick_listtaskcomments"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_listtaskcomments",
+                "ActionOutput_ticktick_listtaskcomments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3400,7 +3770,10 @@
                                 "description": "Identifier of the task whose comments should be listed. Example: \"63b7bebb91c0a5474805fcd4\""
                             }
                         },
-                        "required": ["projectId", "taskId"],
+                        "required": [
+                            "projectId",
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the task whose comments to list."
                     },
@@ -3441,13 +3814,21 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "userId", "title", "createdTime", "modifiedTime"],
+                                    "required": [
+                                        "id",
+                                        "userId",
+                                        "title",
+                                        "createdTime",
+                                        "modifiedTime"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "All comments on the task, in the order returned by TickTick."
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false,
                         "description": "All comments on the task."
                     }
@@ -3461,9 +3842,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_listundonetasks",
             "name": "list-undone-tasks",
-            "output": ["ActionOutput_ticktick_listundonetasks"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_listundonetasks", "ActionOutput_ticktick_listundonetasks"],
+            "output": [
+                "ActionOutput_ticktick_listundonetasks"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_listundonetasks",
+                "ActionOutput_ticktick_listundonetasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3493,7 +3881,10 @@
                                 }
                             }
                         },
-                        "required": ["startDate", "endDate"],
+                        "required": [
+                            "startDate",
+                            "endDate"
+                        ],
                         "additionalProperties": false,
                         "description": "Criteria for listing undone tasks by startDate range."
                     },
@@ -3646,13 +4037,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "projectId", "title"],
+                                    "required": [
+                                        "id",
+                                        "projectId",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Undone tasks whose startDate falls within the requested range."
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false,
                         "description": "Undone tasks matching the requested startDate range."
                     }
@@ -3666,9 +4063,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_movetask",
             "name": "move-task",
-            "output": ["ActionOutput_ticktick_movetask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_movetask", "ActionOutput_ticktick_movetask"],
+            "output": [
+                "ActionOutput_ticktick_movetask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_movetask",
+                "ActionOutput_ticktick_movetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3692,7 +4096,11 @@
                                 "description": "IDs of one or more tasks to move from the source project to the destination project. Example: [\"6ac94f658f0879728388db64\"]."
                             }
                         },
-                        "required": ["fromProjectId", "toProjectId", "taskIds"],
+                        "required": [
+                            "fromProjectId",
+                            "toProjectId",
+                            "taskIds"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for moving one or more tasks from a single source project to a single destination project."
                     },
@@ -3717,13 +4125,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Move results exactly as returned by TickTick. Empty when either project does not exist, so do not rely on its length or order matching the requested taskIds."
                             }
                         },
-                        "required": ["movedTasks"],
+                        "required": [
+                            "movedTasks"
+                        ],
                         "additionalProperties": false,
                         "description": "Result of the move operation, listing the tasks the provider returned a result for."
                     }
@@ -3737,9 +4149,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_searchtasks",
             "name": "search-tasks",
-            "output": ["ActionOutput_ticktick_searchtasks"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_ticktick_searchtasks", "ActionOutput_ticktick_searchtasks"],
+            "output": [
+                "ActionOutput_ticktick_searchtasks"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_searchtasks",
+                "ActionOutput_ticktick_searchtasks"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3782,7 +4201,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["keywords"],
+                        "required": [
+                            "keywords"
+                        ],
                         "additionalProperties": false,
                         "description": "Criteria for searching tasks by keyword, with optional project, tag, status, and due-date filters."
                     },
@@ -3913,7 +4334,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id", "title"],
+                                                "required": [
+                                                    "id",
+                                                    "title"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "A subtask (checklist item) belonging to a task."
                                             }
@@ -3980,14 +4404,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "projectId", "title"],
+                                    "required": [
+                                        "id",
+                                        "projectId",
+                                        "title"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A TickTick task."
                                 },
                                 "description": "Tasks matching the search criteria."
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false,
                         "description": "Tasks matching the search criteria."
                     }
@@ -4001,9 +4431,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_unassigntask",
             "name": "unassign-task",
-            "output": ["ActionOutput_ticktick_unassigntask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_unassigntask", "ActionOutput_ticktick_unassigntask"],
+            "output": [
+                "ActionOutput_ticktick_unassigntask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_unassigntask",
+                "ActionOutput_ticktick_unassigntask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4019,7 +4456,10 @@
                                 "description": "Identifier of the task to remove the assignee from. Example: \"63b7bebb91c0a5474805fcd4\""
                             }
                         },
-                        "required": ["projectId", "taskId"],
+                        "required": [
+                            "projectId",
+                            "taskId"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifiers of the task whose assignee should be removed."
                     },
@@ -4217,7 +4657,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The task returned after its assignee has been removed."
                     }
@@ -4231,9 +4673,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_updatecolumn",
             "name": "update-column",
-            "output": ["ActionOutput_ticktick_updatecolumn"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_updatecolumn", "ActionOutput_ticktick_updatecolumn"],
+            "output": [
+                "ActionOutput_ticktick_updatecolumn"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_updatecolumn",
+                "ActionOutput_ticktick_updatecolumn"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4255,7 +4704,11 @@
                                 "description": "New name to give the column, up to 64 characters (TickTick silently truncates longer names). Example: \"In Progress\""
                             }
                         },
-                        "required": ["projectId", "columnId", "name"],
+                        "required": [
+                            "projectId",
+                            "columnId",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Identifies the TickTick column to rename and the new name to apply."
                     },
@@ -4279,7 +4732,12 @@
                                 "description": "Order value of the column within its project."
                             }
                         },
-                        "required": ["id", "projectId", "name", "sortOrder"],
+                        "required": [
+                            "id",
+                            "projectId",
+                            "name",
+                            "sortOrder"
+                        ],
                         "additionalProperties": false,
                         "description": "The column as returned by TickTick after the rename."
                     }
@@ -4293,9 +4751,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_updateprojectgroup",
             "name": "update-project-group",
-            "output": ["ActionOutput_ticktick_updateprojectgroup"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_updateprojectgroup", "ActionOutput_ticktick_updateprojectgroup"],
+            "output": [
+                "ActionOutput_ticktick_updateprojectgroup"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_updateprojectgroup",
+                "ActionOutput_ticktick_updateprojectgroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4313,7 +4778,10 @@
                                 "description": "New name for the project group, up to 64 characters. Example: \"Work Projects\""
                             }
                         },
-                        "required": ["projectGroupId", "name"],
+                        "required": [
+                            "projectGroupId",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for renaming a TickTick project group."
                     },
@@ -4341,7 +4809,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated TickTick project group."
                     }
@@ -4355,9 +4826,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_ticktick_updateproject"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_updateproject", "ActionOutput_ticktick_updateproject"],
+            "output": [
+                "ActionOutput_ticktick_updateproject"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_updateproject",
+                "ActionOutput_ticktick_updateproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4387,15 +4865,24 @@
                             "viewMode": {
                                 "description": "New view mode: \"list\", \"kanban\" or \"timeline\". Omit to leave unchanged.",
                                 "type": "string",
-                                "enum": ["list", "kanban", "timeline"]
+                                "enum": [
+                                    "list",
+                                    "kanban",
+                                    "timeline"
+                                ]
                             },
                             "kind": {
                                 "description": "New project kind: \"TASK\" or \"NOTE\". Omit to leave unchanged.",
                                 "type": "string",
-                                "enum": ["TASK", "NOTE"]
+                                "enum": [
+                                    "TASK",
+                                    "NOTE"
+                                ]
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields to change on an existing project; omitted fields are left unchanged."
                     },
@@ -4439,7 +4926,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "The project as returned after the update; fields not set on the project are omitted."
                     }
@@ -4453,9 +4943,16 @@
             "endpoint": null,
             "input": "ActionInput_ticktick_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_ticktick_updatetask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_ticktick_updatetask", "ActionOutput_ticktick_updatetask"],
+            "output": [
+                "ActionOutput_ticktick_updatetask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_ticktick_updatetask",
+                "ActionOutput_ticktick_updatetask"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4567,7 +5064,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "projectId"],
+                        "required": [
+                            "id",
+                            "projectId"
+                        ],
                         "additionalProperties": false,
                         "description": "Fields used to update an existing TickTick task. Only the fields to change need to be provided, along with the required id and projectId."
                     },
@@ -4765,7 +5265,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated TickTick task as returned by the provider."
                     }
@@ -4782,12 +5284,18 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["tasks:read"],
+            "scopes": [
+                "tasks:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4832,7 +5340,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false,
                         "description": "A TickTick project (list) that groups related tasks."
                     }
@@ -4847,12 +5358,18 @@
             "endpoints": [],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["tasks:read"],
+            "scopes": [
+                "tasks:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4874,39 +5391,66 @@
                             },
                             "content": {
                                 "description": "Full content body of the task.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "desc": {
                                 "description": "Description of the task checklist.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "isAllDay": {
                                 "description": "Whether the task spans the whole day.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "startDate": {
                                 "description": "Task start timestamp in the provider's \"yyyy-MM-dd'T'HH:mm:ssZ\" format.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dueDate": {
                                 "description": "Task due timestamp in the provider's \"yyyy-MM-dd'T'HH:mm:ssZ\" format.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completedTime": {
                                 "description": "Timestamp the task was completed, in the provider's \"yyyy-MM-dd'T'HH:mm:ssZ\" format.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "timeZone": {
                                 "description": "IANA time zone the task start/due times are expressed in.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "repeatFlag": {
                                 "description": "Recurrence rule for the task, e.g. \"RRULE:FREQ=DAILY;INTERVAL=1\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "repeatFrom": {
                                 "description": "Recurrence calculation mode: 0 from the original schedule, 1 from the completion date, 2 from the calendar.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "reminders": {
                                 "description": "Reminder triggers for the task, e.g. \"TRIGGER:PT0S\".",
@@ -4970,27 +5514,45 @@
                             },
                             "parentId": {
                                 "description": "Identifier of the parent task when this task is a subtask.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "assigneeUsername": {
                                 "description": "Username of the project member the task is assigned to.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "kind": {
                                 "description": "Task kind: \"TEXT\", \"NOTE\" or \"CHECKLIST\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "etag": {
                                 "description": "Entity tag that changes on every write to the task.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdTime": {
                                 "description": "Task creation timestamp in the provider's \"yyyy-MM-dd'T'HH:mm:ssZ\" format.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "modifiedTime": {
                                 "description": "Task last-modified timestamp in the provider's \"yyyy-MM-dd'T'HH:mm:ssZ\" format.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "items": {
                                 "description": "Checklist subtasks nested under the task.",
@@ -5023,11 +5585,17 @@
                                                 },
                                                 "completedTime": {
                                                     "description": "Subtask completion timestamp in the provider's \"yyyy-MM-dd'T'HH:mm:ssZ\" format.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "isAllDay": {
                                                     "description": "Whether the subtask spans the whole day.",
-                                                    "type": ["boolean", "null"]
+                                                    "type": [
+                                                        "boolean",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "sortOrder": {
                                                     "description": "Ordering value of the subtask within its parent task.",
@@ -5044,14 +5612,23 @@
                                                 },
                                                 "startDate": {
                                                     "description": "Subtask start timestamp in the provider's \"yyyy-MM-dd'T'HH:mm:ssZ\" format.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "timeZone": {
                                                     "description": "IANA time zone the subtask start time is expressed in.",
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["id", "title"],
+                                            "required": [
+                                                "id",
+                                                "title"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "A checklist (subtask) item nested inside a TickTick task."
                                         }
@@ -5145,7 +5722,12 @@
                                 ]
                             }
                         },
-                        "required": ["id", "projectId", "title", "status"],
+                        "required": [
+                            "id",
+                            "projectId",
+                            "title",
+                            "status"
+                        ],
                         "additionalProperties": {},
                         "description": "A TickTick task, including its project, status, dates, tags and nested checklist items."
                     }

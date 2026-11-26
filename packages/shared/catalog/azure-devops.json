@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_createprthread",
             "name": "create-pr-thread",
-            "output": ["ActionOutput_azure_devops_createprthread"],
-            "scopes": ["vso.code_write", "vso.code"],
-            "usedModels": ["ActionInput_azure_devops_createprthread", "ActionOutput_azure_devops_createprthread"],
+            "output": [
+                "ActionOutput_azure_devops_createprthread"
+            ],
+            "scopes": [
+                "vso.code_write",
+                "vso.code"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_createprthread",
+                "ActionOutput_azure_devops_createprthread"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -33,7 +41,12 @@
                                 "description": "Comment content. Example: \"Looks good!\""
                             }
                         },
-                        "required": ["project", "repositoryId", "pullRequestId", "content"],
+                        "required": [
+                            "project",
+                            "repositoryId",
+                            "pullRequestId",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_createprthread": {
@@ -106,7 +119,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -119,9 +134,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_createpullrequest",
             "name": "create-pull-request",
-            "output": ["ActionOutput_azure_devops_createpullrequest"],
-            "scopes": ["vso.code_write"],
-            "usedModels": ["ActionInput_azure_devops_createpullrequest", "ActionOutput_azure_devops_createpullrequest"],
+            "output": [
+                "ActionOutput_azure_devops_createpullrequest"
+            ],
+            "scopes": [
+                "vso.code_write"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_createpullrequest",
+                "ActionOutput_azure_devops_createpullrequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -157,7 +179,13 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["project", "repositoryId", "title", "sourceRefName", "targetRefName"],
+                        "required": [
+                            "project",
+                            "repositoryId",
+                            "title",
+                            "sourceRefName",
+                            "targetRefName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_createpullrequest": {
@@ -206,11 +234,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["displayName", "id"],
+                                "required": [
+                                    "displayName",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["pullRequestId", "status", "title", "sourceRefName", "targetRefName"],
+                        "required": [
+                            "pullRequestId",
+                            "status",
+                            "title",
+                            "sourceRefName",
+                            "targetRefName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -223,9 +260,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_createworkitem",
             "name": "create-work-item",
-            "output": ["ActionOutput_azure_devops_createworkitem"],
-            "scopes": ["vso.work_write"],
-            "usedModels": ["ActionInput_azure_devops_createworkitem", "ActionOutput_azure_devops_createworkitem"],
+            "output": [
+                "ActionOutput_azure_devops_createworkitem"
+            ],
+            "scopes": [
+                "vso.work_write"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_createworkitem",
+                "ActionOutput_azure_devops_createworkitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -254,13 +298,20 @@
                                         "value": {},
                                         "from": {}
                                     },
-                                    "required": ["op", "path"],
+                                    "required": [
+                                        "op",
+                                        "path"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "JSON Patch operations for work item fields. Example: [{ op: \"add\", path: \"/fields/System.Title\", value: \"New task\" }]"
                             }
                         },
-                        "required": ["project", "type", "fields"],
+                        "required": [
+                            "project",
+                            "type",
+                            "fields"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_createworkitem": {
@@ -287,7 +338,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "rev", "url"],
+                        "required": [
+                            "id",
+                            "rev",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -300,9 +355,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_deleteworkitem",
             "name": "delete-work-item",
-            "output": ["ActionOutput_azure_devops_deleteworkitem"],
-            "scopes": ["vso.work_write"],
-            "usedModels": ["ActionInput_azure_devops_deleteworkitem", "ActionOutput_azure_devops_deleteworkitem"],
+            "output": [
+                "ActionOutput_azure_devops_deleteworkitem"
+            ],
+            "scopes": [
+                "vso.work_write"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_deleteworkitem",
+                "ActionOutput_azure_devops_deleteworkitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -324,7 +386,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["project", "workItemId"],
+                        "required": [
+                            "project",
+                            "workItemId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_deleteworkitem": {
@@ -362,7 +427,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "project", "deleted", "destroy"],
+                        "required": [
+                            "id",
+                            "project",
+                            "deleted",
+                            "destroy"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -375,9 +445,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_azure_devops_getproject"],
-            "scopes": ["vso.project"],
-            "usedModels": ["ActionInput_azure_devops_getproject", "ActionOutput_azure_devops_getproject"],
+            "output": [
+                "ActionOutput_azure_devops_getproject"
+            ],
+            "scopes": [
+                "vso.project"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_getproject",
+                "ActionOutput_azure_devops_getproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -389,7 +466,9 @@
                                 "description": "Project ID or name. Example: \"ecbf2301-2e63-41b4-a8fd-1d2d4e1f8b9c\" or \"Fabrikam\""
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_getproject": {
@@ -420,7 +499,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -433,9 +515,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_getrepository",
             "name": "get-repository",
-            "output": ["ActionOutput_azure_devops_getrepository"],
-            "scopes": ["vso.code"],
-            "usedModels": ["ActionInput_azure_devops_getrepository", "ActionOutput_azure_devops_getrepository"],
+            "output": [
+                "ActionOutput_azure_devops_getrepository"
+            ],
+            "scopes": [
+                "vso.code"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_getrepository",
+                "ActionOutput_azure_devops_getrepository"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -451,7 +540,10 @@
                                 "description": "Repository ID or name. Example: \"my-repo\""
                             }
                         },
-                        "required": ["project", "repositoryId"],
+                        "required": [
+                            "project",
+                            "repositoryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_getrepository": {
@@ -476,7 +568,10 @@
                                         "type": "string"
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "url": {
                                         "type": "string"
@@ -491,10 +586,15 @@
                                         "type": "string"
                                     },
                                     "lastUpdateTime": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "defaultBranch": {
@@ -510,7 +610,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -523,9 +625,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_getworkitem",
             "name": "get-work-item",
-            "output": ["ActionOutput_azure_devops_getworkitem"],
-            "scopes": ["vso.work"],
-            "usedModels": ["ActionInput_azure_devops_getworkitem", "ActionOutput_azure_devops_getworkitem"],
+            "output": [
+                "ActionOutput_azure_devops_getworkitem"
+            ],
+            "scopes": [
+                "vso.work"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_getworkitem",
+                "ActionOutput_azure_devops_getworkitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -541,7 +650,10 @@
                                 "description": "Work item ID. Example: 1"
                             }
                         },
-                        "required": ["project", "id"],
+                        "required": [
+                            "project",
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_getworkitem": {
@@ -572,7 +684,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -585,9 +699,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listboards",
             "name": "list-boards",
-            "output": ["ActionOutput_azure_devops_listboards"],
-            "scopes": ["vso.work"],
-            "usedModels": ["ActionInput_azure_devops_listboards", "ActionOutput_azure_devops_listboards"],
+            "output": [
+                "ActionOutput_azure_devops_listboards"
+            ],
+            "scopes": [
+                "vso.work"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listboards",
+                "ActionOutput_azure_devops_listboards"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -603,7 +724,10 @@
                                 "description": "Team ID or team name. Example: \"MyTeam\" or \"My Team\""
                             }
                         },
-                        "required": ["project", "team"],
+                        "required": [
+                            "project",
+                            "team"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listboards": {
@@ -629,12 +753,18 @@
                                             "description": "Full URL to the board resource."
                                         }
                                     },
-                                    "required": ["id", "name", "url"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["boards"],
+                        "required": [
+                            "boards"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -647,9 +777,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listbranches",
             "name": "list-branches",
-            "output": ["ActionOutput_azure_devops_listbranches"],
-            "scopes": ["vso.code"],
-            "usedModels": ["ActionInput_azure_devops_listbranches", "ActionOutput_azure_devops_listbranches"],
+            "output": [
+                "ActionOutput_azure_devops_listbranches"
+            ],
+            "scopes": [
+                "vso.code"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listbranches",
+                "ActionOutput_azure_devops_listbranches"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -666,7 +803,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project", "repositoryId"],
+                        "required": [
+                            "project",
+                            "repositoryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listbranches": {
@@ -699,7 +839,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "objectId"],
+                                    "required": [
+                                        "name",
+                                        "objectId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -707,7 +850,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["branches"],
+                        "required": [
+                            "branches"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -720,9 +865,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listbuilddefinitions",
             "name": "list-build-definitions",
-            "output": ["ActionOutput_azure_devops_listbuilddefinitions"],
-            "scopes": ["vso.build"],
-            "usedModels": ["ActionInput_azure_devops_listbuilddefinitions", "ActionOutput_azure_devops_listbuilddefinitions"],
+            "output": [
+                "ActionOutput_azure_devops_listbuilddefinitions"
+            ],
+            "scopes": [
+                "vso.build"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listbuilddefinitions",
+                "ActionOutput_azure_devops_listbuilddefinitions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -738,7 +890,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project"],
+                        "required": [
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listbuilddefinitions": {
@@ -798,11 +952,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -811,7 +971,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -824,9 +986,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listbuilds",
             "name": "list-builds",
-            "output": ["ActionOutput_azure_devops_listbuilds"],
-            "scopes": ["vso.build"],
-            "usedModels": ["ActionInput_azure_devops_listbuilds", "ActionOutput_azure_devops_listbuilds"],
+            "output": [
+                "ActionOutput_azure_devops_listbuilds"
+            ],
+            "scopes": [
+                "vso.build"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listbuilds",
+                "ActionOutput_azure_devops_listbuilds"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -846,7 +1015,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project"],
+                        "required": [
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listbuilds": {
@@ -921,7 +1092,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -929,7 +1102,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -942,9 +1117,14 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listcommits",
             "name": "list-commits",
-            "output": ["ActionOutput_azure_devops_listcommits"],
+            "output": [
+                "ActionOutput_azure_devops_listcommits"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_azure_devops_listcommits", "ActionOutput_azure_devops_listcommits"],
+            "usedModels": [
+                "ActionInput_azure_devops_listcommits",
+                "ActionOutput_azure_devops_listcommits"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -980,7 +1160,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project", "repositoryId"],
+                        "required": [
+                            "project",
+                            "repositoryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listcommits": {
@@ -1049,7 +1232,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["commitId"],
+                                    "required": [
+                                        "commitId"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1057,7 +1242,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1070,9 +1257,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listiterations",
             "name": "list-iterations",
-            "output": ["ActionOutput_azure_devops_listiterations"],
-            "scopes": ["vso.work"],
-            "usedModels": ["ActionInput_azure_devops_listiterations", "ActionOutput_azure_devops_listiterations"],
+            "output": [
+                "ActionOutput_azure_devops_listiterations"
+            ],
+            "scopes": [
+                "vso.work"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listiterations",
+                "ActionOutput_azure_devops_listiterations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1090,10 +1284,17 @@
                             "timeframe": {
                                 "description": "Filter for which iterations are returned based on relative time.",
                                 "type": "string",
-                                "enum": ["current", "past", "future"]
+                                "enum": [
+                                    "current",
+                                    "past",
+                                    "future"
+                                ]
                             }
                         },
-                        "required": ["project", "team"],
+                        "required": [
+                            "project",
+                            "team"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listiterations": {
@@ -1127,18 +1328,27 @@
                                                 },
                                                 "timeFrame": {
                                                     "type": "string",
-                                                    "enum": ["past", "current", "future"]
+                                                    "enum": [
+                                                        "past",
+                                                        "current",
+                                                        "future"
+                                                    ]
                                                 }
                                             },
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1151,9 +1361,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listpipelineruns",
             "name": "list-pipeline-runs",
-            "output": ["ActionOutput_azure_devops_listpipelineruns"],
-            "scopes": ["vso.build"],
-            "usedModels": ["ActionInput_azure_devops_listpipelineruns", "ActionOutput_azure_devops_listpipelineruns"],
+            "output": [
+                "ActionOutput_azure_devops_listpipelineruns"
+            ],
+            "scopes": [
+                "vso.build"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listpipelineruns",
+                "ActionOutput_azure_devops_listpipelineruns"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1166,7 +1383,10 @@
                             },
                             "pipelineId": {
                                 "description": "Pipeline ID. Example: \"123\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "top": {
                                 "description": "Maximum number of runs to return.",
@@ -1177,7 +1397,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project", "pipelineId"],
+                        "required": [
+                            "project",
+                            "pipelineId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listpipelineruns": {
@@ -1244,7 +1467,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["runs"],
+                        "required": [
+                            "runs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1257,9 +1482,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listpipelines",
             "name": "list-pipelines",
-            "output": ["ActionOutput_azure_devops_listpipelines"],
-            "scopes": ["vso.build"],
-            "usedModels": ["ActionInput_azure_devops_listpipelines", "ActionOutput_azure_devops_listpipelines"],
+            "output": [
+                "ActionOutput_azure_devops_listpipelines"
+            ],
+            "scopes": [
+                "vso.build"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listpipelines",
+                "ActionOutput_azure_devops_listpipelines"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1275,7 +1507,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project"],
+                        "required": [
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listpipelines": {
@@ -1302,7 +1536,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1310,7 +1547,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1323,9 +1562,17 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listprthreads",
             "name": "list-pr-threads",
-            "output": ["ActionOutput_azure_devops_listprthreads"],
-            "scopes": ["vso.code", "vso.threads_full"],
-            "usedModels": ["ActionInput_azure_devops_listprthreads", "ActionOutput_azure_devops_listprthreads"],
+            "output": [
+                "ActionOutput_azure_devops_listprthreads"
+            ],
+            "scopes": [
+                "vso.code",
+                "vso.threads_full"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listprthreads",
+                "ActionOutput_azure_devops_listprthreads"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1345,7 +1592,11 @@
                                 "description": "ID of the pull request."
                             }
                         },
-                        "required": ["project", "repositoryId", "pullRequestId"],
+                        "required": [
+                            "project",
+                            "repositoryId",
+                            "pullRequestId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listprthreads": {
@@ -1643,7 +1894,9 @@
                                 }
                             }
                         },
-                        "required": ["threads"],
+                        "required": [
+                            "threads"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1656,9 +1909,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_azure_devops_listprojects"],
-            "scopes": ["vso.project"],
-            "usedModels": ["ActionInput_azure_devops_listprojects", "ActionOutput_azure_devops_listprojects"],
+            "output": [
+                "ActionOutput_azure_devops_listprojects"
+            ],
+            "scopes": [
+                "vso.project"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listprojects",
+                "ActionOutput_azure_devops_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1690,7 +1950,10 @@
                                         },
                                         "description": {
                                             "description": "Project description",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "url": {
                                             "description": "Project URL",
@@ -1713,7 +1976,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1722,7 +1988,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1735,9 +2003,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listpullrequests",
             "name": "list-pull-requests",
-            "output": ["ActionOutput_azure_devops_listpullrequests"],
-            "scopes": ["vso.code"],
-            "usedModels": ["ActionInput_azure_devops_listpullrequests", "ActionOutput_azure_devops_listpullrequests"],
+            "output": [
+                "ActionOutput_azure_devops_listpullrequests"
+            ],
+            "scopes": [
+                "vso.code"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listpullrequests",
+                "ActionOutput_azure_devops_listpullrequests"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1759,7 +2034,12 @@
                             "status": {
                                 "description": "Filter by pull request status. Defaults to Active if unset.",
                                 "type": "string",
-                                "enum": ["active", "abandoned", "completed", "all"]
+                                "enum": [
+                                    "active",
+                                    "abandoned",
+                                    "completed",
+                                    "all"
+                                ]
                             },
                             "sourceRefName": {
                                 "description": "If set, search for pull requests from this branch. Example: \"refs/heads/feature\"",
@@ -1774,7 +2054,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["project", "repositoryId"],
+                        "required": [
+                            "project",
+                            "repositoryId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listpullrequests": {
@@ -1968,7 +2251,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1981,9 +2266,14 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listrepositories",
             "name": "list-repositories",
-            "output": ["ActionOutput_azure_devops_listrepositories"],
+            "output": [
+                "ActionOutput_azure_devops_listrepositories"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_azure_devops_listrepositories", "ActionOutput_azure_devops_listrepositories"],
+            "usedModels": [
+                "ActionInput_azure_devops_listrepositories",
+                "ActionOutput_azure_devops_listrepositories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1999,7 +2289,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project"],
+                        "required": [
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listrepositories": {
@@ -2042,7 +2334,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2050,7 +2345,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2063,9 +2360,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listteammembers",
             "name": "list-team-members",
-            "output": ["ActionOutput_azure_devops_listteammembers"],
-            "scopes": ["vso.project"],
-            "usedModels": ["ActionInput_azure_devops_listteammembers", "ActionOutput_azure_devops_listteammembers"],
+            "output": [
+                "ActionOutput_azure_devops_listteammembers"
+            ],
+            "scopes": [
+                "vso.project"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listteammembers",
+                "ActionOutput_azure_devops_listteammembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2081,7 +2385,10 @@
                                 "description": "Team ID or name. Example: \"564e8204-a90b-4432-883b-d4363c6125ca\""
                             }
                         },
-                        "required": ["projectId", "teamId"],
+                        "required": [
+                            "projectId",
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listteammembers": {
@@ -2115,7 +2422,9 @@
                                 }
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2128,9 +2437,14 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listteams",
             "name": "list-teams",
-            "output": ["ActionOutput_azure_devops_listteams"],
+            "output": [
+                "ActionOutput_azure_devops_listteams"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_azure_devops_listteams", "ActionOutput_azure_devops_listteams"],
+            "usedModels": [
+                "ActionInput_azure_devops_listteams",
+                "ActionOutput_azure_devops_listteams"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2146,7 +2460,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listteams": {
@@ -2179,7 +2495,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2187,7 +2506,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2200,9 +2521,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listtestplans",
             "name": "list-test-plans",
-            "output": ["ActionOutput_azure_devops_listtestplans"],
-            "scopes": ["vso.test"],
-            "usedModels": ["ActionInput_azure_devops_listtestplans", "ActionOutput_azure_devops_listtestplans"],
+            "output": [
+                "ActionOutput_azure_devops_listtestplans"
+            ],
+            "scopes": [
+                "vso.test"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listtestplans",
+                "ActionOutput_azure_devops_listtestplans"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2218,7 +2546,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project"],
+                        "required": [
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listtestplans": {
@@ -2287,7 +2617,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2296,7 +2628,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2309,9 +2643,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_listwikis",
             "name": "list-wikis",
-            "output": ["ActionOutput_azure_devops_listwikis"],
-            "scopes": ["vso.wiki"],
-            "usedModels": ["ActionInput_azure_devops_listwikis", "ActionOutput_azure_devops_listwikis"],
+            "output": [
+                "ActionOutput_azure_devops_listwikis"
+            ],
+            "scopes": [
+                "vso.wiki"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_listwikis",
+                "ActionOutput_azure_devops_listwikis"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2323,7 +2664,9 @@
                                 "description": "Project ID or project name. Example: \"my-project\""
                             }
                         },
-                        "required": ["project"],
+                        "required": [
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_listwikis": {
@@ -2388,7 +2731,12 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "name", "type", "url"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2397,7 +2745,10 @@
                                 "description": "Total number of wikis."
                             }
                         },
-                        "required": ["items", "count"],
+                        "required": [
+                            "items",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2410,9 +2761,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_pushcommits",
             "name": "push-commits",
-            "output": ["ActionOutput_azure_devops_pushcommits"],
-            "scopes": ["vso.code_write"],
-            "usedModels": ["ActionInput_azure_devops_pushcommits", "ActionOutput_azure_devops_pushcommits"],
+            "output": [
+                "ActionOutput_azure_devops_pushcommits"
+            ],
+            "scopes": [
+                "vso.code_write"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_pushcommits",
+                "ActionOutput_azure_devops_pushcommits"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2482,10 +2840,16 @@
                                                             },
                                                             "contentType": {
                                                                 "type": "string",
-                                                                "enum": ["rawText", "base64Encoded"]
+                                                                "enum": [
+                                                                    "rawText",
+                                                                    "base64Encoded"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["content", "contentType"],
+                                                        "required": [
+                                                            "content",
+                                                            "contentType"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "sourceServerItem": {
@@ -2493,17 +2857,29 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["changeType", "path"],
+                                                "required": [
+                                                    "changeType",
+                                                    "path"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["comment", "changes"],
+                                    "required": [
+                                        "comment",
+                                        "changes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["project", "repositoryId", "branch", "oldObjectId", "commits"],
+                        "required": [
+                            "project",
+                            "repositoryId",
+                            "branch",
+                            "oldObjectId",
+                            "commits"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_pushcommits": {
@@ -2545,7 +2921,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["commitId"],
+                                    "required": [
+                                        "commitId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2564,12 +2942,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["pushId", "commits", "refUpdates"],
+                        "required": [
+                            "pushId",
+                            "commits",
+                            "refUpdates"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2582,9 +2966,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_queryworkitems",
             "name": "query-work-items",
-            "output": ["ActionOutput_azure_devops_queryworkitems"],
-            "scopes": ["vso.work"],
-            "usedModels": ["ActionInput_azure_devops_queryworkitems", "ActionOutput_azure_devops_queryworkitems"],
+            "output": [
+                "ActionOutput_azure_devops_queryworkitems"
+            ],
+            "scopes": [
+                "vso.work"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_queryworkitems",
+                "ActionOutput_azure_devops_queryworkitems"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2604,7 +2995,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["project", "query"],
+                        "required": [
+                            "project",
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_queryworkitems": {
@@ -2636,12 +3030,16 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["work_items"],
+                        "required": [
+                            "work_items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2654,9 +3052,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_queuebuild",
             "name": "queue-build",
-            "output": ["ActionOutput_azure_devops_queuebuild"],
-            "scopes": ["vso.build_execute"],
-            "usedModels": ["ActionInput_azure_devops_queuebuild", "ActionOutput_azure_devops_queuebuild"],
+            "output": [
+                "ActionOutput_azure_devops_queuebuild"
+            ],
+            "scopes": [
+                "vso.build_execute"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_queuebuild",
+                "ActionOutput_azure_devops_queuebuild"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2680,7 +3085,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project", "buildDefinitionId"],
+                        "required": [
+                            "project",
+                            "buildDefinitionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_queuebuild": {
@@ -2744,9 +3152,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_runpipeline",
             "name": "run-pipeline",
-            "output": ["ActionOutput_azure_devops_runpipeline"],
-            "scopes": ["vso.build_execute"],
-            "usedModels": ["ActionInput_azure_devops_runpipeline", "ActionOutput_azure_devops_runpipeline"],
+            "output": [
+                "ActionOutput_azure_devops_runpipeline"
+            ],
+            "scopes": [
+                "vso.build_execute"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_runpipeline",
+                "ActionOutput_azure_devops_runpipeline"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2780,7 +3195,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["value"],
+                                    "required": [
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2792,7 +3209,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["project", "pipelineId"],
+                        "required": [
+                            "project",
+                            "pipelineId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_runpipeline": {
@@ -2826,7 +3246,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2839,9 +3261,17 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_updatepullrequest",
             "name": "update-pull-request",
-            "output": ["ActionOutput_azure_devops_updatepullrequest"],
-            "scopes": ["vso.code_write", "vso.code"],
-            "usedModels": ["ActionInput_azure_devops_updatepullrequest", "ActionOutput_azure_devops_updatepullrequest"],
+            "output": [
+                "ActionOutput_azure_devops_updatepullrequest"
+            ],
+            "scopes": [
+                "vso.code_write",
+                "vso.code"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_updatepullrequest",
+                "ActionOutput_azure_devops_updatepullrequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2866,12 +3296,19 @@
                             },
                             "description": {
                                 "description": "Updated description for the pull request. Pass null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
                                 "description": "Updated status for the pull request.",
                                 "type": "string",
-                                "enum": ["active", "abandoned", "completed"]
+                                "enum": [
+                                    "active",
+                                    "abandoned",
+                                    "completed"
+                                ]
                             },
                             "isDraft": {
                                 "description": "Whether the pull request is a draft.",
@@ -2882,7 +3319,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["projectId", "repositoryId", "pullRequestId"],
+                        "required": [
+                            "projectId",
+                            "repositoryId",
+                            "pullRequestId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_updatepullrequest": {
@@ -2919,11 +3360,21 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["commitId"],
+                                "required": [
+                                    "commitId"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["pullRequestId", "status", "title", "sourceRefName", "targetRefName", "isDraft", "url"],
+                        "required": [
+                            "pullRequestId",
+                            "status",
+                            "title",
+                            "sourceRefName",
+                            "targetRefName",
+                            "isDraft",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2936,9 +3387,16 @@
             "endpoint": null,
             "input": "ActionInput_azure_devops_updateworkitem",
             "name": "update-work-item",
-            "output": ["ActionOutput_azure_devops_updateworkitem"],
-            "scopes": ["vso.work_write"],
-            "usedModels": ["ActionInput_azure_devops_updateworkitem", "ActionOutput_azure_devops_updateworkitem"],
+            "output": [
+                "ActionOutput_azure_devops_updateworkitem"
+            ],
+            "scopes": [
+                "vso.work_write"
+            ],
+            "usedModels": [
+                "ActionInput_azure_devops_updateworkitem",
+                "ActionOutput_azure_devops_updateworkitem"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2970,13 +3428,20 @@
                                             "description": "New value for the path."
                                         }
                                     },
-                                    "required": ["op", "path"],
+                                    "required": [
+                                        "op",
+                                        "path"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "JSON Patch operations. Example: [{ op: \"replace\", path: \"/fields/System.Title\", value: \"New title\" }]"
                             }
                         },
-                        "required": ["project", "work_item_id", "patches"],
+                        "required": [
+                            "project",
+                            "work_item_id",
+                            "patches"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_azure_devops_updateworkitem": {
@@ -2999,7 +3464,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "rev", "url"],
+                        "required": [
+                            "id",
+                            "rev",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3015,12 +3484,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_branches",
             "name": "branches",
-            "output": ["Branch"],
+            "output": [
+                "Branch"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Branch", "SyncMetadata_azure_devops_branches"],
+            "usedModels": [
+                "Branch",
+                "SyncMetadata_azure_devops_branches"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3050,7 +3524,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "project", "repositoryId"],
+                        "required": [
+                            "id",
+                            "name",
+                            "project",
+                            "repositoryId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_branches": {
@@ -3068,17 +3547,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["project", "repositoryId"],
+                                    "required": [
+                                        "project",
+                                        "repositoryId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["repositories"],
+                        "required": [
+                            "repositories"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3087,12 +3573,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_builddefinitions",
             "name": "build-definitions",
-            "output": ["BuildDefinition"],
+            "output": [
+                "BuildDefinition"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BuildDefinition", "SyncMetadata_azure_devops_builddefinitions"],
+            "usedModels": [
+                "BuildDefinition",
+                "SyncMetadata_azure_devops_builddefinitions"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3125,7 +3616,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_builddefinitions": {
@@ -3138,12 +3631,16 @@
                                 }
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3152,12 +3649,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_builds",
             "name": "builds",
-            "output": ["Build"],
+            "output": [
+                "Build"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Build", "SyncMetadata_azure_devops_builds"],
+            "usedModels": [
+                "Build",
+                "SyncMetadata_azure_devops_builds"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3233,7 +3735,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_builds": {
@@ -3250,7 +3754,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3259,12 +3765,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_commits",
             "name": "commits",
-            "output": ["Commit"],
+            "output": [
+                "Commit"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Commit", "SyncMetadata_azure_devops_commits"],
+            "usedModels": [
+                "Commit",
+                "SyncMetadata_azure_devops_commits"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3309,7 +3820,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "commitId", "repositoryId", "project"],
+                        "required": [
+                            "id",
+                            "commitId",
+                            "repositoryId",
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_commits": {
@@ -3327,7 +3843,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["project", "repositoryId"],
+                                    "required": [
+                                        "project",
+                                        "repositoryId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -3336,7 +3855,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3345,12 +3866,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_iterations",
             "name": "iterations",
-            "output": ["Iteration"],
+            "output": [
+                "Iteration"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Iteration", "SyncMetadata_azure_devops_iterations"],
+            "usedModels": [
+                "Iteration",
+                "SyncMetadata_azure_devops_iterations"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3386,7 +3912,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_iterations": {
@@ -3404,17 +3932,24 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["projectId", "teamId"],
+                                    "required": [
+                                        "projectId",
+                                        "teamId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["projectTeams"],
+                        "required": [
+                            "projectTeams"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3423,12 +3958,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_pipelines",
             "name": "pipelines",
-            "output": ["Pipeline"],
+            "output": [
+                "Pipeline"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Pipeline", "SyncMetadata_azure_devops_pipelines"],
+            "usedModels": [
+                "Pipeline",
+                "SyncMetadata_azure_devops_pipelines"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3455,7 +3995,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "projectId"],
+                        "required": [
+                            "id",
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_pipelines": {
@@ -3468,12 +4011,16 @@
                                 }
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3482,12 +4029,16 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3520,12 +4071,17 @@
                                 "description": "Last update timestamp. Example: \"2023-01-01T00:00:00Z\""
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3534,12 +4090,16 @@
             "endpoints": [],
             "input": null,
             "name": "pull-requests",
-            "output": ["PullRequest"],
+            "output": [
+                "PullRequest"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PullRequest"],
+            "usedModels": [
+                "PullRequest"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3615,7 +4175,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3624,12 +4186,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_repositories",
             "name": "repositories",
-            "output": ["Repository"],
+            "output": [
+                "Repository"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Repository", "SyncMetadata_azure_devops_repositories"],
+            "usedModels": [
+                "Repository",
+                "SyncMetadata_azure_devops_repositories"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3678,7 +4245,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_repositories": {
@@ -3692,12 +4262,16 @@
                                 "description": "List of project IDs or names to sync repositories from"
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3706,12 +4280,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_teams",
             "name": "teams",
-            "output": ["Team"],
+            "output": [
+                "Team"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Team", "SyncMetadata_azure_devops_teams"],
+            "usedModels": [
+                "Team",
+                "SyncMetadata_azure_devops_teams"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3741,7 +4320,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_teams": {
@@ -3755,12 +4336,16 @@
                                 }
                             }
                         },
-                        "required": ["projectIds"],
+                        "required": [
+                            "projectIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3769,12 +4354,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_testplans",
             "name": "test-plans",
-            "output": ["TestPlan"],
+            "output": [
+                "TestPlan"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TestPlan", "SyncMetadata_azure_devops_testplans"],
+            "usedModels": [
+                "TestPlan",
+                "SyncMetadata_azure_devops_testplans"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3838,7 +4428,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "projectId", "projectName"],
+                        "required": [
+                            "id",
+                            "name",
+                            "projectId",
+                            "projectName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_testplans": {
@@ -3852,12 +4447,16 @@
                                 }
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3866,12 +4465,17 @@
             "endpoints": [],
             "input": "SyncMetadata_azure_devops_workitems",
             "name": "work-items",
-            "output": ["WorkItem"],
+            "output": [
+                "WorkItem"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["WorkItem", "SyncMetadata_azure_devops_workitems"],
+            "usedModels": [
+                "WorkItem",
+                "SyncMetadata_azure_devops_workitems"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3911,7 +4515,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_azure_devops_workitems": {
@@ -3924,12 +4530,16 @@
                                 }
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_addprojecttotask",
             "name": "add-project-to-task",
-            "output": ["ActionOutput_asana_addprojecttotask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_asana_addprojecttotask", "ActionOutput_asana_addprojecttotask"],
+            "output": [
+                "ActionOutput_asana_addprojecttotask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_addprojecttotask",
+                "ActionOutput_asana_addprojecttotask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -26,18 +33,30 @@
                             },
                             "section": {
                                 "description": "The section to add the task to within the project. Example: \"1200000000000003\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "insert_after": {
                                 "description": "A task ID to position this task after within the project or section. Example: \"1200000000000004\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "insert_before": {
                                 "description": "A task ID to position this task before within the project or section. Example: \"1200000000000005\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["task_gid", "project"],
+                        "required": [
+                            "task_gid",
+                            "project"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_addprojecttotask": {
@@ -47,7 +66,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -60,9 +81,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_addtagtotask",
             "name": "add-tag-to-task",
-            "output": ["ActionOutput_asana_addtagtotask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_asana_addtagtotask", "ActionOutput_asana_addtagtotask"],
+            "output": [
+                "ActionOutput_asana_addtagtotask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_addtagtotask",
+                "ActionOutput_asana_addtagtotask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -80,7 +108,10 @@
                                 "description": "The tag to add to the task. Example: \"1200000000000002\""
                             }
                         },
-                        "required": ["task_gid", "tag_gid"],
+                        "required": [
+                            "task_gid",
+                            "tag_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_addtagtotask": {
@@ -90,7 +121,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -103,9 +136,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_asana_createproject"],
-            "scopes": ["projects:write"],
-            "usedModels": ["ActionInput_asana_createproject", "ActionOutput_asana_createproject"],
+            "output": [
+                "ActionOutput_asana_createproject"
+            ],
+            "scopes": [
+                "projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_createproject",
+                "ActionOutput_asana_createproject"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -127,7 +167,10 @@
                             "privacy_setting": {
                                 "description": "The privacy setting of the project. Example: \"public_to_workspace\"",
                                 "type": "string",
-                                "enum": ["private", "public_to_workspace"]
+                                "enum": [
+                                    "private",
+                                    "public_to_workspace"
+                                ]
                             },
                             "notes": {
                                 "description": "Free-form textual information associated with the project (description).",
@@ -135,27 +178,47 @@
                             },
                             "color": {
                                 "description": "Color of the project. Example: \"dark-blue\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_date": {
                                 "description": "The date at which the project is due. Format: YYYY-MM-DD.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_on": {
                                 "description": "The day on which the project starts. Format: YYYY-MM-DD.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "default_view": {
                                 "description": "The default view of the project. Example: \"list\"",
                                 "type": "string",
-                                "enum": ["list", "board", "timeline", "calendar"]
+                                "enum": [
+                                    "list",
+                                    "board",
+                                    "timeline",
+                                    "calendar"
+                                ]
                             },
                             "owner": {
                                 "description": "The user GID of the project owner. Example: \"12345\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["name", "workspace_gid"],
+                        "required": [
+                            "name",
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_createproject": {
@@ -177,7 +240,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             },
                             "team": {
@@ -190,7 +255,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             },
                             "privacy_setting": {
@@ -215,7 +282,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["gid", "name"],
+                        "required": [
+                            "gid",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -228,9 +298,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_createsection",
             "name": "create-section",
-            "output": ["ActionOutput_asana_createsection"],
-            "scopes": ["projects:write"],
-            "usedModels": ["ActionInput_asana_createsection", "ActionOutput_asana_createsection"],
+            "output": [
+                "ActionOutput_asana_createsection"
+            ],
+            "scopes": [
+                "projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_createsection",
+                "ActionOutput_asana_createsection"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -255,7 +332,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id", "name"],
+                        "required": [
+                            "project_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_createsection": {
@@ -286,7 +366,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type"],
+                                "required": [
+                                    "gid",
+                                    "resource_type"
+                                ],
                                 "additionalProperties": false
                             },
                             "projects": {
@@ -304,12 +387,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "resource_type"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["gid", "resource_type", "name"],
+                        "required": [
+                            "gid",
+                            "resource_type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -322,9 +412,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_createstoryontask",
             "name": "create-story-on-task",
-            "output": ["ActionOutput_asana_createstoryontask"],
-            "scopes": ["stories:write"],
-            "usedModels": ["ActionInput_asana_createstoryontask", "ActionOutput_asana_createstoryontask"],
+            "output": [
+                "ActionOutput_asana_createstoryontask"
+            ],
+            "scopes": [
+                "stories:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_createstoryontask",
+                "ActionOutput_asana_createstoryontask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -345,7 +442,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["task_gid"],
+                        "required": [
+                            "task_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_createstoryontask": {
@@ -376,7 +475,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["gid", "resource_type"],
+                        "required": [
+                            "gid",
+                            "resource_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -389,9 +491,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_createsubtask",
             "name": "create-subtask",
-            "output": ["ActionOutput_asana_createsubtask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_asana_createsubtask", "ActionOutput_asana_createsubtask"],
+            "output": [
+                "ActionOutput_asana_createsubtask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_createsubtask",
+                "ActionOutput_asana_createsubtask"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -409,15 +518,24 @@
                             },
                             "assignee": {
                                 "description": "The user gid to assign the subtask to. Example: \"67890\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_on": {
                                 "description": "Localized due date in YYYY-MM-DD format. Example: \"2024-12-31\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_at": {
                                 "description": "UTC due date-time in ISO 8601 format. Example: \"2024-12-31T23:59:59.000Z\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notes": {
                                 "description": "Free-form description of the subtask.",
@@ -450,12 +568,18 @@
                             },
                             "start_on": {
                                 "description": "Start date in YYYY-MM-DD format. Example: \"2024-01-01\"",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "resource_subtype": {
                                 "description": "The subtype of the task.",
                                 "type": "string",
-                                "enum": ["default_task", "milestone"]
+                                "enum": [
+                                    "default_task",
+                                    "milestone"
+                                ]
                             },
                             "completed": {
                                 "description": "Whether the subtask is marked completed.",
@@ -466,7 +590,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["parent_task_gid", "name"],
+                        "required": [
+                            "parent_task_gid",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_createsubtask": {
@@ -494,7 +621,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             },
                             "due_on": {
@@ -519,7 +648,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             },
                             "parent": {
@@ -532,7 +663,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             },
                             "permalink_url": {
@@ -550,7 +683,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -566,7 +701,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -582,7 +719,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -591,7 +730,11 @@
                                 "items": {}
                             }
                         },
-                        "required": ["gid", "name", "resource_type"],
+                        "required": [
+                            "gid",
+                            "name",
+                            "resource_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -604,9 +747,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_createtag",
             "name": "create-tag",
-            "output": ["ActionOutput_asana_createtag"],
-            "scopes": ["tags:write"],
-            "usedModels": ["ActionInput_asana_createtag", "ActionOutput_asana_createtag"],
+            "output": [
+                "ActionOutput_asana_createtag"
+            ],
+            "scopes": [
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_createtag",
+                "ActionOutput_asana_createtag"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -653,7 +803,10 @@
                                 ]
                             }
                         },
-                        "required": ["workspace_id", "name"],
+                        "required": [
+                            "workspace_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_createtag": {
@@ -684,14 +837,19 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "permalink_url": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -704,9 +862,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_asana_createtask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_asana_createtask", "ActionOutput_asana_createtask"],
+            "output": [
+                "ActionOutput_asana_createtask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_createtask",
+                "ActionOutput_asana_createtask"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -730,11 +895,17 @@
                             },
                             "parent": {
                                 "description": "The GID of a parent task. Implies the workspace.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "assignee": {
                                 "description": "The user GID to assign the task to.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "notes": {
                                 "description": "Free-form text description of the task.",
@@ -742,18 +913,26 @@
                             },
                             "due_on": {
                                 "description": "The due date in YYYY-MM-DD format.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_at": {
                                 "description": "The due date and time in ISO 8601 format.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed": {
                                 "description": "Whether the task is completed.",
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_createtask": {
@@ -803,7 +982,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -816,9 +998,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_deleteattachment",
             "name": "delete-attachment",
-            "output": ["ActionOutput_asana_deleteattachment"],
-            "scopes": ["attachments:delete"],
-            "usedModels": ["ActionInput_asana_deleteattachment", "ActionOutput_asana_deleteattachment"],
+            "output": [
+                "ActionOutput_asana_deleteattachment"
+            ],
+            "scopes": [
+                "attachments:delete"
+            ],
+            "usedModels": [
+                "ActionInput_asana_deleteattachment",
+                "ActionOutput_asana_deleteattachment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -830,7 +1019,9 @@
                                 "description": "Globally unique identifier for the attachment. Example: \"1234567890\""
                             }
                         },
-                        "required": ["attachment_gid"],
+                        "required": [
+                            "attachment_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_deleteattachment": {
@@ -840,7 +1031,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -853,9 +1046,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_deleteproject",
             "name": "delete-project",
-            "output": ["ActionOutput_asana_deleteproject"],
-            "scopes": ["projects:delete"],
-            "usedModels": ["ActionInput_asana_deleteproject", "ActionOutput_asana_deleteproject"],
+            "output": [
+                "ActionOutput_asana_deleteproject"
+            ],
+            "scopes": [
+                "projects:delete"
+            ],
+            "usedModels": [
+                "ActionInput_asana_deleteproject",
+                "ActionOutput_asana_deleteproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -868,7 +1068,9 @@
                                 "description": "Globally unique identifier for the project. Example: \"1205341234567890\""
                             }
                         },
-                        "required": ["project_gid"],
+                        "required": [
+                            "project_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_deleteproject": {
@@ -878,7 +1080,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -891,9 +1095,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_deletesection",
             "name": "delete-section",
-            "output": ["ActionOutput_asana_deletesection"],
-            "scopes": ["projects:write"],
-            "usedModels": ["ActionInput_asana_deletesection", "ActionOutput_asana_deletesection"],
+            "output": [
+                "ActionOutput_asana_deletesection"
+            ],
+            "scopes": [
+                "projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_deletesection",
+                "ActionOutput_asana_deletesection"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -906,7 +1117,9 @@
                                 "description": "The globally unique identifier for the section. Example: \"1234567890\""
                             }
                         },
-                        "required": ["section_gid"],
+                        "required": [
+                            "section_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_deletesection": {
@@ -916,7 +1129,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -929,9 +1144,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_deletestory",
             "name": "delete-story",
-            "output": ["ActionOutput_asana_deletestory"],
-            "scopes": ["stories:delete"],
-            "usedModels": ["ActionInput_asana_deletestory", "ActionOutput_asana_deletestory"],
+            "output": [
+                "ActionOutput_asana_deletestory"
+            ],
+            "scopes": [
+                "stories:delete"
+            ],
+            "usedModels": [
+                "ActionInput_asana_deletestory",
+                "ActionOutput_asana_deletestory"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -944,7 +1166,9 @@
                                 "description": "Globally unique identifier for the story. Example: \"12345\""
                             }
                         },
-                        "required": ["story_gid"],
+                        "required": [
+                            "story_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_deletestory": {
@@ -954,7 +1178,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -967,9 +1193,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_deletetag",
             "name": "delete-tag",
-            "output": ["ActionOutput_asana_deletetag"],
-            "scopes": ["tags:write"],
-            "usedModels": ["ActionInput_asana_deletetag", "ActionOutput_asana_deletetag"],
+            "output": [
+                "ActionOutput_asana_deletetag"
+            ],
+            "scopes": [
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_deletetag",
+                "ActionOutput_asana_deletetag"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -982,7 +1215,9 @@
                                 "description": "The globally unique identifier for the tag. Example: \"11235\""
                             }
                         },
-                        "required": ["tag_gid"],
+                        "required": [
+                            "tag_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_deletetag": {
@@ -992,7 +1227,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1005,9 +1242,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_asana_deletetask"],
-            "scopes": ["tasks:delete"],
-            "usedModels": ["ActionInput_asana_deletetask", "ActionOutput_asana_deletetask"],
+            "output": [
+                "ActionOutput_asana_deletetask"
+            ],
+            "scopes": [
+                "tasks:delete"
+            ],
+            "usedModels": [
+                "ActionInput_asana_deletetask",
+                "ActionOutput_asana_deletetask"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -1020,7 +1264,9 @@
                                 "description": "The globally unique identifier for the task to delete. Example: \"1209876543210987\""
                             }
                         },
-                        "required": ["task_gid"],
+                        "required": [
+                            "task_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_deletetask": {
@@ -1035,7 +1281,10 @@
                                 "description": "Whether the deletion was successful."
                             }
                         },
-                        "required": ["task_gid", "success"],
+                        "required": [
+                            "task_gid",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1048,9 +1297,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_asana_getproject"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_asana_getproject", "ActionOutput_asana_getproject"],
+            "output": [
+                "ActionOutput_asana_getproject"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_getproject",
+                "ActionOutput_asana_getproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1067,7 +1323,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_gid"],
+                        "required": [
+                            "project_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_getproject": {
@@ -1083,7 +1341,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["gid"],
+                        "required": [
+                            "gid"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1096,9 +1356,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_getsection",
             "name": "get-section",
-            "output": ["ActionOutput_asana_getsection"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_asana_getsection", "ActionOutput_asana_getsection"],
+            "output": [
+                "ActionOutput_asana_getsection"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_getsection",
+                "ActionOutput_asana_getsection"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1111,7 +1378,9 @@
                                 "description": "The globally unique identifier for the section. Example: \"12345\""
                             }
                         },
-                        "required": ["section_gid"],
+                        "required": [
+                            "section_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_getsection": {
@@ -1142,7 +1411,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type", "name"],
+                                "required": [
+                                    "gid",
+                                    "resource_type",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "projects": {
@@ -1160,12 +1433,20 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "resource_type", "name"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["gid", "resource_type", "name"],
+                        "required": [
+                            "gid",
+                            "resource_type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1178,9 +1459,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_gettag",
             "name": "get-tag",
-            "output": ["ActionOutput_asana_gettag"],
-            "scopes": ["tags:read"],
-            "usedModels": ["ActionInput_asana_gettag", "ActionOutput_asana_gettag"],
+            "output": [
+                "ActionOutput_asana_gettag"
+            ],
+            "scopes": [
+                "tags:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_gettag",
+                "ActionOutput_asana_gettag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1192,7 +1480,9 @@
                                 "description": "The globally unique identifier of the tag to fetch. Example: \"12345\""
                             }
                         },
-                        "required": ["tag_gid"],
+                        "required": [
+                            "tag_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_gettag": {
@@ -1231,7 +1521,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "resource_type"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1248,14 +1541,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type"],
+                                "required": [
+                                    "gid",
+                                    "resource_type"
+                                ],
                                 "additionalProperties": false
                             },
                             "permalink_url": {
                                 "type": "string"
                             }
                         },
-                        "required": ["gid", "resource_type"],
+                        "required": [
+                            "gid",
+                            "resource_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1268,9 +1567,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_asana_gettask"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_asana_gettask", "ActionOutput_asana_gettask"],
+            "output": [
+                "ActionOutput_asana_gettask"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_gettask",
+                "ActionOutput_asana_gettask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1289,7 +1595,9 @@
                                 }
                             }
                         },
-                        "required": ["task_gid"],
+                        "required": [
+                            "task_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_gettask": {
@@ -1322,7 +1630,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["gid"],
+                                        "required": [
+                                            "gid"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -1348,7 +1658,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["gid"],
+                                        "required": [
+                                            "gid"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -1357,16 +1669,25 @@
                                 ]
                             },
                             "due_on": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed": {
                                 "type": "boolean"
                             },
                             "completed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed_by": {
                                 "anyOf": [
@@ -1386,7 +1707,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["gid"],
+                                        "required": [
+                                            "gid"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -1415,7 +1738,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["gid"],
+                                        "required": [
+                                            "gid"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -1450,7 +1775,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1467,7 +1794,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": {}
                             },
                             "parent": {
@@ -1485,7 +1814,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["gid"],
+                                        "required": [
+                                            "gid"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -1508,7 +1839,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1530,7 +1863,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1572,7 +1907,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 {
@@ -1601,15 +1938,23 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["gid"],
+                                                "required": [
+                                                    "gid"
+                                                ],
                                                 "additionalProperties": {}
                                             }
                                         },
                                         "number_value": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "text_value": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "date_value": {
                                             "anyOf": [
@@ -1631,10 +1976,15 @@
                                             ]
                                         },
                                         "display_value": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1656,7 +2006,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid"],
+                                            "required": [
+                                                "gid"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "section": {
@@ -1672,7 +2024,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid"],
+                                            "required": [
+                                                "gid"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1700,7 +2054,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid"],
+                                            "required": [
+                                                "gid"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1714,10 +2070,16 @@
                                 "type": "string"
                             },
                             "start_on": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "actual_time_minutes": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "num_subtasks": {
                                 "type": "number"
@@ -1769,7 +2131,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1788,12 +2152,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["gid", "name"],
+                        "required": [
+                            "gid",
+                            "name"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1806,9 +2175,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_getteam",
             "name": "get-team",
-            "output": ["ActionOutput_asana_getteam"],
-            "scopes": ["teams:read"],
-            "usedModels": ["ActionInput_asana_getteam", "ActionOutput_asana_getteam"],
+            "output": [
+                "ActionOutput_asana_getteam"
+            ],
+            "scopes": [
+                "teams:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_getteam",
+                "ActionOutput_asana_getteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1821,7 +2197,9 @@
                                 "description": "Globally unique identifier for the team. Example: \"12345\""
                             }
                         },
-                        "required": ["team_gid"],
+                        "required": [
+                            "team_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_getteam": {
@@ -1849,7 +2227,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             },
                             "permalink_url": {
@@ -1883,7 +2263,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["gid"],
+                        "required": [
+                            "gid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1896,9 +2278,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_asana_getuser"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_asana_getuser", "ActionOutput_asana_getuser"],
+            "output": [
+                "ActionOutput_asana_getuser"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_getuser",
+                "ActionOutput_asana_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1910,7 +2299,9 @@
                                 "description": "A string identifying a user. This can either be the string \"me\", an email, or the gid of a user. Example: \"12345\""
                             }
                         },
-                        "required": ["user_gid"],
+                        "required": [
+                            "user_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_getuser": {
@@ -1934,22 +2325,40 @@
                                         "type": "object",
                                         "properties": {
                                             "image_21x21": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "image_27x27": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "image_36x36": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "image_60x60": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "image_128x128": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "image_1024x1024": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -1960,7 +2369,9 @@
                                 ]
                             }
                         },
-                        "required": ["gid"],
+                        "required": [
+                            "gid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1973,9 +2384,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_getworkspace",
             "name": "get-workspace",
-            "output": ["ActionOutput_asana_getworkspace"],
-            "scopes": ["workspaces:read"],
-            "usedModels": ["ActionInput_asana_getworkspace", "ActionOutput_asana_getworkspace"],
+            "output": [
+                "ActionOutput_asana_getworkspace"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_getworkspace",
+                "ActionOutput_asana_getworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1987,7 +2405,9 @@
                                 "description": "Globally unique identifier for the workspace. Example: \"123456789\""
                             }
                         },
-                        "required": ["workspace_gid"],
+                        "required": [
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_getworkspace": {
@@ -2012,7 +2432,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["gid", "resource_type", "name"],
+                        "required": [
+                            "gid",
+                            "resource_type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2025,9 +2449,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listattachmentsforobject",
             "name": "list-attachments-for-object",
-            "output": ["ActionOutput_asana_listattachmentsforobject"],
-            "scopes": ["attachments:read"],
-            "usedModels": ["ActionInput_asana_listattachmentsforobject", "ActionOutput_asana_listattachmentsforobject"],
+            "output": [
+                "ActionOutput_asana_listattachmentsforobject"
+            ],
+            "scopes": [
+                "attachments:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listattachmentsforobject",
+                "ActionOutput_asana_listattachmentsforobject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2043,7 +2474,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["parent"],
+                        "required": [
+                            "parent"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listattachmentsforobject": {
@@ -2067,7 +2500,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2075,7 +2510,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["attachments"],
+                        "required": [
+                            "attachments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2088,9 +2525,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listprojectsforteam",
             "name": "list-projects-for-team",
-            "output": ["ActionOutput_asana_listprojectsforteam"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_asana_listprojectsforteam", "ActionOutput_asana_listprojectsforteam"],
+            "output": [
+                "ActionOutput_asana_listprojectsforteam"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listprojectsforteam",
+                "ActionOutput_asana_listprojectsforteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2120,7 +2564,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_gid"],
+                        "required": [
+                            "team_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listprojectsforteam": {
@@ -2141,7 +2587,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "resource_type", "name"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2149,7 +2599,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2162,9 +2614,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listprojectsforworkspace",
             "name": "list-projects-for-workspace",
-            "output": ["ActionOutput_asana_listprojectsforworkspace"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_asana_listprojectsforworkspace", "ActionOutput_asana_listprojectsforworkspace"],
+            "output": [
+                "ActionOutput_asana_listprojectsforworkspace"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listprojectsforworkspace",
+                "ActionOutput_asana_listprojectsforworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2191,7 +2650,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["workspace_gid"],
+                        "required": [
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listprojectsforworkspace": {
@@ -2215,7 +2676,10 @@
                                             "type": "boolean"
                                         },
                                         "color": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -2224,7 +2688,10 @@
                                             "type": "string"
                                         },
                                         "notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "owner": {
                                             "anyOf": [
@@ -2241,7 +2708,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2264,7 +2733,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2287,7 +2758,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2299,7 +2772,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2307,7 +2782,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2320,9 +2797,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listsectionsforproject",
             "name": "list-sections-for-project",
-            "output": ["ActionOutput_asana_listsectionsforproject"],
-            "scopes": ["projects:read"],
-            "usedModels": ["ActionInput_asana_listsectionsforproject", "ActionOutput_asana_listsectionsforproject"],
+            "output": [
+                "ActionOutput_asana_listsectionsforproject"
+            ],
+            "scopes": [
+                "projects:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listsectionsforproject",
+                "ActionOutput_asana_listsectionsforproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2339,7 +2823,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listsectionsforproject": {
@@ -2375,7 +2861,11 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid", "resource_type", "name"],
+                                            "required": [
+                                                "gid",
+                                                "resource_type",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "projects": {
@@ -2393,12 +2883,20 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["gid", "resource_type", "name"],
+                                                "required": [
+                                                    "gid",
+                                                    "resource_type",
+                                                    "name"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["gid", "resource_type", "name"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2406,7 +2904,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2419,9 +2919,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_liststoriesfortask",
             "name": "list-stories-for-task",
-            "output": ["ActionOutput_asana_liststoriesfortask"],
-            "scopes": ["stories:read"],
-            "usedModels": ["ActionInput_asana_liststoriesfortask", "ActionOutput_asana_liststoriesfortask"],
+            "output": [
+                "ActionOutput_asana_liststoriesfortask"
+            ],
+            "scopes": [
+                "stories:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_liststoriesfortask",
+                "ActionOutput_asana_liststoriesfortask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2443,7 +2950,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["task_gid"],
+                        "required": [
+                            "task_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_liststoriesfortask": {
@@ -2485,7 +2994,10 @@
                                             "type": "boolean"
                                         },
                                         "sticker_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_by": {
                                             "type": "object",
@@ -2500,7 +3012,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid", "resource_type"],
+                                            "required": [
+                                                "gid",
+                                                "resource_type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "likes": {
@@ -2515,7 +3030,10 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["gid", "resource_type"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2523,7 +3041,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["stories"],
+                        "required": [
+                            "stories"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2536,9 +3056,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listsubtasksfortask",
             "name": "list-subtasks-for-task",
-            "output": ["ActionOutput_asana_listsubtasksfortask"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_asana_listsubtasksfortask", "ActionOutput_asana_listsubtasksfortask"],
+            "output": [
+                "ActionOutput_asana_listsubtasksfortask"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listsubtasksfortask",
+                "ActionOutput_asana_listsubtasksfortask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2560,7 +3087,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["task_gid"],
+                        "required": [
+                            "task_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listsubtasksfortask": {
@@ -2593,7 +3122,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid"],
+                                            "required": [
+                                                "gid"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "completed": {
@@ -2618,7 +3149,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid"],
+                                            "required": [
+                                                "gid"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "permalink_url": {
@@ -2643,7 +3176,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid"],
+                                            "required": [
+                                                "gid"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "projects": {
@@ -2661,7 +3196,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["gid"],
+                                                "required": [
+                                                    "gid"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -2680,12 +3217,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["gid"],
+                                                "required": [
+                                                    "gid"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2693,7 +3234,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2706,9 +3249,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listtagsforworkspace",
             "name": "list-tags-for-workspace",
-            "output": ["ActionOutput_asana_listtagsforworkspace"],
-            "scopes": ["tags:read"],
-            "usedModels": ["ActionInput_asana_listtagsforworkspace", "ActionOutput_asana_listtagsforworkspace"],
+            "output": [
+                "ActionOutput_asana_listtagsforworkspace"
+            ],
+            "scopes": [
+                "tags:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listtagsforworkspace",
+                "ActionOutput_asana_listtagsforworkspace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2730,7 +3280,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["workspace_gid"],
+                        "required": [
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listtagsforworkspace": {
@@ -2751,13 +3303,22 @@
                                             "type": "string"
                                         },
                                         "color": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "permalink_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "workspace": {
                                             "anyOf": [
@@ -2774,7 +3335,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2783,7 +3346,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2791,7 +3356,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2804,9 +3371,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listtasksforproject",
             "name": "list-tasks-for-project",
-            "output": ["ActionOutput_asana_listtasksforproject"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_asana_listtasksforproject", "ActionOutput_asana_listtasksforproject"],
+            "output": [
+                "ActionOutput_asana_listtasksforproject"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listtasksforproject",
+                "ActionOutput_asana_listtasksforproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2833,7 +3407,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_gid"],
+                        "required": [
+                            "project_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listtasksforproject": {
@@ -2879,7 +3455,10 @@
                                             "type": "boolean"
                                         },
                                         "due_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "string"
@@ -2894,7 +3473,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "name"],
+                                    "required": [
+                                        "gid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2903,7 +3485,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2916,9 +3500,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listtasksforsection",
             "name": "list-tasks-for-section",
-            "output": ["ActionOutput_asana_listtasksforsection"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_asana_listtasksforsection", "ActionOutput_asana_listtasksforsection"],
+            "output": [
+                "ActionOutput_asana_listtasksforsection"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listtasksforsection",
+                "ActionOutput_asana_listtasksforsection"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2948,7 +3539,9 @@
                                 }
                             }
                         },
-                        "required": ["section_gid"],
+                        "required": [
+                            "section_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listtasksforsection": {
@@ -2966,13 +3559,22 @@
                                             "type": "string"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "resource_subtype": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "approval_status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "assignee": {
                                             "anyOf": [
@@ -2986,10 +3588,15 @@
                                                             "type": "string"
                                                         },
                                                         "name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2998,13 +3605,22 @@
                                             ]
                                         },
                                         "assignee_status": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "completed": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "completed_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "completed_by": {
                                             "anyOf": [
@@ -3018,10 +3634,15 @@
                                                             "type": "string"
                                                         },
                                                         "name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3030,10 +3651,16 @@
                                             ]
                                         },
                                         "created_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "modified_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "dependencies": {
                                             "anyOf": [
@@ -3046,7 +3673,9 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["gid"],
+                                                        "required": [
+                                                            "gid"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3066,7 +3695,9 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["gid"],
+                                                        "required": [
+                                                            "gid"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3076,16 +3707,28 @@
                                             ]
                                         },
                                         "due_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "due_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "start_at": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "start_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "external": {
                                             "anyOf": [
@@ -3093,10 +3736,16 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "gid": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "data": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -3107,7 +3756,10 @@
                                             ]
                                         },
                                         "hearted": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "hearts": {
                                             "anyOf": [
@@ -3128,10 +3780,15 @@
                                                                                 "type": "string"
                                                                             },
                                                                             "name": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             }
                                                                         },
-                                                                        "required": ["gid"],
+                                                                        "required": [
+                                                                            "gid"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     {
@@ -3149,13 +3806,22 @@
                                             ]
                                         },
                                         "html_notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_rendered_as_separator": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "liked": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "likes": {
                                             "anyOf": [
@@ -3176,10 +3842,15 @@
                                                                                 "type": "string"
                                                                             },
                                                                             "name": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             }
                                                                         },
-                                                                        "required": ["gid"],
+                                                                        "required": [
+                                                                            "gid"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     {
@@ -3215,10 +3886,15 @@
                                                                                 "type": "string"
                                                                             },
                                                                             "name": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             }
                                                                         },
-                                                                        "required": ["gid"],
+                                                                        "required": [
+                                                                            "gid"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     {
@@ -3238,10 +3914,15 @@
                                                                                 "type": "string"
                                                                             },
                                                                             "name": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             }
                                                                         },
-                                                                        "required": ["gid"],
+                                                                        "required": [
+                                                                            "gid"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     {
@@ -3270,10 +3951,15 @@
                                                             "type": "string"
                                                         },
                                                         "name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3282,16 +3968,28 @@
                                             ]
                                         },
                                         "notes": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "num_hearts": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "num_likes": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "num_subtasks": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "parent": {
                                             "anyOf": [
@@ -3305,10 +4003,15 @@
                                                             "type": "string"
                                                         },
                                                         "name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3317,7 +4020,10 @@
                                             ]
                                         },
                                         "permalink_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "projects": {
                                             "anyOf": [
@@ -3333,10 +4039,15 @@
                                                                 "type": "string"
                                                             },
                                                             "name": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["gid"],
+                                                        "required": [
+                                                            "gid"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3359,10 +4070,15 @@
                                                                 "type": "string"
                                                             },
                                                             "name": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["gid"],
+                                                        "required": [
+                                                            "gid"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3383,10 +4099,15 @@
                                                             "type": "string"
                                                         },
                                                         "name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["gid"],
+                                                    "required": [
+                                                        "gid"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3405,16 +4126,28 @@
                                                                 "type": "string"
                                                             },
                                                             "name": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "type": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "text_value": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "number_value": {
-                                                                "type": ["number", "null"]
+                                                                "type": [
+                                                                    "number",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "enum_value": {
                                                                 "anyOf": [
@@ -3425,16 +4158,27 @@
                                                                                 "type": "string"
                                                                             },
                                                                             "name": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             },
                                                                             "color": {
-                                                                                "type": ["string", "null"]
+                                                                                "type": [
+                                                                                    "string",
+                                                                                    "null"
+                                                                                ]
                                                                             },
                                                                             "enabled": {
-                                                                                "type": ["boolean", "null"]
+                                                                                "type": [
+                                                                                    "boolean",
+                                                                                    "null"
+                                                                                ]
                                                                             }
                                                                         },
-                                                                        "required": ["gid"],
+                                                                        "required": [
+                                                                            "gid"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     {
@@ -3453,16 +4197,27 @@
                                                                                     "type": "string"
                                                                                 },
                                                                                 "name": {
-                                                                                    "type": ["string", "null"]
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
                                                                                 },
                                                                                 "color": {
-                                                                                    "type": ["string", "null"]
+                                                                                    "type": [
+                                                                                        "string",
+                                                                                        "null"
+                                                                                    ]
                                                                                 },
                                                                                 "enabled": {
-                                                                                    "type": ["boolean", "null"]
+                                                                                    "type": [
+                                                                                        "boolean",
+                                                                                        "null"
+                                                                                    ]
                                                                                 }
                                                                             },
-                                                                            "required": ["gid"],
+                                                                            "required": [
+                                                                                "gid"
+                                                                            ],
                                                                             "additionalProperties": false
                                                                         }
                                                                     },
@@ -3472,10 +4227,15 @@
                                                                 ]
                                                             },
                                                             "display_value": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
-                                                        "required": ["gid"],
+                                                        "required": [
+                                                            "gid"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3485,10 +4245,15 @@
                                             ]
                                         },
                                         "actual_time_minutes": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3496,7 +4261,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3509,9 +4276,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listteamsforuser",
             "name": "list-teams-for-user",
-            "output": ["ActionOutput_asana_listteamsforuser"],
-            "scopes": ["teams:read"],
-            "usedModels": ["ActionInput_asana_listteamsforuser", "ActionOutput_asana_listteamsforuser"],
+            "output": [
+                "ActionOutput_asana_listteamsforuser"
+            ],
+            "scopes": [
+                "teams:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listteamsforuser",
+                "ActionOutput_asana_listteamsforuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3537,7 +4311,10 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["user_gid", "organization"],
+                        "required": [
+                            "user_gid",
+                            "organization"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listteamsforuser": {
@@ -3573,11 +4350,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["gid"],
+                                            "required": [
+                                                "gid"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3585,7 +4366,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3598,9 +4381,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listteamsforworkspace",
             "name": "list-teams-for-workspace",
-            "output": ["ActionOutput_asana_listteamsforworkspace"],
-            "scopes": ["teams:read"],
-            "usedModels": ["ActionInput_asana_listteamsforworkspace", "ActionOutput_asana_listteamsforworkspace"],
+            "output": [
+                "ActionOutput_asana_listteamsforworkspace"
+            ],
+            "scopes": [
+                "teams:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listteamsforworkspace",
+                "ActionOutput_asana_listteamsforworkspace"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3623,7 +4413,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["workspace_gid"],
+                        "required": [
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listteamsforworkspace": {
@@ -3644,7 +4436,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "name"],
+                                    "required": [
+                                        "gid",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3652,7 +4447,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3665,9 +4462,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listusersforteam",
             "name": "list-users-for-team",
-            "output": ["ActionOutput_asana_listusersforteam"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_asana_listusersforteam", "ActionOutput_asana_listusersforteam"],
+            "output": [
+                "ActionOutput_asana_listusersforteam"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listusersforteam",
+                "ActionOutput_asana_listusersforteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3688,7 +4492,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_gid"],
+                        "required": [
+                            "team_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listusersforteam": {
@@ -3703,13 +4509,22 @@
                                             "type": "string"
                                         },
                                         "resource_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "photo": {
                                             "anyOf": [
@@ -3720,7 +4535,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3728,7 +4545,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3741,9 +4560,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listusersforworkspace",
             "name": "list-users-for-workspace",
-            "output": ["ActionOutput_asana_listusersforworkspace"],
-            "scopes": ["users:read"],
-            "usedModels": ["ActionInput_asana_listusersforworkspace", "ActionOutput_asana_listusersforworkspace"],
+            "output": [
+                "ActionOutput_asana_listusersforworkspace"
+            ],
+            "scopes": [
+                "users:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listusersforworkspace",
+                "ActionOutput_asana_listusersforworkspace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3763,7 +4589,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace_gid"],
+                        "required": [
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_listusersforworkspace": {
@@ -3787,7 +4615,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3795,7 +4625,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3808,9 +4640,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_listworkspaces",
             "name": "list-workspaces",
-            "output": ["ActionOutput_asana_listworkspaces"],
-            "scopes": ["workspaces:read"],
-            "usedModels": ["ActionInput_asana_listworkspaces", "ActionOutput_asana_listworkspaces"],
+            "output": [
+                "ActionOutput_asana_listworkspaces"
+            ],
+            "scopes": [
+                "workspaces:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_listworkspaces",
+                "ActionOutput_asana_listworkspaces"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3851,7 +4690,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["gid", "resource_type", "name"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3859,7 +4702,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3872,9 +4717,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_removeprojectfromtask",
             "name": "remove-project-from-task",
-            "output": ["ActionOutput_asana_removeprojectfromtask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_asana_removeprojectfromtask", "ActionOutput_asana_removeprojectfromtask"],
+            "output": [
+                "ActionOutput_asana_removeprojectfromtask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_removeprojectfromtask",
+                "ActionOutput_asana_removeprojectfromtask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3892,7 +4744,10 @@
                                 "description": "The globally unique identifier for the project to remove the task from. Example: \"987654321\""
                             }
                         },
-                        "required": ["task_gid", "project_gid"],
+                        "required": [
+                            "task_gid",
+                            "project_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_removeprojectfromtask": {
@@ -3910,9 +4765,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_removetagfromtask",
             "name": "remove-tag-from-task",
-            "output": ["ActionOutput_asana_removetagfromtask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_asana_removetagfromtask", "ActionOutput_asana_removetagfromtask"],
+            "output": [
+                "ActionOutput_asana_removetagfromtask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_removetagfromtask",
+                "ActionOutput_asana_removetagfromtask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3930,7 +4792,10 @@
                                 "description": "The tag to remove from the task. Example: \"67890\""
                             }
                         },
-                        "required": ["task_gid", "tag_gid"],
+                        "required": [
+                            "task_gid",
+                            "tag_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_removetagfromtask": {
@@ -3940,7 +4805,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3953,9 +4820,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_searchtasksinworkspace",
             "name": "search-tasks-in-workspace",
-            "output": ["ActionOutput_asana_searchtasksinworkspace"],
-            "scopes": ["tasks:read"],
-            "usedModels": ["ActionInput_asana_searchtasksinworkspace", "ActionOutput_asana_searchtasksinworkspace"],
+            "output": [
+                "ActionOutput_asana_searchtasksinworkspace"
+            ],
+            "scopes": [
+                "tasks:read"
+            ],
+            "usedModels": [
+                "ActionInput_asana_searchtasksinworkspace",
+                "ActionOutput_asana_searchtasksinworkspace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3990,7 +4864,13 @@
                             "sort_by": {
                                 "description": "Sort field. Defaults to modified_at.",
                                 "type": "string",
-                                "enum": ["due_date", "created_at", "completed_at", "likes", "modified_at"]
+                                "enum": [
+                                    "due_date",
+                                    "created_at",
+                                    "completed_at",
+                                    "likes",
+                                    "modified_at"
+                                ]
                             },
                             "sort_ascending": {
                                 "description": "Sort ascending. Defaults to false.",
@@ -4007,7 +4887,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace_gid"],
+                        "required": [
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_searchtasksinworkspace": {
@@ -4086,13 +4968,18 @@
                                             "type": "string"
                                         },
                                         "due_on": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "notes": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4100,7 +4987,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4113,9 +5002,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_asana_updateproject"],
-            "scopes": ["projects:write"],
-            "usedModels": ["ActionInput_asana_updateproject", "ActionOutput_asana_updateproject"],
+            "output": [
+                "ActionOutput_asana_updateproject"
+            ],
+            "scopes": [
+                "projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_updateproject",
+                "ActionOutput_asana_updateproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4133,23 +5029,38 @@
                             },
                             "notes": {
                                 "description": "Free-form text notes for the project.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "html_notes": {
                                 "description": "HTML-formatted notes for the project.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_on": {
                                 "description": "Date (ISO 8601) on which the project is due. Example: \"2026-12-31\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_on": {
                                 "description": "Date (ISO 8601) on which the project starts. Example: \"2026-01-01\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "color": {
                                 "description": "Color of the project. Example: \"light-red\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "archived": {
                                 "description": "Whether the project is archived.",
@@ -4165,10 +5076,15 @@
                             },
                             "default_view": {
                                 "description": "Default view for the project. Example: \"list\" or \"board\".",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["project_gid"],
+                        "required": [
+                            "project_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_updateproject": {
@@ -4181,22 +5097,37 @@
                                 "type": "string"
                             },
                             "notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "html_notes": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "archived": {
                                 "type": "boolean"
                             },
                             "color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_on": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_on": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "public": {
                                 "type": "boolean"
@@ -4205,16 +5136,25 @@
                                 "type": "boolean"
                             },
                             "default_view": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "workspace_gid": {
                                 "type": "string"
                             },
                             "owner_gid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["gid", "name"],
+                        "required": [
+                            "gid",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4227,9 +5167,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_updatesection",
             "name": "update-section",
-            "output": ["ActionOutput_asana_updatesection"],
-            "scopes": ["projects:write"],
-            "usedModels": ["ActionInput_asana_updatesection", "ActionOutput_asana_updatesection"],
+            "output": [
+                "ActionOutput_asana_updatesection"
+            ],
+            "scopes": [
+                "projects:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_updatesection",
+                "ActionOutput_asana_updatesection"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4246,7 +5193,10 @@
                                 "description": "The updated name for the section."
                             }
                         },
-                        "required": ["section_gid", "name"],
+                        "required": [
+                            "section_gid",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_updatesection": {
@@ -4268,11 +5218,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["gid"],
+                        "required": [
+                            "gid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4285,9 +5239,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_updatetag",
             "name": "update-tag",
-            "output": ["ActionOutput_asana_updatetag"],
-            "scopes": ["tags:write"],
-            "usedModels": ["ActionInput_asana_updatetag", "ActionOutput_asana_updatetag"],
+            "output": [
+                "ActionOutput_asana_updatetag"
+            ],
+            "scopes": [
+                "tags:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_updatetag",
+                "ActionOutput_asana_updatetag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4334,7 +5295,9 @@
                                 ]
                             }
                         },
-                        "required": ["tag_gid"],
+                        "required": [
+                            "tag_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_updatetag": {
@@ -4350,7 +5313,10 @@
                                 "type": "string"
                             },
                             "color": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "workspace": {
                                 "type": "object",
@@ -4365,11 +5331,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid"],
+                                "required": [
+                                    "gid"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["gid"],
+                        "required": [
+                            "gid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4382,9 +5352,16 @@
             "endpoint": null,
             "input": "ActionInput_asana_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_asana_updatetask"],
-            "scopes": ["tasks:write"],
-            "usedModels": ["ActionInput_asana_updatetask", "ActionOutput_asana_updatetask"],
+            "output": [
+                "ActionOutput_asana_updatetask"
+            ],
+            "scopes": [
+                "tasks:write"
+            ],
+            "usedModels": [
+                "ActionInput_asana_updatetask",
+                "ActionOutput_asana_updatetask"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -4406,7 +5383,10 @@
                             },
                             "assignee": {
                                 "description": "The user gid to assign the task to, or null to remove the assignee.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "completed": {
                                 "description": "Whether the task is marked complete.",
@@ -4414,15 +5394,24 @@
                             },
                             "due_at": {
                                 "description": "The UTC due date and time as an ISO 8601 string, or null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "due_on": {
                                 "description": "The localized due date as YYYY-MM-DD, or null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start_on": {
                                 "description": "The start date as YYYY-MM-DD, or null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "custom_fields": {
                                 "description": "Custom field values keyed by custom field gid, or null to clear all.",
@@ -4441,7 +5430,10 @@
                             },
                             "parent": {
                                 "description": "The parent task gid to make this a subtask, or null to remove parent.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "html_notes": {
                                 "description": "HTML-formatted notes for the task.",
@@ -4460,7 +5452,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["task_gid"],
+                        "required": [
+                            "task_gid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_asana_updatetask": {
@@ -4509,7 +5503,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type"],
+                                "required": [
+                                    "gid",
+                                    "resource_type"
+                                ],
                                 "additionalProperties": false
                             },
                             "assignee_section": {
@@ -4525,7 +5522,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type"],
+                                "required": [
+                                    "gid",
+                                    "resource_type"
+                                ],
                                 "additionalProperties": false
                             },
                             "custom_fields": {
@@ -4566,7 +5566,10 @@
                                                             "type": "boolean"
                                                         }
                                                     },
-                                                    "required": ["gid", "resource_type"],
+                                                    "required": [
+                                                        "gid",
+                                                        "resource_type"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -4575,16 +5578,27 @@
                                             ]
                                         },
                                         "number_value": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "text_value": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "display_value": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["gid"],
+                                    "required": [
+                                        "gid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4601,7 +5615,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type"],
+                                "required": [
+                                    "gid",
+                                    "resource_type"
+                                ],
                                 "additionalProperties": false
                             },
                             "projects": {
@@ -4619,7 +5636,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "resource_type"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4638,7 +5658,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "resource_type"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4655,7 +5678,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type"],
+                                "required": [
+                                    "gid",
+                                    "resource_type"
+                                ],
                                 "additionalProperties": false
                             },
                             "followers": {
@@ -4673,7 +5699,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["gid", "resource_type"],
+                                    "required": [
+                                        "gid",
+                                        "resource_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4696,7 +5725,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "data"],
+                                "required": [
+                                    "gid",
+                                    "data"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -4709,7 +5741,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["gid", "resource_type"],
+                        "required": [
+                            "gid",
+                            "resource_type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4730,12 +5765,20 @@
             ],
             "input": "SyncMetadata_asana_projects",
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read", "projects:read"],
+            "scopes": [
+                "workspaces:read",
+                "projects:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project", "SyncMetadata_asana_projects"],
+            "usedModels": [
+                "Project",
+                "SyncMetadata_asana_projects"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4795,7 +5838,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "name"],
+                                "required": [
+                                    "gid",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "team": {
@@ -4808,7 +5854,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "name"],
+                                "required": [
+                                    "gid",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "owner": {
@@ -4821,11 +5870,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "name"],
+                                "required": [
+                                    "gid",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "gid", "name"],
+                        "required": [
+                            "id",
+                            "gid",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_asana_projects": {
@@ -4848,7 +5904,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4862,12 +5920,19 @@
             ],
             "input": "SyncMetadata_asana_sections",
             "name": "sections",
-            "output": ["Section"],
+            "output": [
+                "Section"
+            ],
             "runs": "every hour",
-            "scopes": ["projects:read"],
+            "scopes": [
+                "projects:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Section", "SyncMetadata_asana_sections"],
+            "usedModels": [
+                "Section",
+                "SyncMetadata_asana_sections"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4903,11 +5968,21 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["gid", "resource_type", "name"],
+                                "required": [
+                                    "gid",
+                                    "resource_type",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "gid", "resource_type", "name", "created_at"],
+                        "required": [
+                            "id",
+                            "gid",
+                            "resource_type",
+                            "name",
+                            "created_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_asana_sections": {
@@ -4920,12 +5995,16 @@
                                 }
                             }
                         },
-                        "required": ["project_ids"],
+                        "required": [
+                            "project_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4939,12 +6018,19 @@
             ],
             "input": "SyncMetadata_asana_subtasks",
             "name": "subtasks",
-            "output": ["Subtask"],
+            "output": [
+                "Subtask"
+            ],
             "runs": "every hour",
-            "scopes": ["tasks:read"],
+            "scopes": [
+                "tasks:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subtask", "SyncMetadata_asana_subtasks"],
+            "usedModels": [
+                "Subtask",
+                "SyncMetadata_asana_subtasks"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4971,7 +6057,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "parent_task_id"],
+                        "required": [
+                            "id",
+                            "parent_task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_asana_subtasks": {
@@ -4988,7 +6077,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5002,12 +6093,19 @@
             ],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read", "tags:read"],
+            "scopes": [
+                "workspaces:read",
+                "tags:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5037,12 +6135,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "workspace_gid"],
+                        "required": [
+                            "id",
+                            "name",
+                            "workspace_gid"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5056,12 +6160,21 @@
             ],
             "input": "SyncMetadata_asana_tasks",
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read", "projects:read", "tasks:read"],
+            "scopes": [
+                "workspaces:read",
+                "projects:read",
+                "tasks:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task", "SyncMetadata_asana_tasks"],
+            "usedModels": [
+                "Task",
+                "SyncMetadata_asana_tasks"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5112,7 +6225,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "gid", "modified_at"],
+                        "required": [
+                            "id",
+                            "gid",
+                            "modified_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_asana_tasks": {
@@ -5132,7 +6249,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5146,12 +6265,19 @@
             ],
             "input": null,
             "name": "teams",
-            "output": ["Team"],
+            "output": [
+                "Team"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read", "teams:read"],
+            "scopes": [
+                "workspaces:read",
+                "teams:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Team"],
+            "usedModels": [
+                "Team"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5175,12 +6301,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "gid", "workspace_id"],
+                        "required": [
+                            "id",
+                            "gid",
+                            "workspace_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5194,12 +6326,19 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read", "users:read"],
+            "scopes": [
+                "workspaces:read",
+                "users:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5241,12 +6380,16 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5260,12 +6403,18 @@
             ],
             "input": null,
             "name": "workspaces",
-            "output": ["Workspace"],
+            "output": [
+                "Workspace"
+            ],
             "runs": "every hour",
-            "scopes": ["workspaces:read"],
+            "scopes": [
+                "workspaces:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workspace"],
+            "usedModels": [
+                "Workspace"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5295,12 +6444,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "gid"],
+                        "required": [
+                            "id",
+                            "gid"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

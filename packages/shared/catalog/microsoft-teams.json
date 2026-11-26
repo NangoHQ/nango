@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_addteammember",
             "name": "add-team-member",
-            "output": ["ActionOutput_microsoft_teams_addteammember"],
-            "scopes": ["TeamMember.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_teams_addteammember", "ActionOutput_microsoft_teams_addteammember"],
+            "output": [
+                "ActionOutput_microsoft_teams_addteammember"
+            ],
+            "scopes": [
+                "TeamMember.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_addteammember",
+                "ActionOutput_microsoft_teams_addteammember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["teamId", "userId"],
+                        "required": [
+                            "teamId",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_addteammember": {
@@ -54,7 +64,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "roles"],
+                        "required": [
+                            "id",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -67,9 +80,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_createchannelmessage",
             "name": "create-channel-message",
-            "output": ["ActionOutput_microsoft_teams_createchannelmessage"],
-            "scopes": ["ChannelMessage.Send"],
-            "usedModels": ["ActionInput_microsoft_teams_createchannelmessage", "ActionOutput_microsoft_teams_createchannelmessage"],
+            "output": [
+                "ActionOutput_microsoft_teams_createchannelmessage"
+            ],
+            "scopes": [
+                "ChannelMessage.Send"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_createchannelmessage",
+                "ActionOutput_microsoft_teams_createchannelmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -89,7 +109,10 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["html", "text"],
+                                        "enum": [
+                                            "html",
+                                            "text"
+                                        ],
                                         "description": "Content type. Example: \"html\""
                                     },
                                     "content": {
@@ -97,7 +120,10 @@
                                         "description": "Message content in HTML or plain text. Example: \"<p>Hello team!</p>\""
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "attachments": {
@@ -127,12 +153,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "contentType"],
+                                    "required": [
+                                        "id",
+                                        "contentType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["teamId", "channelId", "body"],
+                        "required": [
+                            "teamId",
+                            "channelId",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_createchannelmessage": {
@@ -164,13 +197,20 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["html", "text", "markdown"]
+                                        "enum": [
+                                            "html",
+                                            "text",
+                                            "markdown"
+                                        ]
                                     },
                                     "content": {
                                         "type": "string"
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "attachments": {
@@ -194,12 +234,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "contentType"],
+                                    "required": [
+                                        "id",
+                                        "contentType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "createdDateTime", "body"],
+                        "required": [
+                            "id",
+                            "createdDateTime",
+                            "body"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -212,9 +259,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_createchanneltab",
             "name": "create-channel-tab",
-            "output": ["ActionOutput_microsoft_teams_createchanneltab"],
-            "scopes": ["TeamsTab.Create"],
-            "usedModels": ["ActionInput_microsoft_teams_createchanneltab", "ActionOutput_microsoft_teams_createchanneltab"],
+            "output": [
+                "ActionOutput_microsoft_teams_createchanneltab"
+            ],
+            "scopes": [
+                "TeamsTab.Create"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_createchanneltab",
+                "ActionOutput_microsoft_teams_createchanneltab"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -257,12 +311,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["contentUrl"],
+                                "required": [
+                                    "contentUrl"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Configuration properties for the tab"
                             }
                         },
-                        "required": ["teamId", "channelId", "displayName", "teamsAppOdataBind", "configuration"],
+                        "required": [
+                            "teamId",
+                            "channelId",
+                            "displayName",
+                            "teamsAppOdataBind",
+                            "configuration"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_createchanneltab": {
@@ -305,7 +367,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "displayName"],
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -318,9 +383,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_createchannel",
             "name": "create-channel",
-            "output": ["ActionOutput_microsoft_teams_createchannel"],
-            "scopes": ["Channel.Create", "Group.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_teams_createchannel", "ActionOutput_microsoft_teams_createchannel"],
+            "output": [
+                "ActionOutput_microsoft_teams_createchannel"
+            ],
+            "scopes": [
+                "Channel.Create",
+                "Group.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_createchannel",
+                "ActionOutput_microsoft_teams_createchannel"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -342,10 +415,18 @@
                             "membershipType": {
                                 "description": "The type of the channel. Defaults to standard.",
                                 "type": "string",
-                                "enum": ["standard", "private", "shared", "unknownFutureValue"]
+                                "enum": [
+                                    "standard",
+                                    "private",
+                                    "shared",
+                                    "unknownFutureValue"
+                                ]
                             }
                         },
-                        "required": ["teamId", "displayName"],
+                        "required": [
+                            "teamId",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_createchannel": {
@@ -370,7 +451,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "displayName"],
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -383,9 +467,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_createchatmessage",
             "name": "create-chat-message",
-            "output": ["ActionOutput_microsoft_teams_createchatmessage"],
-            "scopes": ["ChatMessage.Send"],
-            "usedModels": ["ActionInput_microsoft_teams_createchatmessage", "ActionOutput_microsoft_teams_createchatmessage"],
+            "output": [
+                "ActionOutput_microsoft_teams_createchatmessage"
+            ],
+            "scopes": [
+                "ChatMessage.Send"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_createchatmessage",
+                "ActionOutput_microsoft_teams_createchatmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -402,19 +493,27 @@
                                     "contentType": {
                                         "description": "Content type of the message body",
                                         "type": "string",
-                                        "enum": ["text", "html"]
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ]
                                     },
                                     "content": {
                                         "type": "string",
                                         "description": "Content of the message body in plain text or HTML format. Example: \"<p>Hello world</p>\""
                                     }
                                 },
-                                "required": ["content"],
+                                "required": [
+                                    "content"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The body of the chat message"
                             }
                         },
-                        "required": ["chatId", "body"],
+                        "required": [
+                            "chatId",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_createchatmessage": {
@@ -436,7 +535,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["contentType", "content"],
+                                "required": [
+                                    "contentType",
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "createdDateTime": {
@@ -467,7 +569,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -480,9 +584,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_createchat",
             "name": "create-chat",
-            "output": ["ActionOutput_microsoft_teams_createchat"],
-            "scopes": ["Chat.Create"],
-            "usedModels": ["ActionInput_microsoft_teams_createchat", "ActionOutput_microsoft_teams_createchat"],
+            "output": [
+                "ActionOutput_microsoft_teams_createchat"
+            ],
+            "scopes": [
+                "Chat.Create"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_createchat",
+                "ActionOutput_microsoft_teams_createchat"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -491,7 +602,10 @@
                         "properties": {
                             "chatType": {
                                 "type": "string",
-                                "enum": ["oneOnOne", "group"],
+                                "enum": [
+                                    "oneOnOne",
+                                    "group"
+                                ],
                                 "description": "The type of chat. oneOnOne for 1:1 chats, group for group chats."
                             },
                             "topic": {
@@ -513,17 +627,25 @@
                                             "type": "array",
                                             "items": {
                                                 "type": "string",
-                                                "enum": ["owner", "guest"]
+                                                "enum": [
+                                                    "owner",
+                                                    "guest"
+                                                ]
                                             }
                                         }
                                     },
-                                    "required": ["userId"],
+                                    "required": [
+                                        "userId"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of members to add to the chat. Must include at least one member for group chats."
                             }
                         },
-                        "required": ["chatType", "members"],
+                        "required": [
+                            "chatType",
+                            "members"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_createchat": {
@@ -535,7 +657,12 @@
                             },
                             "chatType": {
                                 "type": "string",
-                                "enum": ["oneOnOne", "group", "meeting", "unknownFutureValue"]
+                                "enum": [
+                                    "oneOnOne",
+                                    "group",
+                                    "meeting",
+                                    "unknownFutureValue"
+                                ]
                             },
                             "topic": {
                                 "type": "string"
@@ -564,12 +691,17 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "chatType"],
+                        "required": [
+                            "id",
+                            "chatType"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -582,9 +714,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_createteam",
             "name": "create-team",
-            "output": ["ActionOutput_microsoft_teams_createteam"],
-            "scopes": ["Team.Create"],
-            "usedModels": ["ActionInput_microsoft_teams_createteam", "ActionOutput_microsoft_teams_createteam"],
+            "output": [
+                "ActionOutput_microsoft_teams_createteam"
+            ],
+            "scopes": [
+                "Team.Create"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_createteam",
+                "ActionOutput_microsoft_teams_createteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -610,7 +749,11 @@
                             "visibility": {
                                 "description": "Team visibility.",
                                 "type": "string",
-                                "enum": ["public", "private", "hiddenMembership"]
+                                "enum": [
+                                    "public",
+                                    "private",
+                                    "hiddenMembership"
+                                ]
                             },
                             "group_id": {
                                 "description": "Existing group ID to create the team from. If provided, team is created from this group.",
@@ -631,11 +774,16 @@
                                             "type": "array",
                                             "items": {
                                                 "type": "string",
-                                                "enum": ["owner", "member"]
+                                                "enum": [
+                                                    "owner",
+                                                    "member"
+                                                ]
                                             }
                                         }
                                     },
-                                    "required": ["user_id"],
+                                    "required": [
+                                        "user_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -683,16 +831,24 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["content_url"],
+                                                        "required": [
+                                                            "content_url"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["teams_app_id", "display_name", "configuration"],
+                                                "required": [
+                                                    "teams_app_id",
+                                                    "display_name",
+                                                    "configuration"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["display_name"],
+                                    "required": [
+                                        "display_name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -740,7 +896,10 @@
                                     },
                                     "giphy_content_rating": {
                                         "type": "string",
-                                        "enum": ["strict", "moderate"]
+                                        "enum": [
+                                            "strict",
+                                            "moderate"
+                                        ]
                                     },
                                     "allow_stickers_and_memes": {
                                         "type": "boolean"
@@ -794,12 +953,16 @@
                                             "description": "Teams app ID to install. Example: \"com.microsoft.teamspace.tab.vsts\""
                                         }
                                     },
-                                    "required": ["teams_app_id"],
+                                    "required": [
+                                        "teams_app_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["display_name"],
+                        "required": [
+                            "display_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_createteam": {
@@ -819,7 +982,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["notStarted", "inProgress", "succeeded", "failed"],
+                                "enum": [
+                                    "notStarted",
+                                    "inProgress",
+                                    "succeeded",
+                                    "failed"
+                                ],
                                 "description": "Current operation status."
                             },
                             "error": {
@@ -833,11 +1001,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["code", "message"],
+                                "required": [
+                                    "code",
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["operation_id", "operation_url", "status"],
+                        "required": [
+                            "operation_id",
+                            "operation_url",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -850,9 +1025,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_deletechannel",
             "name": "delete-channel",
-            "output": ["ActionOutput_microsoft_teams_deletechannel"],
-            "scopes": ["Channel.Delete.All"],
-            "usedModels": ["ActionInput_microsoft_teams_deletechannel", "ActionOutput_microsoft_teams_deletechannel"],
+            "output": [
+                "ActionOutput_microsoft_teams_deletechannel"
+            ],
+            "scopes": [
+                "Channel.Delete.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_deletechannel",
+                "ActionOutput_microsoft_teams_deletechannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -868,7 +1050,10 @@
                                 "description": "The unique identifier of the channel. Example: \"19:abcdef1234567890@thread.tacv2\""
                             }
                         },
-                        "required": ["teamId", "channelId"],
+                        "required": [
+                            "teamId",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_deletechannel": {
@@ -884,7 +1069,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "teamId", "channelId"],
+                        "required": [
+                            "success",
+                            "teamId",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -897,9 +1086,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_getchannelmessage",
             "name": "get-channel-message",
-            "output": ["ActionOutput_microsoft_teams_getchannelmessage"],
-            "scopes": ["ChannelMessage.Read.All", "Group.Read.All"],
-            "usedModels": ["ActionInput_microsoft_teams_getchannelmessage", "ActionOutput_microsoft_teams_getchannelmessage"],
+            "output": [
+                "ActionOutput_microsoft_teams_getchannelmessage"
+            ],
+            "scopes": [
+                "ChannelMessage.Read.All",
+                "Group.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_getchannelmessage",
+                "ActionOutput_microsoft_teams_getchannelmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -919,7 +1116,11 @@
                                 "description": "The unique identifier of the message. Example: \"1614618259349\""
                             }
                         },
-                        "required": ["teamId", "channelId", "messageId"],
+                        "required": [
+                            "teamId",
+                            "channelId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_getchannelmessage": {
@@ -1010,7 +1211,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1023,9 +1226,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_getchannel",
             "name": "get-channel",
-            "output": ["ActionOutput_microsoft_teams_getchannel"],
-            "scopes": ["Channel.ReadBasic.All"],
-            "usedModels": ["ActionInput_microsoft_teams_getchannel", "ActionOutput_microsoft_teams_getchannel"],
+            "output": [
+                "ActionOutput_microsoft_teams_getchannel"
+            ],
+            "scopes": [
+                "Channel.ReadBasic.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_getchannel",
+                "ActionOutput_microsoft_teams_getchannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1041,7 +1251,10 @@
                                 "description": "The unique identifier of the channel. Example: \"19:561fbdbbfca848a484f0a6f00ce9dbbd@thread.tacv2\""
                             }
                         },
-                        "required": ["teamId", "channelId"],
+                        "required": [
+                            "teamId",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_getchannel": {
@@ -1081,7 +1294,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1094,9 +1309,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_getchatmessage",
             "name": "get-chat-message",
-            "output": ["ActionOutput_microsoft_teams_getchatmessage"],
-            "scopes": ["Chat.Read"],
-            "usedModels": ["ActionInput_microsoft_teams_getchatmessage", "ActionOutput_microsoft_teams_getchatmessage"],
+            "output": [
+                "ActionOutput_microsoft_teams_getchatmessage"
+            ],
+            "scopes": [
+                "Chat.Read"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_getchatmessage",
+                "ActionOutput_microsoft_teams_getchatmessage"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1112,7 +1334,10 @@
                                 "description": "The ID of the chat message to retrieve. Example: \"1659458708524\""
                             }
                         },
-                        "required": ["chatId", "messageId"],
+                        "required": [
+                            "chatId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_getchatmessage": {
@@ -1171,7 +1396,10 @@
                                 "properties": {
                                     "contentType": {
                                         "type": "string",
-                                        "enum": ["text", "html"]
+                                        "enum": [
+                                            "text",
+                                            "html"
+                                        ]
                                     },
                                     "content": {
                                         "type": "string"
@@ -1181,17 +1409,30 @@
                             },
                             "importance": {
                                 "type": "string",
-                                "enum": ["normal", "high", "urgent"]
+                                "enum": [
+                                    "normal",
+                                    "high",
+                                    "urgent"
+                                ]
                             },
                             "replyToId": {
                                 "type": "string"
                             },
                             "messageType": {
                                 "type": "string",
-                                "enum": ["message", "chatEvent", "systemEventMessage", "typing", "unknownFutureValue"]
+                                "enum": [
+                                    "message",
+                                    "chatEvent",
+                                    "systemEventMessage",
+                                    "typing",
+                                    "unknownFutureValue"
+                                ]
                             }
                         },
-                        "required": ["id", "chatId"],
+                        "required": [
+                            "id",
+                            "chatId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1204,9 +1445,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_getchat",
             "name": "get-chat",
-            "output": ["ActionOutput_microsoft_teams_getchat"],
-            "scopes": ["Chat.Read", "Chat.ReadBasic"],
-            "usedModels": ["ActionInput_microsoft_teams_getchat", "ActionOutput_microsoft_teams_getchat"],
+            "output": [
+                "ActionOutput_microsoft_teams_getchat"
+            ],
+            "scopes": [
+                "Chat.Read",
+                "Chat.ReadBasic"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_getchat",
+                "ActionOutput_microsoft_teams_getchat"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1218,7 +1467,9 @@
                                 "description": "The ID of the chat. Example: \"19:xxx@thread.v2\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_getchat": {
@@ -1232,7 +1483,12 @@
                             },
                             "chat_type": {
                                 "type": "string",
-                                "enum": ["oneOnOne", "group", "meeting", "unknownFutureValue"]
+                                "enum": [
+                                    "oneOnOne",
+                                    "group",
+                                    "meeting",
+                                    "unknownFutureValue"
+                                ]
                             },
                             "created_at": {
                                 "type": "string"
@@ -1250,7 +1506,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1263,9 +1521,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_getteam",
             "name": "get-team",
-            "output": ["ActionOutput_microsoft_teams_getteam"],
-            "scopes": ["Team.ReadBasic.All"],
-            "usedModels": ["ActionInput_microsoft_teams_getteam", "ActionOutput_microsoft_teams_getteam"],
+            "output": [
+                "ActionOutput_microsoft_teams_getteam"
+            ],
+            "scopes": [
+                "Team.ReadBasic.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_getteam",
+                "ActionOutput_microsoft_teams_getteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1277,7 +1542,9 @@
                                 "description": "The unique identifier of the team. Example: \"893075dd-2487-4122-925f-022c42e20265\""
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_getteam": {
@@ -1410,7 +1677,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1423,9 +1692,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listchannelmessages",
             "name": "list-channel-messages",
-            "output": ["ActionOutput_microsoft_teams_listchannelmessages"],
-            "scopes": ["ChannelMessage.Read.All", "Group.Read.All"],
-            "usedModels": ["ActionInput_microsoft_teams_listchannelmessages", "ActionOutput_microsoft_teams_listchannelmessages"],
+            "output": [
+                "ActionOutput_microsoft_teams_listchannelmessages"
+            ],
+            "scopes": [
+                "ChannelMessage.Read.All",
+                "Group.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listchannelmessages",
+                "ActionOutput_microsoft_teams_listchannelmessages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1564,7 +1841,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1572,7 +1851,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1585,9 +1866,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listchannelreplies",
             "name": "list-channel-replies",
-            "output": ["ActionOutput_microsoft_teams_listchannelreplies"],
-            "scopes": ["ChannelMessage.Read.All"],
-            "usedModels": ["ActionInput_microsoft_teams_listchannelreplies", "ActionOutput_microsoft_teams_listchannelreplies"],
+            "output": [
+                "ActionOutput_microsoft_teams_listchannelreplies"
+            ],
+            "scopes": [
+                "ChannelMessage.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listchannelreplies",
+                "ActionOutput_microsoft_teams_listchannelreplies"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1611,7 +1899,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId", "channelId", "messageId"],
+                        "required": [
+                            "teamId",
+                            "channelId",
+                            "messageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_listchannelreplies": {
@@ -1626,25 +1918,43 @@
                                             "type": "string"
                                         },
                                         "replyToId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "lastModifiedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "deletedDateTime": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "subject": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "bodyContentType": {
                                             "anyOf": [
                                                 {
                                                     "type": "string",
-                                                    "enum": ["text", "html"]
+                                                    "enum": [
+                                                        "text",
+                                                        "html"
+                                                    ]
                                                 },
                                                 {
                                                     "type": "null"
@@ -1652,34 +1962,62 @@
                                             ]
                                         },
                                         "bodyContent": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "fromUserId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "fromUserDisplayName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "fromApplicationId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "fromApplicationDisplayName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "teamId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "channelId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "messageType": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "importance": {
                                             "anyOf": [
                                                 {
                                                     "type": "string",
-                                                    "enum": ["normal", "high", "urgent"]
+                                                    "enum": [
+                                                        "normal",
+                                                        "high",
+                                                        "urgent"
+                                                    ]
                                                 },
                                                 {
                                                     "type": "null"
@@ -1694,16 +2032,28 @@
                                                         "type": "object",
                                                         "properties": {
                                                             "reactionType": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "userId": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "userDisplayName": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             },
                                                             "createdDateTime": {
-                                                                "type": ["string", "null"]
+                                                                "type": [
+                                                                    "string",
+                                                                    "null"
+                                                                ]
                                                             }
                                                         },
                                                         "additionalProperties": false
@@ -1715,7 +2065,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1724,7 +2076,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1737,9 +2091,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listchanneltabs",
             "name": "list-channel-tabs",
-            "output": ["ActionOutput_microsoft_teams_listchanneltabs"],
-            "scopes": ["TeamsTab.Read.All"],
-            "usedModels": ["ActionInput_microsoft_teams_listchanneltabs", "ActionOutput_microsoft_teams_listchanneltabs"],
+            "output": [
+                "ActionOutput_microsoft_teams_listchanneltabs"
+            ],
+            "scopes": [
+                "TeamsTab.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listchanneltabs",
+                "ActionOutput_microsoft_teams_listchanneltabs"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1759,7 +2120,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId", "channelId"],
+                        "required": [
+                            "teamId",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_listchanneltabs": {
@@ -1782,16 +2146,28 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "entityId": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "contentUrl": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "websiteUrl": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "removeUrl": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -1817,14 +2193,18 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id"],
+                                            "required": [
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "webUrl": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1832,7 +2212,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1845,9 +2227,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listchannels",
             "name": "list-channels",
-            "output": ["ActionOutput_microsoft_teams_listchannels"],
-            "scopes": ["Channel.ReadBasic.All"],
-            "usedModels": ["ActionInput_microsoft_teams_listchannels", "ActionOutput_microsoft_teams_listchannels"],
+            "output": [
+                "ActionOutput_microsoft_teams_listchannels"
+            ],
+            "scopes": [
+                "Channel.ReadBasic.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listchannels",
+                "ActionOutput_microsoft_teams_listchannels"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1863,7 +2252,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_listchannels": {
@@ -1908,7 +2299,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1916,7 +2309,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1929,9 +2324,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listchatmembers",
             "name": "list-chat-members",
-            "output": ["ActionOutput_microsoft_teams_listchatmembers"],
-            "scopes": ["Chat.ReadBasic"],
-            "usedModels": ["ActionInput_microsoft_teams_listchatmembers", "ActionOutput_microsoft_teams_listchatmembers"],
+            "output": [
+                "ActionOutput_microsoft_teams_listchatmembers"
+            ],
+            "scopes": [
+                "Chat.ReadBasic"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listchatmembers",
+                "ActionOutput_microsoft_teams_listchatmembers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1947,7 +2349,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["chat_id"],
+                        "required": [
+                            "chat_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_listchatmembers": {
@@ -1990,7 +2394,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2003,9 +2409,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listchatmessages",
             "name": "list-chat-messages",
-            "output": ["ActionOutput_microsoft_teams_listchatmessages"],
-            "scopes": ["Chat.Read"],
-            "usedModels": ["ActionInput_microsoft_teams_listchatmessages", "ActionOutput_microsoft_teams_listchatmessages"],
+            "output": [
+                "ActionOutput_microsoft_teams_listchatmessages"
+            ],
+            "scopes": [
+                "Chat.Read"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listchatmessages",
+                "ActionOutput_microsoft_teams_listchatmessages"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2027,7 +2440,9 @@
                                 "maximum": 50
                             }
                         },
-                        "required": ["chatId"],
+                        "required": [
+                            "chatId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_listchatmessages": {
@@ -2081,7 +2496,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2090,7 +2507,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2103,9 +2522,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listchats",
             "name": "list-chats",
-            "output": ["ActionOutput_microsoft_teams_listchats"],
-            "scopes": ["Chat.ReadBasic", "Chat.Read"],
-            "usedModels": ["ActionInput_microsoft_teams_listchats", "ActionOutput_microsoft_teams_listchats"],
+            "output": [
+                "ActionOutput_microsoft_teams_listchats"
+            ],
+            "scopes": [
+                "Chat.ReadBasic",
+                "Chat.Read"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listchats",
+                "ActionOutput_microsoft_teams_listchats"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2135,7 +2562,10 @@
                                             "type": "string"
                                         },
                                         "topic": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "createdDateTime": {
                                             "type": "string"
@@ -2147,13 +2577,19 @@
                                             "type": "string"
                                         },
                                         "webUrl": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "isHiddenForAllMembers": {
                                             "type": "boolean"
                                         },
                                         "tenantId": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "viewpoint": {
                                             "type": "object",
@@ -2168,7 +2604,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2176,7 +2614,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2189,9 +2629,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listjoinedteams",
             "name": "list-joined-teams",
-            "output": ["ActionOutput_microsoft_teams_listjoinedteams"],
-            "scopes": ["Team.ReadBasic.All", "TeamSettings.Read.All"],
-            "usedModels": ["ActionInput_microsoft_teams_listjoinedteams", "ActionOutput_microsoft_teams_listjoinedteams"],
+            "output": [
+                "ActionOutput_microsoft_teams_listjoinedteams"
+            ],
+            "scopes": [
+                "Team.ReadBasic.All",
+                "TeamSettings.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listjoinedteams",
+                "ActionOutput_microsoft_teams_listjoinedteams"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2234,7 +2682,9 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2243,7 +2693,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2256,9 +2708,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_listteammembers",
             "name": "list-team-members",
-            "output": ["ActionOutput_microsoft_teams_listteammembers"],
-            "scopes": ["TeamMember.Read.All"],
-            "usedModels": ["ActionInput_microsoft_teams_listteammembers", "ActionOutput_microsoft_teams_listteammembers"],
+            "output": [
+                "ActionOutput_microsoft_teams_listteammembers"
+            ],
+            "scopes": [
+                "TeamMember.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_listteammembers",
+                "ActionOutput_microsoft_teams_listteammembers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2274,7 +2733,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_listteammembers": {
@@ -2307,7 +2768,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2315,7 +2778,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2328,9 +2793,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_removeteammember",
             "name": "remove-team-member",
-            "output": ["ActionOutput_microsoft_teams_removeteammember"],
-            "scopes": ["TeamMember.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_teams_removeteammember", "ActionOutput_microsoft_teams_removeteammember"],
+            "output": [
+                "ActionOutput_microsoft_teams_removeteammember"
+            ],
+            "scopes": [
+                "TeamMember.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_removeteammember",
+                "ActionOutput_microsoft_teams_removeteammember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2346,7 +2818,10 @@
                                 "description": "The unique identifier of the team membership. Example: \"12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["teamId", "membershipId"],
+                        "required": [
+                            "teamId",
+                            "membershipId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_removeteammember": {
@@ -2362,7 +2837,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "teamId", "membershipId"],
+                        "required": [
+                            "success",
+                            "teamId",
+                            "membershipId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2375,9 +2854,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_replytochannelmessage",
             "name": "reply-to-channel-message",
-            "output": ["ActionOutput_microsoft_teams_replytochannelmessage"],
-            "scopes": ["ChannelMessage.Send"],
-            "usedModels": ["ActionInput_microsoft_teams_replytochannelmessage", "ActionOutput_microsoft_teams_replytochannelmessage"],
+            "output": [
+                "ActionOutput_microsoft_teams_replytochannelmessage"
+            ],
+            "scopes": [
+                "ChannelMessage.Send"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_replytochannelmessage",
+                "ActionOutput_microsoft_teams_replytochannelmessage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2403,10 +2889,18 @@
                             "bodyContentType": {
                                 "description": "Content type of the body. Defaults to \"html\".",
                                 "type": "string",
-                                "enum": ["text", "html"]
+                                "enum": [
+                                    "text",
+                                    "html"
+                                ]
                             }
                         },
-                        "required": ["teamId", "channelId", "messageId", "bodyContent"],
+                        "required": [
+                            "teamId",
+                            "channelId",
+                            "messageId",
+                            "bodyContent"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_replytochannelmessage": {
@@ -2431,7 +2925,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2444,9 +2940,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_teams_updatechannel",
             "name": "update-channel",
-            "output": ["ActionOutput_microsoft_teams_updatechannel"],
-            "scopes": ["ChannelSettings.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_teams_updatechannel", "ActionOutput_microsoft_teams_updatechannel"],
+            "output": [
+                "ActionOutput_microsoft_teams_updatechannel"
+            ],
+            "scopes": [
+                "ChannelSettings.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_teams_updatechannel",
+                "ActionOutput_microsoft_teams_updatechannel"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2470,7 +2973,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId", "channelId"],
+                        "required": [
+                            "teamId",
+                            "channelId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_teams_updatechannel": {
@@ -2504,7 +3010,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2525,12 +3033,18 @@
             ],
             "input": null,
             "name": "channel-message-replies",
-            "output": ["ChannelMessageReply"],
+            "output": [
+                "ChannelMessageReply"
+            ],
             "runs": "every hour",
-            "scopes": ["ChannelMessage.Read.All"],
+            "scopes": [
+                "ChannelMessage.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChannelMessageReply"],
+            "usedModels": [
+                "ChannelMessageReply"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2581,12 +3095,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "parentMessageId"],
+                        "required": [
+                            "id",
+                            "parentMessageId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2600,12 +3119,19 @@
             ],
             "input": "SyncMetadata_microsoft_teams_channelmessages",
             "name": "channel-messages",
-            "output": ["ChannelMessage"],
+            "output": [
+                "ChannelMessage"
+            ],
             "runs": "every hour",
-            "scopes": ["ChannelMessage.Read.All"],
+            "scopes": [
+                "ChannelMessage.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChannelMessage", "SyncMetadata_microsoft_teams_channelmessages"],
+            "usedModels": [
+                "ChannelMessage",
+                "SyncMetadata_microsoft_teams_channelmessages"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2668,7 +3194,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "teamId", "channelId", "createdDateTime", "lastModifiedDateTime"],
+                        "required": [
+                            "id",
+                            "teamId",
+                            "channelId",
+                            "createdDateTime",
+                            "lastModifiedDateTime"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_microsoft_teams_channelmessages": {
@@ -2689,7 +3221,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["teamId", "channelIds"],
+                                    "required": [
+                                        "teamId",
+                                        "channelIds"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -2698,7 +3233,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2712,12 +3249,18 @@
             ],
             "input": null,
             "name": "chat-members",
-            "output": ["ChatMember"],
+            "output": [
+                "ChatMember"
+            ],
             "runs": "every hour",
-            "scopes": ["Chat.ReadBasic"],
+            "scopes": [
+                "Chat.ReadBasic"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChatMember"],
+            "usedModels": [
+                "ChatMember"
+            ],
             "version": "1.2.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2744,12 +3287,17 @@
                                 }
                             }
                         },
-                        "required": ["id", "chatId"],
+                        "required": [
+                            "id",
+                            "chatId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2763,12 +3311,18 @@
             ],
             "input": null,
             "name": "chat-messages",
-            "output": ["ChatMessage"],
+            "output": [
+                "ChatMessage"
+            ],
             "runs": "every hour",
-            "scopes": ["Chat.Read"],
+            "scopes": [
+                "Chat.Read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ChatMessage"],
+            "usedModels": [
+                "ChatMessage"
+            ],
             "version": "1.2.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2822,12 +3376,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2841,12 +3399,18 @@
             ],
             "input": null,
             "name": "chats",
-            "output": ["Chat"],
+            "output": [
+                "Chat"
+            ],
             "runs": "every hour",
-            "scopes": ["Chat.ReadBasic"],
+            "scopes": [
+                "Chat.ReadBasic"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Chat"],
+            "usedModels": [
+                "Chat"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2905,17 +3469,26 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "createdDateTime", "lastUpdatedDateTime", "chatType"],
+                        "required": [
+                            "id",
+                            "createdDateTime",
+                            "lastUpdatedDateTime",
+                            "chatType"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2929,12 +3502,18 @@
             ],
             "input": null,
             "name": "joined-teams",
-            "output": ["JoinedTeam"],
+            "output": [
+                "JoinedTeam"
+            ],
             "runs": "every hour",
-            "scopes": ["Team.ReadBasic.All"],
+            "scopes": [
+                "Team.ReadBasic.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["JoinedTeam"],
+            "usedModels": [
+                "JoinedTeam"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2958,12 +3537,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2977,12 +3560,18 @@
             ],
             "input": null,
             "name": "org-units",
-            "output": ["OrgUnit"],
+            "output": [
+                "OrgUnit"
+            ],
             "runs": "every hour",
-            "scopes": ["GroupMember.Read.All"],
+            "scopes": [
+                "GroupMember.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["OrgUnit"],
+            "usedModels": [
+                "OrgUnit"
+            ],
             "version": "3.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3033,12 +3622,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3052,12 +3645,19 @@
             ],
             "input": null,
             "name": "team-channels",
-            "output": ["Channel"],
+            "output": [
+                "Channel"
+            ],
             "runs": "every hour",
-            "scopes": ["Channel.ReadBasic.All", "Team.ReadBasic.All"],
+            "scopes": [
+                "Channel.ReadBasic.All",
+                "Team.ReadBasic.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Channel"],
+            "usedModels": [
+                "Channel"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3093,12 +3693,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "teamId"],
+                        "required": [
+                            "id",
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3112,12 +3717,18 @@
             ],
             "input": null,
             "name": "team-members",
-            "output": ["TeamMember"],
+            "output": [
+                "TeamMember"
+            ],
             "runs": "every hour",
-            "scopes": ["TeamMember.Read.All"],
+            "scopes": [
+                "TeamMember.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TeamMember"],
+            "usedModels": [
+                "TeamMember"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3147,12 +3758,19 @@
                                 }
                             }
                         },
-                        "required": ["id", "teamId", "userId", "roles"],
+                        "required": [
+                            "id",
+                            "teamId",
+                            "userId",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3166,12 +3784,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["User.Read.All"],
+            "scopes": [
+                "User.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3228,12 +3852,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "userPrincipalName"],
+                        "required": [
+                            "id",
+                            "userPrincipalName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

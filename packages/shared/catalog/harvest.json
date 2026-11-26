@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_harvest_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_harvest_createuser"],
-            "scopes": ["administrator", "manager"],
-            "usedModels": ["ActionInput_harvest_createuser", "ActionOutput_harvest_createuser"],
+            "output": [
+                "ActionOutput_harvest_createuser"
+            ],
+            "scopes": [
+                "administrator",
+                "manager"
+            ],
+            "usedModels": [
+                "ActionInput_harvest_createuser",
+                "ActionOutput_harvest_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -99,7 +107,12 @@
                                 ]
                             }
                         },
-                        "required": ["first_name", "last_name", "email", "roles"],
+                        "required": [
+                            "first_name",
+                            "last_name",
+                            "email",
+                            "roles"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_harvest_createuser": {
@@ -118,7 +131,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -131,9 +149,16 @@
             "endpoint": null,
             "input": "ActionInput_harvest_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_harvest_deleteuser"],
-            "scopes": ["administrator"],
-            "usedModels": ["ActionInput_harvest_deleteuser", "ActionOutput_harvest_deleteuser"],
+            "output": [
+                "ActionOutput_harvest_deleteuser"
+            ],
+            "scopes": [
+                "administrator"
+            ],
+            "usedModels": [
+                "ActionInput_harvest_deleteuser",
+                "ActionOutput_harvest_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -144,7 +169,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_harvest_deleteuser": {
@@ -154,7 +181,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -176,12 +205,20 @@
             ],
             "input": "SyncMetadata_harvest_users",
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
-            "scopes": ["administrator", "manager"],
+            "scopes": [
+                "administrator",
+                "manager"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User", "SyncMetadata_harvest_users"],
+            "usedModels": [
+                "User",
+                "SyncMetadata_harvest_users"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -202,7 +239,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email", "firstName", "lastName"],
+                        "required": [
+                            "id",
+                            "email",
+                            "firstName",
+                            "lastName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_harvest_users": {
@@ -212,7 +254,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

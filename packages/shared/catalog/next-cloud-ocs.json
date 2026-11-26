@@ -14,12 +14,17 @@
             ],
             "input": "SyncMetadata_next_cloud_ocs_users",
             "name": "users",
-            "output": ["NextCloudUser"],
+            "output": [
+                "NextCloudUser"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["NextCloudUser", "SyncMetadata_next_cloud_ocs_users"],
+            "usedModels": [
+                "NextCloudUser",
+                "SyncMetadata_next_cloud_ocs_users"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -64,7 +69,13 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["free", "used", "total", "relative", "quota"],
+                                "required": [
+                                    "free",
+                                    "used",
+                                    "total",
+                                    "relative",
+                                    "quota"
+                                ],
                                 "additionalProperties": false
                             },
                             "manager": {
@@ -185,7 +196,10 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["setDisplayName", "setPassword"],
+                                "required": [
+                                    "setDisplayName",
+                                    "setPassword"
+                                ],
                                 "additionalProperties": false
                             }
                         },

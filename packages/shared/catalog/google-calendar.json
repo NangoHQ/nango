@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_addattendee",
             "name": "add-attendee",
-            "output": ["ActionOutput_google_calendar_addattendee"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_addattendee", "ActionOutput_google_calendar_addattendee"],
+            "output": [
+                "ActionOutput_google_calendar_addattendee"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_addattendee",
+                "ActionOutput_google_calendar_addattendee"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -39,7 +46,12 @@
                             "responseStatus": {
                                 "description": "The attendee's response status. Defaults to \"needsAction\" for new attendees.",
                                 "type": "string",
-                                "enum": ["needsAction", "declined", "tentative", "accepted"]
+                                "enum": [
+                                    "needsAction",
+                                    "declined",
+                                    "tentative",
+                                    "accepted"
+                                ]
                             },
                             "comment": {
                                 "description": "The attendee's response comment. Optional.",
@@ -58,10 +70,18 @@
                             "sendUpdates": {
                                 "description": "Guests who should receive notifications about the event update. Defaults to API behavior if omitted.",
                                 "type": "string",
-                                "enum": ["all", "externalOnly", "none"]
+                                "enum": [
+                                    "all",
+                                    "externalOnly",
+                                    "none"
+                                ]
                             }
                         },
-                        "required": ["calendarId", "eventId", "email"],
+                        "required": [
+                            "calendarId",
+                            "eventId",
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to add an attendee to a Google Calendar event"
                     },
@@ -108,13 +128,18 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The full attendee list after adding the new attendee."
                             }
                         },
-                        "required": ["eventId", "attendees"],
+                        "required": [
+                            "eventId",
+                            "attendees"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing the updated event ID and attendee list"
                     }
@@ -128,9 +153,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_clearcalendar",
             "name": "clear-calendar",
-            "output": ["ActionOutput_google_calendar_clearcalendar"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_clearcalendar", "ActionOutput_google_calendar_clearcalendar"],
+            "output": [
+                "ActionOutput_google_calendar_clearcalendar"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_clearcalendar",
+                "ActionOutput_google_calendar_clearcalendar"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -158,7 +190,10 @@
                                 "description": "The calendar ID that was cleared"
                             }
                         },
-                        "required": ["success", "calendarId"],
+                        "required": [
+                            "success",
+                            "calendarId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -171,9 +206,17 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_createaclrule",
             "name": "create-acl-rule",
-            "output": ["ActionOutput_google_calendar_createaclrule"],
-            "scopes": ["https://www.googleapis.com/auth/calendar", "https://www.googleapis.com/auth/calendar.acls"],
-            "usedModels": ["ActionInput_google_calendar_createaclrule", "ActionOutput_google_calendar_createaclrule"],
+            "output": [
+                "ActionOutput_google_calendar_createaclrule"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar",
+                "https://www.googleapis.com/auth/calendar.acls"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_createaclrule",
+                "ActionOutput_google_calendar_createaclrule"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -186,7 +229,14 @@
                             },
                             "role": {
                                 "type": "string",
-                                "enum": ["none", "freeBusyReader", "reader", "writerWithoutPrivateAccess", "writer", "owner"],
+                                "enum": [
+                                    "none",
+                                    "freeBusyReader",
+                                    "reader",
+                                    "writerWithoutPrivateAccess",
+                                    "writer",
+                                    "owner"
+                                ],
                                 "description": "The role assigned to the scope."
                             },
                             "scope": {
@@ -194,7 +244,12 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["default", "user", "group", "domain"],
+                                        "enum": [
+                                            "default",
+                                            "user",
+                                            "group",
+                                            "domain"
+                                        ],
                                         "description": "The type of the scope."
                                     },
                                     "value": {
@@ -202,7 +257,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The extent of calendar access granted by this ACL rule."
                             },
@@ -211,7 +268,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["calendarId", "role", "scope"],
+                        "required": [
+                            "calendarId",
+                            "role",
+                            "scope"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to create an access control rule for a calendar."
                     },
@@ -246,12 +307,20 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The extent of calendar access granted by this ACL rule."
                             }
                         },
-                        "required": ["id", "etag", "kind", "role", "scope"],
+                        "required": [
+                            "id",
+                            "etag",
+                            "kind",
+                            "role",
+                            "scope"
+                        ],
                         "additionalProperties": false,
                         "description": "An access control rule for a calendar."
                     }
@@ -265,9 +334,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_createalldayevent",
             "name": "create-all-day-event",
-            "output": ["ActionOutput_google_calendar_createalldayevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_createalldayevent", "ActionOutput_google_calendar_createalldayevent"],
+            "output": [
+                "ActionOutput_google_calendar_createalldayevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_createalldayevent",
+                "ActionOutput_google_calendar_createalldayevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -299,7 +375,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["startDate", "endDate"],
+                        "required": [
+                            "startDate",
+                            "endDate"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to create an all-day calendar event."
                     },
@@ -331,7 +410,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Created all-day calendar event."
                     }
@@ -345,9 +426,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_createcalendar",
             "name": "create-calendar",
-            "output": ["ActionOutput_google_calendar_createcalendar"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_createcalendar", "ActionOutput_google_calendar_createcalendar"],
+            "output": [
+                "ActionOutput_google_calendar_createcalendar"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_createcalendar",
+                "ActionOutput_google_calendar_createcalendar"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -371,7 +459,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["summary"],
+                        "required": [
+                            "summary"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for creating a new Google Calendar."
                     },
@@ -399,7 +489,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "summary"],
+                        "required": [
+                            "id",
+                            "summary"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of the created Google Calendar."
                     }
@@ -413,9 +506,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_createevent",
             "name": "create-event",
-            "output": ["ActionOutput_google_calendar_createevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_createevent", "ActionOutput_google_calendar_createevent"],
+            "output": [
+                "ActionOutput_google_calendar_createevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_createevent",
+                "ActionOutput_google_calendar_createevent"
+            ],
             "version": "2.0.3",
             "json_schema": {
                 "definitions": {
@@ -495,10 +595,17 @@
                                         "responseStatus": {
                                             "description": "Response status",
                                             "type": "string",
-                                            "enum": ["needsAction", "declined", "tentative", "accepted"]
+                                            "enum": [
+                                                "needsAction",
+                                                "declined",
+                                                "tentative",
+                                                "accepted"
+                                            ]
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -518,7 +625,10 @@
                                             "properties": {
                                                 "method": {
                                                     "type": "string",
-                                                    "enum": ["email", "popup"],
+                                                    "enum": [
+                                                        "email",
+                                                        "popup"
+                                                    ],
                                                     "description": "Method of reminder"
                                                 },
                                                 "minutes": {
@@ -526,7 +636,10 @@
                                                     "description": "Minutes before the event to trigger the reminder"
                                                 }
                                             },
-                                            "required": ["method", "minutes"],
+                                            "required": [
+                                                "method",
+                                                "minutes"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -541,7 +654,11 @@
                                 }
                             }
                         },
-                        "required": ["calendarId", "start", "end"],
+                        "required": [
+                            "calendarId",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for creating a Google Calendar event"
                     },
@@ -638,7 +755,14 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "status", "htmlLink", "created", "updated", "iCalUID"],
+                        "required": [
+                            "id",
+                            "status",
+                            "htmlLink",
+                            "created",
+                            "updated",
+                            "iCalUID"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a created Google Calendar event"
                     }
@@ -652,9 +776,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_createrecurringevent",
             "name": "create-recurring-event",
-            "output": ["ActionOutput_google_calendar_createrecurringevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_createrecurringevent", "ActionOutput_google_calendar_createrecurringevent"],
+            "output": [
+                "ActionOutput_google_calendar_createrecurringevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_createrecurringevent",
+                "ActionOutput_google_calendar_createrecurringevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -694,7 +825,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["summary", "start", "end", "rrule"],
+                        "required": [
+                            "summary",
+                            "start",
+                            "end",
+                            "rrule"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to create a recurring Google Calendar event"
                     },
@@ -733,7 +869,14 @@
                                 "description": "Status of the event such as confirmed or tentative."
                             }
                         },
-                        "required": ["id", "htmlLink", "summary", "start", "end", "status"],
+                        "required": [
+                            "id",
+                            "htmlLink",
+                            "summary",
+                            "start",
+                            "end",
+                            "status"
+                        ],
                         "additionalProperties": false,
                         "description": "The created recurring Google Calendar event"
                     }
@@ -747,9 +890,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_deleteaclrule",
             "name": "delete-acl-rule",
-            "output": ["ActionOutput_google_calendar_deleteaclrule"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_deleteaclrule", "ActionOutput_google_calendar_deleteaclrule"],
+            "output": [
+                "ActionOutput_google_calendar_deleteaclrule"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_deleteaclrule",
+                "ActionOutput_google_calendar_deleteaclrule"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -765,7 +915,10 @@
                                 "description": "ACL rule identifier."
                             }
                         },
-                        "required": ["calendarId", "ruleId"],
+                        "required": [
+                            "calendarId",
+                            "ruleId"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for deleting an access control rule."
                     },
@@ -785,7 +938,11 @@
                                 "description": "The ACL rule ID that was deleted."
                             }
                         },
-                        "required": ["success", "calendarId", "ruleId"],
+                        "required": [
+                            "success",
+                            "calendarId",
+                            "ruleId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -798,9 +955,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_deletecalendar",
             "name": "delete-calendar",
-            "output": ["ActionOutput_google_calendar_deletecalendar"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_deletecalendar", "ActionOutput_google_calendar_deletecalendar"],
+            "output": [
+                "ActionOutput_google_calendar_deletecalendar"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_deletecalendar",
+                "ActionOutput_google_calendar_deletecalendar"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -812,7 +976,9 @@
                                 "description": "The ID of the calendar to delete."
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for deleting a Google Calendar."
                     },
@@ -826,7 +992,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "calendarId"],
+                        "required": [
+                            "success",
+                            "calendarId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -839,9 +1008,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_deleteevent",
             "name": "delete-event",
-            "output": ["ActionOutput_google_calendar_deleteevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_deleteevent", "ActionOutput_google_calendar_deleteevent"],
+            "output": [
+                "ActionOutput_google_calendar_deleteevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_deleteevent",
+                "ActionOutput_google_calendar_deleteevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -857,7 +1033,10 @@
                                 "description": "Event ID to delete. Example: \"m1s4a7vgu68bbliv0ganj6fhio\""
                             }
                         },
-                        "required": ["calendarId", "eventId"],
+                        "required": [
+                            "calendarId",
+                            "eventId"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters for deleting a calendar event"
                     },
@@ -871,7 +1050,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "message"],
+                        "required": [
+                            "success",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -884,9 +1066,17 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_findfreeslots",
             "name": "find-free-slots",
-            "output": ["ActionOutput_google_calendar_findfreeslots"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly", "https://www.googleapis.com/auth/calendar.freebusy"],
-            "usedModels": ["ActionInput_google_calendar_findfreeslots", "ActionOutput_google_calendar_findfreeslots"],
+            "output": [
+                "ActionOutput_google_calendar_findfreeslots"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly",
+                "https://www.googleapis.com/auth/calendar.freebusy"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_findfreeslots",
+                "ActionOutput_google_calendar_findfreeslots"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -919,7 +1109,12 @@
                                 "description": "Minimum duration in minutes for a free slot to be returned. Example: 30"
                             }
                         },
-                        "required": ["calendarIds", "timeMin", "timeMax", "durationMinutes"],
+                        "required": [
+                            "calendarIds",
+                            "timeMin",
+                            "timeMax",
+                            "durationMinutes"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for finding free time slots across calendars."
                     },
@@ -944,7 +1139,11 @@
                                             "description": "Duration of the free slot in minutes"
                                         }
                                     },
-                                    "required": ["start", "end", "durationMinutes"],
+                                    "required": [
+                                        "start",
+                                        "end",
+                                        "durationMinutes"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of free time slots meeting the minimum duration"
@@ -954,7 +1153,10 @@
                                 "description": "Number of calendars checked"
                             }
                         },
-                        "required": ["freeSlots", "calendarsChecked"],
+                        "required": [
+                            "freeSlots",
+                            "calendarsChecked"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -967,9 +1169,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_getaclrule",
             "name": "get-acl-rule",
-            "output": ["ActionOutput_google_calendar_getaclrule"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_getaclrule", "ActionOutput_google_calendar_getaclrule"],
+            "output": [
+                "ActionOutput_google_calendar_getaclrule"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_getaclrule",
+                "ActionOutput_google_calendar_getaclrule"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -985,7 +1194,10 @@
                                 "description": "ACL rule identifier."
                             }
                         },
-                        "required": ["calendarId", "ruleId"],
+                        "required": [
+                            "calendarId",
+                            "ruleId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to retrieve a single access control rule from a calendar."
                     },
@@ -1013,7 +1225,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "kind": {
@@ -1025,7 +1239,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "role"],
+                        "required": [
+                            "id",
+                            "role"
+                        ],
                         "additionalProperties": false,
                         "description": "A single access control rule for a calendar."
                     }
@@ -1039,9 +1256,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_getcalendarlistentry",
             "name": "get-calendar-list-entry",
-            "output": ["ActionOutput_google_calendar_getcalendarlistentry"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_getcalendarlistentry", "ActionOutput_google_calendar_getcalendarlistentry"],
+            "output": [
+                "ActionOutput_google_calendar_getcalendarlistentry"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_getcalendarlistentry",
+                "ActionOutput_google_calendar_getcalendarlistentry"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1053,7 +1277,9 @@
                                 "description": "Calendar identifier. To retrieve calendar IDs call the calendarList.list method. Use \"primary\" for the primary calendar of the authenticated user."
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to retrieve a calendar list entry."
                     },
@@ -1117,7 +1343,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A calendar list entry with access role and colors."
                     }
@@ -1131,9 +1359,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_getcalendar",
             "name": "get-calendar",
-            "output": ["ActionOutput_google_calendar_getcalendar"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_getcalendar", "ActionOutput_google_calendar_getcalendar"],
+            "output": [
+                "ActionOutput_google_calendar_getcalendar"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_getcalendar",
+                "ActionOutput_google_calendar_getcalendar"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1145,7 +1380,9 @@
                                 "description": "Calendar identifier. Use \"primary\" for the primary calendar of the logged-in user."
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for getting a calendar by ID."
                     },
@@ -1232,7 +1469,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Calendar metadata returned by the Google Calendar API."
                     }
@@ -1246,9 +1485,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_getcolors",
             "name": "get-colors",
-            "output": ["ActionOutput_google_calendar_getcolors"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_getcolors", "ActionOutput_google_calendar_getcolors"],
+            "output": [
+                "ActionOutput_google_calendar_getcolors"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_getcolors",
+                "ActionOutput_google_calendar_getcolors"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1287,7 +1533,10 @@
                                             "description": "The foreground color that can be used to write on top of the background color."
                                         }
                                     },
-                                    "required": ["background", "foreground"],
+                                    "required": [
+                                        "background",
+                                        "foreground"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1309,7 +1558,10 @@
                                             "description": "The foreground color that can be used to write on top of the background color."
                                         }
                                     },
-                                    "required": ["background", "foreground"],
+                                    "required": [
+                                        "background",
+                                        "foreground"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -1327,9 +1579,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_getevent",
             "name": "get-event",
-            "output": ["ActionOutput_google_calendar_getevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_getevent", "ActionOutput_google_calendar_getevent"],
+            "output": [
+                "ActionOutput_google_calendar_getevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_getevent",
+                "ActionOutput_google_calendar_getevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1345,7 +1604,9 @@
                                 "description": "Event identifier. Example: \"abc123def456ghi\""
                             }
                         },
-                        "required": ["eventId"],
+                        "required": [
+                            "eventId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to retrieve a Google Calendar event by ID."
                     },
@@ -1598,7 +1859,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "updated"],
+                        "required": [
+                            "id",
+                            "updated"
+                        ],
                         "additionalProperties": false,
                         "description": "A Google Calendar event."
                     }
@@ -1612,9 +1876,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_getsetting",
             "name": "get-setting",
-            "output": ["ActionOutput_google_calendar_getsetting"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.settings.readonly"],
-            "usedModels": ["ActionInput_google_calendar_getsetting", "ActionOutput_google_calendar_getsetting"],
+            "output": [
+                "ActionOutput_google_calendar_getsetting"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.settings.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_getsetting",
+                "ActionOutput_google_calendar_getsetting"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1626,7 +1897,9 @@
                                 "description": "The ID of the user setting to retrieve. Example: \"timezone\""
                             }
                         },
-                        "required": ["settingId"],
+                        "required": [
+                            "settingId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Google Calendar user setting"
                     },
@@ -1650,7 +1923,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "value"],
+                        "required": [
+                            "id",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Google Calendar user setting"
                     }
@@ -1664,9 +1940,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_importevent",
             "name": "import-event",
-            "output": ["ActionOutput_google_calendar_importevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_importevent", "ActionOutput_google_calendar_importevent"],
+            "output": [
+                "ActionOutput_google_calendar_importevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_importevent",
+                "ActionOutput_google_calendar_importevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1750,7 +2033,12 @@
                                         "responseStatus": {
                                             "description": "The attendee response status.",
                                             "type": "string",
-                                            "enum": ["needsAction", "declined", "tentative", "accepted"]
+                                            "enum": [
+                                                "needsAction",
+                                                "declined",
+                                                "tentative",
+                                                "accepted"
+                                            ]
                                         },
                                         "optional": {
                                             "description": "Whether this is an optional attendee.",
@@ -1769,7 +2057,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1801,7 +2091,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["iCalUID", "start", "end"],
+                        "required": [
+                            "iCalUID",
+                            "start",
+                            "end"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for importing an event into a Google Calendar."
                     },
@@ -1891,7 +2185,12 @@
                                         "responseStatus": {
                                             "description": "The attendee response status.",
                                             "type": "string",
-                                            "enum": ["needsAction", "declined", "tentative", "accepted"]
+                                            "enum": [
+                                                "needsAction",
+                                                "declined",
+                                                "tentative",
+                                                "accepted"
+                                            ]
                                         },
                                         "optional": {
                                             "description": "Whether this is an optional attendee.",
@@ -1931,7 +2230,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "iCalUID"],
+                        "required": [
+                            "id",
+                            "iCalUID"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of the imported Google Calendar event."
                     }
@@ -1945,9 +2247,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_insertcalendartolist",
             "name": "insert-calendar-to-list",
-            "output": ["ActionOutput_google_calendar_insertcalendartolist"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_insertcalendartolist", "ActionOutput_google_calendar_insertcalendartolist"],
+            "output": [
+                "ActionOutput_google_calendar_insertcalendartolist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_insertcalendartolist",
+                "ActionOutput_google_calendar_insertcalendartolist"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2001,7 +2310,10 @@
                                             "description": "Number of minutes before the start of the event when the reminder should trigger. Valid values are between 0 and 40320."
                                         }
                                     },
-                                    "required": ["method", "minutes"],
+                                    "required": [
+                                        "method",
+                                        "minutes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2024,7 +2336,10 @@
                                                     "description": "The method used to deliver the notification. Possible value: \"email\"."
                                                 }
                                             },
-                                            "required": ["type", "method"],
+                                            "required": [
+                                                "type",
+                                                "method"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -2032,7 +2347,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for inserting an existing calendar into the user's calendar list."
                     },
@@ -2118,7 +2435,10 @@
                                             "description": "Number of minutes before the start of the event when the reminder should trigger. Valid values are between 0 and 40320."
                                         }
                                     },
-                                    "required": ["method", "minutes"],
+                                    "required": [
+                                        "method",
+                                        "minutes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2141,7 +2461,10 @@
                                                     "description": "The method used to deliver the notification. Possible value: \"email\"."
                                                 }
                                             },
-                                            "required": ["type", "method"],
+                                            "required": [
+                                                "type",
+                                                "method"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -2163,7 +2486,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A calendar list entry representing the inserted calendar."
                     }
@@ -2177,9 +2502,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_listaclrules",
             "name": "list-acl-rules",
-            "output": ["ActionOutput_google_calendar_listaclrules"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.acls.readonly"],
-            "usedModels": ["ActionInput_google_calendar_listaclrules", "ActionOutput_google_calendar_listaclrules"],
+            "output": [
+                "ActionOutput_google_calendar_listaclrules"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.acls.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_listaclrules",
+                "ActionOutput_google_calendar_listaclrules"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2203,7 +2535,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for listing ACL rules of a Google Calendar."
                     },
@@ -2235,7 +2569,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false,
                                             "description": "The extent to which calendar access is granted by this ACL rule."
                                         },
@@ -2248,7 +2584,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "role", "scope"],
+                                    "required": [
+                                        "id",
+                                        "role",
+                                        "scope"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of ACL rules for the calendar."
@@ -2258,7 +2598,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Paginated list of ACL rules for a Google Calendar."
                     }
@@ -2272,9 +2614,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_listcalendarlist",
             "name": "list-calendar-list",
-            "output": ["ActionOutput_google_calendar_listcalendarlist"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_listcalendarlist", "ActionOutput_google_calendar_listcalendarlist"],
+            "output": [
+                "ActionOutput_google_calendar_listcalendarlist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_listcalendarlist",
+                "ActionOutput_google_calendar_listcalendarlist"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2376,7 +2725,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "summary"],
+                                    "required": [
+                                        "id",
+                                        "summary"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Calendars that are present on the user's calendar list."
@@ -2386,7 +2738,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["calendars"],
+                        "required": [
+                            "calendars"
+                        ],
                         "additionalProperties": false,
                         "description": "Output for listing calendars in the user's calendar list"
                     }
@@ -2400,9 +2754,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_listeventinstances",
             "name": "list-event-instances",
-            "output": ["ActionOutput_google_calendar_listeventinstances"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events.readonly"],
-            "usedModels": ["ActionInput_google_calendar_listeventinstances", "ActionOutput_google_calendar_listeventinstances"],
+            "output": [
+                "ActionOutput_google_calendar_listeventinstances"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_listeventinstances",
+                "ActionOutput_google_calendar_listeventinstances"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2444,7 +2805,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["calendarId", "eventId"],
+                        "required": [
+                            "calendarId",
+                            "eventId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing instances of a recurring event"
                     },
@@ -2612,7 +2976,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of event instances for the specified recurring event."
@@ -2622,7 +2988,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Output for listing instances of a recurring event"
                     }
@@ -2636,9 +3004,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_listevents",
             "name": "list-events",
-            "output": ["ActionOutput_google_calendar_listevents"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_listevents", "ActionOutput_google_calendar_listevents"],
+            "output": [
+                "ActionOutput_google_calendar_listevents"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_listevents",
+                "ActionOutput_google_calendar_listevents"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2834,7 +3209,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of events on the calendar."
@@ -2844,7 +3221,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of listing events from a Google Calendar."
                     }
@@ -2858,9 +3237,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_listsettings",
             "name": "list-settings",
-            "output": ["ActionOutput_google_calendar_listsettings"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.settings.readonly"],
-            "usedModels": ["ActionInput_google_calendar_listsettings", "ActionOutput_google_calendar_listsettings"],
+            "output": [
+                "ActionOutput_google_calendar_listsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.settings.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_listsettings",
+                "ActionOutput_google_calendar_listsettings"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2906,7 +3292,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single calendar user setting"
                                 },
@@ -2921,7 +3309,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Output for listing calendar settings"
                     }
@@ -2935,9 +3325,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_listupcomingevents",
             "name": "list-upcoming-events",
-            "output": ["ActionOutput_google_calendar_listupcomingevents"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_listupcomingevents", "ActionOutput_google_calendar_listupcomingevents"],
+            "output": [
+                "ActionOutput_google_calendar_listupcomingevents"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_listupcomingevents",
+                "ActionOutput_google_calendar_listupcomingevents"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3127,7 +3524,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Upcoming events ordered by start time."
@@ -3137,7 +3536,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing upcoming calendar events and an optional pagination token."
                     }
@@ -3151,9 +3552,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_moveevent",
             "name": "move-event",
-            "output": ["ActionOutput_google_calendar_moveevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_moveevent", "ActionOutput_google_calendar_moveevent"],
+            "output": [
+                "ActionOutput_google_calendar_moveevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_moveevent",
+                "ActionOutput_google_calendar_moveevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3175,10 +3583,18 @@
                             "sendUpdates": {
                                 "description": "Guests who should receive notifications about the change of the event's organizer.",
                                 "type": "string",
-                                "enum": ["all", "externalOnly", "none"]
+                                "enum": [
+                                    "all",
+                                    "externalOnly",
+                                    "none"
+                                ]
                             }
                         },
-                        "required": ["calendarId", "eventId", "destinationCalendarId"],
+                        "required": [
+                            "calendarId",
+                            "eventId",
+                            "destinationCalendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for moving a calendar event to another calendar."
                     },
@@ -3298,7 +3714,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The moved event as it appears on the destination calendar."
                     }
@@ -3312,9 +3730,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_patchevent",
             "name": "patch-event",
-            "output": ["ActionOutput_google_calendar_patchevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_patchevent", "ActionOutput_google_calendar_patchevent"],
+            "output": [
+                "ActionOutput_google_calendar_patchevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_patchevent",
+                "ActionOutput_google_calendar_patchevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3331,15 +3756,24 @@
                             },
                             "summary": {
                                 "description": "Title of the event. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
                                 "description": "Description of the event. Can contain HTML. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "location": {
                                 "description": "Geographic location of the event as free-form text. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start": {
                                 "description": "The (inclusive) start time of the event. Set to null to clear.",
@@ -3431,18 +3865,26 @@
                             },
                             "colorId": {
                                 "description": "The color of the event. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "visibility": {
                                 "description": "Visibility of the event. Possible values: default, public, private, confidential. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sendUpdates": {
                                 "description": "Guests who should receive notifications about the event update. Possible values: all, externalOnly, none.",
                                 "type": "string"
                             }
                         },
-                        "required": ["eventId"],
+                        "required": [
+                            "eventId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for partially updating a Google Calendar event."
                     },
@@ -3562,7 +4004,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "calendarId"],
+                        "required": [
+                            "id",
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a partially updated Google Calendar event."
                     }
@@ -3576,9 +4021,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_queryfreebusy",
             "name": "query-free-busy",
-            "output": ["ActionOutput_google_calendar_queryfreebusy"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_queryfreebusy", "ActionOutput_google_calendar_queryfreebusy"],
+            "output": [
+                "ActionOutput_google_calendar_queryfreebusy"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_queryfreebusy",
+                "ActionOutput_google_calendar_queryfreebusy"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3619,13 +4071,19 @@
                                             "description": "The identifier of a calendar or a group"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of calendars and/or groups to query"
                             }
                         },
-                        "required": ["timeMin", "timeMax", "items"],
+                        "required": [
+                            "timeMin",
+                            "timeMax",
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for querying free/busy information for one or more calendars."
                     },
@@ -3668,7 +4126,10 @@
                                                         "description": "Error reason."
                                                     }
                                                 },
-                                                "required": ["domain", "reason"],
+                                                "required": [
+                                                    "domain",
+                                                    "reason"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "An error entry returned for a specific calendar or group."
                                             }
@@ -3682,7 +4143,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["calendars"],
+                                    "required": [
+                                        "calendars"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Free/busy information for a single group of calendars."
                                 }
@@ -3710,7 +4173,10 @@
                                                         "description": "Error reason."
                                                     }
                                                 },
-                                                "required": ["domain", "reason"],
+                                                "required": [
+                                                    "domain",
+                                                    "reason"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "An error entry returned for a specific calendar or group."
                                             }
@@ -3731,20 +4197,30 @@
                                                         "description": "The exclusive end of the busy period in RFC3339 format."
                                                     }
                                                 },
-                                                "required": ["start", "end"],
+                                                "required": [
+                                                    "start",
+                                                    "end"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "A single busy time block for a calendar."
                                             }
                                         }
                                     },
-                                    "required": ["busy"],
+                                    "required": [
+                                        "busy"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "Free/busy information for a single calendar."
                                 },
                                 "description": "Free/busy information for each requested calendar, keyed by calendar identifier."
                             }
                         },
-                        "required": ["kind", "timeMin", "timeMax", "calendars"],
+                        "required": [
+                            "kind",
+                            "timeMin",
+                            "timeMax",
+                            "calendars"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing free/busy blocks for the requested calendars."
                     }
@@ -3758,9 +4234,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_quickaddevent",
             "name": "quick-add-event",
-            "output": ["ActionOutput_google_calendar_quickaddevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_quickaddevent", "ActionOutput_google_calendar_quickaddevent"],
+            "output": [
+                "ActionOutput_google_calendar_quickaddevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_quickaddevent",
+                "ActionOutput_google_calendar_quickaddevent"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3778,10 +4261,16 @@
                             "sendUpdates": {
                                 "description": "Guests who should receive notifications about the creation of the new event. Acceptable values are: all, externalOnly, none.",
                                 "type": "string",
-                                "enum": ["all", "externalOnly", "none"]
+                                "enum": [
+                                    "all",
+                                    "externalOnly",
+                                    "none"
+                                ]
                             }
                         },
-                        "required": ["text"],
+                        "required": [
+                            "text"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for the quick add event action"
                     },
@@ -3935,7 +4424,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The created event"
                     }
@@ -3949,9 +4440,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_removeattendee",
             "name": "remove-attendee",
-            "output": ["ActionOutput_google_calendar_removeattendee"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_removeattendee", "ActionOutput_google_calendar_removeattendee"],
+            "output": [
+                "ActionOutput_google_calendar_removeattendee"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_removeattendee",
+                "ActionOutput_google_calendar_removeattendee"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3971,7 +4469,10 @@
                                 "description": "The email address of the attendee to remove."
                             }
                         },
-                        "required": ["eventId", "attendeeEmail"],
+                        "required": [
+                            "eventId",
+                            "attendeeEmail"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for removing an attendee from a Google Calendar event"
                     },
@@ -4032,7 +4533,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["email"],
+                                    "required": [
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The updated list of attendees."
@@ -4082,7 +4585,9 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["email"],
+                                "required": [
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "success": {
@@ -4090,7 +4595,11 @@
                                 "description": "Whether the attendee was found and removed."
                             }
                         },
-                        "required": ["id", "attendees", "success"],
+                        "required": [
+                            "id",
+                            "attendees",
+                            "success"
+                        ],
                         "additionalProperties": false,
                         "description": "Output after removing an attendee from a Google Calendar event"
                     }
@@ -4104,9 +4613,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_removecalendarfromlist",
             "name": "remove-calendar-from-list",
-            "output": ["ActionOutput_google_calendar_removecalendarfromlist"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_removecalendarfromlist", "ActionOutput_google_calendar_removecalendarfromlist"],
+            "output": [
+                "ActionOutput_google_calendar_removecalendarfromlist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_removecalendarfromlist",
+                "ActionOutput_google_calendar_removecalendarfromlist"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -4118,7 +4634,9 @@
                                 "description": "The ID of the calendar to remove from the user's calendar list. Use \"primary\" for the primary calendar, or retrieve IDs from the calendar list."
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for removing a calendar from the user's calendar list"
                     },
@@ -4136,9 +4654,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_searchevents",
             "name": "search-events",
-            "output": ["ActionOutput_google_calendar_searchevents"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events.readonly"],
-            "usedModels": ["ActionInput_google_calendar_searchevents", "ActionOutput_google_calendar_searchevents"],
+            "output": [
+                "ActionOutput_google_calendar_searchevents"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_searchevents",
+                "ActionOutput_google_calendar_searchevents"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -4325,7 +4850,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of matching events."
@@ -4335,7 +4862,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["events"],
+                        "required": [
+                            "events"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of the search events action."
                     }
@@ -4349,13 +4878,18 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_settings",
             "name": "settings",
-            "output": ["ActionOutput_google_calendar_settings"],
+            "output": [
+                "ActionOutput_google_calendar_settings"
+            ],
             "scopes": [
                 "https://www.googleapis.com/auth/calendar.readonly",
                 "https://www.googleapis.com/auth/calendar",
                 "https://www.googleapis.com/auth/calendar.settings.readonly"
             ],
-            "usedModels": ["ActionInput_google_calendar_settings", "ActionOutput_google_calendar_settings"],
+            "usedModels": [
+                "ActionInput_google_calendar_settings",
+                "ActionOutput_google_calendar_settings"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -4390,14 +4924,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "value"],
+                                    "required": [
+                                        "id",
+                                        "value"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single user setting"
                                 },
                                 "description": "All user settings fetched across pages."
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "All user settings for the authenticated user"
                     }
@@ -4411,9 +4950,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_stopchannel",
             "name": "stop-channel",
-            "output": ["ActionOutput_google_calendar_stopchannel"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_stopchannel", "ActionOutput_google_calendar_stopchannel"],
+            "output": [
+                "ActionOutput_google_calendar_stopchannel"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_stopchannel",
+                "ActionOutput_google_calendar_stopchannel"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -4433,7 +4979,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "resourceId"],
+                        "required": [
+                            "id",
+                            "resourceId"
+                        ],
                         "additionalProperties": false,
                         "description": "Parameters required to stop an active push notification channel."
                     },
@@ -4444,7 +4993,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4457,9 +5008,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_updateaclrule",
             "name": "update-acl-rule",
-            "output": ["ActionOutput_google_calendar_updateaclrule"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_updateaclrule", "ActionOutput_google_calendar_updateaclrule"],
+            "output": [
+                "ActionOutput_google_calendar_updateaclrule"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_updateaclrule",
+                "ActionOutput_google_calendar_updateaclrule"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -4490,7 +5048,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The extent to which calendar access is granted by this ACL rule."
                             },
@@ -4499,7 +5059,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["calendarId", "ruleId", "scope"],
+                        "required": [
+                            "calendarId",
+                            "ruleId",
+                            "scope"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating an access control rule"
                     },
@@ -4526,7 +5090,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The extent of calendar access granted by this ACL rule."
                             },
@@ -4539,7 +5105,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "role", "scope"],
+                        "required": [
+                            "id",
+                            "role",
+                            "scope"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated access control rule"
                     }
@@ -4553,9 +5123,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_updateattendeeresponse",
             "name": "update-attendee-response",
-            "output": ["ActionOutput_google_calendar_updateattendeeresponse"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_updateattendeeresponse", "ActionOutput_google_calendar_updateattendeeresponse"],
+            "output": [
+                "ActionOutput_google_calendar_updateattendeeresponse"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_updateattendeeresponse",
+                "ActionOutput_google_calendar_updateattendeeresponse"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -4576,11 +5153,20 @@
                             },
                             "responseStatus": {
                                 "type": "string",
-                                "enum": ["needsAction", "declined", "tentative", "accepted"],
+                                "enum": [
+                                    "needsAction",
+                                    "declined",
+                                    "tentative",
+                                    "accepted"
+                                ],
                                 "description": "The attendee's new response status. Possible values: needsAction, declined, tentative, accepted."
                             }
                         },
-                        "required": ["eventId", "attendeeEmail", "responseStatus"],
+                        "required": [
+                            "eventId",
+                            "attendeeEmail",
+                            "responseStatus"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating an attendee response status on a Google Calendar event."
                     },
@@ -4623,12 +5209,19 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["email", "responseStatus"],
+                                "required": [
+                                    "email",
+                                    "responseStatus"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The updated attendee details."
                             }
                         },
-                        "required": ["eventId", "calendarId", "attendee"],
+                        "required": [
+                            "eventId",
+                            "calendarId",
+                            "attendee"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of updating an attendee response status on a Google Calendar event."
                     }
@@ -4642,9 +5235,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_updatecalendarlistentry",
             "name": "update-calendar-list-entry",
-            "output": ["ActionOutput_google_calendar_updatecalendarlistentry"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_updatecalendarlistentry", "ActionOutput_google_calendar_updatecalendarlistentry"],
+            "output": [
+                "ActionOutput_google_calendar_updatecalendarlistentry"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_updatecalendarlistentry",
+                "ActionOutput_google_calendar_updatecalendarlistentry"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -4693,7 +5293,10 @@
                                     "properties": {
                                         "method": {
                                             "type": "string",
-                                            "enum": ["email", "popup"],
+                                            "enum": [
+                                                "email",
+                                                "popup"
+                                            ],
                                             "description": "Reminder delivery method. Possible values: \"email\", \"popup\"."
                                         },
                                         "minutes": {
@@ -4703,7 +5306,10 @@
                                             "description": "Minutes before event start when the reminder triggers. Valid values: 0 to 40320."
                                         }
                                     },
-                                    "required": ["method", "minutes"],
+                                    "required": [
+                                        "method",
+                                        "minutes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4718,26 +5324,41 @@
                                             "properties": {
                                                 "type": {
                                                     "type": "string",
-                                                    "enum": ["eventCreation", "eventChange", "eventCancellation", "eventResponse", "agenda"],
+                                                    "enum": [
+                                                        "eventCreation",
+                                                        "eventChange",
+                                                        "eventCancellation",
+                                                        "eventResponse",
+                                                        "agenda"
+                                                    ],
                                                     "description": "Notification type. Possible values: \"eventCreation\", \"eventChange\", \"eventCancellation\", \"eventResponse\", \"agenda\"."
                                                 },
                                                 "method": {
                                                     "type": "string",
-                                                    "enum": ["email"],
+                                                    "enum": [
+                                                        "email"
+                                                    ],
                                                     "description": "Notification delivery method. Possible value: \"email\"."
                                                 }
                                             },
-                                            "required": ["type", "method"],
+                                            "required": [
+                                                "type",
+                                                "method"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": "List of notifications set for this calendar."
                                     }
                                 },
-                                "required": ["notifications"],
+                                "required": [
+                                    "notifications"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating a calendar list entry"
                     },
@@ -4805,7 +5426,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["method", "minutes"],
+                                    "required": [
+                                        "method",
+                                        "minutes"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4825,12 +5449,17 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "method"],
+                                            "required": [
+                                                "type",
+                                                "method"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["notifications"],
+                                "required": [
+                                    "notifications"
+                                ],
                                 "additionalProperties": false
                             },
                             "primary": {
@@ -4853,11 +5482,15 @@
                                         "description": "Supported conference solution types for this calendar."
                                     }
                                 },
-                                "required": ["allowedConferenceSolutionTypes"],
+                                "required": [
+                                    "allowedConferenceSolutionTypes"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Updated calendar list entry"
                     }
@@ -4871,9 +5504,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_updatecalendar",
             "name": "update-calendar",
-            "output": ["ActionOutput_google_calendar_updatecalendar"],
-            "scopes": ["https://www.googleapis.com/auth/calendar"],
-            "usedModels": ["ActionInput_google_calendar_updatecalendar", "ActionOutput_google_calendar_updatecalendar"],
+            "output": [
+                "ActionOutput_google_calendar_updatecalendar"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_updatecalendar",
+                "ActionOutput_google_calendar_updatecalendar"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -4890,18 +5530,29 @@
                             },
                             "description": {
                                 "description": "Description of the calendar. Specifying null clears the existing description.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "location": {
                                 "description": "Geographic location of the calendar as free-form text. Specifying null clears the existing location.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "timeZone": {
                                 "description": "The time zone of the calendar. (Formatted as an IANA Time Zone database name, e.g. \"Europe/Zurich\".) Specifying null clears the existing time zone.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["calendarId"],
+                        "required": [
+                            "calendarId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to update a calendar's metadata"
                     },
@@ -4929,7 +5580,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Updated calendar metadata"
                     }
@@ -4943,9 +5596,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_updateevent",
             "name": "update-event",
-            "output": ["ActionOutput_google_calendar_updateevent"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.events"],
-            "usedModels": ["ActionInput_google_calendar_updateevent", "ActionOutput_google_calendar_updateevent"],
+            "output": [
+                "ActionOutput_google_calendar_updateevent"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_updateevent",
+                "ActionOutput_google_calendar_updateevent"
+            ],
             "version": "2.0.3",
             "json_schema": {
                 "definitions": {
@@ -4962,15 +5622,24 @@
                             },
                             "summary": {
                                 "description": "Title of the event. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
                                 "description": "Description of the event. Can contain HTML. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "location": {
                                 "description": "Geographic location of the event as free-form text. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "start": {
                                 "description": "The inclusive start time of the event.",
@@ -5039,7 +5708,12 @@
                                         "responseStatus": {
                                             "description": "The attendee's response status.",
                                             "type": "string",
-                                            "enum": ["needsAction", "declined", "tentative", "accepted"]
+                                            "enum": [
+                                                "needsAction",
+                                                "declined",
+                                                "tentative",
+                                                "accepted"
+                                            ]
                                         },
                                         "comment": {
                                             "description": "The attendee's response comment.",
@@ -5088,18 +5762,27 @@
                             },
                             "visibility": {
                                 "description": "Visibility of the event: default, public, private, or confidential. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "colorId": {
                                 "description": "Color ID of the event referencing the colors endpoint. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "sendUpdates": {
                                 "description": "Guests to notify about the event update: all, externalOnly, or none.",
                                 "type": "string"
                             }
                         },
-                        "required": ["calendarId", "eventId"],
+                        "required": [
+                            "calendarId",
+                            "eventId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for updating a calendar event."
                     },
@@ -5306,7 +5989,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "The updated calendar event."
                     }
@@ -5320,9 +6005,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_watchcalendarlist",
             "name": "watch-calendar-list",
-            "output": ["ActionOutput_google_calendar_watchcalendarlist"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_watchcalendarlist", "ActionOutput_google_calendar_watchcalendarlist"],
+            "output": [
+                "ActionOutput_google_calendar_watchcalendarlist"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_watchcalendarlist",
+                "ActionOutput_google_calendar_watchcalendarlist"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5346,7 +6038,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "address"],
+                        "required": [
+                            "id",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for subscribing to calendar list changes."
                     },
@@ -5378,7 +6073,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["kind", "id", "resourceId", "resourceUri"],
+                        "required": [
+                            "kind",
+                            "id",
+                            "resourceId",
+                            "resourceUri"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a calendar list watch subscription."
                     }
@@ -5392,9 +6092,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_watchevents",
             "name": "watch-events",
-            "output": ["ActionOutput_google_calendar_watchevents"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_watchevents", "ActionOutput_google_calendar_watchevents"],
+            "output": [
+                "ActionOutput_google_calendar_watchevents"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_watchevents",
+                "ActionOutput_google_calendar_watchevents"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5428,7 +6135,11 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["calendarId", "channelId", "address"],
+                        "required": [
+                            "calendarId",
+                            "channelId",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to subscribe to event changes on a Google Calendar."
                     },
@@ -5460,7 +6171,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["kind", "id", "resourceId", "resourceUri"],
+                        "required": [
+                            "kind",
+                            "id",
+                            "resourceId",
+                            "resourceUri"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a successful calendar event watch subscription, containing channel and resource identifiers."
                     }
@@ -5474,9 +6190,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_watchsettings",
             "name": "watch-settings",
-            "output": ["ActionOutput_google_calendar_watchsettings"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.settings.readonly"],
-            "usedModels": ["ActionInput_google_calendar_watchsettings", "ActionOutput_google_calendar_watchsettings"],
+            "output": [
+                "ActionOutput_google_calendar_watchsettings"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.settings.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_watchsettings",
+                "ActionOutput_google_calendar_watchsettings"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -5511,7 +6234,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "address"],
+                        "required": [
+                            "id",
+                            "type",
+                            "address"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for subscribing to calendar settings changes."
                     },
@@ -5543,7 +6270,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["kind", "id", "resourceId", "resourceUri"],
+                        "required": [
+                            "kind",
+                            "id",
+                            "resourceId",
+                            "resourceUri"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a calendar settings watch channel subscription."
                     }
@@ -5557,9 +6289,16 @@
             "endpoint": null,
             "input": "ActionInput_google_calendar_whoami",
             "name": "whoami",
-            "output": ["ActionOutput_google_calendar_whoami"],
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
-            "usedModels": ["ActionInput_google_calendar_whoami", "ActionOutput_google_calendar_whoami"],
+            "output": [
+                "ActionOutput_google_calendar_whoami"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
+            "usedModels": [
+                "ActionInput_google_calendar_whoami",
+                "ActionOutput_google_calendar_whoami"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -5581,7 +6320,10 @@
                                 "description": "The user's Google account email address. Example: \"user@example.com\""
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false,
                         "description": "The current user's Google account ID and email"
                     }
@@ -5598,12 +6340,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_calendar_calendarevents",
             "name": "calendar-events",
-            "output": ["CalendarEvent"],
+            "output": [
+                "CalendarEvent"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/calendar.events.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.events.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CalendarEvent", "SyncMetadata_google_calendar_calendarevents"],
+            "usedModels": [
+                "CalendarEvent",
+                "SyncMetadata_google_calendar_calendarevents"
+            ],
             "version": "5.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6004,7 +6753,11 @@
                                 "description": "The opaque identifier of the event, as returned by the Google Calendar API."
                             }
                         },
-                        "required": ["id", "calendarId", "eventId"],
+                        "required": [
+                            "id",
+                            "calendarId",
+                            "eventId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_calendar_calendarevents": {
@@ -6035,7 +6788,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6044,12 +6799,18 @@
             "endpoints": [],
             "input": null,
             "name": "calendar-list",
-            "output": ["CalendarListEntry"],
+            "output": [
+                "CalendarListEntry"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/calendar.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CalendarListEntry"],
+            "usedModels": [
+                "CalendarListEntry"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6173,13 +6934,17 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A calendar list entry representing a calendar in the user's calendar list."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6188,12 +6953,18 @@
             "endpoints": [],
             "input": null,
             "name": "settings",
-            "output": ["Setting"],
+            "output": [
+                "Setting"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/calendar.settings.readonly"],
+            "scopes": [
+                "https://www.googleapis.com/auth/calendar.settings.readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Setting"],
+            "usedModels": [
+                "Setting"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6214,13 +6985,19 @@
                                 "description": "The current value of the setting as a UTF-8 string."
                             }
                         },
-                        "required": ["id", "etag", "value"],
+                        "required": [
+                            "id",
+                            "etag",
+                            "value"
+                        ],
                         "additionalProperties": false,
                         "description": "A Google Calendar user setting that controls calendar behavior and display preferences."
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

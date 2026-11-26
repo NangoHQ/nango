@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createadgroupad",
             "name": "create-ad-group-ad",
-            "output": ["ActionOutput_google_ads_createadgroupad"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createadgroupad", "ActionOutput_google_ads_createadgroupad"],
+            "output": [
+                "ActionOutput_google_ads_createadgroupad"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createadgroupad",
+                "ActionOutput_google_ads_createadgroupad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -55,10 +62,19 @@
                             "status": {
                                 "description": "Ad status. Defaults to ENABLED.",
                                 "type": "string",
-                                "enum": ["ENABLED", "PAUSED"]
+                                "enum": [
+                                    "ENABLED",
+                                    "PAUSED"
+                                ]
                             }
                         },
-                        "required": ["customerId", "adGroupId", "headlines", "descriptions", "finalUrls"],
+                        "required": [
+                            "customerId",
+                            "adGroupId",
+                            "headlines",
+                            "descriptions",
+                            "finalUrls"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createadgroupad": {
@@ -74,7 +90,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -87,9 +105,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createadgroup",
             "name": "create-ad-group",
-            "output": ["ActionOutput_google_ads_createadgroup"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createadgroup", "ActionOutput_google_ads_createadgroup"],
+            "output": [
+                "ActionOutput_google_ads_createadgroup"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createadgroup",
+                "ActionOutput_google_ads_createadgroup"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -121,7 +146,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["campaign", "name", "type", "status", "cpcBidMicros"],
+                        "required": [
+                            "campaign",
+                            "name",
+                            "type",
+                            "status",
+                            "cpcBidMicros"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createadgroup": {
@@ -149,7 +180,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -162,9 +195,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createcampaignbudget",
             "name": "create-campaign-budget",
-            "output": ["ActionOutput_google_ads_createcampaignbudget"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createcampaignbudget", "ActionOutput_google_ads_createcampaignbudget"],
+            "output": [
+                "ActionOutput_google_ads_createcampaignbudget"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createcampaignbudget",
+                "ActionOutput_google_ads_createcampaignbudget"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -189,7 +229,10 @@
                             },
                             "deliveryMethod": {
                                 "type": "string",
-                                "enum": ["STANDARD", "ACCELERATED"],
+                                "enum": [
+                                    "STANDARD",
+                                    "ACCELERATED"
+                                ],
                                 "description": "The delivery method for the budget."
                             },
                             "explicitlyShared": {
@@ -197,7 +240,13 @@
                                 "description": "Whether the budget is shared across multiple campaigns."
                             }
                         },
-                        "required": ["customerId", "name", "amountMicros", "deliveryMethod", "explicitlyShared"],
+                        "required": [
+                            "customerId",
+                            "name",
+                            "amountMicros",
+                            "deliveryMethod",
+                            "explicitlyShared"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createcampaignbudget": {
@@ -210,7 +259,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -223,9 +274,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createcampaignlocationcriterion",
             "name": "create-campaign-location-criterion",
-            "output": ["ActionOutput_google_ads_createcampaignlocationcriterion"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createcampaignlocationcriterion", "ActionOutput_google_ads_createcampaignlocationcriterion"],
+            "output": [
+                "ActionOutput_google_ads_createcampaignlocationcriterion"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createcampaignlocationcriterion",
+                "ActionOutput_google_ads_createcampaignlocationcriterion"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -249,7 +307,11 @@
                                 "description": "Geo target constant resource name. Example: \"geoTargetConstants/21167\""
                             }
                         },
-                        "required": ["customerId", "campaign", "geoTargetConstant"],
+                        "required": [
+                            "customerId",
+                            "campaign",
+                            "geoTargetConstant"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createcampaignlocationcriterion": {
@@ -259,7 +321,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -272,9 +336,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createcampaignnegativekeyword",
             "name": "create-campaign-negative-keyword",
-            "output": ["ActionOutput_google_ads_createcampaignnegativekeyword"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createcampaignnegativekeyword", "ActionOutput_google_ads_createcampaignnegativekeyword"],
+            "output": [
+                "ActionOutput_google_ads_createcampaignnegativekeyword"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createcampaignnegativekeyword",
+                "ActionOutput_google_ads_createcampaignnegativekeyword"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -295,7 +366,11 @@
                             },
                             "matchType": {
                                 "type": "string",
-                                "enum": ["EXACT", "PHRASE", "BROAD"],
+                                "enum": [
+                                    "EXACT",
+                                    "PHRASE",
+                                    "BROAD"
+                                ],
                                 "description": "Keyword match type."
                             },
                             "loginCustomerId": {
@@ -303,7 +378,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "campaignId", "text", "matchType"],
+                        "required": [
+                            "customerId",
+                            "campaignId",
+                            "text",
+                            "matchType"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createcampaignnegativekeyword": {
@@ -314,7 +394,9 @@
                                 "description": "Resource name of the created campaign criterion. Example: \"customers/1781900691/campaignCriteria/24027360183~123456789\""
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -327,9 +409,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createcampaign",
             "name": "create-campaign",
-            "output": ["ActionOutput_google_ads_createcampaign"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createcampaign", "ActionOutput_google_ads_createcampaign"],
+            "output": [
+                "ActionOutput_google_ads_createcampaign"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createcampaign",
+                "ActionOutput_google_ads_createcampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -346,7 +435,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["ENABLED", "PAUSED"],
+                                "enum": [
+                                    "ENABLED",
+                                    "PAUSED"
+                                ],
                                 "description": "Campaign status."
                             },
                             "advertisingChannelType": {
@@ -401,13 +493,21 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["targetGoogleSearch", "targetSearchNetwork", "targetContentNetwork", "targetPartnerSearchNetwork"],
+                                "required": [
+                                    "targetGoogleSearch",
+                                    "targetSearchNetwork",
+                                    "targetContentNetwork",
+                                    "targetPartnerSearchNetwork"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Network settings."
                             },
                             "containsEuPoliticalAdvertising": {
                                 "type": "string",
-                                "enum": ["CONTAINS_EU_POLITICAL_ADVERTISING", "DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING"],
+                                "enum": [
+                                    "CONTAINS_EU_POLITICAL_ADVERTISING",
+                                    "DOES_NOT_CONTAIN_EU_POLITICAL_ADVERTISING"
+                                ],
                                 "description": "EU political advertising flag."
                             },
                             "targetCpaMicros": {
@@ -450,7 +550,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -463,9 +565,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createconversionaction",
             "name": "create-conversion-action",
-            "output": ["ActionOutput_google_ads_createconversionaction"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createconversionaction", "ActionOutput_google_ads_createconversionaction"],
+            "output": [
+                "ActionOutput_google_ads_createconversionaction"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createconversionaction",
+                "ActionOutput_google_ads_createconversionaction"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -501,7 +610,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["customerId", "name", "type", "category", "status"],
+                        "required": [
+                            "customerId",
+                            "name",
+                            "type",
+                            "category",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createconversionaction": {
@@ -512,7 +627,9 @@
                                 "description": "Resource name of the created conversion action. Example: \"customers/1781900691/conversionActions/7685274465\""
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -525,9 +642,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createkeywordcriterion",
             "name": "create-keyword-criterion",
-            "output": ["ActionOutput_google_ads_createkeywordcriterion"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createkeywordcriterion", "ActionOutput_google_ads_createkeywordcriterion"],
+            "output": [
+                "ActionOutput_google_ads_createkeywordcriterion"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createkeywordcriterion",
+                "ActionOutput_google_ads_createkeywordcriterion"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -548,12 +672,19 @@
                             },
                             "keywordMatchType": {
                                 "type": "string",
-                                "enum": ["EXACT", "PHRASE", "BROAD"],
+                                "enum": [
+                                    "EXACT",
+                                    "PHRASE",
+                                    "BROAD"
+                                ],
                                 "description": "Keyword match type. Example: \"EXACT\""
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["ENABLED", "PAUSED"],
+                                "enum": [
+                                    "ENABLED",
+                                    "PAUSED"
+                                ],
                                 "description": "Criterion status. Example: \"ENABLED\""
                             },
                             "cpcBidMicros": {
@@ -565,7 +696,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "adGroupId", "keywordText", "keywordMatchType", "status"],
+                        "required": [
+                            "customerId",
+                            "adGroupId",
+                            "keywordText",
+                            "keywordMatchType",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createkeywordcriterion": {
@@ -580,7 +717,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -593,9 +732,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_createnegativekeyword",
             "name": "create-negative-keyword",
-            "output": ["ActionOutput_google_ads_createnegativekeyword"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_createnegativekeyword", "ActionOutput_google_ads_createnegativekeyword"],
+            "output": [
+                "ActionOutput_google_ads_createnegativekeyword"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_createnegativekeyword",
+                "ActionOutput_google_ads_createnegativekeyword"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -620,11 +766,20 @@
                             },
                             "match_type": {
                                 "type": "string",
-                                "enum": ["EXACT", "PHRASE", "BROAD"],
+                                "enum": [
+                                    "EXACT",
+                                    "PHRASE",
+                                    "BROAD"
+                                ],
                                 "description": "Keyword match type. Example: \"EXACT\""
                             }
                         },
-                        "required": ["customer_id", "ad_group_id", "text", "match_type"],
+                        "required": [
+                            "customer_id",
+                            "ad_group_id",
+                            "text",
+                            "match_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_createnegativekeyword": {
@@ -634,7 +789,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resource_name"],
+                        "required": [
+                            "resource_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -647,9 +804,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_generatekeywordideas",
             "name": "generate-keyword-ideas",
-            "output": ["ActionOutput_google_ads_generatekeywordideas"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_generatekeywordideas", "ActionOutput_google_ads_generatekeywordideas"],
+            "output": [
+                "ActionOutput_google_ads_generatekeywordideas"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_generatekeywordideas",
+                "ActionOutput_google_ads_generatekeywordideas"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -707,7 +871,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["customerId"],
+                        "required": [
+                            "customerId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_generatekeywordideas": {
@@ -777,7 +943,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -790,9 +958,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_listaccessiblecustomers",
             "name": "list-accessible-customers",
-            "output": ["ActionOutput_google_ads_listaccessiblecustomers"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_listaccessiblecustomers", "ActionOutput_google_ads_listaccessiblecustomers"],
+            "output": [
+                "ActionOutput_google_ads_listaccessiblecustomers"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_listaccessiblecustomers",
+                "ActionOutput_google_ads_listaccessiblecustomers"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -823,9 +998,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_removeadgroupad",
             "name": "remove-ad-group-ad",
-            "output": ["ActionOutput_google_ads_removeadgroupad"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_removeadgroupad", "ActionOutput_google_ads_removeadgroupad"],
+            "output": [
+                "ActionOutput_google_ads_removeadgroupad"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_removeadgroupad",
+                "ActionOutput_google_ads_removeadgroupad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -841,7 +1023,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resource_name"],
+                        "required": [
+                            "resource_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_removeadgroupad": {
@@ -851,7 +1035,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resource_name"],
+                        "required": [
+                            "resource_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -864,9 +1050,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_removeadgroup",
             "name": "remove-ad-group",
-            "output": ["ActionOutput_google_ads_removeadgroup"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_removeadgroup", "ActionOutput_google_ads_removeadgroup"],
+            "output": [
+                "ActionOutput_google_ads_removeadgroup"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_removeadgroup",
+                "ActionOutput_google_ads_removeadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -883,7 +1076,9 @@
                                 "pattern": "^\\d+$"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_removeadgroup": {
@@ -893,7 +1088,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -906,9 +1103,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_removecampaignbudget",
             "name": "remove-campaign-budget",
-            "output": ["ActionOutput_google_ads_removecampaignbudget"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_removecampaignbudget", "ActionOutput_google_ads_removecampaignbudget"],
+            "output": [
+                "ActionOutput_google_ads_removecampaignbudget"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_removecampaignbudget",
+                "ActionOutput_google_ads_removecampaignbudget"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -924,7 +1128,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resource_name"],
+                        "required": [
+                            "resource_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_removecampaignbudget": {
@@ -946,9 +1152,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_removecampaigncriterion",
             "name": "remove-campaign-criterion",
-            "output": ["ActionOutput_google_ads_removecampaigncriterion"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_removecampaigncriterion", "ActionOutput_google_ads_removecampaigncriterion"],
+            "output": [
+                "ActionOutput_google_ads_removecampaigncriterion"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_removecampaigncriterion",
+                "ActionOutput_google_ads_removecampaigncriterion"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -968,7 +1181,10 @@
                                 "description": "The resource name of the campaign criterion to remove. Example: \"customers/1781900691/campaignCriteria/24027360183~2515302470834\""
                             }
                         },
-                        "required": ["customerId", "resourceName"],
+                        "required": [
+                            "customerId",
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_removecampaigncriterion": {
@@ -979,7 +1195,9 @@
                                 "description": "The resource name of the removed campaign criterion."
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -992,9 +1210,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_removecampaign",
             "name": "remove-campaign",
-            "output": ["ActionOutput_google_ads_removecampaign"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_removecampaign", "ActionOutput_google_ads_removecampaign"],
+            "output": [
+                "ActionOutput_google_ads_removecampaign"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_removecampaign",
+                "ActionOutput_google_ads_removecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1010,7 +1235,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_removecampaign": {
@@ -1020,7 +1247,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1033,9 +1262,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_removeconversionaction",
             "name": "remove-conversion-action",
-            "output": ["ActionOutput_google_ads_removeconversionaction"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_removeconversionaction", "ActionOutput_google_ads_removeconversionaction"],
+            "output": [
+                "ActionOutput_google_ads_removeconversionaction"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_removeconversionaction",
+                "ActionOutput_google_ads_removeconversionaction"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1052,7 +1288,9 @@
                                 "pattern": "^\\d+$"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_removeconversionaction": {
@@ -1074,9 +1312,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_removekeywordcriterion",
             "name": "remove-keyword-criterion",
-            "output": ["ActionOutput_google_ads_removekeywordcriterion"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_removekeywordcriterion", "ActionOutput_google_ads_removekeywordcriterion"],
+            "output": [
+                "ActionOutput_google_ads_removekeywordcriterion"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_removekeywordcriterion",
+                "ActionOutput_google_ads_removekeywordcriterion"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1092,7 +1337,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resource_name"],
+                        "required": [
+                            "resource_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_removekeywordcriterion": {
@@ -1105,7 +1352,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1118,9 +1367,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_searchgoogleads",
             "name": "search-google-ads",
-            "output": ["ActionOutput_google_ads_searchgoogleads"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_searchgoogleads", "ActionOutput_google_ads_searchgoogleads"],
+            "output": [
+                "ActionOutput_google_ads_searchgoogleads"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_searchgoogleads",
+                "ActionOutput_google_ads_searchgoogleads"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1144,7 +1400,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "query"],
+                        "required": [
+                            "customerId",
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_searchgoogleads": {
@@ -1176,9 +1435,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_searchstreamgoogleads",
             "name": "search-stream-google-ads",
-            "output": ["ActionOutput_google_ads_searchstreamgoogleads"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_searchstreamgoogleads", "ActionOutput_google_ads_searchstreamgoogleads"],
+            "output": [
+                "ActionOutput_google_ads_searchstreamgoogleads"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_searchstreamgoogleads",
+                "ActionOutput_google_ads_searchstreamgoogleads"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1198,7 +1464,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "query"],
+                        "required": [
+                            "customerId",
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_searchstreamgoogleads": {
@@ -1236,7 +1505,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["rows"],
+                        "required": [
+                            "rows"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1249,9 +1520,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_suggestgeotargetconstants",
             "name": "suggest-geo-target-constants",
-            "output": ["ActionOutput_google_ads_suggestgeotargetconstants"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_suggestgeotargetconstants", "ActionOutput_google_ads_suggestgeotargetconstants"],
+            "output": [
+                "ActionOutput_google_ads_suggestgeotargetconstants"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_suggestgeotargetconstants",
+                "ActionOutput_google_ads_suggestgeotargetconstants"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1277,7 +1555,9 @@
                                         }
                                     }
                                 },
-                                "required": ["names"],
+                                "required": [
+                                    "names"
+                                ],
                                 "additionalProperties": false
                             },
                             "geoTargetConstants": {
@@ -1291,7 +1571,9 @@
                                         }
                                     }
                                 },
-                                "required": ["resourceNames"],
+                                "required": [
+                                    "resourceNames"
+                                ],
                                 "additionalProperties": false
                             }
                         },
@@ -1330,7 +1612,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["resourceName"],
+                                            "required": [
+                                                "resourceName"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "geoTargetConstantParents": {
@@ -1360,7 +1644,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["resourceName"],
+                                                "required": [
+                                                    "resourceName"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -1374,12 +1660,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["geoTargetConstant"],
+                                    "required": [
+                                        "geoTargetConstant"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["geoTargetConstantSuggestions"],
+                        "required": [
+                            "geoTargetConstantSuggestions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1392,9 +1682,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_updateadgroupad",
             "name": "update-ad-group-ad",
-            "output": ["ActionOutput_google_ads_updateadgroupad"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_updateadgroupad", "ActionOutput_google_ads_updateadgroupad"],
+            "output": [
+                "ActionOutput_google_ads_updateadgroupad"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_updateadgroupad",
+                "ActionOutput_google_ads_updateadgroupad"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1436,7 +1733,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "resourceName", "updateMask"],
+                        "required": [
+                            "customerId",
+                            "resourceName",
+                            "updateMask"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_updateadgroupad": {
@@ -1458,9 +1759,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_updateadgroup",
             "name": "update-ad-group",
-            "output": ["ActionOutput_google_ads_updateadgroup"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_updateadgroup", "ActionOutput_google_ads_updateadgroup"],
+            "output": [
+                "ActionOutput_google_ads_updateadgroup"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_updateadgroup",
+                "ActionOutput_google_ads_updateadgroup"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1486,7 +1794,13 @@
                             "status": {
                                 "description": "The new status.",
                                 "type": "string",
-                                "enum": ["UNSPECIFIED", "UNKNOWN", "ENABLED", "PAUSED", "REMOVED"]
+                                "enum": [
+                                    "UNSPECIFIED",
+                                    "UNKNOWN",
+                                    "ENABLED",
+                                    "PAUSED",
+                                    "REMOVED"
+                                ]
                             },
                             "cpcBidMicros": {
                                 "description": "The max CPC bid in micros as a string. Example: \"1000000\"",
@@ -1515,7 +1829,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["customerId", "adGroupId"],
+                        "required": [
+                            "customerId",
+                            "adGroupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_updateadgroup": {
@@ -1525,7 +1842,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1538,9 +1857,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_updatecampaignbudget",
             "name": "update-campaign-budget",
-            "output": ["ActionOutput_google_ads_updatecampaignbudget"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_updatecampaignbudget", "ActionOutput_google_ads_updatecampaignbudget"],
+            "output": [
+                "ActionOutput_google_ads_updatecampaignbudget"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_updatecampaignbudget",
+                "ActionOutput_google_ads_updatecampaignbudget"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1580,7 +1906,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "campaignBudgetId"],
+                        "required": [
+                            "customerId",
+                            "campaignBudgetId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_updatecampaignbudget": {
@@ -1591,7 +1920,9 @@
                                 "description": "Resource name of the updated campaign budget. Example: \"customers/1781900691/campaignBudgets/15717542877\""
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1604,9 +1935,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_updatecampaign",
             "name": "update-campaign",
-            "output": ["ActionOutput_google_ads_updatecampaign"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_updatecampaign", "ActionOutput_google_ads_updatecampaign"],
+            "output": [
+                "ActionOutput_google_ads_updatecampaign"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_updatecampaign",
+                "ActionOutput_google_ads_updatecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1633,7 +1971,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["ENABLED", "PAUSED", "REMOVED"]
+                                "enum": [
+                                    "ENABLED",
+                                    "PAUSED",
+                                    "REMOVED"
+                                ]
                             },
                             "startDate": {
                                 "type": "string"
@@ -1712,7 +2054,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "campaignId", "updateMask"],
+                        "required": [
+                            "customerId",
+                            "campaignId",
+                            "updateMask"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_updatecampaign": {
@@ -1722,7 +2068,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1735,9 +2083,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_updateconversionaction",
             "name": "update-conversion-action",
-            "output": ["ActionOutput_google_ads_updateconversionaction"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_updateconversionaction", "ActionOutput_google_ads_updateconversionaction"],
+            "output": [
+                "ActionOutput_google_ads_updateconversionaction"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_updateconversionaction",
+                "ActionOutput_google_ads_updateconversionaction"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1759,7 +2114,11 @@
                             "status": {
                                 "description": "Status of the conversion action",
                                 "type": "string",
-                                "enum": ["ENABLED", "PAUSED", "REMOVED"]
+                                "enum": [
+                                    "ENABLED",
+                                    "PAUSED",
+                                    "REMOVED"
+                                ]
                             },
                             "valueSettings": {
                                 "description": "Value settings for the conversion action",
@@ -1785,7 +2144,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerId", "conversionActionId"],
+                        "required": [
+                            "customerId",
+                            "conversionActionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_updateconversionaction": {
@@ -1796,7 +2158,9 @@
                                 "description": "Resource name of the updated conversion action"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1809,9 +2173,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_updatekeywordcriterion",
             "name": "update-keyword-criterion",
-            "output": ["ActionOutput_google_ads_updatekeywordcriterion"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_updatekeywordcriterion", "ActionOutput_google_ads_updatekeywordcriterion"],
+            "output": [
+                "ActionOutput_google_ads_updatekeywordcriterion"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_updatekeywordcriterion",
+                "ActionOutput_google_ads_updatekeywordcriterion"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1833,7 +2204,11 @@
                             "status": {
                                 "description": "Keyword status to update.",
                                 "type": "string",
-                                "enum": ["ENABLED", "PAUSED", "REMOVED"]
+                                "enum": [
+                                    "ENABLED",
+                                    "PAUSED",
+                                    "REMOVED"
+                                ]
                             },
                             "cpcBidMicros": {
                                 "description": "CPC bid in micros to update. Example: \"1500000\"",
@@ -1847,7 +2222,10 @@
                                 }
                             }
                         },
-                        "required": ["customerId", "resourceName"],
+                        "required": [
+                            "customerId",
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_updatekeywordcriterion": {
@@ -1857,7 +2235,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["resourceName"],
+                        "required": [
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1870,9 +2250,16 @@
             "endpoint": null,
             "input": "ActionInput_google_ads_validategoogleadsmutate",
             "name": "validate-google-ads-mutate",
-            "output": ["ActionOutput_google_ads_validategoogleadsmutate"],
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
-            "usedModels": ["ActionInput_google_ads_validategoogleadsmutate", "ActionOutput_google_ads_validategoogleadsmutate"],
+            "output": [
+                "ActionOutput_google_ads_validategoogleadsmutate"
+            ],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
+            "usedModels": [
+                "ActionInput_google_ads_validategoogleadsmutate",
+                "ActionOutput_google_ads_validategoogleadsmutate"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1896,7 +2283,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["path", "body"],
+                        "required": [
+                            "path",
+                            "body"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_google_ads_validategoogleadsmutate": {
@@ -1917,12 +2307,18 @@
             "endpoints": [],
             "input": null,
             "name": "accessible-customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer"],
+            "usedModels": [
+                "Customer"
+            ],
             "version": "1.0.4",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1949,12 +2345,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "resourceName"],
+                        "required": [
+                            "id",
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1963,12 +2364,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_ads_adgroupads",
             "name": "ad-group-ads",
-            "output": ["AdGroupAd"],
+            "output": [
+                "AdGroupAd"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AdGroupAd", "SyncMetadata_google_ads_adgroupads"],
+            "usedModels": [
+                "AdGroupAd",
+                "SyncMetadata_google_ads_adgroupads"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2004,7 +2412,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_ads_adgroupads": {
@@ -2024,7 +2434,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2033,12 +2445,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_ads_adgroups",
             "name": "ad-groups",
-            "output": ["AdGroup"],
+            "output": [
+                "AdGroup"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["AdGroup", "SyncMetadata_google_ads_adgroups"],
+            "usedModels": [
+                "AdGroup",
+                "SyncMetadata_google_ads_adgroups"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2086,7 +2505,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "resource_name"],
+                        "required": [
+                            "id",
+                            "resource_name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_ads_adgroups": {
@@ -2106,7 +2528,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2115,12 +2539,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_ads_campaignbudgets",
             "name": "campaign-budgets",
-            "output": ["CampaignBudget"],
+            "output": [
+                "CampaignBudget"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CampaignBudget", "SyncMetadata_google_ads_campaignbudgets"],
+            "usedModels": [
+                "CampaignBudget",
+                "SyncMetadata_google_ads_campaignbudgets"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2153,7 +2584,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "resourceName"],
+                        "required": [
+                            "id",
+                            "resourceName"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_ads_campaignbudgets": {
@@ -2172,12 +2606,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customer_ids"],
+                        "required": [
+                            "customer_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2186,12 +2624,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_ads_campaigncriteria",
             "name": "campaign-criteria",
-            "output": ["CampaignCriterion"],
+            "output": [
+                "CampaignCriterion"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CampaignCriterion", "SyncMetadata_google_ads_campaigncriteria"],
+            "usedModels": [
+                "CampaignCriterion",
+                "SyncMetadata_google_ads_campaigncriteria"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2224,7 +2669,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "resourceName", "campaignId"],
+                        "required": [
+                            "id",
+                            "resourceName",
+                            "campaignId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_ads_campaigncriteria": {
@@ -2240,12 +2689,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerIds"],
+                        "required": [
+                            "customerIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2254,12 +2707,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_ads_campaigns",
             "name": "campaigns",
-            "output": ["Campaign"],
+            "output": [
+                "Campaign"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Campaign", "SyncMetadata_google_ads_campaigns"],
+            "usedModels": [
+                "Campaign",
+                "SyncMetadata_google_ads_campaigns"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2292,13 +2752,18 @@
                                 "type": "string"
                             },
                             "budgetAmountMicros": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "budgetStatus": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_ads_campaigns": {
@@ -2315,12 +2780,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customer_ids", "login_customer_id"],
+                        "required": [
+                            "customer_ids",
+                            "login_customer_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2329,12 +2799,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_ads_conversionactions",
             "name": "conversion-actions",
-            "output": ["ConversionAction"],
+            "output": [
+                "ConversionAction"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ConversionAction", "SyncMetadata_google_ads_conversionactions"],
+            "usedModels": [
+                "ConversionAction",
+                "SyncMetadata_google_ads_conversionactions"
+            ],
             "version": "1.0.5",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2363,16 +2840,28 @@
                                         "type": "object",
                                         "properties": {
                                             "defaultValue": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "alwaysUseDefaultValue": {
-                                                "type": ["boolean", "null"]
+                                                "type": [
+                                                    "boolean",
+                                                    "null"
+                                                ]
                                             },
                                             "currencyCode": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "defaultCurrencyCode": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -2383,7 +2872,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_ads_conversionactions": {
@@ -2400,12 +2891,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customerIds"],
+                        "required": [
+                            "customerIds"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2414,12 +2909,19 @@
             "endpoints": [],
             "input": "SyncMetadata_google_ads_keywordcriteria",
             "name": "keyword-criteria",
-            "output": ["KeywordCriterion"],
+            "output": [
+                "KeywordCriterion"
+            ],
             "runs": "every hour",
-            "scopes": ["https://www.googleapis.com/auth/adwords"],
+            "scopes": [
+                "https://www.googleapis.com/auth/adwords"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["KeywordCriterion", "SyncMetadata_google_ads_keywordcriteria"],
+            "usedModels": [
+                "KeywordCriterion",
+                "SyncMetadata_google_ads_keywordcriteria"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2458,7 +2960,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "resource_name", "customer_id", "campaign_id", "ad_group_id", "criterion_id"],
+                        "required": [
+                            "id",
+                            "resource_name",
+                            "customer_id",
+                            "campaign_id",
+                            "ad_group_id",
+                            "criterion_id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_google_ads_keywordcriteria": {
@@ -2478,7 +2987,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

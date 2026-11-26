@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_front_conversation",
             "name": "conversation",
-            "output": ["ActionOutput_front_conversation"],
+            "output": [
+                "ActionOutput_front_conversation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_front_conversation", "ActionOutput_front_conversation"],
+            "usedModels": [
+                "ActionInput_front_conversation",
+                "ActionOutput_front_conversation"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -47,7 +52,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "query"],
+                        "required": [
+                            "id",
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_front_conversation": {
@@ -77,24 +85,36 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["conversation", "message_seen"],
+                                                    "required": [
+                                                        "conversation",
+                                                        "message_seen"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["self", "related"],
+                                            "required": [
+                                                "self",
+                                                "related"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "id": {
                                             "type": "string"
                                         },
                                         "version": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "blurb": {
                                             "type": "string"
                                         },
                                         "error_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "anyOf": [
@@ -163,7 +183,10 @@
                                             "type": "boolean"
                                         },
                                         "draft_mode": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created_at": {
                                             "type": "number"
@@ -192,11 +215,17 @@
                                                                             "type": "string"
                                                                         }
                                                                     },
-                                                                    "required": ["inboxes", "conversations"],
+                                                                    "required": [
+                                                                        "inboxes",
+                                                                        "conversations"
+                                                                    ],
                                                                     "additionalProperties": false
                                                                 }
                                                             },
-                                                            "required": ["self", "related"],
+                                                            "required": [
+                                                                "self",
+                                                                "related"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "id": {
@@ -261,11 +290,15 @@
                                                                         "type": "string"
                                                                     }
                                                                 },
-                                                                "required": ["contact"],
+                                                                "required": [
+                                                                    "contact"
+                                                                ],
                                                                 "additionalProperties": false
                                                             }
                                                         },
-                                                        "required": ["related"],
+                                                        "required": [
+                                                            "related"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "name": {
@@ -295,7 +328,12 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["_links", "name", "handle", "role"],
+                                                "required": [
+                                                    "_links",
+                                                    "name",
+                                                    "handle",
+                                                    "role"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -335,11 +373,21 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["is_inline", "cid"],
+                                                        "required": [
+                                                            "is_inline",
+                                                            "cid"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["id", "filename", "url", "content_type", "size", "metadata"],
+                                                "required": [
+                                                    "id",
+                                                    "filename",
+                                                    "url",
+                                                    "content_type",
+                                                    "size",
+                                                    "metadata"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -462,7 +510,9 @@
                                 }
                             }
                         },
-                        "required": ["messages"],
+                        "required": [
+                            "messages"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -484,12 +534,17 @@
             ],
             "input": "SyncMetadata_front_conversations",
             "name": "conversations",
-            "output": ["Conversation"],
+            "output": [
+                "Conversation"
+            ],
             "runs": "every day",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Conversation", "SyncMetadata_front_conversations"],
+            "usedModels": [
+                "Conversation",
+                "SyncMetadata_front_conversations"
+            ],
             "version": "2.1.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -557,7 +612,16 @@
                                                 "additionalProperties": {}
                                             }
                                         },
-                                        "required": ["id", "email", "first_name", "last_name", "is_admin", "is_available", "is_blocked", "custom_fields"],
+                                        "required": [
+                                            "id",
+                                            "email",
+                                            "first_name",
+                                            "last_name",
+                                            "is_admin",
+                                            "is_available",
+                                            "is_blocked",
+                                            "custom_fields"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -597,7 +661,11 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["name", "handle", "role"],
+                                        "required": [
+                                            "name",
+                                            "handle",
+                                            "role"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -617,10 +685,16 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "highlight": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_private": {
                                             "type": "boolean"
@@ -673,7 +747,13 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "name", "type", "external_url", "custom_fields"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "type",
+                                        "external_url",
+                                        "custom_fields"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -708,7 +788,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["created_at", "scheduled_at", "updated_at"],
+                                    "required": [
+                                        "created_at",
+                                        "scheduled_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }

@@ -15,12 +15,17 @@
             ],
             "input": "SyncMetadata_paycom_unifiedemployees",
             "name": "unified-employees",
-            "output": ["StandardEmployee"],
+            "output": [
+                "StandardEmployee"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["StandardEmployee", "SyncMetadata_paycom_unifiedemployees"],
+            "usedModels": [
+                "StandardEmployee",
+                "SyncMetadata_paycom_unifiedemployees"
+            ],
             "version": "0.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -59,7 +64,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "employmentType": {
@@ -97,10 +105,16 @@
                                 "type": "string"
                             },
                             "terminationDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "terminationType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "manager": {
                                 "type": "object",
@@ -118,7 +132,12 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "firstName", "lastName", "email"],
+                                "required": [
+                                    "id",
+                                    "firstName",
+                                    "lastName",
+                                    "email"
+                                ],
                                 "additionalProperties": false
                             },
                             "workLocation": {
@@ -174,11 +193,21 @@
                                                 ]
                                             }
                                         },
-                                        "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                        "required": [
+                                            "street",
+                                            "city",
+                                            "state",
+                                            "country",
+                                            "postalCode",
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["name", "type"],
+                                "required": [
+                                    "name",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "addresses": {
@@ -214,7 +243,14 @@
                                             ]
                                         }
                                     },
-                                    "required": ["street", "city", "state", "country", "postalCode", "type"],
+                                    "required": [
+                                        "street",
+                                        "city",
+                                        "state",
+                                        "country",
+                                        "postalCode",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -243,7 +279,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "number"],
+                                    "required": [
+                                        "type",
+                                        "number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -268,7 +307,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "address"],
+                                    "required": [
+                                        "type",
+                                        "address"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },

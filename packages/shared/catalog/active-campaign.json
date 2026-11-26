@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_addcontacttolist",
             "name": "add-contact-to-list",
-            "output": ["ActionOutput_active_campaign_addcontacttolist"],
+            "output": [
+                "ActionOutput_active_campaign_addcontacttolist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_addcontacttolist", "ActionOutput_active_campaign_addcontacttolist"],
+            "usedModels": [
+                "ActionInput_active_campaign_addcontacttolist",
+                "ActionOutput_active_campaign_addcontacttolist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +34,11 @@
                                 "description": "Subscription status. 1 = subscribe, 2 = unsubscribe."
                             }
                         },
-                        "required": ["listId", "contactId", "status"],
+                        "required": [
+                            "listId",
+                            "contactId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_addcontacttolist": {
@@ -57,7 +66,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "contactId", "listId", "status"],
+                        "required": [
+                            "id",
+                            "contactId",
+                            "listId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -70,9 +84,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createaccount",
             "name": "create-account",
-            "output": ["ActionOutput_active_campaign_createaccount"],
+            "output": [
+                "ActionOutput_active_campaign_createaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createaccount", "ActionOutput_active_campaign_createaccount"],
+            "usedModels": [
+                "ActionInput_active_campaign_createaccount",
+                "ActionOutput_active_campaign_createaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -103,19 +122,27 @@
                                         },
                                         "fieldValue": {
                                             "description": "Updated field value. For currency fields, this needs to be in cents.",
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "fieldCurrency": {
                                             "description": "Three-letter currency code for currency field types. Example: GBP",
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["customFieldId", "fieldValue"],
+                                    "required": [
+                                        "customFieldId",
+                                        "fieldValue"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createaccount": {
@@ -145,7 +172,10 @@
                                             "type": "number"
                                         },
                                         "fieldValue": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "accountId": {
                                             "type": "string"
@@ -154,12 +184,18 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["customFieldId", "fieldValue"],
+                                    "required": [
+                                        "customFieldId",
+                                        "fieldValue"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -172,9 +208,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createcampaign",
             "name": "create-campaign",
-            "output": ["ActionOutput_active_campaign_createcampaign"],
-            "scopes": ["campaigns"],
-            "usedModels": ["ActionInput_active_campaign_createcampaign", "ActionOutput_active_campaign_createcampaign"],
+            "output": [
+                "ActionOutput_active_campaign_createcampaign"
+            ],
+            "scopes": [
+                "campaigns"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_createcampaign",
+                "ActionOutput_active_campaign_createcampaign"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -194,7 +237,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["name", "type"],
+                        "required": [
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createcampaign": {
@@ -217,7 +263,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -230,9 +280,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createcontact",
             "name": "create-contact",
-            "output": ["ActionOutput_active_campaign_createcontact"],
+            "output": [
+                "ActionOutput_active_campaign_createcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createcontact", "ActionOutput_active_campaign_createcontact"],
+            "usedModels": [
+                "ActionInput_active_campaign_createcontact",
+                "ActionOutput_active_campaign_createcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -272,12 +327,17 @@
                                             "description": "Custom field value. Example: \"The Value\""
                                         }
                                     },
-                                    "required": ["field", "value"],
+                                    "required": [
+                                        "field",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createcontact": {
@@ -328,7 +388,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -341,9 +404,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createcustomfield",
             "name": "create-custom-field",
-            "output": ["ActionOutput_active_campaign_createcustomfield"],
+            "output": [
+                "ActionOutput_active_campaign_createcustomfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createcustomfield", "ActionOutput_active_campaign_createcustomfield"],
+            "usedModels": [
+                "ActionInput_active_campaign_createcustomfield",
+                "ActionOutput_active_campaign_createcustomfield"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -356,7 +424,18 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["dropdown", "hidden", "checkbox", "date", "text", "datetime", "textarea", "listbox", "radio", "number"],
+                                "enum": [
+                                    "dropdown",
+                                    "hidden",
+                                    "checkbox",
+                                    "date",
+                                    "text",
+                                    "datetime",
+                                    "textarea",
+                                    "listbox",
+                                    "radio",
+                                    "number"
+                                ],
                                 "description": "Type of the custom field."
                             },
                             "descript": {
@@ -382,7 +461,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["title", "type"],
+                        "required": [
+                            "title",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createcustomfield": {
@@ -410,7 +492,10 @@
                                 "type": "string"
                             },
                             "ordernum": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "cdate": {
                                 "type": "string"
@@ -419,7 +504,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "type"],
+                        "required": [
+                            "id",
+                            "title",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -432,9 +521,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createdealgroup",
             "name": "create-deal-group",
-            "output": ["ActionOutput_active_campaign_createdealgroup"],
+            "output": [
+                "ActionOutput_active_campaign_createdealgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createdealgroup", "ActionOutput_active_campaign_createdealgroup"],
+            "usedModels": [
+                "ActionInput_active_campaign_createdealgroup",
+                "ActionOutput_active_campaign_createdealgroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -507,7 +601,10 @@
                                 }
                             }
                         },
-                        "required": ["title", "currency"],
+                        "required": [
+                            "title",
+                            "currency"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createdealgroup": {
@@ -550,7 +647,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "currency"],
+                        "required": [
+                            "id",
+                            "title",
+                            "currency"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -563,9 +664,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createdealstage",
             "name": "create-deal-stage",
-            "output": ["ActionOutput_active_campaign_createdealstage"],
+            "output": [
+                "ActionOutput_active_campaign_createdealstage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createdealstage", "ActionOutput_active_campaign_createdealstage"],
+            "usedModels": [
+                "ActionInput_active_campaign_createdealstage",
+                "ActionOutput_active_campaign_createdealstage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -630,7 +736,10 @@
                                 ]
                             }
                         },
-                        "required": ["title", "group"],
+                        "required": [
+                            "title",
+                            "group"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createdealstage": {
@@ -646,13 +755,19 @@
                                 "type": "string"
                             },
                             "order": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "color": {
                                 "type": "string"
                             },
                             "width": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "cardRegion1": {
                                 "type": "string"
@@ -679,7 +794,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "group", "order"],
+                        "required": [
+                            "id",
+                            "title",
+                            "group",
+                            "order"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -692,9 +812,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createdeal",
             "name": "create-deal",
-            "output": ["ActionOutput_active_campaign_createdeal"],
-            "scopes": ["deals:write"],
-            "usedModels": ["ActionInput_active_campaign_createdeal", "ActionOutput_active_campaign_createdeal"],
+            "output": [
+                "ActionOutput_active_campaign_createdeal"
+            ],
+            "scopes": [
+                "deals:write"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_createdeal",
+                "ActionOutput_active_campaign_createdeal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -779,12 +906,23 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["customFieldId", "fieldValue"],
+                                    "required": [
+                                        "customFieldId",
+                                        "fieldValue"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["title", "contact", "value", "currency", "group", "stage", "owner"],
+                        "required": [
+                            "title",
+                            "contact",
+                            "value",
+                            "currency",
+                            "group",
+                            "stage",
+                            "owner"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createdeal": {
@@ -837,10 +975,16 @@
                                 ]
                             },
                             "account": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "organization": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "fields": {
                                 "type": "array",
@@ -857,12 +1001,25 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["customFieldId", "fieldValue"],
+                                    "required": [
+                                        "customFieldId",
+                                        "fieldValue"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "title", "value", "currency", "contact", "owner", "group", "stage", "status"],
+                        "required": [
+                            "id",
+                            "title",
+                            "value",
+                            "currency",
+                            "contact",
+                            "owner",
+                            "group",
+                            "stage",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -875,9 +1032,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createlist",
             "name": "create-list",
-            "output": ["ActionOutput_active_campaign_createlist"],
+            "output": [
+                "ActionOutput_active_campaign_createlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createlist", "ActionOutput_active_campaign_createlist"],
+            "usedModels": [
+                "ActionInput_active_campaign_createlist",
+                "ActionOutput_active_campaign_createlist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -927,7 +1089,12 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["name", "stringid", "sender_url", "sender_reminder"],
+                        "required": [
+                            "name",
+                            "stringid",
+                            "sender_url",
+                            "sender_reminder"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createlist": {
@@ -967,7 +1134,11 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "stringid"],
+                        "required": [
+                            "id",
+                            "name",
+                            "stringid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -980,9 +1151,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createnote",
             "name": "create-note",
-            "output": ["ActionOutput_active_campaign_createnote"],
+            "output": [
+                "ActionOutput_active_campaign_createnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createnote", "ActionOutput_active_campaign_createnote"],
+            "usedModels": [
+                "ActionInput_active_campaign_createnote",
+                "ActionOutput_active_campaign_createnote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -999,11 +1175,21 @@
                             },
                             "reltype": {
                                 "type": "string",
-                                "enum": ["Activity", "Deal", "DealTask", "Subscriber", "CustomerAccount"],
+                                "enum": [
+                                    "Activity",
+                                    "Deal",
+                                    "DealTask",
+                                    "Subscriber",
+                                    "CustomerAccount"
+                                ],
                                 "description": "Type of related object. Example: \"Subscriber\""
                             }
                         },
-                        "required": ["note", "relid", "reltype"],
+                        "required": [
+                            "note",
+                            "relid",
+                            "reltype"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createnote": {
@@ -1046,7 +1232,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1059,9 +1247,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_createtag",
             "name": "create-tag",
-            "output": ["ActionOutput_active_campaign_createtag"],
+            "output": [
+                "ActionOutput_active_campaign_createtag"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_createtag", "ActionOutput_active_campaign_createtag"],
+            "usedModels": [
+                "ActionInput_active_campaign_createtag",
+                "ActionOutput_active_campaign_createtag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1081,7 +1274,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tag"],
+                        "required": [
+                            "tag"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_createtag": {
@@ -1106,7 +1301,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "tag"],
+                        "required": [
+                            "id",
+                            "tag"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1119,9 +1317,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deleteaccount",
             "name": "delete-account",
-            "output": ["ActionOutput_active_campaign_deleteaccount"],
+            "output": [
+                "ActionOutput_active_campaign_deleteaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_deleteaccount", "ActionOutput_active_campaign_deleteaccount"],
+            "usedModels": [
+                "ActionInput_active_campaign_deleteaccount",
+                "ActionOutput_active_campaign_deleteaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1133,7 +1336,9 @@
                                 "description": "Account ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deleteaccount": {
@@ -1146,7 +1351,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1159,9 +1367,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletecampaign",
             "name": "delete-campaign",
-            "output": ["ActionOutput_active_campaign_deletecampaign"],
+            "output": [
+                "ActionOutput_active_campaign_deletecampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_deletecampaign", "ActionOutput_active_campaign_deletecampaign"],
+            "usedModels": [
+                "ActionInput_active_campaign_deletecampaign",
+                "ActionOutput_active_campaign_deletecampaign"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1173,7 +1386,9 @@
                                 "description": "Campaign ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletecampaign": {
@@ -1186,7 +1401,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1199,9 +1417,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletecontact",
             "name": "delete-contact",
-            "output": ["ActionOutput_active_campaign_deletecontact"],
+            "output": [
+                "ActionOutput_active_campaign_deletecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_deletecontact", "ActionOutput_active_campaign_deletecontact"],
+            "usedModels": [
+                "ActionInput_active_campaign_deletecontact",
+                "ActionOutput_active_campaign_deletecontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1215,7 +1438,9 @@
                                 "description": "The contact ID to delete. Example: 9"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletecontact": {
@@ -1231,7 +1456,10 @@
                                 "description": "The deleted contact ID"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1244,9 +1472,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletecustomfield",
             "name": "delete-custom-field",
-            "output": ["ActionOutput_active_campaign_deletecustomfield"],
+            "output": [
+                "ActionOutput_active_campaign_deletecustomfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_deletecustomfield", "ActionOutput_active_campaign_deletecustomfield"],
+            "usedModels": [
+                "ActionInput_active_campaign_deletecustomfield",
+                "ActionOutput_active_campaign_deletecustomfield"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1258,7 +1491,9 @@
                                 "description": "The ID of the custom field to delete. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletecustomfield": {
@@ -1271,7 +1506,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1284,9 +1521,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletedealgroup",
             "name": "delete-deal-group",
-            "output": ["ActionOutput_active_campaign_deletedealgroup"],
-            "scopes": ["deal"],
-            "usedModels": ["ActionInput_active_campaign_deletedealgroup", "ActionOutput_active_campaign_deletedealgroup"],
+            "output": [
+                "ActionOutput_active_campaign_deletedealgroup"
+            ],
+            "scopes": [
+                "deal"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_deletedealgroup",
+                "ActionOutput_active_campaign_deletedealgroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1298,7 +1542,9 @@
                                 "description": "Deal group (pipeline) ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletedealgroup": {
@@ -1311,7 +1557,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1324,9 +1573,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletedealstage",
             "name": "delete-deal-stage",
-            "output": ["ActionOutput_active_campaign_deletedealstage"],
-            "scopes": ["deal_stage:write"],
-            "usedModels": ["ActionInput_active_campaign_deletedealstage", "ActionOutput_active_campaign_deletedealstage"],
+            "output": [
+                "ActionOutput_active_campaign_deletedealstage"
+            ],
+            "scopes": [
+                "deal_stage:write"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_deletedealstage",
+                "ActionOutput_active_campaign_deletedealstage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1338,7 +1594,9 @@
                                 "description": "Deal stage ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletedealstage": {
@@ -1351,7 +1609,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1364,9 +1625,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletedeal",
             "name": "delete-deal",
-            "output": ["ActionOutput_active_campaign_deletedeal"],
+            "output": [
+                "ActionOutput_active_campaign_deletedeal"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_deletedeal", "ActionOutput_active_campaign_deletedeal"],
+            "usedModels": [
+                "ActionInput_active_campaign_deletedeal",
+                "ActionOutput_active_campaign_deletedeal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1380,7 +1646,9 @@
                                 "description": "The deal ID to delete. Example: 11"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletedeal": {
@@ -1395,7 +1663,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["success", "id"],
+                        "required": [
+                            "success",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1408,9 +1679,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletelist",
             "name": "delete-list",
-            "output": ["ActionOutput_active_campaign_deletelist"],
-            "scopes": ["lists"],
-            "usedModels": ["ActionInput_active_campaign_deletelist", "ActionOutput_active_campaign_deletelist"],
+            "output": [
+                "ActionOutput_active_campaign_deletelist"
+            ],
+            "scopes": [
+                "lists"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_deletelist",
+                "ActionOutput_active_campaign_deletelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1424,7 +1702,9 @@
                                 "description": "The ID of the list to delete. Example: 13"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletelist": {
@@ -1439,7 +1719,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1452,9 +1735,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletenote",
             "name": "delete-note",
-            "output": ["ActionOutput_active_campaign_deletenote"],
+            "output": [
+                "ActionOutput_active_campaign_deletenote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_deletenote", "ActionOutput_active_campaign_deletenote"],
+            "usedModels": [
+                "ActionInput_active_campaign_deletenote",
+                "ActionOutput_active_campaign_deletenote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1466,7 +1754,9 @@
                                 "description": "Note ID to delete. Example: \"3\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletenote": {
@@ -1479,7 +1769,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1492,9 +1785,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_deletetag",
             "name": "delete-tag",
-            "output": ["ActionOutput_active_campaign_deletetag"],
+            "output": [
+                "ActionOutput_active_campaign_deletetag"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_deletetag", "ActionOutput_active_campaign_deletetag"],
+            "usedModels": [
+                "ActionInput_active_campaign_deletetag",
+                "ActionOutput_active_campaign_deletetag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1506,7 +1804,9 @@
                                 "description": "Tag ID to delete. Example: \"11\""
                             }
                         },
-                        "required": ["tag_id"],
+                        "required": [
+                            "tag_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_deletetag": {
@@ -1516,7 +1816,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1529,9 +1831,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getaccount",
             "name": "get-account",
-            "output": ["ActionOutput_active_campaign_getaccount"],
+            "output": [
+                "ActionOutput_active_campaign_getaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getaccount", "ActionOutput_active_campaign_getaccount"],
+            "usedModels": [
+                "ActionInput_active_campaign_getaccount",
+                "ActionOutput_active_campaign_getaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1543,7 +1850,9 @@
                                 "description": "Account ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getaccount": {
@@ -1566,7 +1875,10 @@
                             },
                             "links": {}
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1579,9 +1891,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getautomation",
             "name": "get-automation",
-            "output": ["ActionOutput_active_campaign_getautomation"],
+            "output": [
+                "ActionOutput_active_campaign_getautomation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getautomation", "ActionOutput_active_campaign_getautomation"],
+            "usedModels": [
+                "ActionInput_active_campaign_getautomation",
+                "ActionOutput_active_campaign_getautomation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1593,7 +1910,9 @@
                                 "description": "Automation ID. Example: \"1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getautomation": {
@@ -1681,7 +2000,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1694,9 +2016,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getcampaign",
             "name": "get-campaign",
-            "output": ["ActionOutput_active_campaign_getcampaign"],
+            "output": [
+                "ActionOutput_active_campaign_getcampaign"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getcampaign", "ActionOutput_active_campaign_getcampaign"],
+            "usedModels": [
+                "ActionInput_active_campaign_getcampaign",
+                "ActionOutput_active_campaign_getcampaign"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1708,7 +2035,9 @@
                                 "description": "Campaign ID. Example: \"1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getcampaign": {
@@ -1766,10 +2095,16 @@
                                         "type": "string"
                                     },
                                     "sdate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "ldate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "send_amt": {
                                         "type": "string"
@@ -1874,10 +2209,16 @@
                                         "type": "string"
                                     },
                                     "htmlunsubdata": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "textunsubdata": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "recurring": {
                                         "type": "string"
@@ -1916,7 +2257,10 @@
                                         "type": "string"
                                     },
                                     "reminder_format": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "reminder_type": {
                                         "type": "string"
@@ -1931,13 +2275,19 @@
                                         "type": "string"
                                     },
                                     "reminder_last_cron_run": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "activerss_interval": {
                                         "type": "string"
                                     },
                                     "activerss_url": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "activerss_items": {
                                         "type": "string"
@@ -1955,13 +2305,19 @@
                                         "type": "string"
                                     },
                                     "scheduleddate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "waitpreview": {
                                         "type": "string"
                                     },
                                     "deletestamp": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "replysys": {
                                         "type": "string"
@@ -1973,16 +2329,25 @@
                                         "type": "string"
                                     },
                                     "created_by": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "updated_by": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "ip": {
                                         "type": "string"
                                     },
                                     "series_send_lock_time": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "can_skip_approval": {
                                         "type": "string"
@@ -2062,7 +2427,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["campaign"],
+                        "required": [
+                            "campaign"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2075,9 +2442,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getcontact",
             "name": "get-contact",
-            "output": ["ActionOutput_active_campaign_getcontact"],
+            "output": [
+                "ActionOutput_active_campaign_getcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getcontact", "ActionOutput_active_campaign_getcontact"],
+            "usedModels": [
+                "ActionInput_active_campaign_getcontact",
+                "ActionOutput_active_campaign_getcontact"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2091,7 +2463,9 @@
                                 "description": "Contact ID. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getcontact": {
@@ -2118,7 +2492,10 @@
                                             "type": "string"
                                         },
                                         "remdate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "timespan": {
                                             "anyOf": [
@@ -2159,7 +2536,10 @@
                                             "type": "string"
                                         },
                                         "automation": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -2188,10 +2568,16 @@
                                             "type": "string"
                                         },
                                         "sdate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "udate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "status": {
                                             "type": "string"
@@ -2315,7 +2701,10 @@
                                             "type": "string"
                                         },
                                         "nexttaskid": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "currency": {
                                             "type": "string"
@@ -2529,19 +2918,28 @@
                                         "type": "string"
                                     },
                                     "bounced_date": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "ip": {
                                         "type": "string"
                                     },
                                     "ua": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "hash": {
                                         "type": "string"
                                     },
                                     "socialdata_lastcheck": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "email_local": {
                                         "type": "string"
@@ -2553,7 +2951,10 @@
                                         "type": "string"
                                     },
                                     "rating_tstamp": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "gravatar": {
                                         "type": "string"
@@ -2565,16 +2966,28 @@
                                         "type": "string"
                                     },
                                     "adate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "udate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "edate": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "deleted_at": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "created_utc_timestamp": {
                                         "type": "string"
@@ -2657,11 +3070,15 @@
                                         ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["contact"],
+                        "required": [
+                            "contact"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2674,9 +3091,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getcustomfield",
             "name": "get-custom-field",
-            "output": ["ActionOutput_active_campaign_getcustomfield"],
+            "output": [
+                "ActionOutput_active_campaign_getcustomfield"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getcustomfield", "ActionOutput_active_campaign_getcustomfield"],
+            "usedModels": [
+                "ActionInput_active_campaign_getcustomfield",
+                "ActionOutput_active_campaign_getcustomfield"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2688,7 +3110,9 @@
                                 "description": "Custom field ID. Example: \"1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getcustomfield": {
@@ -2827,7 +3251,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["field", "orderid", "value", "label", "isdefault", "id"],
+                                    "required": [
+                                        "field",
+                                        "orderid",
+                                        "value",
+                                        "label",
+                                        "isdefault",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2853,12 +3284,19 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["field", "relid", "dorder", "id"],
+                                    "required": [
+                                        "field",
+                                        "relid",
+                                        "dorder",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["field"],
+                        "required": [
+                            "field"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2871,9 +3309,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getdealgroup",
             "name": "get-deal-group",
-            "output": ["ActionOutput_active_campaign_getdealgroup"],
+            "output": [
+                "ActionOutput_active_campaign_getdealgroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getdealgroup", "ActionOutput_active_campaign_getdealgroup"],
+            "usedModels": [
+                "ActionInput_active_campaign_getdealgroup",
+                "ActionOutput_active_campaign_getdealgroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2882,10 +3325,15 @@
                         "properties": {
                             "id": {
                                 "description": "Deal group (pipeline) ID. Example: 1",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getdealgroup": {
@@ -2940,7 +3388,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "dealStages": {
@@ -2964,7 +3414,10 @@
                                             "type": "string"
                                         },
                                         "cdate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "color": {
                                             "type": "string"
@@ -2994,18 +3447,25 @@
                                             "type": "string"
                                         },
                                         "udate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "width": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["dealGroup"],
+                        "required": [
+                            "dealGroup"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3018,9 +3478,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getdealstage",
             "name": "get-deal-stage",
-            "output": ["ActionOutput_active_campaign_getdealstage"],
+            "output": [
+                "ActionOutput_active_campaign_getdealstage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getdealstage", "ActionOutput_active_campaign_getdealstage"],
+            "usedModels": [
+                "ActionInput_active_campaign_getdealstage",
+                "ActionOutput_active_campaign_getdealstage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3029,10 +3494,15 @@
                         "properties": {
                             "id": {
                                 "description": "Deal stage ID. Example: 1",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getdealstage": {
@@ -3078,7 +3548,10 @@
                                 "additionalProperties": false
                             },
                             "order": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "title": {
                                 "type": "string"
@@ -3087,10 +3560,15 @@
                                 "type": "string"
                             },
                             "width": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3103,9 +3581,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getdeal",
             "name": "get-deal",
-            "output": ["ActionOutput_active_campaign_getdeal"],
+            "output": [
+                "ActionOutput_active_campaign_getdeal"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getdeal", "ActionOutput_active_campaign_getdeal"],
+            "usedModels": [
+                "ActionInput_active_campaign_getdeal",
+                "ActionOutput_active_campaign_getdeal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3117,7 +3600,9 @@
                                 "description": "The Deal id. Example: 1"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getdeal": {
@@ -3205,7 +3690,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "isDisabled", "title"],
+                        "required": [
+                            "id",
+                            "isDisabled",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3218,9 +3707,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getform",
             "name": "get-form",
-            "output": ["ActionOutput_active_campaign_getform"],
+            "output": [
+                "ActionOutput_active_campaign_getform"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getform", "ActionOutput_active_campaign_getform"],
+            "usedModels": [
+                "ActionInput_active_campaign_getform",
+                "ActionOutput_active_campaign_getform"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3232,7 +3726,9 @@
                                 "description": "ID of the form to retrieve. Example: \"13\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getform": {
@@ -3242,10 +3738,16 @@
                                 "type": "string"
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "action": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "actiondata": {
                                 "anyOf": [
@@ -3285,7 +3787,10 @@
                                 ]
                             },
                             "submit": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "submitdata": {
                                 "anyOf": [
@@ -3304,22 +3809,40 @@
                                 ]
                             },
                             "url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "layout": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "title": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "body": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "button": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "thanks": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "style": {
                                 "anyOf": [
@@ -3441,22 +3964,40 @@
                                 ]
                             },
                             "parentformid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "userid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "addressid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "cdate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "udate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "entries": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "aid": {
                                 "anyOf": [
@@ -3491,7 +4032,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3504,9 +4047,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getlist",
             "name": "get-list",
-            "output": ["ActionOutput_active_campaign_getlist"],
-            "scopes": ["list_view"],
-            "usedModels": ["ActionInput_active_campaign_getlist", "ActionOutput_active_campaign_getlist"],
+            "output": [
+                "ActionOutput_active_campaign_getlist"
+            ],
+            "scopes": [
+                "list_view"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_getlist",
+                "ActionOutput_active_campaign_getlist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3518,7 +4068,9 @@
                                 "description": "List ID. Example: 3"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getlist": {
@@ -3669,7 +4221,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3682,9 +4236,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_getnote",
             "name": "get-note",
-            "output": ["ActionOutput_active_campaign_getnote"],
+            "output": [
+                "ActionOutput_active_campaign_getnote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_getnote", "ActionOutput_active_campaign_getnote"],
+            "usedModels": [
+                "ActionInput_active_campaign_getnote",
+                "ActionOutput_active_campaign_getnote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3697,7 +4256,9 @@
                                 "description": "Note ID. Example: \"1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_getnote": {
@@ -3742,7 +4303,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3755,9 +4318,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_gettag",
             "name": "get-tag",
-            "output": ["ActionOutput_active_campaign_gettag"],
+            "output": [
+                "ActionOutput_active_campaign_gettag"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_gettag", "ActionOutput_active_campaign_gettag"],
+            "usedModels": [
+                "ActionInput_active_campaign_gettag",
+                "ActionOutput_active_campaign_gettag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3769,7 +4337,9 @@
                                 "description": "Tag ID. Example: \"1\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_gettag": {
@@ -3803,7 +4373,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3816,9 +4388,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listaccounts",
             "name": "list-accounts",
-            "output": ["ActionOutput_active_campaign_listaccounts"],
+            "output": [
+                "ActionOutput_active_campaign_listaccounts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listaccounts", "ActionOutput_active_campaign_listaccounts"],
+            "usedModels": [
+                "ActionInput_active_campaign_listaccounts",
+                "ActionOutput_active_campaign_listaccounts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3879,7 +4456,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3887,7 +4467,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3900,9 +4482,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listautomations",
             "name": "list-automations",
-            "output": ["ActionOutput_active_campaign_listautomations"],
+            "output": [
+                "ActionOutput_active_campaign_listautomations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listautomations", "ActionOutput_active_campaign_listautomations"],
+            "usedModels": [
+                "ActionInput_active_campaign_listautomations",
+                "ActionOutput_active_campaign_listautomations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3968,7 +4555,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3976,7 +4566,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["automations"],
+                        "required": [
+                            "automations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3989,9 +4581,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listcampaigns",
             "name": "list-campaigns",
-            "output": ["ActionOutput_active_campaign_listcampaigns"],
+            "output": [
+                "ActionOutput_active_campaign_listcampaigns"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listcampaigns", "ActionOutput_active_campaign_listcampaigns"],
+            "usedModels": [
+                "ActionInput_active_campaign_listcampaigns",
+                "ActionOutput_active_campaign_listcampaigns"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4015,12 +4612,18 @@
                             "orders_sdate": {
                                 "description": "Order campaigns by send date.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             },
                             "orders_ldate": {
                                 "description": "Order campaigns by last send date.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -4052,10 +4655,16 @@
                                             "type": "string"
                                         },
                                         "sdate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "ldate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "send_amt": {
                                             "type": "string"
@@ -4076,7 +4685,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4084,7 +4695,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4097,9 +4710,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listcontacts",
             "name": "list-contacts",
-            "output": ["ActionOutput_active_campaign_listcontacts"],
+            "output": [
+                "ActionOutput_active_campaign_listcontacts"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listcontacts", "ActionOutput_active_campaign_listcontacts"],
+            "usedModels": [
+                "ActionInput_active_campaign_listcontacts",
+                "ActionOutput_active_campaign_listcontacts"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4192,7 +4810,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "email"],
+                                    "required": [
+                                        "id",
+                                        "email"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4200,7 +4821,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4213,9 +4836,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listcustomfields",
             "name": "list-custom-fields",
-            "output": ["ActionOutput_active_campaign_listcustomfields"],
+            "output": [
+                "ActionOutput_active_campaign_listcustomfields"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listcustomfields", "ActionOutput_active_campaign_listcustomfields"],
+            "usedModels": [
+                "ActionInput_active_campaign_listcustomfields",
+                "ActionOutput_active_campaign_listcustomfields"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4254,7 +4882,10 @@
                                             "type": "string"
                                         },
                                         "descript": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
                                             "type": "string"
@@ -4266,7 +4897,10 @@
                                             "type": "string"
                                         },
                                         "defval": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "show_in_list": {
                                             "type": "string"
@@ -4313,7 +4947,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4321,7 +4958,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4334,9 +4973,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listdealgroups",
             "name": "list-deal-groups",
-            "output": ["ActionOutput_active_campaign_listdealgroups"],
+            "output": [
+                "ActionOutput_active_campaign_listdealgroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listdealgroups", "ActionOutput_active_campaign_listdealgroups"],
+            "usedModels": [
+                "ActionInput_active_campaign_listdealgroups",
+                "ActionOutput_active_campaign_listdealgroups"
+            ],
             "version": "0.0.1",
             "json_schema": {
                 "definitions": {
@@ -4375,12 +5019,18 @@
                             "orders_title": {
                                 "description": "Order by pipeline title",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             },
                             "orders_popular": {
                                 "description": "Order by number of deals",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -4433,7 +5083,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4479,10 +5132,16 @@
                                             "type": "string"
                                         },
                                         "cdate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "udate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "links": {
                                             "type": "object",
@@ -4494,7 +5153,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "title"],
+                                    "required": [
+                                        "id",
+                                        "title"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4508,7 +5170,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["dealGroups"],
+                        "required": [
+                            "dealGroups"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4521,9 +5185,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listdealstages",
             "name": "list-deal-stages",
-            "output": ["ActionOutput_active_campaign_listdealstages"],
+            "output": [
+                "ActionOutput_active_campaign_listdealstages"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listdealstages", "ActionOutput_active_campaign_listdealstages"],
+            "usedModels": [
+                "ActionInput_active_campaign_listdealstages",
+                "ActionOutput_active_campaign_listdealstages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4579,7 +5248,10 @@
                                             "type": "string"
                                         },
                                         "cdate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "color": {
                                             "type": "string"
@@ -4600,7 +5272,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["group"],
+                                            "required": [
+                                                "group"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "order": {
@@ -4610,7 +5284,10 @@
                                             "type": "string"
                                         },
                                         "udate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "width": {
                                             "type": "string"
@@ -4637,7 +5314,10 @@
                                 "type": "object",
                                 "properties": {
                                     "total": {
-                                        "type": ["string", "number"]
+                                        "type": [
+                                            "string",
+                                            "number"
+                                        ]
                                     }
                                 },
                                 "additionalProperties": false
@@ -4647,7 +5327,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dealStages", "meta"],
+                        "required": [
+                            "dealStages",
+                            "meta"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4660,9 +5343,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listdeals",
             "name": "list-deals",
-            "output": ["ActionOutput_active_campaign_listdeals"],
+            "output": [
+                "ActionOutput_active_campaign_listdeals"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listdeals", "ActionOutput_active_campaign_listdeals"],
+            "usedModels": [
+                "ActionInput_active_campaign_listdeals",
+                "ActionOutput_active_campaign_listdeals"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4769,7 +5457,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4777,7 +5467,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4790,9 +5482,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listforms",
             "name": "list-forms",
-            "output": ["ActionOutput_active_campaign_listforms"],
+            "output": [
+                "ActionOutput_active_campaign_listforms"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listforms", "ActionOutput_active_campaign_listforms"],
+            "usedModels": [
+                "ActionInput_active_campaign_listforms",
+                "ActionOutput_active_campaign_listforms"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4883,7 +5580,10 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4891,7 +5591,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["forms"],
+                        "required": [
+                            "forms"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4904,9 +5606,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listlists",
             "name": "list-lists",
-            "output": ["ActionOutput_active_campaign_listlists"],
+            "output": [
+                "ActionOutput_active_campaign_listlists"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listlists", "ActionOutput_active_campaign_listlists"],
+            "usedModels": [
+                "ActionInput_active_campaign_listlists",
+                "ActionOutput_active_campaign_listlists"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4930,7 +5637,10 @@
                             "order": {
                                 "description": "Sort order by list name.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -4959,7 +5669,10 @@
                                             "type": "string"
                                         },
                                         "udate": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "private": {
                                             "type": "string"
@@ -4995,19 +5708,30 @@
                                             "type": "string"
                                         },
                                         "sender_url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "sender_reminder": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "optinoptout": {
                                             "type": "string"
                                         },
                                         "deletestamp": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5015,7 +5739,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5028,9 +5754,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listnotes",
             "name": "list-notes",
-            "output": ["ActionOutput_active_campaign_listnotes"],
+            "output": [
+                "ActionOutput_active_campaign_listnotes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listnotes", "ActionOutput_active_campaign_listnotes"],
+            "usedModels": [
+                "ActionInput_active_campaign_listnotes",
+                "ActionOutput_active_campaign_listnotes"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5099,11 +5830,22 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "id"],
+                                            "required": [
+                                                "type",
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "note", "relid", "reltype", "userid", "user", "is_draft"],
+                                    "required": [
+                                        "id",
+                                        "note",
+                                        "relid",
+                                        "reltype",
+                                        "userid",
+                                        "user",
+                                        "is_draft"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5111,7 +5853,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5124,9 +5868,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_listtags",
             "name": "list-tags",
-            "output": ["ActionOutput_active_campaign_listtags"],
+            "output": [
+                "ActionOutput_active_campaign_listtags"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_listtags", "ActionOutput_active_campaign_listtags"],
+            "usedModels": [
+                "ActionInput_active_campaign_listtags",
+                "ActionOutput_active_campaign_listtags"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5186,7 +5935,11 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "tag", "tagType"],
+                                    "required": [
+                                        "id",
+                                        "tag",
+                                        "tagType"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5194,7 +5947,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tags"],
+                        "required": [
+                            "tags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5207,9 +5962,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_synccontact",
             "name": "sync-contact",
-            "output": ["ActionOutput_active_campaign_synccontact"],
+            "output": [
+                "ActionOutput_active_campaign_synccontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_synccontact", "ActionOutput_active_campaign_synccontact"],
+            "usedModels": [
+                "ActionInput_active_campaign_synccontact",
+                "ActionOutput_active_campaign_synccontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5235,7 +5995,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email"],
+                        "required": [
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_synccontact": {
@@ -5257,7 +6019,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "email"],
+                        "required": [
+                            "id",
+                            "email"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5270,9 +6035,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_tagcontact",
             "name": "tag-contact",
-            "output": ["ActionOutput_active_campaign_tagcontact"],
+            "output": [
+                "ActionOutput_active_campaign_tagcontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_tagcontact", "ActionOutput_active_campaign_tagcontact"],
+            "usedModels": [
+                "ActionInput_active_campaign_tagcontact",
+                "ActionOutput_active_campaign_tagcontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5288,7 +6058,10 @@
                                 "description": "Tag ID. Example: 1"
                             }
                         },
-                        "required": ["contactId", "tagId"],
+                        "required": [
+                            "contactId",
+                            "tagId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_tagcontact": {
@@ -5307,7 +6080,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "contactId", "tagId"],
+                        "required": [
+                            "id",
+                            "contactId",
+                            "tagId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5320,9 +6097,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updateaccount",
             "name": "update-account",
-            "output": ["ActionOutput_active_campaign_updateaccount"],
+            "output": [
+                "ActionOutput_active_campaign_updateaccount"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_updateaccount", "ActionOutput_active_campaign_updateaccount"],
+            "usedModels": [
+                "ActionInput_active_campaign_updateaccount",
+                "ActionOutput_active_campaign_updateaccount"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5361,12 +6143,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["customFieldId", "fieldValue"],
+                                    "required": [
+                                        "customFieldId",
+                                        "fieldValue"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updateaccount": {
@@ -5397,7 +6184,10 @@
                                             "type": "number"
                                         },
                                         "fieldValue": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "fieldCurrency": {
                                             "type": "string"
@@ -5406,12 +6196,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["customFieldId"],
+                                    "required": [
+                                        "customFieldId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5424,9 +6218,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatecampaign",
             "name": "update-campaign",
-            "output": ["ActionOutput_active_campaign_updatecampaign"],
-            "scopes": ["campaigns"],
-            "usedModels": ["ActionInput_active_campaign_updatecampaign", "ActionOutput_active_campaign_updatecampaign"],
+            "output": [
+                "ActionOutput_active_campaign_updatecampaign"
+            ],
+            "scopes": [
+                "campaigns"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_updatecampaign",
+                "ActionOutput_active_campaign_updatecampaign"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5541,7 +6342,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatecampaign": {
@@ -5563,7 +6366,10 @@
                                 "type": "string"
                             },
                             "scheduledDate": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "addressId": {
                                 "type": "string"
@@ -5596,7 +6402,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5609,9 +6417,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatecontact",
             "name": "update-contact",
-            "output": ["ActionOutput_active_campaign_updatecontact"],
+            "output": [
+                "ActionOutput_active_campaign_updatecontact"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_updatecontact", "ActionOutput_active_campaign_updatecontact"],
+            "usedModels": [
+                "ActionInput_active_campaign_updatecontact",
+                "ActionOutput_active_campaign_updatecontact"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5646,12 +6459,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["field", "value"],
+                                    "required": [
+                                        "field",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatecontact": {
@@ -5673,7 +6491,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5686,9 +6506,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatedealgroup",
             "name": "update-deal-group",
-            "output": ["ActionOutput_active_campaign_updatedealgroup"],
-            "scopes": ["deal_group_write"],
-            "usedModels": ["ActionInput_active_campaign_updatedealgroup", "ActionOutput_active_campaign_updatedealgroup"],
+            "output": [
+                "ActionOutput_active_campaign_updatedealgroup"
+            ],
+            "scopes": [
+                "deal_group_write"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_updatedealgroup",
+                "ActionOutput_active_campaign_updatedealgroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5720,7 +6547,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatedealgroup": {
@@ -5745,7 +6574,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5758,9 +6590,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatedealstage",
             "name": "update-deal-stage",
-            "output": ["ActionOutput_active_campaign_updatedealstage"],
+            "output": [
+                "ActionOutput_active_campaign_updatedealstage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_updatedealstage", "ActionOutput_active_campaign_updatedealstage"],
+            "usedModels": [
+                "ActionInput_active_campaign_updatedealstage",
+                "ActionOutput_active_campaign_updatedealstage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5820,7 +6657,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatedealstage": {
@@ -5869,7 +6708,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5882,9 +6723,16 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatedeal",
             "name": "update-deal",
-            "output": ["ActionOutput_active_campaign_updatedeal"],
-            "scopes": ["deals"],
-            "usedModels": ["ActionInput_active_campaign_updatedeal", "ActionOutput_active_campaign_updatedeal"],
+            "output": [
+                "ActionOutput_active_campaign_updatedeal"
+            ],
+            "scopes": [
+                "deals"
+            ],
+            "usedModels": [
+                "ActionInput_active_campaign_updatedeal",
+                "ActionOutput_active_campaign_updatedeal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5953,18 +6801,25 @@
                                             "type": "number"
                                         },
                                         "fieldValue": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "fieldCurrency": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["customFieldId"],
+                                    "required": [
+                                        "customFieldId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatedeal": {
@@ -5977,7 +6832,10 @@
                                 "type": "string"
                             },
                             "value": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "currency": {
                                 "type": "string"
@@ -6004,7 +6862,10 @@
                                 "type": "string"
                             },
                             "status": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "organization": {
                                 "type": "string"
@@ -6019,10 +6880,16 @@
                                 "type": "string"
                             },
                             "nexttaskid": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "activitycount": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "nextdealid": {
                                 "type": "string"
@@ -6031,7 +6898,10 @@
                                 "type": "string"
                             },
                             "winProbability": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "winProbabilityMdate": {
                                 "type": "string"
@@ -6043,7 +6913,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6056,9 +6928,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatelist",
             "name": "update-list",
-            "output": ["ActionOutput_active_campaign_updatelist"],
+            "output": [
+                "ActionOutput_active_campaign_updatelist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_updatelist", "ActionOutput_active_campaign_updatelist"],
+            "usedModels": [
+                "ActionInput_active_campaign_updatelist",
+                "ActionOutput_active_campaign_updatelist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6085,13 +6962,22 @@
                                 "type": "boolean"
                             },
                             "carboncopy": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "subscription_notify": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "unsubscription_notify": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user": {
                                 "type": "number"
@@ -6100,7 +6986,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatelist": {
@@ -6125,13 +7013,22 @@
                                 "type": "boolean"
                             },
                             "carboncopy": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "subscription_notify": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "unsubscription_notify": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "user": {
                                 "type": "number"
@@ -6146,7 +7043,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6159,9 +7058,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatenote",
             "name": "update-note",
-            "output": ["ActionOutput_active_campaign_updatenote"],
+            "output": [
+                "ActionOutput_active_campaign_updatenote"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_updatenote", "ActionOutput_active_campaign_updatenote"],
+            "usedModels": [
+                "ActionInput_active_campaign_updatenote",
+                "ActionOutput_active_campaign_updatenote"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6185,7 +7089,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "note"],
+                        "required": [
+                            "id",
+                            "note"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatenote": {
@@ -6228,7 +7135,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "note"],
+                        "required": [
+                            "id",
+                            "note"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6241,9 +7151,14 @@
             "endpoint": null,
             "input": "ActionInput_active_campaign_updatetag",
             "name": "update-tag",
-            "output": ["ActionOutput_active_campaign_updatetag"],
+            "output": [
+                "ActionOutput_active_campaign_updatetag"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_active_campaign_updatetag", "ActionOutput_active_campaign_updatetag"],
+            "usedModels": [
+                "ActionInput_active_campaign_updatetag",
+                "ActionOutput_active_campaign_updatetag"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -6265,10 +7180,15 @@
                             },
                             "description": {
                                 "description": "Description of the tag being updated",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_active_campaign_updatetag": {
@@ -6284,7 +7204,10 @@
                                         "type": "string"
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "cdate": {
                                         "type": "string"
@@ -6305,7 +7228,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["tag"],
+                        "required": [
+                            "tag"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6326,12 +7251,16 @@
             ],
             "input": null,
             "name": "accounts",
-            "output": ["Account"],
+            "output": [
+                "Account"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Account"],
+            "usedModels": [
+                "Account"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6364,12 +7293,22 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "created_timestamp", "updated_timestamp", "owner", "contact_count", "deal_count"],
+                        "required": [
+                            "id",
+                            "name",
+                            "created_timestamp",
+                            "updated_timestamp",
+                            "owner",
+                            "contact_count",
+                            "deal_count"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6383,12 +7322,16 @@
             ],
             "input": null,
             "name": "automations",
-            "output": ["Automation"],
+            "output": [
+                "Automation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Automation"],
+            "usedModels": [
+                "Automation"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6412,7 +7355,10 @@
                                 "type": "string"
                             },
                             "status": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "entered": {
                                 "type": "string"
@@ -6442,12 +7388,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6461,12 +7412,16 @@
             ],
             "input": null,
             "name": "campaigns",
-            "output": ["Campaign"],
+            "output": [
+                "Campaign"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Campaign"],
+            "usedModels": [
+                "Campaign"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6553,12 +7508,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6572,12 +7531,16 @@
             ],
             "input": null,
             "name": "contacts",
-            "output": ["Contact"],
+            "output": [
+                "Contact"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Contact"],
+            "usedModels": [
+                "Contact"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6610,12 +7573,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6629,12 +7596,16 @@
             ],
             "input": null,
             "name": "custom-fields",
-            "output": ["CustomField"],
+            "output": [
+                "CustomField"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CustomField"],
+            "usedModels": [
+                "CustomField"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6703,12 +7674,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6722,12 +7697,16 @@
             ],
             "input": null,
             "name": "deal-groups",
-            "output": ["DealGroup"],
+            "output": [
+                "DealGroup"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DealGroup"],
+            "usedModels": [
+                "DealGroup"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6775,12 +7754,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6794,12 +7777,16 @@
             ],
             "input": null,
             "name": "deal-stages",
-            "output": ["DealStage"],
+            "output": [
+                "DealStage"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DealStage"],
+            "usedModels": [
+                "DealStage"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6850,12 +7837,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title"],
+                        "required": [
+                            "id",
+                            "title"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6869,12 +7861,16 @@
             ],
             "input": null,
             "name": "deals",
-            "output": ["Deal"],
+            "output": [
+                "Deal"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Deal"],
+            "usedModels": [
+                "Deal"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6958,12 +7954,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6977,12 +7977,16 @@
             ],
             "input": null,
             "name": "lists",
-            "output": ["List"],
+            "output": [
+                "List"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["List"],
+            "usedModels": [
+                "List"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7030,12 +8034,25 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "stringid", "userid", "cdate", "private", "require_name", "optinoptout", "send_last_broadcast", "to_name"],
+                        "required": [
+                            "id",
+                            "name",
+                            "stringid",
+                            "userid",
+                            "cdate",
+                            "private",
+                            "require_name",
+                            "optinoptout",
+                            "send_last_broadcast",
+                            "to_name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7049,12 +8066,16 @@
             ],
             "input": null,
             "name": "notes",
-            "output": ["Note"],
+            "output": [
+                "Note"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Note"],
+            "usedModels": [
+                "Note"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7090,12 +8111,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -7109,12 +8134,16 @@
             ],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -7138,12 +8167,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

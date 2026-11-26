@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_addgroupmember",
             "name": "add-group-member",
-            "output": ["ActionOutput_microsoft_addgroupmember"],
-            "scopes": ["Group.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_addgroupmember", "ActionOutput_microsoft_addgroupmember"],
+            "output": [
+                "ActionOutput_microsoft_addgroupmember"
+            ],
+            "scopes": [
+                "Group.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_addgroupmember",
+                "ActionOutput_microsoft_addgroupmember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -27,7 +34,10 @@
                                 "description": "The ID of the user, group, or service principal to add as a member. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
                             }
                         },
-                        "required": ["groupId", "memberId"],
+                        "required": [
+                            "groupId",
+                            "memberId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_addgroupmember": {
@@ -43,7 +53,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "groupId", "memberId"],
+                        "required": [
+                            "success",
+                            "groupId",
+                            "memberId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -56,9 +70,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_createapplication",
             "name": "create-application",
-            "output": ["ActionOutput_microsoft_createapplication"],
-            "scopes": ["Application.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_createapplication", "ActionOutput_microsoft_createapplication"],
+            "output": [
+                "ActionOutput_microsoft_createapplication"
+            ],
+            "scopes": [
+                "Application.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_createapplication",
+                "ActionOutput_microsoft_createapplication"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -201,7 +222,10 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["id", "value"],
+                                            "required": [
+                                                "id",
+                                                "value"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
@@ -262,12 +286,18 @@
                                                         ]
                                                     }
                                                 },
-                                                "required": ["id", "type"],
+                                                "required": [
+                                                    "id",
+                                                    "type"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["resourceAppId", "resourceAccess"],
+                                    "required": [
+                                        "resourceAppId",
+                                        "resourceAccess"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -290,7 +320,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["displayName"],
+                                    "required": [
+                                        "displayName"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -311,7 +343,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["displayName"],
+                        "required": [
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_createapplication": {
@@ -465,7 +499,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "appId", "displayName"],
+                        "required": [
+                            "id",
+                            "appId",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -478,9 +516,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_creategroup",
             "name": "create-group",
-            "output": ["ActionOutput_microsoft_creategroup"],
-            "scopes": ["Group.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_creategroup", "ActionOutput_microsoft_creategroup"],
+            "output": [
+                "ActionOutput_microsoft_creategroup"
+            ],
+            "scopes": [
+                "Group.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_creategroup",
+                "ActionOutput_microsoft_creategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -515,7 +560,10 @@
                                 }
                             }
                         },
-                        "required": ["displayName", "mailNickname"],
+                        "required": [
+                            "displayName",
+                            "mailNickname"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_creategroup": {
@@ -557,7 +605,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -570,9 +620,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_createserviceprincipal",
             "name": "create-service-principal",
-            "output": ["ActionOutput_microsoft_createserviceprincipal"],
-            "scopes": ["Application.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_createserviceprincipal", "ActionOutput_microsoft_createserviceprincipal"],
+            "output": [
+                "ActionOutput_microsoft_createserviceprincipal"
+            ],
+            "scopes": [
+                "Application.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_createserviceprincipal",
+                "ActionOutput_microsoft_createserviceprincipal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -584,7 +641,9 @@
                                 "description": "The application ID to create a service principal for. Example: \"dd6b0cea-e204-44c6-b2e0-1162323c22f4\""
                             }
                         },
-                        "required": ["appId"],
+                        "required": [
+                            "appId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_createserviceprincipal": {
@@ -612,7 +671,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "appId"],
+                        "required": [
+                            "id",
+                            "appId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -625,9 +687,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_microsoft_createuser"],
-            "scopes": ["User.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_createuser", "ActionOutput_microsoft_createuser"],
+            "output": [
+                "ActionOutput_microsoft_createuser"
+            ],
+            "scopes": [
+                "User.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_createuser",
+                "ActionOutput_microsoft_createuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -662,7 +731,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["password"],
+                                "required": [
+                                    "password"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Password profile for the user"
                             },
@@ -691,7 +762,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["displayName", "mailNickname", "userPrincipalName", "passwordProfile"],
+                        "required": [
+                            "displayName",
+                            "mailNickname",
+                            "userPrincipalName",
+                            "passwordProfile"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_createuser": {
@@ -734,7 +810,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -747,9 +825,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_deleteapplication",
             "name": "delete-application",
-            "output": ["ActionOutput_microsoft_deleteapplication"],
-            "scopes": ["Application.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_deleteapplication", "ActionOutput_microsoft_deleteapplication"],
+            "output": [
+                "ActionOutput_microsoft_deleteapplication"
+            ],
+            "scopes": [
+                "Application.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_deleteapplication",
+                "ActionOutput_microsoft_deleteapplication"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -762,7 +847,9 @@
                                 "description": "The unique identifier for the application object. Example: \"cc67332f-dfd9-43f0-af0f-bc0ff5334965\""
                             }
                         },
-                        "required": ["applicationId"],
+                        "required": [
+                            "applicationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_deleteapplication": {
@@ -775,7 +862,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "applicationId"],
+                        "required": [
+                            "success",
+                            "applicationId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -788,9 +878,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_deletegroup",
             "name": "delete-group",
-            "output": ["ActionOutput_microsoft_deletegroup"],
-            "scopes": ["Group.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_deletegroup", "ActionOutput_microsoft_deletegroup"],
+            "output": [
+                "ActionOutput_microsoft_deletegroup"
+            ],
+            "scopes": [
+                "Group.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_deletegroup",
+                "ActionOutput_microsoft_deletegroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -803,7 +900,9 @@
                                 "description": "The unique identifier of the group to delete. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_deletegroup": {
@@ -814,7 +913,9 @@
                                 "description": "Whether the group was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -827,9 +928,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_deleteserviceprincipal",
             "name": "delete-service-principal",
-            "output": ["ActionOutput_microsoft_deleteserviceprincipal"],
-            "scopes": ["Application.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_deleteserviceprincipal", "ActionOutput_microsoft_deleteserviceprincipal"],
+            "output": [
+                "ActionOutput_microsoft_deleteserviceprincipal"
+            ],
+            "scopes": [
+                "Application.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_deleteserviceprincipal",
+                "ActionOutput_microsoft_deleteserviceprincipal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -842,7 +950,9 @@
                                 "description": "The unique identifier of the service principal to delete. Example: \"8c7410b7-37cd-4463-981d-74cd6ab033a7\""
                             }
                         },
-                        "required": ["service_principal_id"],
+                        "required": [
+                            "service_principal_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_deleteserviceprincipal": {
@@ -855,7 +965,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "service_principal_id"],
+                        "required": [
+                            "success",
+                            "service_principal_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -868,9 +981,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_microsoft_deleteuser"],
-            "scopes": ["User.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_deleteuser", "ActionOutput_microsoft_deleteuser"],
+            "output": [
+                "ActionOutput_microsoft_deleteuser"
+            ],
+            "scopes": [
+                "User.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_deleteuser",
+                "ActionOutput_microsoft_deleteuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -883,7 +1003,9 @@
                                 "description": "The unique identifier of the user to delete. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_deleteuser": {
@@ -899,7 +1021,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "userId", "message"],
+                        "required": [
+                            "success",
+                            "userId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -912,9 +1038,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_getapplication",
             "name": "get-application",
-            "output": ["ActionOutput_microsoft_getapplication"],
-            "scopes": ["Application.Read.All"],
-            "usedModels": ["ActionInput_microsoft_getapplication", "ActionOutput_microsoft_getapplication"],
+            "output": [
+                "ActionOutput_microsoft_getapplication"
+            ],
+            "scopes": [
+                "Application.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_getapplication",
+                "ActionOutput_microsoft_getapplication"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -926,7 +1059,9 @@
                                 "description": "The unique identifier for the application. Example: \"cc67332f-dfd9-43f0-af0f-bc0ff5334965\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_getapplication": {
@@ -954,7 +1089,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -967,9 +1104,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_getdirectoryrole",
             "name": "get-directory-role",
-            "output": ["ActionOutput_microsoft_getdirectoryrole"],
-            "scopes": ["RoleManagement.Read.Directory"],
-            "usedModels": ["ActionInput_microsoft_getdirectoryrole", "ActionOutput_microsoft_getdirectoryrole"],
+            "output": [
+                "ActionOutput_microsoft_getdirectoryrole"
+            ],
+            "scopes": [
+                "RoleManagement.Read.Directory"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_getdirectoryrole",
+                "ActionOutput_microsoft_getdirectoryrole"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -981,7 +1125,9 @@
                                 "description": "The unique identifier for the directory role. Example: \"c35aa61d-9e3d-419e-84a9-24767a8a9988\""
                             }
                         },
-                        "required": ["directoryRoleId"],
+                        "required": [
+                            "directoryRoleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_getdirectoryrole": {
@@ -1000,7 +1146,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1013,9 +1161,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_getgroup",
             "name": "get-group",
-            "output": ["ActionOutput_microsoft_getgroup"],
-            "scopes": ["Group.Read.All"],
-            "usedModels": ["ActionInput_microsoft_getgroup", "ActionOutput_microsoft_getgroup"],
+            "output": [
+                "ActionOutput_microsoft_getgroup"
+            ],
+            "scopes": [
+                "Group.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_getgroup",
+                "ActionOutput_microsoft_getgroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1027,7 +1182,9 @@
                                 "description": "The unique identifier for the group. Example: \"51d82e22-a356-4506-afa1-2c3992bed3d7\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_getgroup": {
@@ -1070,7 +1227,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "displayName"],
+                        "required": [
+                            "id",
+                            "displayName"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1083,9 +1243,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_microsoft_getorganization"],
-            "scopes": ["Organization.Read.All"],
-            "usedModels": ["ActionInput_microsoft_getorganization", "ActionOutput_microsoft_getorganization"],
+            "output": [
+                "ActionOutput_microsoft_getorganization"
+            ],
+            "scopes": [
+                "Organization.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_getorganization",
+                "ActionOutput_microsoft_getorganization"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1098,7 +1265,9 @@
                                 "description": "Organization ID. Example: \"56480ae2-88be-49cf-86f6-d62a45bf8758\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_getorganization": {
@@ -1240,7 +1409,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1253,9 +1424,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_getserviceprincipal",
             "name": "get-service-principal",
-            "output": ["ActionOutput_microsoft_getserviceprincipal"],
-            "scopes": ["Application.Read.All"],
-            "usedModels": ["ActionInput_microsoft_getserviceprincipal", "ActionOutput_microsoft_getserviceprincipal"],
+            "output": [
+                "ActionOutput_microsoft_getserviceprincipal"
+            ],
+            "scopes": [
+                "Application.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_getserviceprincipal",
+                "ActionOutput_microsoft_getserviceprincipal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1267,7 +1445,9 @@
                                 "description": "The unique identifier of the service principal. Example: \"8c7410b7-37cd-4463-981d-74cd6ab033a7\""
                             }
                         },
-                        "required": ["servicePrincipalId"],
+                        "required": [
+                            "servicePrincipalId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_getserviceprincipal": {
@@ -1357,7 +1537,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1370,9 +1552,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_microsoft_getuser"],
-            "scopes": ["User.Read.All"],
-            "usedModels": ["ActionInput_microsoft_getuser", "ActionOutput_microsoft_getuser"],
+            "output": [
+                "ActionOutput_microsoft_getuser"
+            ],
+            "scopes": [
+                "User.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_getuser",
+                "ActionOutput_microsoft_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1385,7 +1574,9 @@
                                 "description": "The ID of the user to retrieve. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_getuser": {
@@ -1440,7 +1631,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1453,9 +1646,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listapplications",
             "name": "list-applications",
-            "output": ["ActionOutput_microsoft_listapplications"],
-            "scopes": ["Application.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listapplications", "ActionOutput_microsoft_listapplications"],
+            "output": [
+                "ActionOutput_microsoft_listapplications"
+            ],
+            "scopes": [
+                "Application.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listapplications",
+                "ActionOutput_microsoft_listapplications"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1517,7 +1717,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1525,7 +1727,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["applications"],
+                        "required": [
+                            "applications"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1538,9 +1742,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listdevices",
             "name": "list-devices",
-            "output": ["ActionOutput_microsoft_listdevices"],
-            "scopes": ["Device.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listdevices", "ActionOutput_microsoft_listdevices"],
+            "output": [
+                "ActionOutput_microsoft_listdevices"
+            ],
+            "scopes": [
+                "Device.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listdevices",
+                "ActionOutput_microsoft_listdevices"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1592,11 +1803,17 @@
                                         },
                                         "enrollmentProfileName": {
                                             "description": "The enrollment profile name.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "managementType": {
                                             "description": "The device management type.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "registrationDateTime": {
                                             "description": "The timestamp when the device was registered.",
@@ -1604,31 +1821,52 @@
                                         },
                                         "deviceOwnership": {
                                             "description": "The ownership of the device.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "domainName": {
                                             "description": "The domain name.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "profileType": {
                                             "description": "The profile type of the device.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "mdmAppId": {
                                             "description": "The MDM application ID.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "complianceExpirationDateTime": {
                                             "description": "The compliance expiration timestamp.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "onPremisesSyncEnabled": {
                                             "description": "Whether on-premises sync is enabled.",
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "trustType": {
                                             "description": "The trust type of the device.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "alternativeSecurityIds": {
                                             "description": "Alternative security IDs for the device.",
@@ -1642,7 +1880,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1651,7 +1891,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["devices"],
+                        "required": [
+                            "devices"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1664,9 +1906,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listdirectoryrolemembers",
             "name": "list-directory-role-members",
-            "output": ["ActionOutput_microsoft_listdirectoryrolemembers"],
-            "scopes": ["RoleManagement.Read.Directory"],
-            "usedModels": ["ActionInput_microsoft_listdirectoryrolemembers", "ActionOutput_microsoft_listdirectoryrolemembers"],
+            "output": [
+                "ActionOutput_microsoft_listdirectoryrolemembers"
+            ],
+            "scopes": [
+                "RoleManagement.Read.Directory"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listdirectoryrolemembers",
+                "ActionOutput_microsoft_listdirectoryrolemembers"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1683,7 +1932,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["directoryRoleId"],
+                        "required": [
+                            "directoryRoleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_listdirectoryrolemembers": {
@@ -1699,7 +1950,10 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["user", "servicePrincipal"]
+                                            "enum": [
+                                                "user",
+                                                "servicePrincipal"
+                                            ]
                                         },
                                         "displayName": {
                                             "type": "string"
@@ -1717,7 +1971,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1725,7 +1982,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1738,9 +1997,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listdirectoryroles",
             "name": "list-directory-roles",
-            "output": ["ActionOutput_microsoft_listdirectoryroles"],
-            "scopes": ["RoleManagement.Read.Directory"],
-            "usedModels": ["ActionInput_microsoft_listdirectoryroles", "ActionOutput_microsoft_listdirectoryroles"],
+            "output": [
+                "ActionOutput_microsoft_listdirectoryroles"
+            ],
+            "scopes": [
+                "RoleManagement.Read.Directory"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listdirectoryroles",
+                "ActionOutput_microsoft_listdirectoryroles"
+            ],
             "version": "1.0.3",
             "json_schema": {
                 "definitions": {
@@ -1792,7 +2058,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1800,7 +2068,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1813,9 +2083,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listgroupmembers",
             "name": "list-group-members",
-            "output": ["ActionOutput_microsoft_listgroupmembers"],
-            "scopes": ["GroupMember.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listgroupmembers", "ActionOutput_microsoft_listgroupmembers"],
+            "output": [
+                "ActionOutput_microsoft_listgroupmembers"
+            ],
+            "scopes": [
+                "GroupMember.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listgroupmembers",
+                "ActionOutput_microsoft_listgroupmembers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1832,7 +2109,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_listgroupmembers": {
@@ -1864,7 +2143,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of direct members of the group"
@@ -1874,7 +2155,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1887,9 +2170,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listgroups",
             "name": "list-groups",
-            "output": ["ActionOutput_microsoft_listgroups"],
-            "scopes": ["Group.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listgroups", "ActionOutput_microsoft_listgroups"],
+            "output": [
+                "ActionOutput_microsoft_listgroups"
+            ],
+            "scopes": [
+                "Group.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listgroups",
+                "ActionOutput_microsoft_listgroups"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1967,7 +2257,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1975,7 +2267,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1988,9 +2282,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_microsoft_listorganizations"],
-            "scopes": ["Organization.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listorganizations", "ActionOutput_microsoft_listorganizations"],
+            "output": [
+                "ActionOutput_microsoft_listorganizations"
+            ],
+            "scopes": [
+                "Organization.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listorganizations",
+                "ActionOutput_microsoft_listorganizations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2164,7 +2465,9 @@
                                             }
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2175,7 +2478,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organizations"],
+                        "required": [
+                            "organizations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2188,9 +2493,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listserviceprincipals",
             "name": "list-service-principals",
-            "output": ["ActionOutput_microsoft_listserviceprincipals"],
-            "scopes": ["Application.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listserviceprincipals", "ActionOutput_microsoft_listserviceprincipals"],
+            "output": [
+                "ActionOutput_microsoft_listserviceprincipals"
+            ],
+            "scopes": [
+                "Application.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listserviceprincipals",
+                "ActionOutput_microsoft_listserviceprincipals"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2283,7 +2595,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "appId"],
+                                    "required": [
+                                        "id",
+                                        "appId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2292,7 +2607,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2305,9 +2622,17 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listusermemberships",
             "name": "list-user-memberships",
-            "output": ["ActionOutput_microsoft_listusermemberships"],
-            "scopes": ["User.Read.All", "Directory.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listusermemberships", "ActionOutput_microsoft_listusermemberships"],
+            "output": [
+                "ActionOutput_microsoft_listusermemberships"
+            ],
+            "scopes": [
+                "User.Read.All",
+                "Directory.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listusermemberships",
+                "ActionOutput_microsoft_listusermemberships"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2325,10 +2650,16 @@
                             "filterType": {
                                 "description": "Optional filter to return only specific member types: group, directoryRole, or administrativeUnit. Omit to return all types.",
                                 "type": "string",
-                                "enum": ["group", "directoryRole", "administrativeUnit"]
+                                "enum": [
+                                    "group",
+                                    "directoryRole",
+                                    "administrativeUnit"
+                                ]
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_listusermemberships": {
@@ -2344,7 +2675,12 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["group", "directoryRole", "administrativeUnit", "unknown"]
+                                            "enum": [
+                                                "group",
+                                                "directoryRole",
+                                                "administrativeUnit",
+                                                "unknown"
+                                            ]
                                         },
                                         "displayName": {
                                             "type": "string"
@@ -2398,7 +2734,10 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2407,7 +2746,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2420,9 +2761,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_microsoft_listusers"],
-            "scopes": ["User.Read.All"],
-            "usedModels": ["ActionInput_microsoft_listusers", "ActionOutput_microsoft_listusers"],
+            "output": [
+                "ActionOutput_microsoft_listusers"
+            ],
+            "scopes": [
+                "User.Read.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_listusers",
+                "ActionOutput_microsoft_listusers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2502,7 +2850,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2510,7 +2860,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2523,9 +2875,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_removegroupmember",
             "name": "remove-group-member",
-            "output": ["ActionOutput_microsoft_removegroupmember"],
-            "scopes": ["Group.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_removegroupmember", "ActionOutput_microsoft_removegroupmember"],
+            "output": [
+                "ActionOutput_microsoft_removegroupmember"
+            ],
+            "scopes": [
+                "Group.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_removegroupmember",
+                "ActionOutput_microsoft_removegroupmember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2543,7 +2902,10 @@
                                 "description": "The ID of the member to remove from the group. Example: \"9fc4580d-5ed8-46c5-9fff-258fd68d533d\""
                             }
                         },
-                        "required": ["groupId", "memberId"],
+                        "required": [
+                            "groupId",
+                            "memberId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_removegroupmember": {
@@ -2553,7 +2915,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2566,9 +2930,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_updateapplication",
             "name": "update-application",
-            "output": ["ActionOutput_microsoft_updateapplication"],
-            "scopes": ["Application.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_updateapplication", "ActionOutput_microsoft_updateapplication"],
+            "output": [
+                "ActionOutput_microsoft_updateapplication"
+            ],
+            "scopes": [
+                "Application.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_updateapplication",
+                "ActionOutput_microsoft_updateapplication"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2586,17 +2957,28 @@
                             },
                             "description": {
                                 "description": "An optional description of the application.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "signInAudience": {
                                 "description": "Specifies what Microsoft accounts are supported.",
                                 "type": "string",
-                                "enum": ["AzureADMyOrg", "AzureADMultipleOrgs", "AzureADandPersonalMicrosoftAccount"]
+                                "enum": [
+                                    "AzureADMyOrg",
+                                    "AzureADMultipleOrgs",
+                                    "AzureADandPersonalMicrosoftAccount"
+                                ]
                             },
                             "groupMembershipClaims": {
                                 "description": "Configures the groups claim issued in tokens.",
                                 "type": "string",
-                                "enum": ["None", "SecurityGroup", "All"]
+                                "enum": [
+                                    "None",
+                                    "SecurityGroup",
+                                    "All"
+                                ]
                             },
                             "tags": {
                                 "description": "Custom strings to categorize and identify the application.",
@@ -2607,10 +2989,15 @@
                             },
                             "isFallbackPublicClient": {
                                 "description": "Specifies the fallback application type as public client.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_updateapplication": {
@@ -2623,7 +3010,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "success"],
+                        "required": [
+                            "id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2636,9 +3026,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_updategroup",
             "name": "update-group",
-            "output": ["ActionOutput_microsoft_updategroup"],
-            "scopes": ["Group.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_updategroup", "ActionOutput_microsoft_updategroup"],
+            "output": [
+                "ActionOutput_microsoft_updategroup"
+            ],
+            "scopes": [
+                "Group.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_updategroup",
+                "ActionOutput_microsoft_updategroup"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2669,7 +3066,10 @@
                             "visibility": {
                                 "description": "Specifies the visibility of a Microsoft 365 group.",
                                 "type": "string",
-                                "enum": ["Private", "Public"]
+                                "enum": [
+                                    "Private",
+                                    "Public"
+                                ]
                             },
                             "allowExternalSenders": {
                                 "description": "Indicates whether people external to the organization can send messages to the group.",
@@ -2688,7 +3088,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["groupId"],
+                        "required": [
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_updategroup": {
@@ -2701,7 +3103,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "groupId"],
+                        "required": [
+                            "success",
+                            "groupId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2714,9 +3119,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_updateorganization",
             "name": "update-organization",
-            "output": ["ActionOutput_microsoft_updateorganization"],
-            "scopes": ["Organization.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_updateorganization", "ActionOutput_microsoft_updateorganization"],
+            "output": [
+                "ActionOutput_microsoft_updateorganization"
+            ],
+            "scopes": [
+                "Organization.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_updateorganization",
+                "ActionOutput_microsoft_updateorganization"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2772,7 +3184,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_updateorganization": {
@@ -2783,7 +3197,9 @@
                                 "description": "Whether the update was successful."
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2796,9 +3212,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_updateserviceprincipal",
             "name": "update-service-principal",
-            "output": ["ActionOutput_microsoft_updateserviceprincipal"],
-            "scopes": ["Application.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_updateserviceprincipal", "ActionOutput_microsoft_updateserviceprincipal"],
+            "output": [
+                "ActionOutput_microsoft_updateserviceprincipal"
+            ],
+            "scopes": [
+                "Application.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_updateserviceprincipal",
+                "ActionOutput_microsoft_updateserviceprincipal"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2863,7 +3286,9 @@
                                 }
                             }
                         },
-                        "required": ["servicePrincipalId"],
+                        "required": [
+                            "servicePrincipalId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_updateserviceprincipal": {
@@ -2882,7 +3307,11 @@
                                 }
                             }
                         },
-                        "required": ["success", "servicePrincipalId", "updatedFields"],
+                        "required": [
+                            "success",
+                            "servicePrincipalId",
+                            "updatedFields"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2895,9 +3324,16 @@
             "endpoint": null,
             "input": "ActionInput_microsoft_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_microsoft_updateuser"],
-            "scopes": ["User.ReadWrite.All"],
-            "usedModels": ["ActionInput_microsoft_updateuser", "ActionOutput_microsoft_updateuser"],
+            "output": [
+                "ActionOutput_microsoft_updateuser"
+            ],
+            "scopes": [
+                "User.ReadWrite.All"
+            ],
+            "usedModels": [
+                "ActionInput_microsoft_updateuser",
+                "ActionOutput_microsoft_updateuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2965,7 +3401,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_microsoft_updateuser": {
@@ -2978,7 +3416,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "userId"],
+                        "required": [
+                            "success",
+                            "userId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2999,12 +3440,18 @@
             ],
             "input": null,
             "name": "applications",
-            "output": ["MicrosoftApplication"],
+            "output": [
+                "MicrosoftApplication"
+            ],
             "runs": "every hour",
-            "scopes": ["Application.Read.All"],
+            "scopes": [
+                "Application.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["MicrosoftApplication"],
+            "usedModels": [
+                "MicrosoftApplication"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3019,27 +3466,44 @@
                                 "type": "string"
                             },
                             "displayName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdDateTime": {
                                 "type": "string"
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "signInAudience": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "publisherDomain": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "appId"],
+                        "required": [
+                            "id",
+                            "appId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3053,12 +3517,18 @@
             ],
             "input": null,
             "name": "directory-roles",
-            "output": ["DirectoryRole"],
+            "output": [
+                "DirectoryRole"
+            ],
             "runs": "every hour",
-            "scopes": ["RoleManagement.Read.All"],
+            "scopes": [
+                "RoleManagement.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DirectoryRole"],
+            "usedModels": [
+                "DirectoryRole"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3079,12 +3549,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3098,12 +3572,18 @@
             ],
             "input": null,
             "name": "groups",
-            "output": ["Group"],
+            "output": [
+                "Group"
+            ],
             "runs": "every hour",
-            "scopes": ["Group.Read.All"],
+            "scopes": [
+                "Group.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Group"],
+            "usedModels": [
+                "Group"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3115,16 +3595,28 @@
                                 "type": "string"
                             },
                             "displayName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mail": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "mailNickname": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "groupTypes": {
                                 "anyOf": [
@@ -3140,30 +3632,52 @@
                                 ]
                             },
                             "securityEnabled": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "mailEnabled": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "visibility": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "createdDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "renewedDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "deletedDateTime": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3177,12 +3691,18 @@
             ],
             "input": null,
             "name": "organizations",
-            "output": ["Organization"],
+            "output": [
+                "Organization"
+            ],
             "runs": "every hour",
-            "scopes": ["Organization.Read.All"],
+            "scopes": [
+                "Organization.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Organization"],
+            "usedModels": [
+                "Organization"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3290,12 +3810,16 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3309,12 +3833,18 @@
             ],
             "input": null,
             "name": "service-principals",
-            "output": ["ServicePrincipal"],
+            "output": [
+                "ServicePrincipal"
+            ],
             "runs": "every hour",
-            "scopes": ["Application.Read.All"],
+            "scopes": [
+                "Application.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ServicePrincipal"],
+            "usedModels": [
+                "ServicePrincipal"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3335,12 +3865,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3354,12 +3888,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
-            "scopes": ["User.Read.All"],
+            "scopes": [
+                "User.Read.All"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3413,12 +3953,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "userPrincipalName"],
+                        "required": [
+                            "id",
+                            "userPrincipalName"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

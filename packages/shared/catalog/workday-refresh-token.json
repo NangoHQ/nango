@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_executewqlquery",
             "name": "execute-wql-query",
-            "output": ["ActionOutput_workday_refresh_token_executewqlquery"],
-            "scopes": ["r_wql"],
-            "usedModels": ["ActionInput_workday_refresh_token_executewqlquery", "ActionOutput_workday_refresh_token_executewqlquery"],
+            "output": [
+                "ActionOutput_workday_refresh_token_executewqlquery"
+            ],
+            "scopes": [
+                "r_wql"
+            ],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_executewqlquery",
+                "ActionOutput_workday_refresh_token_executewqlquery"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -33,7 +40,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for executing a Workday Query Language (WQL) query"
                     },
@@ -56,7 +65,10 @@
                                 "description": "Result rows from the WQL query. Each object contains key-value pairs corresponding to the selected fields."
                             }
                         },
-                        "required": ["total", "rows"],
+                        "required": [
+                            "total",
+                            "rows"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a Workday Query Language (WQL) query execution"
                     }
@@ -70,9 +82,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_getcustomobjectdefinition",
             "name": "get-custom-object-definition",
-            "output": ["ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
+            "output": [
+                "ActionOutput_workday_refresh_token_getcustomobjectdefinition"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_getcustomobjectdefinition", "ActionOutput_workday_refresh_token_getcustomobjectdefinition"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_getcustomobjectdefinition",
+                "ActionOutput_workday_refresh_token_getcustomobjectdefinition"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -84,7 +101,9 @@
                                 "description": "Unique identifier of the custom object definition to retrieve."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single custom object definition by its unique identifier."
                     },
@@ -127,12 +146,16 @@
                                         "description": "Display name of the business object type."
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "The standard Workday business object this custom object extends."
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing the details of a single custom object definition."
                     }
@@ -146,9 +169,16 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_getjobrequisition",
             "name": "get-job-requisition",
-            "output": ["ActionOutput_workday_refresh_token_getjobrequisition"],
-            "scopes": ["r_recruiting"],
-            "usedModels": ["ActionInput_workday_refresh_token_getjobrequisition", "ActionOutput_workday_refresh_token_getjobrequisition"],
+            "output": [
+                "ActionOutput_workday_refresh_token_getjobrequisition"
+            ],
+            "scopes": [
+                "r_recruiting"
+            ],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_getjobrequisition",
+                "ActionOutput_workday_refresh_token_getjobrequisition"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -160,7 +190,9 @@
                                 "description": "The Workday ID of the job posting. Example: \"2d76b324c36510012c2e765c9e0b0000\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single job posting"
                     },
@@ -328,9 +360,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_workday_refresh_token_getorganization"],
+            "output": [
+                "ActionOutput_workday_refresh_token_getorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_getorganization", "ActionOutput_workday_refresh_token_getorganization"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_getorganization",
+                "ActionOutput_workday_refresh_token_getorganization"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -342,7 +379,9 @@
                                 "description": "Workday organization ID. Example: \"ORG-123\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single Workday organization by ID"
                     },
@@ -362,7 +401,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A single Workday organization record"
                     }
@@ -376,9 +417,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_getsupervisoryorganization",
             "name": "get-supervisory-organization",
-            "output": ["ActionOutput_workday_refresh_token_getsupervisoryorganization"],
+            "output": [
+                "ActionOutput_workday_refresh_token_getsupervisoryorganization"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_getsupervisoryorganization", "ActionOutput_workday_refresh_token_getsupervisoryorganization"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_getsupervisoryorganization",
+                "ActionOutput_workday_refresh_token_getsupervisoryorganization"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -390,7 +436,9 @@
                                 "description": "The Workday identifier of the supervisory organization. Example: \"36a6f7a8e1eb1000df0164ce90640000\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a single supervisory organization by id."
                     },
@@ -441,7 +489,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Output schema for a single Workday supervisory organization."
                     }
@@ -455,9 +505,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_gettimeoffdetail",
             "name": "get-time-off-detail",
-            "output": ["ActionOutput_workday_refresh_token_gettimeoffdetail"],
+            "output": [
+                "ActionOutput_workday_refresh_token_gettimeoffdetail"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_gettimeoffdetail", "ActionOutput_workday_refresh_token_gettimeoffdetail"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_gettimeoffdetail",
+                "ActionOutput_workday_refresh_token_gettimeoffdetail"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -473,7 +528,10 @@
                                 "description": "The unique identifier of the specific time-off detail entry to retrieve."
                             }
                         },
-                        "required": ["workerId", "timeOffDetailId"],
+                        "required": [
+                            "workerId",
+                            "timeOffDetailId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for retrieving a single Workday time-off detail."
                     },
@@ -572,7 +630,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["timeOffEntryId"],
+                        "required": [
+                            "timeOffEntryId"
+                        ],
                         "additionalProperties": {},
                         "description": "Output shape for a single Workday time-off detail entry."
                     }
@@ -586,9 +646,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_getworkercompensation",
             "name": "get-worker-compensation",
-            "output": ["ActionOutput_workday_refresh_token_getworkercompensation"],
+            "output": [
+                "ActionOutput_workday_refresh_token_getworkercompensation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_getworkercompensation", "ActionOutput_workday_refresh_token_getworkercompensation"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_getworkercompensation",
+                "ActionOutput_workday_refresh_token_getworkercompensation"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -600,7 +665,9 @@
                                 "description": "Workday worker ID. Example: \"fa1a4057915f1010adcb915e0b120000\""
                             }
                         },
-                        "required": ["workerId"],
+                        "required": [
+                            "workerId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for retrieving a worker's compensation details."
                     },
@@ -704,7 +771,9 @@
                                 }
                             }
                         },
-                        "required": ["workerId"],
+                        "required": [
+                            "workerId"
+                        ],
                         "additionalProperties": false,
                         "description": "A worker's profile and compensation details."
                     }
@@ -718,9 +787,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_getworker",
             "name": "get-worker",
-            "output": ["ActionOutput_workday_refresh_token_getworker"],
+            "output": [
+                "ActionOutput_workday_refresh_token_getworker"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_getworker", "ActionOutput_workday_refresh_token_getworker"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_getworker",
+                "ActionOutput_workday_refresh_token_getworker"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -732,7 +806,9 @@
                                 "description": "The Workday ID of the worker to retrieve. Example: \"fa1a4057915f1010adcb915e0b120000\""
                             }
                         },
-                        "required": ["worker_id"],
+                        "required": [
+                            "worker_id"
+                        ],
                         "additionalProperties": false,
                         "description": "Input parameters for retrieving a single Workday worker."
                     },
@@ -872,7 +948,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A single worker record from Workday."
                     }
@@ -886,9 +964,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_listjobrequisitions",
             "name": "list-job-requisitions",
-            "output": ["ActionOutput_workday_refresh_token_listjobrequisitions"],
+            "output": [
+                "ActionOutput_workday_refresh_token_listjobrequisitions"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_listjobrequisitions", "ActionOutput_workday_refresh_token_listjobrequisitions"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_listjobrequisitions",
+                "ActionOutput_workday_refresh_token_listjobrequisitions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -962,7 +1045,10 @@
                                                             "description": "ISO 3166-1 alpha-3 country code."
                                                         }
                                                     },
-                                                    "required": ["descriptor", "alpha3Code"],
+                                                    "required": [
+                                                        "descriptor",
+                                                        "alpha3Code"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 "region": {
@@ -978,11 +1064,17 @@
                                                             "description": "Region code."
                                                         }
                                                     },
-                                                    "required": ["descriptor", "code"],
+                                                    "required": [
+                                                        "descriptor",
+                                                        "code"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["id", "descriptor"],
+                                            "required": [
+                                                "id",
+                                                "descriptor"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "additionalLocations": {
@@ -1012,7 +1104,10 @@
                                                                 "description": "ISO 3166-1 alpha-3 country code."
                                                             }
                                                         },
-                                                        "required": ["descriptor", "alpha3Code"],
+                                                        "required": [
+                                                            "descriptor",
+                                                            "alpha3Code"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "region": {
@@ -1028,11 +1123,17 @@
                                                                 "description": "Region code."
                                                             }
                                                         },
-                                                        "required": ["descriptor", "code"],
+                                                        "required": [
+                                                            "descriptor",
+                                                            "code"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["id", "descriptor"],
+                                                "required": [
+                                                    "id",
+                                                    "descriptor"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "A geographic location associated with a job requisition."
                                             }
@@ -1050,7 +1151,10 @@
                                                     "description": "Human-readable name of the referenced entity."
                                                 }
                                             },
-                                            "required": ["id", "descriptor"],
+                                            "required": [
+                                                "id",
+                                                "descriptor"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "jobType": {
@@ -1066,7 +1170,10 @@
                                                     "description": "Human-readable name of the referenced entity."
                                                 }
                                             },
-                                            "required": ["id", "descriptor"],
+                                            "required": [
+                                                "id",
+                                                "descriptor"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "timeType": {
@@ -1082,7 +1189,10 @@
                                                     "description": "Human-readable name of the referenced entity."
                                                 }
                                             },
-                                            "required": ["id", "descriptor"],
+                                            "required": [
+                                                "id",
+                                                "descriptor"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "company": {
@@ -1098,7 +1208,10 @@
                                                     "description": "Human-readable name of the referenced entity."
                                                 }
                                             },
-                                            "required": ["id", "descriptor"],
+                                            "required": [
+                                                "id",
+                                                "descriptor"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "spotlightJob": {
@@ -1124,13 +1237,21 @@
                                                         "description": "Human-readable name of the referenced entity."
                                                     }
                                                 },
-                                                "required": ["id", "descriptor"],
+                                                "required": [
+                                                    "id",
+                                                    "descriptor"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "A Workday reference object."
                                             }
                                         }
                                     },
-                                    "required": ["id", "title", "url", "startDate"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "url",
+                                        "startDate"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single job requisition record."
                                 },
@@ -1145,7 +1266,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Output for listing job requisitions."
                     }
@@ -1159,9 +1282,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_workday_refresh_token_listorganizations"],
+            "output": [
+                "ActionOutput_workday_refresh_token_listorganizations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_listorganizations", "ActionOutput_workday_refresh_token_listorganizations"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_listorganizations",
+                "ActionOutput_workday_refresh_token_listorganizations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1203,7 +1331,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["organizations"],
+                        "required": [
+                            "organizations"
+                        ],
                         "additionalProperties": false,
                         "description": "Output for listing Workday organizations."
                     }
@@ -1217,9 +1347,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_listsupervisoryorganizations",
             "name": "list-supervisory-organizations",
-            "output": ["ActionOutput_workday_refresh_token_listsupervisoryorganizations"],
+            "output": [
+                "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_listsupervisoryorganizations", "ActionOutput_workday_refresh_token_listsupervisoryorganizations"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_listsupervisoryorganizations",
+                "ActionOutput_workday_refresh_token_listsupervisoryorganizations"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1258,7 +1393,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of supervisory organizations."
@@ -1268,7 +1405,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing a paginated list of supervisory organizations"
                     }
@@ -1282,9 +1421,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_listworkerabsencebalances",
             "name": "list-worker-absence-balances",
-            "output": ["ActionOutput_workday_refresh_token_listworkerabsencebalances"],
+            "output": [
+                "ActionOutput_workday_refresh_token_listworkerabsencebalances"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_listworkerabsencebalances", "ActionOutput_workday_refresh_token_listworkerabsencebalances"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_listworkerabsencebalances",
+                "ActionOutput_workday_refresh_token_listworkerabsencebalances"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1296,7 +1440,9 @@
                                 "description": "Workday ID of the worker whose absence balances to list. Example: \"123456789\""
                             }
                         },
-                        "required": ["workerId"],
+                        "required": [
+                            "workerId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing a worker's absence/PTO plan balances."
                     },
@@ -1337,13 +1483,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of current absence/PTO plan balances for the worker."
                             }
                         },
-                        "required": ["balances"],
+                        "required": [
+                            "balances"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing a list of a worker's current absence/PTO plan balances."
                     }
@@ -1357,9 +1507,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_listworkertimeoff",
             "name": "list-worker-time-off",
-            "output": ["ActionOutput_workday_refresh_token_listworkertimeoff"],
+            "output": [
+                "ActionOutput_workday_refresh_token_listworkertimeoff"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_listworkertimeoff", "ActionOutput_workday_refresh_token_listworkertimeoff"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_listworkertimeoff",
+                "ActionOutput_workday_refresh_token_listworkertimeoff"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1383,7 +1538,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["workerId"],
+                        "required": [
+                            "workerId"
+                        ],
                         "additionalProperties": false,
                         "description": "Input for listing a worker's time-off entries."
                     },
@@ -1432,7 +1589,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "workerId"],
+                                    "required": [
+                                        "id",
+                                        "workerId"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "The list of time-off entries for the worker."
@@ -1446,7 +1606,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Output containing a worker's time-off entries and pagination metadata."
                     }
@@ -1460,9 +1622,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_listworkers",
             "name": "list-workers",
-            "output": ["ActionOutput_workday_refresh_token_listworkers"],
+            "output": [
+                "ActionOutput_workday_refresh_token_listworkers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_listworkers", "ActionOutput_workday_refresh_token_listworkers"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_listworkers",
+                "ActionOutput_workday_refresh_token_listworkers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1543,7 +1710,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single Workday worker record."
                                 },
@@ -1558,7 +1727,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of the list workers action, containing paginated worker records."
                     }
@@ -1572,9 +1743,14 @@
             "endpoint": null,
             "input": "ActionInput_workday_refresh_token_submittimeoffrequest",
             "name": "submit-time-off-request",
-            "output": ["ActionOutput_workday_refresh_token_submittimeoffrequest"],
+            "output": [
+                "ActionOutput_workday_refresh_token_submittimeoffrequest"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_workday_refresh_token_submittimeoffrequest", "ActionOutput_workday_refresh_token_submittimeoffrequest"],
+            "usedModels": [
+                "ActionInput_workday_refresh_token_submittimeoffrequest",
+                "ActionOutput_workday_refresh_token_submittimeoffrequest"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1616,7 +1792,10 @@
                                             "description": "Quantity of time off for this date, typically in days or hours depending on the plan. Example: 1"
                                         }
                                     },
-                                    "required": ["date", "quantity"],
+                                    "required": [
+                                        "date",
+                                        "quantity"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1629,7 +1808,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["worker_id", "time_off_type_id", "start_date", "end_date"],
+                        "required": [
+                            "worker_id",
+                            "time_off_type_id",
+                            "start_date",
+                            "end_date"
+                        ],
                         "additionalProperties": false,
                         "description": "Input to submit a new time off request for a worker"
                     },
@@ -1686,12 +1870,16 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "Output of a submitted time off request"
                     }
@@ -1708,12 +1896,16 @@
             "endpoints": [],
             "input": null,
             "name": "organizations",
-            "output": ["Organization"],
+            "output": [
+                "Organization"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Organization"],
+            "usedModels": [
+                "Organization"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1734,13 +1926,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false,
                         "description": "A Workday organization such as a cost center, company, region, or supervisory org"
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1749,12 +1945,16 @@
             "endpoints": [],
             "input": null,
             "name": "workers",
-            "output": ["Worker"],
+            "output": [
+                "Worker"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Worker"],
+            "usedModels": [
+                "Worker"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1807,17 +2007,24 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "descriptor"],
+                        "required": [
+                            "id",
+                            "descriptor"
+                        ],
                         "additionalProperties": false,
                         "description": "Workday worker (employee or contingent worker) record"
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

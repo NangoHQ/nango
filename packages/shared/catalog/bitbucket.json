@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_createbranch",
             "name": "create-branch",
-            "output": ["ActionOutput_bitbucket_createbranch"],
-            "scopes": ["repository:write"],
-            "usedModels": ["ActionInput_bitbucket_createbranch", "ActionOutput_bitbucket_createbranch"],
+            "output": [
+                "ActionOutput_bitbucket_createbranch"
+            ],
+            "scopes": [
+                "repository:write"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_createbranch",
+                "ActionOutput_bitbucket_createbranch"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -33,7 +40,12 @@
                                 "description": "Commit hash or existing branch name to branch from. Example: \"master\""
                             }
                         },
-                        "required": ["workspace", "repo_slug", "name", "target_hash"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "name",
+                            "target_hash"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_createbranch": {
@@ -46,7 +58,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["name"],
+                        "required": [
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -59,9 +73,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_createprcomment",
             "name": "create-pr-comment",
-            "output": ["ActionOutput_bitbucket_createprcomment"],
-            "scopes": ["pullrequest"],
-            "usedModels": ["ActionInput_bitbucket_createprcomment", "ActionOutput_bitbucket_createprcomment"],
+            "output": [
+                "ActionOutput_bitbucket_createprcomment"
+            ],
+            "scopes": [
+                "pullrequest"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_createprcomment",
+                "ActionOutput_bitbucket_createprcomment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -97,7 +118,12 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace", "repo_slug", "pull_request_id", "content"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "pull_request_id",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_createprcomment": {
@@ -176,7 +202,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -189,9 +217,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_bitbucket_createproject"],
-            "scopes": ["project:admin"],
-            "usedModels": ["ActionInput_bitbucket_createproject", "ActionOutput_bitbucket_createproject"],
+            "output": [
+                "ActionOutput_bitbucket_createproject"
+            ],
+            "scopes": [
+                "project:admin"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_createproject",
+                "ActionOutput_bitbucket_createproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -220,7 +255,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["workspace", "key", "name"],
+                        "required": [
+                            "workspace",
+                            "key",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_createproject": {
@@ -305,9 +344,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_createpullrequest",
             "name": "create-pull-request",
-            "output": ["ActionOutput_bitbucket_createpullrequest"],
-            "scopes": ["pullrequest:write"],
-            "usedModels": ["ActionInput_bitbucket_createpullrequest", "ActionOutput_bitbucket_createpullrequest"],
+            "output": [
+                "ActionOutput_bitbucket_createpullrequest"
+            ],
+            "scopes": [
+                "pullrequest:write"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_createpullrequest",
+                "ActionOutput_bitbucket_createpullrequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -350,7 +396,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["workspace", "repo_slug", "title", "source_branch"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "title",
+                            "source_branch"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_createpullrequest": {
@@ -402,7 +453,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "title", "state"],
+                        "required": [
+                            "id",
+                            "title",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -415,9 +470,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_createrepository",
             "name": "create-repository",
-            "output": ["ActionOutput_bitbucket_createrepository"],
-            "scopes": ["repository:admin"],
-            "usedModels": ["ActionInput_bitbucket_createrepository", "ActionOutput_bitbucket_createrepository"],
+            "output": [
+                "ActionOutput_bitbucket_createrepository"
+            ],
+            "scopes": [
+                "repository:admin"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_createrepository",
+                "ActionOutput_bitbucket_createrepository"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -457,7 +519,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_createrepository": {
@@ -521,9 +586,17 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_createwebhook",
             "name": "create-webhook",
-            "output": ["ActionOutput_bitbucket_createwebhook"],
-            "scopes": ["webhook", "repository"],
-            "usedModels": ["ActionInput_bitbucket_createwebhook", "ActionOutput_bitbucket_createwebhook"],
+            "output": [
+                "ActionOutput_bitbucket_createwebhook"
+            ],
+            "scopes": [
+                "webhook",
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_createwebhook",
+                "ActionOutput_bitbucket_createwebhook"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -562,7 +635,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug", "url", "events"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "url",
+                            "events"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_createwebhook": {
@@ -590,7 +668,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uuid", "url", "active", "events"],
+                        "required": [
+                            "uuid",
+                            "url",
+                            "active",
+                            "events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -603,9 +686,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_declinepullrequest",
             "name": "decline-pull-request",
-            "output": ["ActionOutput_bitbucket_declinepullrequest"],
-            "scopes": ["pullrequest:write"],
-            "usedModels": ["ActionInput_bitbucket_declinepullrequest", "ActionOutput_bitbucket_declinepullrequest"],
+            "output": [
+                "ActionOutput_bitbucket_declinepullrequest"
+            ],
+            "scopes": [
+                "pullrequest:write"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_declinepullrequest",
+                "ActionOutput_bitbucket_declinepullrequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -625,7 +715,11 @@
                                 "description": "Pull request ID. Example: 1"
                             }
                         },
-                        "required": ["workspace", "repo_slug", "pull_request_id"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "pull_request_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_declinepullrequest": {
@@ -644,7 +738,10 @@
                                 "type": "string"
                             },
                             "reason": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_on": {
                                 "type": "string"
@@ -829,9 +926,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_deletebranch",
             "name": "delete-branch",
-            "output": ["ActionOutput_bitbucket_deletebranch"],
-            "scopes": ["repository:write"],
-            "usedModels": ["ActionInput_bitbucket_deletebranch", "ActionOutput_bitbucket_deletebranch"],
+            "output": [
+                "ActionOutput_bitbucket_deletebranch"
+            ],
+            "scopes": [
+                "repository:write"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_deletebranch",
+                "ActionOutput_bitbucket_deletebranch"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -851,7 +955,11 @@
                                 "description": "Branch name to delete. Example: \"main\""
                             }
                         },
-                        "required": ["workspace", "repo_slug", "name"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_deletebranch": {
@@ -861,7 +969,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -874,9 +984,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_deleterepository",
             "name": "delete-repository",
-            "output": ["ActionOutput_bitbucket_deleterepository"],
-            "scopes": ["repository:admin"],
-            "usedModels": ["ActionInput_bitbucket_deleterepository", "ActionOutput_bitbucket_deleterepository"],
+            "output": [
+                "ActionOutput_bitbucket_deleterepository"
+            ],
+            "scopes": [
+                "repository:admin"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_deleterepository",
+                "ActionOutput_bitbucket_deleterepository"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -892,7 +1009,10 @@
                                 "description": "Repository slug. Example: \"nango-secondary-repo\""
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_deleterepository": {
@@ -908,7 +1028,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "workspace", "repo_slug"],
+                        "required": [
+                            "success",
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -921,9 +1045,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_deletewebhook",
             "name": "delete-webhook",
-            "output": ["ActionOutput_bitbucket_deletewebhook"],
-            "scopes": ["webhook"],
-            "usedModels": ["ActionInput_bitbucket_deletewebhook", "ActionOutput_bitbucket_deletewebhook"],
+            "output": [
+                "ActionOutput_bitbucket_deletewebhook"
+            ],
+            "scopes": [
+                "webhook"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_deletewebhook",
+                "ActionOutput_bitbucket_deletewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -943,7 +1074,11 @@
                                 "description": "Webhook UUID. Example: \"{216a4943-db76-4086-9dcc-9a0b525062f5}\""
                             }
                         },
-                        "required": ["workspace", "repo_slug", "webhook_uuid"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "webhook_uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_deletewebhook": {
@@ -962,7 +1097,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "workspace", "repo_slug", "webhook_uuid"],
+                        "required": [
+                            "success",
+                            "workspace",
+                            "repo_slug",
+                            "webhook_uuid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -975,9 +1115,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_getcommit",
             "name": "get-commit",
-            "output": ["ActionOutput_bitbucket_getcommit"],
-            "scopes": ["repository"],
-            "usedModels": ["ActionInput_bitbucket_getcommit", "ActionOutput_bitbucket_getcommit"],
+            "output": [
+                "ActionOutput_bitbucket_getcommit"
+            ],
+            "scopes": [
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_getcommit",
+                "ActionOutput_bitbucket_getcommit"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -997,7 +1144,11 @@
                                 "description": "Full or abbreviated commit SHA. Example: \"abc123\""
                             }
                         },
-                        "required": ["workspace", "repo_slug", "node"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "node"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_getcommit": {
@@ -1079,7 +1230,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["hash"],
+                        "required": [
+                            "hash"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1092,9 +1245,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_bitbucket_getcurrentuser"],
-            "scopes": ["account"],
-            "usedModels": ["ActionInput_bitbucket_getcurrentuser", "ActionOutput_bitbucket_getcurrentuser"],
+            "output": [
+                "ActionOutput_bitbucket_getcurrentuser"
+            ],
+            "scopes": [
+                "account"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_getcurrentuser",
+                "ActionOutput_bitbucket_getcurrentuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1128,7 +1288,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["type", "uuid"],
+                        "required": [
+                            "type",
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1141,9 +1304,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_bitbucket_getproject"],
-            "scopes": ["project"],
-            "usedModels": ["ActionInput_bitbucket_getproject", "ActionOutput_bitbucket_getproject"],
+            "output": [
+                "ActionOutput_bitbucket_getproject"
+            ],
+            "scopes": [
+                "project"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_getproject",
+                "ActionOutput_bitbucket_getproject"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1159,7 +1329,10 @@
                                 "description": "The project short uppercase key. Example: \"PROJ\""
                             }
                         },
-                        "required": ["workspace", "project_key"],
+                        "required": [
+                            "workspace",
+                            "project_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_getproject": {
@@ -1207,9 +1380,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_getrepository",
             "name": "get-repository",
-            "output": ["ActionOutput_bitbucket_getrepository"],
-            "scopes": ["repository"],
-            "usedModels": ["ActionInput_bitbucket_getrepository", "ActionOutput_bitbucket_getrepository"],
+            "output": [
+                "ActionOutput_bitbucket_getrepository"
+            ],
+            "scopes": [
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_getrepository",
+                "ActionOutput_bitbucket_getrepository"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1225,7 +1405,10 @@
                                 "description": "Repository slug. Example: \"nango-api-test\""
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_getrepository": {
@@ -1302,7 +1485,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uuid"],
+                        "required": [
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1315,9 +1500,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_getworkspace",
             "name": "get-workspace",
-            "output": ["ActionOutput_bitbucket_getworkspace"],
-            "scopes": ["account"],
-            "usedModels": ["ActionInput_bitbucket_getworkspace", "ActionOutput_bitbucket_getworkspace"],
+            "output": [
+                "ActionOutput_bitbucket_getworkspace"
+            ],
+            "scopes": [
+                "account"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_getworkspace",
+                "ActionOutput_bitbucket_getworkspace"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1329,7 +1521,9 @@
                                 "description": "Workspace slug or UUID. Example: \"nangodev\""
                             }
                         },
-                        "required": ["workspace"],
+                        "required": [
+                            "workspace"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_getworkspace": {
@@ -1368,7 +1562,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["type", "uuid", "slug", "is_private"],
+                        "required": [
+                            "type",
+                            "uuid",
+                            "slug",
+                            "is_private"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1381,9 +1580,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listbranches",
             "name": "list-branches",
-            "output": ["ActionOutput_bitbucket_listbranches"],
-            "scopes": ["repository"],
-            "usedModels": ["ActionInput_bitbucket_listbranches", "ActionOutput_bitbucket_listbranches"],
+            "output": [
+                "ActionOutput_bitbucket_listbranches"
+            ],
+            "scopes": [
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listbranches",
+                "ActionOutput_bitbucket_listbranches"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1415,7 +1621,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listbranches": {
@@ -1451,7 +1660,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1459,7 +1670,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["branches"],
+                        "required": [
+                            "branches"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1472,9 +1685,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listcommits",
             "name": "list-commits",
-            "output": ["ActionOutput_bitbucket_listcommits"],
-            "scopes": ["repository"],
-            "usedModels": ["ActionInput_bitbucket_listcommits", "ActionOutput_bitbucket_listcommits"],
+            "output": [
+                "ActionOutput_bitbucket_listcommits"
+            ],
+            "scopes": [
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listcommits",
+                "ActionOutput_bitbucket_listcommits"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1498,7 +1718,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listcommits": {
@@ -1581,12 +1804,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["hash"],
+                                                "required": [
+                                                    "hash"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
                                     },
-                                    "required": ["hash"],
+                                    "required": [
+                                        "hash"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1597,7 +1824,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["commits"],
+                        "required": [
+                            "commits"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1610,9 +1839,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listdeploymentenvironments",
             "name": "list-deployment-environments",
-            "output": ["ActionOutput_bitbucket_listdeploymentenvironments"],
-            "scopes": ["pipeline"],
-            "usedModels": ["ActionInput_bitbucket_listdeploymentenvironments", "ActionOutput_bitbucket_listdeploymentenvironments"],
+            "output": [
+                "ActionOutput_bitbucket_listdeploymentenvironments"
+            ],
+            "scopes": [
+                "pipeline"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listdeploymentenvironments",
+                "ActionOutput_bitbucket_listdeploymentenvironments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1632,7 +1868,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listdeploymentenvironments": {
@@ -1660,7 +1899,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1673,9 +1914,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listpipelines",
             "name": "list-pipelines",
-            "output": ["ActionOutput_bitbucket_listpipelines"],
-            "scopes": ["pipeline"],
-            "usedModels": ["ActionInput_bitbucket_listpipelines", "ActionOutput_bitbucket_listpipelines"],
+            "output": [
+                "ActionOutput_bitbucket_listpipelines"
+            ],
+            "scopes": [
+                "pipeline"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listpipelines",
+                "ActionOutput_bitbucket_listpipelines"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1703,7 +1951,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listpipelines": {
@@ -1796,7 +2047,10 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["uuid", "build_number"],
+                                    "required": [
+                                        "uuid",
+                                        "build_number"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1804,7 +2058,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1817,9 +2073,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listpractivity",
             "name": "list-pr-activity",
-            "output": ["ActionOutput_bitbucket_listpractivity"],
-            "scopes": ["pullrequest"],
-            "usedModels": ["ActionInput_bitbucket_listpractivity", "ActionOutput_bitbucket_listpractivity"],
+            "output": [
+                "ActionOutput_bitbucket_listpractivity"
+            ],
+            "scopes": [
+                "pullrequest"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listpractivity",
+                "ActionOutput_bitbucket_listpractivity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1843,7 +2106,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listpractivity": {
@@ -1861,7 +2127,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1874,9 +2142,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listprcomments",
             "name": "list-pr-comments",
-            "output": ["ActionOutput_bitbucket_listprcomments"],
-            "scopes": ["pullrequest"],
-            "usedModels": ["ActionInput_bitbucket_listprcomments", "ActionOutput_bitbucket_listprcomments"],
+            "output": [
+                "ActionOutput_bitbucket_listprcomments"
+            ],
+            "scopes": [
+                "pullrequest"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listprcomments",
+                "ActionOutput_bitbucket_listprcomments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1904,7 +2179,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace", "repo_slug", "pull_request_id"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "pull_request_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listprcomments": {
@@ -2055,7 +2334,9 @@
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2063,7 +2344,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["comments"],
+                        "required": [
+                            "comments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2076,9 +2359,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_bitbucket_listprojects"],
-            "scopes": ["project"],
-            "usedModels": ["ActionInput_bitbucket_listprojects", "ActionOutput_bitbucket_listprojects"],
+            "output": [
+                "ActionOutput_bitbucket_listprojects"
+            ],
+            "scopes": [
+                "project"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listprojects",
+                "ActionOutput_bitbucket_listprojects"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2098,7 +2388,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace"],
+                        "required": [
+                            "workspace"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listprojects": {
@@ -2131,7 +2423,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid", "key", "name"],
+                                    "required": [
+                                        "uuid",
+                                        "key",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2139,7 +2435,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2152,9 +2450,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listpullrequests",
             "name": "list-pull-requests",
-            "output": ["ActionOutput_bitbucket_listpullrequests"],
-            "scopes": ["pullrequest"],
-            "usedModels": ["ActionInput_bitbucket_listpullrequests", "ActionOutput_bitbucket_listpullrequests"],
+            "output": [
+                "ActionOutput_bitbucket_listpullrequests"
+            ],
+            "scopes": [
+                "pullrequest"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listpullrequests",
+                "ActionOutput_bitbucket_listpullrequests"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2174,7 +2479,12 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["OPEN", "MERGED", "DECLINED", "SUPERSEDED"]
+                                    "enum": [
+                                        "OPEN",
+                                        "MERGED",
+                                        "DECLINED",
+                                        "SUPERSEDED"
+                                    ]
                                 }
                             },
                             "q": {
@@ -2194,7 +2504,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listpullrequests": {
@@ -2213,7 +2526,12 @@
                                         },
                                         "state": {
                                             "type": "string",
-                                            "enum": ["OPEN", "MERGED", "DECLINED", "SUPERSEDED"]
+                                            "enum": [
+                                                "OPEN",
+                                                "MERGED",
+                                                "DECLINED",
+                                                "SUPERSEDED"
+                                            ]
                                         },
                                         "author": {
                                             "type": "object",
@@ -2231,7 +2549,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "source": {},
@@ -2245,7 +2565,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["hash"],
+                                                    "required": [
+                                                        "hash"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -2271,7 +2593,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["type"],
+                                                    "required": [
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 {
@@ -2306,7 +2630,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "title", "state"],
+                                    "required": [
+                                        "id",
+                                        "title",
+                                        "state"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2314,7 +2642,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2327,9 +2657,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listrepositories",
             "name": "list-repositories",
-            "output": ["ActionOutput_bitbucket_listrepositories"],
-            "scopes": ["repository"],
-            "usedModels": ["ActionInput_bitbucket_listrepositories", "ActionOutput_bitbucket_listrepositories"],
+            "output": [
+                "ActionOutput_bitbucket_listrepositories"
+            ],
+            "scopes": [
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listrepositories",
+                "ActionOutput_bitbucket_listrepositories"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2361,7 +2698,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace"],
+                        "required": [
+                            "workspace"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listrepositories": {
@@ -2385,7 +2724,10 @@
                                             "type": "string"
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "is_private": {
                                             "type": "boolean"
@@ -2397,7 +2739,10 @@
                                             "type": "string"
                                         },
                                         "language": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "project": {
                                             "type": "object",
@@ -2435,7 +2780,12 @@
                                             ]
                                         }
                                     },
-                                    "required": ["uuid", "slug", "name", "full_name"],
+                                    "required": [
+                                        "uuid",
+                                        "slug",
+                                        "name",
+                                        "full_name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2443,7 +2793,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2456,9 +2808,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listtags",
             "name": "list-tags",
-            "output": ["ActionOutput_bitbucket_listtags"],
-            "scopes": ["repository"],
-            "usedModels": ["ActionInput_bitbucket_listtags", "ActionOutput_bitbucket_listtags"],
+            "output": [
+                "ActionOutput_bitbucket_listtags"
+            ],
+            "scopes": [
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listtags",
+                "ActionOutput_bitbucket_listtags"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2490,7 +2849,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listtags": {
@@ -2522,7 +2884,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["name"],
+                                    "required": [
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2530,7 +2894,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tags"],
+                        "required": [
+                            "tags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2543,9 +2909,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listwatchers",
             "name": "list-watchers",
-            "output": ["ActionOutput_bitbucket_listwatchers"],
-            "scopes": ["repository"],
-            "usedModels": ["ActionInput_bitbucket_listwatchers", "ActionOutput_bitbucket_listwatchers"],
+            "output": [
+                "ActionOutput_bitbucket_listwatchers"
+            ],
+            "scopes": [
+                "repository"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listwatchers",
+                "ActionOutput_bitbucket_listwatchers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2569,7 +2942,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listwatchers": {
@@ -2596,7 +2972,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["uuid"],
+                                    "required": [
+                                        "uuid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2604,7 +2982,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["watchers"],
+                        "required": [
+                            "watchers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2617,9 +2997,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listwebhooks",
             "name": "list-webhooks",
-            "output": ["ActionOutput_bitbucket_listwebhooks"],
-            "scopes": ["webhook"],
-            "usedModels": ["ActionInput_bitbucket_listwebhooks", "ActionOutput_bitbucket_listwebhooks"],
+            "output": [
+                "ActionOutput_bitbucket_listwebhooks"
+            ],
+            "scopes": [
+                "webhook"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listwebhooks",
+                "ActionOutput_bitbucket_listwebhooks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2643,7 +3030,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listwebhooks": {
@@ -2682,7 +3072,11 @@
                                             }
                                         }
                                     },
-                                    "required": ["uuid", "url", "active"],
+                                    "required": [
+                                        "uuid",
+                                        "url",
+                                        "active"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of webhooks."
@@ -2704,7 +3098,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["values"],
+                        "required": [
+                            "values"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2717,9 +3113,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listworkspacemembers",
             "name": "list-workspace-members",
-            "output": ["ActionOutput_bitbucket_listworkspacemembers"],
-            "scopes": ["account"],
-            "usedModels": ["ActionInput_bitbucket_listworkspacemembers", "ActionOutput_bitbucket_listworkspacemembers"],
+            "output": [
+                "ActionOutput_bitbucket_listworkspacemembers"
+            ],
+            "scopes": [
+                "account"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listworkspacemembers",
+                "ActionOutput_bitbucket_listworkspacemembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2739,7 +3142,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["workspace"],
+                        "required": [
+                            "workspace"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_listworkspacemembers": {
@@ -2782,7 +3187,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["members"],
+                        "required": [
+                            "members"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2795,9 +3202,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_listworkspaces",
             "name": "list-workspaces",
-            "output": ["ActionOutput_bitbucket_listworkspaces"],
-            "scopes": ["account"],
-            "usedModels": ["ActionInput_bitbucket_listworkspaces", "ActionOutput_bitbucket_listworkspaces"],
+            "output": [
+                "ActionOutput_bitbucket_listworkspaces"
+            ],
+            "scopes": [
+                "account"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_listworkspaces",
+                "ActionOutput_bitbucket_listworkspaces"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2844,7 +3258,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["uuid", "slug"],
+                                    "required": [
+                                        "uuid",
+                                        "slug"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2865,7 +3282,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2878,9 +3297,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_mergepullrequest",
             "name": "merge-pull-request",
-            "output": ["ActionOutput_bitbucket_mergepullrequest"],
-            "scopes": ["pullrequest:write"],
-            "usedModels": ["ActionInput_bitbucket_mergepullrequest", "ActionOutput_bitbucket_mergepullrequest"],
+            "output": [
+                "ActionOutput_bitbucket_mergepullrequest"
+            ],
+            "scopes": [
+                "pullrequest:write"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_mergepullrequest",
+                "ActionOutput_bitbucket_mergepullrequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2902,7 +3328,11 @@
                             "merge_strategy": {
                                 "description": "Merge strategy. Example: \"merge_commit\"",
                                 "type": "string",
-                                "enum": ["merge_commit", "squash", "fast_forward"]
+                                "enum": [
+                                    "merge_commit",
+                                    "squash",
+                                    "fast_forward"
+                                ]
                             },
                             "message": {
                                 "description": "Merge commit message. Example: \"Merging feature branch\"",
@@ -2913,7 +3343,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["workspace", "repo_slug", "pull_request_id"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "pull_request_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_mergepullrequest": {
@@ -2947,7 +3381,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "title", "state"],
+                        "required": [
+                            "id",
+                            "title",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2960,9 +3398,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_bitbucket_updateproject"],
-            "scopes": ["project:admin"],
-            "usedModels": ["ActionInput_bitbucket_updateproject", "ActionOutput_bitbucket_updateproject"],
+            "output": [
+                "ActionOutput_bitbucket_updateproject"
+            ],
+            "scopes": [
+                "project:admin"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_updateproject",
+                "ActionOutput_bitbucket_updateproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2983,11 +3428,17 @@
                             },
                             "description": {
                                 "description": "New project description.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_private": {
                                 "description": "Whether the project is private.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "key": {
                                 "description": "New project key if renaming the project.",
@@ -2998,7 +3449,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "project_key"],
+                        "required": [
+                            "workspace",
+                            "project_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_updateproject": {
@@ -3020,7 +3474,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "avatar": {
@@ -3033,7 +3489,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["href"],
+                                        "required": [
+                                            "href"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -3073,7 +3531,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["uuid", "key", "name"],
+                        "required": [
+                            "uuid",
+                            "key",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3086,9 +3548,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_updatepullrequest",
             "name": "update-pull-request",
-            "output": ["ActionOutput_bitbucket_updatepullrequest"],
-            "scopes": ["pullrequest:write"],
-            "usedModels": ["ActionInput_bitbucket_updatepullrequest", "ActionOutput_bitbucket_updatepullrequest"],
+            "output": [
+                "ActionOutput_bitbucket_updatepullrequest"
+            ],
+            "scopes": [
+                "pullrequest:write"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_updatepullrequest",
+                "ActionOutput_bitbucket_updatepullrequest"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3127,11 +3596,15 @@
                                                 "description": "Destination branch name. Example: \"main\""
                                             }
                                         },
-                                        "required": ["name"],
+                                        "required": [
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["branch"],
+                                "required": [
+                                    "branch"
+                                ],
                                 "additionalProperties": false
                             },
                             "reviewers": {
@@ -3145,12 +3618,18 @@
                                             "description": "User UUID. Example: \"{a35738e8-3d79-470d-a80f-2a2fe4336964}\""
                                         }
                                     },
-                                    "required": ["uuid"],
+                                    "required": [
+                                        "uuid"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["workspace", "repo_slug", "pull_request_id"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "pull_request_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_updatepullrequest": {
@@ -3196,7 +3675,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["name"],
+                                        "required": [
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "commit": {
@@ -3242,7 +3723,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["name"],
+                                        "required": [
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "commit": {
@@ -3432,7 +3915,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "title", "state"],
+                        "required": [
+                            "id",
+                            "title",
+                            "state"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3445,9 +3932,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_updaterepository",
             "name": "update-repository",
-            "output": ["ActionOutput_bitbucket_updaterepository"],
-            "scopes": ["repository:admin"],
-            "usedModels": ["ActionInput_bitbucket_updaterepository", "ActionOutput_bitbucket_updaterepository"],
+            "output": [
+                "ActionOutput_bitbucket_updaterepository"
+            ],
+            "scopes": [
+                "repository:admin"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_updaterepository",
+                "ActionOutput_bitbucket_updaterepository"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3481,14 +3975,21 @@
                             "fork_policy": {
                                 "description": "Fork policy for the repository.",
                                 "type": "string",
-                                "enum": ["allow_forks", "no_public_forks", "no_forks"]
+                                "enum": [
+                                    "allow_forks",
+                                    "no_public_forks",
+                                    "no_forks"
+                                ]
                             },
                             "mainbranch": {
                                 "description": "Name of the main branch. Example: \"main\"",
                                 "type": "string"
                             }
                         },
-                        "required": ["workspace", "repo_slug"],
+                        "required": [
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_updaterepository": {
@@ -3537,7 +4038,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["uuid", "name", "slug"],
+                        "required": [
+                            "uuid",
+                            "name",
+                            "slug"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3550,9 +4055,16 @@
             "endpoint": null,
             "input": "ActionInput_bitbucket_updatewebhook",
             "name": "update-webhook",
-            "output": ["ActionOutput_bitbucket_updatewebhook"],
-            "scopes": ["webhook"],
-            "usedModels": ["ActionInput_bitbucket_updatewebhook", "ActionOutput_bitbucket_updatewebhook"],
+            "output": [
+                "ActionOutput_bitbucket_updatewebhook"
+            ],
+            "scopes": [
+                "webhook"
+            ],
+            "usedModels": [
+                "ActionInput_bitbucket_updatewebhook",
+                "ActionOutput_bitbucket_updatewebhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3573,19 +4085,31 @@
                             },
                             "description": {
                                 "description": "Webhook description.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "url": {
                                 "description": "Webhook URL.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "secret": {
                                 "description": "Webhook secret. Pass null to remove.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "active": {
                                 "description": "Whether the webhook is active.",
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "events": {
                                 "anyOf": [
@@ -3602,7 +4126,11 @@
                                 "description": "List of event types."
                             }
                         },
-                        "required": ["workspace", "repo_slug", "webhook_uuid"],
+                        "required": [
+                            "workspace",
+                            "repo_slug",
+                            "webhook_uuid"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_bitbucket_updatewebhook": {
@@ -3654,12 +4182,19 @@
             "endpoints": [],
             "input": null,
             "name": "branches",
-            "output": ["Branch"],
+            "output": [
+                "Branch"
+            ],
             "runs": "every hour",
-            "scopes": ["account", "repository"],
+            "scopes": [
+                "account",
+                "repository"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Branch"],
+            "usedModels": [
+                "Branch"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3683,12 +4218,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "workspace", "repo_slug"],
+                        "required": [
+                            "id",
+                            "name",
+                            "workspace",
+                            "repo_slug"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3697,12 +4239,19 @@
             "endpoints": [],
             "input": null,
             "name": "commits",
-            "output": ["Commit"],
+            "output": [
+                "Commit"
+            ],
             "runs": "every hour",
-            "scopes": ["account", "repository"],
+            "scopes": [
+                "account",
+                "repository"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Commit"],
+            "usedModels": [
+                "Commit"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3747,12 +4296,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "hash", "date"],
+                        "required": [
+                            "id",
+                            "hash",
+                            "date"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3761,12 +4316,20 @@
             "endpoints": [],
             "input": null,
             "name": "pipelines",
-            "output": ["Pipeline"],
+            "output": [
+                "Pipeline"
+            ],
             "runs": "every hour",
-            "scopes": ["account", "repository", "pipeline"],
+            "scopes": [
+                "account",
+                "repository",
+                "pipeline"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Pipeline"],
+            "usedModels": [
+                "Pipeline"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3871,12 +4434,18 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "uuid", "created_on"],
+                        "required": [
+                            "id",
+                            "uuid",
+                            "created_on"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3885,12 +4454,20 @@
             "endpoints": [],
             "input": null,
             "name": "pull-requests",
-            "output": ["PullRequest"],
+            "output": [
+                "PullRequest"
+            ],
             "runs": "every hour",
-            "scopes": ["account", "repository", "pullrequest"],
+            "scopes": [
+                "account",
+                "repository",
+                "pullrequest"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["PullRequest"],
+            "usedModels": [
+                "PullRequest"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3935,12 +4512,16 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3949,12 +4530,19 @@
             "endpoints": [],
             "input": null,
             "name": "repositories",
-            "output": ["Repository"],
+            "output": [
+                "Repository"
+            ],
             "runs": "every hour",
-            "scopes": ["account", "repository"],
+            "scopes": [
+                "account",
+                "repository"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Repository"],
+            "usedModels": [
+                "Repository"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4017,12 +4605,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "uuid"],
+                        "required": [
+                            "id",
+                            "uuid"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4031,12 +4624,19 @@
             "endpoints": [],
             "input": null,
             "name": "tags",
-            "output": ["Tag"],
+            "output": [
+                "Tag"
+            ],
             "runs": "every hour",
-            "scopes": ["account", "repository"],
+            "scopes": [
+                "account",
+                "repository"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Tag"],
+            "usedModels": [
+                "Tag"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4069,12 +4669,20 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "workspace", "repo_slug", "target_hash"],
+                        "required": [
+                            "id",
+                            "name",
+                            "workspace",
+                            "repo_slug",
+                            "target_hash"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4083,12 +4691,18 @@
             "endpoints": [],
             "input": null,
             "name": "workspace-members",
-            "output": ["WorkspaceMember"],
+            "output": [
+                "WorkspaceMember"
+            ],
             "runs": "every hour",
-            "scopes": ["account"],
+            "scopes": [
+                "account"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["WorkspaceMember"],
+            "usedModels": [
+                "WorkspaceMember"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4127,12 +4741,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4141,12 +4759,18 @@
             "endpoints": [],
             "input": null,
             "name": "workspaces",
-            "output": ["Workspace"],
+            "output": [
+                "Workspace"
+            ],
             "runs": "every hour",
-            "scopes": ["account"],
+            "scopes": [
+                "account"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Workspace"],
+            "usedModels": [
+                "Workspace"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4176,12 +4800,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

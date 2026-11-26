@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_addserviceaccountstoprojects",
             "name": "add-service-accounts-to-projects",
-            "output": ["ActionOutput_mixpanel_addserviceaccountstoprojects"],
+            "output": [
+                "ActionOutput_mixpanel_addserviceaccountstoprojects"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_addserviceaccountstoprojects", "ActionOutput_mixpanel_addserviceaccountstoprojects"],
+            "usedModels": [
+                "ActionInput_mixpanel_addserviceaccountstoprojects",
+                "ActionOutput_mixpanel_addserviceaccountstoprojects"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -38,17 +43,28 @@
                                         },
                                         "role": {
                                             "type": "string",
-                                            "enum": ["owner", "admin", "analyst", "consumer"],
+                                            "enum": [
+                                                "owner",
+                                                "admin",
+                                                "analyst",
+                                                "consumer"
+                                            ],
                                             "description": "The service account role for this project. Example: \"analyst\""
                                         }
                                     },
-                                    "required": ["id", "role"],
+                                    "required": [
+                                        "id",
+                                        "role"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "List of project/roles to assign."
                             }
                         },
-                        "required": ["service_account_ids", "projects"],
+                        "required": [
+                            "service_account_ids",
+                            "projects"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_addserviceaccountstoprojects": {
@@ -61,7 +77,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -74,9 +92,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_appendprofilelistproperty",
             "name": "append-profile-list-property",
-            "output": ["ActionOutput_mixpanel_appendprofilelistproperty"],
+            "output": [
+                "ActionOutput_mixpanel_appendprofilelistproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_appendprofilelistproperty", "ActionOutput_mixpanel_appendprofilelistproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_appendprofilelistproperty",
+                "ActionOutput_mixpanel_appendprofilelistproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -95,12 +118,20 @@
                                 "minItems": 1,
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "number", "boolean"]
+                                    "type": [
+                                        "string",
+                                        "number",
+                                        "boolean"
+                                    ]
                                 },
                                 "description": "Values to append to the list. Example: [\"red\", \"blue\"]"
                             }
                         },
-                        "required": ["distinct_id", "property", "values"],
+                        "required": [
+                            "distinct_id",
+                            "property",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_appendprofilelistproperty": {
@@ -113,7 +144,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -126,9 +159,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_batchupdategroupprofiles",
             "name": "batch-update-group-profiles",
-            "output": ["ActionOutput_mixpanel_batchupdategroupprofiles"],
+            "output": [
+                "ActionOutput_mixpanel_batchupdategroupprofiles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_batchupdategroupprofiles", "ActionOutput_mixpanel_batchupdategroupprofiles"],
+            "usedModels": [
+                "ActionInput_mixpanel_batchupdategroupprofiles",
+                "ActionOutput_mixpanel_batchupdategroupprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -207,10 +245,16 @@
                                         },
                                         "delete": {
                                             "description": "Delete the group profile. Pass null to delete.",
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["group_key", "group_id"],
+                                    "required": [
+                                        "group_key",
+                                        "group_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of group profile update objects"
@@ -234,7 +278,9 @@
                                 "description": "Set to 1 for a verbose JSON response"
                             }
                         },
-                        "required": ["updates"],
+                        "required": [
+                            "updates"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_batchupdategroupprofiles": {
@@ -246,10 +292,15 @@
                             },
                             "error": {
                                 "description": "Error message if the request was not successful",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -262,9 +313,16 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_batchupdateprofiles",
             "name": "batch-update-profiles",
-            "output": ["ActionOutput_mixpanel_batchupdateprofiles"],
-            "scopes": ["profile:write"],
-            "usedModels": ["ActionInput_mixpanel_batchupdateprofiles", "ActionOutput_mixpanel_batchupdateprofiles"],
+            "output": [
+                "ActionOutput_mixpanel_batchupdateprofiles"
+            ],
+            "scopes": [
+                "profile:write"
+            ],
+            "usedModels": [
+                "ActionInput_mixpanel_batchupdateprofiles",
+                "ActionOutput_mixpanel_batchupdateprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -334,10 +392,15 @@
                                             }
                                         },
                                         "$delete": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["$distinct_id"],
+                                    "required": [
+                                        "$distinct_id"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of profile update objects."
@@ -349,7 +412,11 @@
                             "region": {
                                 "description": "Data residency region. Defaults to us.",
                                 "type": "string",
-                                "enum": ["us", "eu", "in"]
+                                "enum": [
+                                    "us",
+                                    "eu",
+                                    "in"
+                                ]
                             },
                             "ip": {
                                 "description": "Set to 0 to disable IP-based geolocation. Defaults to 1.",
@@ -370,7 +437,9 @@
                                 "maximum": 1
                             }
                         },
-                        "required": ["updates"],
+                        "required": [
+                            "updates"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_batchupdateprofiles": {
@@ -396,7 +465,9 @@
                                 }
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -409,9 +480,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_createalias",
             "name": "create-alias",
-            "output": ["ActionOutput_mixpanel_createalias"],
+            "output": [
+                "ActionOutput_mixpanel_createalias"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_createalias", "ActionOutput_mixpanel_createalias"],
+            "usedModels": [
+                "ActionInput_mixpanel_createalias",
+                "ActionOutput_mixpanel_createalias"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -431,7 +507,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["alias", "distinct_id"],
+                        "required": [
+                            "alias",
+                            "distinct_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_createalias": {
@@ -447,7 +526,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "alias", "distinct_id"],
+                        "required": [
+                            "success",
+                            "alias",
+                            "distinct_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -460,9 +543,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_createannotation",
             "name": "create-annotation",
-            "output": ["ActionOutput_mixpanel_createannotation"],
+            "output": [
+                "ActionOutput_mixpanel_createannotation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_createannotation", "ActionOutput_mixpanel_createannotation"],
+            "usedModels": [
+                "ActionInput_mixpanel_createannotation",
+                "ActionOutput_mixpanel_createannotation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -482,7 +570,11 @@
                                 "description": "Annotation description. Example: \"Release v1.2.0\""
                             }
                         },
-                        "required": ["project_id", "date", "description"],
+                        "required": [
+                            "project_id",
+                            "date",
+                            "description"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_createannotation": {
@@ -501,7 +593,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -514,9 +608,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_createidentity",
             "name": "create-identity",
-            "output": ["ActionOutput_mixpanel_createidentity"],
+            "output": [
+                "ActionOutput_mixpanel_createidentity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_createidentity", "ActionOutput_mixpanel_createidentity"],
+            "usedModels": [
+                "ActionInput_mixpanel_createidentity",
+                "ActionOutput_mixpanel_createidentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -542,7 +641,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["identified_id", "anon_id"],
+                        "required": [
+                            "identified_id",
+                            "anon_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_createidentity": {
@@ -555,7 +657,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -568,9 +672,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deleteallschemas",
             "name": "delete-all-schemas",
-            "output": ["ActionOutput_mixpanel_deleteallschemas"],
+            "output": [
+                "ActionOutput_mixpanel_deleteallschemas"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_deleteallschemas", "ActionOutput_mixpanel_deleteallschemas"],
+            "usedModels": [
+                "ActionInput_mixpanel_deleteallschemas",
+                "ActionOutput_mixpanel_deleteallschemas"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -582,7 +691,9 @@
                                 "description": "Your project id (eg: 12345)"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deleteallschemas": {
@@ -607,9 +718,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deleteannotation",
             "name": "delete-annotation",
-            "output": ["ActionOutput_mixpanel_deleteannotation"],
+            "output": [
+                "ActionOutput_mixpanel_deleteannotation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_deleteannotation", "ActionOutput_mixpanel_deleteannotation"],
+            "usedModels": [
+                "ActionInput_mixpanel_deleteannotation",
+                "ActionOutput_mixpanel_deleteannotation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -625,7 +741,10 @@
                                 "description": "Annotation ID to delete. Example: \"2004052\""
                             }
                         },
-                        "required": ["projectId", "annotationId"],
+                        "required": [
+                            "projectId",
+                            "annotationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deleteannotation": {
@@ -638,7 +757,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -651,9 +773,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deletegroupproperty",
             "name": "delete-group-property",
-            "output": ["ActionOutput_mixpanel_deletegroupproperty"],
+            "output": [
+                "ActionOutput_mixpanel_deletegroupproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_deletegroupproperty", "ActionOutput_mixpanel_deletegroupproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_deletegroupproperty",
+                "ActionOutput_mixpanel_deletegroupproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -683,10 +810,18 @@
                             "region": {
                                 "description": "Data residency region. Defaults to api (US).",
                                 "type": "string",
-                                "enum": ["api", "api-eu", "api-in"]
+                                "enum": [
+                                    "api",
+                                    "api-eu",
+                                    "api-in"
+                                ]
                             }
                         },
-                        "required": ["group_key", "group_id", "properties"],
+                        "required": [
+                            "group_key",
+                            "group_id",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deletegroupproperty": {
@@ -699,7 +834,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -712,9 +849,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deletegroup",
             "name": "delete-group",
-            "output": ["ActionOutput_mixpanel_deletegroup"],
+            "output": [
+                "ActionOutput_mixpanel_deletegroup"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_deletegroup", "ActionOutput_mixpanel_deletegroup"],
+            "usedModels": [
+                "ActionInput_mixpanel_deletegroup",
+                "ActionOutput_mixpanel_deletegroup"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -734,7 +876,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["group_key", "group_id"],
+                        "required": [
+                            "group_key",
+                            "group_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deletegroup": {
@@ -747,7 +892,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -760,9 +907,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deleteprofileproperty",
             "name": "delete-profile-property",
-            "output": ["ActionOutput_mixpanel_deleteprofileproperty"],
+            "output": [
+                "ActionOutput_mixpanel_deleteprofileproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_deleteprofileproperty", "ActionOutput_mixpanel_deleteprofileproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_deleteprofileproperty",
+                "ActionOutput_mixpanel_deleteprofileproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -788,10 +940,18 @@
                             "region": {
                                 "description": "Data residency region. Defaults to the connection region or us.",
                                 "type": "string",
-                                "enum": ["us", "eu", "in"]
+                                "enum": [
+                                    "us",
+                                    "eu",
+                                    "in"
+                                ]
                             }
                         },
-                        "required": ["distinct_id", "properties", "project_token"],
+                        "required": [
+                            "distinct_id",
+                            "properties",
+                            "project_token"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deleteprofileproperty": {
@@ -804,7 +964,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -817,9 +979,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deleteprofile",
             "name": "delete-profile",
-            "output": ["ActionOutput_mixpanel_deleteprofile"],
+            "output": [
+                "ActionOutput_mixpanel_deleteprofile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_deleteprofile", "ActionOutput_mixpanel_deleteprofile"],
+            "usedModels": [
+                "ActionInput_mixpanel_deleteprofile",
+                "ActionOutput_mixpanel_deleteprofile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -841,10 +1008,17 @@
                             "region": {
                                 "description": "The Mixpanel data residency region. Defaults to \"api\" (US). Use \"api-eu\" for EU or \"api-in\" for India.",
                                 "type": "string",
-                                "enum": ["api", "api-eu", "api-in"]
+                                "enum": [
+                                    "api",
+                                    "api-eu",
+                                    "api-in"
+                                ]
                             }
                         },
-                        "required": ["distinct_id", "project_token"],
+                        "required": [
+                            "distinct_id",
+                            "project_token"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deleteprofile": {
@@ -857,7 +1031,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -870,9 +1046,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deleteschema",
             "name": "delete-schema",
-            "output": ["ActionOutput_mixpanel_deleteschema"],
+            "output": [
+                "ActionOutput_mixpanel_deleteschema"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_deleteschema", "ActionOutput_mixpanel_deleteschema"],
+            "usedModels": [
+                "ActionInput_mixpanel_deleteschema",
+                "ActionOutput_mixpanel_deleteschema"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -887,7 +1068,10 @@
                             },
                             "entityType": {
                                 "type": "string",
-                                "enum": ["event", "profile"],
+                                "enum": [
+                                    "event",
+                                    "profile"
+                                ],
                                 "description": "The entity type. Example: event"
                             },
                             "name": {
@@ -896,7 +1080,11 @@
                                 "description": "The entity name. Example: nango_seed_event"
                             }
                         },
-                        "required": ["projectId", "entityType", "name"],
+                        "required": [
+                            "projectId",
+                            "entityType",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deleteschema": {
@@ -909,7 +1097,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -922,9 +1112,16 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_deleteschemasforentity",
             "name": "delete-schemas-for-entity",
-            "output": ["ActionOutput_mixpanel_deleteschemasforentity"],
-            "scopes": ["project:write"],
-            "usedModels": ["ActionInput_mixpanel_deleteschemasforentity", "ActionOutput_mixpanel_deleteschemasforentity"],
+            "output": [
+                "ActionOutput_mixpanel_deleteschemasforentity"
+            ],
+            "scopes": [
+                "project:write"
+            ],
+            "usedModels": [
+                "ActionInput_mixpanel_deleteschemasforentity",
+                "ActionOutput_mixpanel_deleteschemasforentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -937,7 +1134,10 @@
                             },
                             "entity_type": {
                                 "type": "string",
-                                "enum": ["event", "profile"],
+                                "enum": [
+                                    "event",
+                                    "profile"
+                                ],
                                 "description": "Entity type. Example: \"event\" or \"profile\""
                             },
                             "entity_name": {
@@ -945,7 +1145,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id", "entity_type"],
+                        "required": [
+                            "project_id",
+                            "entity_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_deleteschemasforentity": {
@@ -958,14 +1161,19 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["delete_count"],
+                                "required": [
+                                    "delete_count"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
                                 "type": "string"
                             }
                         },
-                        "required": ["results", "status"],
+                        "required": [
+                            "results",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -978,9 +1186,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_importevents",
             "name": "import-events",
-            "output": ["ActionOutput_mixpanel_importevents"],
+            "output": [
+                "ActionOutput_mixpanel_importevents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_importevents", "ActionOutput_mixpanel_importevents"],
+            "usedModels": [
+                "ActionInput_mixpanel_importevents",
+                "ActionOutput_mixpanel_importevents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1023,19 +1236,29 @@
                                                     "description": "Unique insert ID for deduplication. Example: \"29fc2962-6d9c-455d-95ad-95b84f09b9e4\""
                                                 }
                                             },
-                                            "required": ["time", "distinct_id", "$insert_id"],
+                                            "required": [
+                                                "time",
+                                                "distinct_id",
+                                                "$insert_id"
+                                            ],
                                             "additionalProperties": {},
                                             "description": "Event properties. Must include time, distinct_id, and $insert_id. Additional properties are allowed."
                                         }
                                     },
-                                    "required": ["event", "properties"],
+                                    "required": [
+                                        "event",
+                                        "properties"
+                                    ],
                                     "additionalProperties": false,
                                     "description": "A single Mixpanel event to import"
                                 },
                                 "description": "Events to import. Maximum 2000 events per request."
                             }
                         },
-                        "required": ["project_id", "events"],
+                        "required": [
+                            "project_id",
+                            "events"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_importevents": {
@@ -1051,7 +1274,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["code", "status", "num_records_imported"],
+                        "required": [
+                            "code",
+                            "status",
+                            "num_records_imported"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1064,9 +1291,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_incrementprofileproperty",
             "name": "increment-profile-property",
-            "output": ["ActionOutput_mixpanel_incrementprofileproperty"],
+            "output": [
+                "ActionOutput_mixpanel_incrementprofileproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_incrementprofileproperty", "ActionOutput_mixpanel_incrementprofileproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_incrementprofileproperty",
+                "ActionOutput_mixpanel_incrementprofileproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1088,7 +1320,10 @@
                                 "description": "Numeric properties to increment. Negative values decrement. Example: {\"logins\": 1}"
                             }
                         },
-                        "required": ["distinct_id", "properties"],
+                        "required": [
+                            "distinct_id",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_incrementprofileproperty": {
@@ -1101,7 +1336,10 @@
                                 "type": "number"
                             },
                             "error": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "errors": {
                                 "anyOf": [
@@ -1121,7 +1359,10 @@
                                 ]
                             }
                         },
-                        "required": ["status", "num_good_events"],
+                        "required": [
+                            "status",
+                            "num_good_events"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1134,9 +1375,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_listannotationtags",
             "name": "list-annotation-tags",
-            "output": ["ActionOutput_mixpanel_listannotationtags"],
+            "output": [
+                "ActionOutput_mixpanel_listannotationtags"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_listannotationtags", "ActionOutput_mixpanel_listannotationtags"],
+            "usedModels": [
+                "ActionInput_mixpanel_listannotationtags",
+                "ActionOutput_mixpanel_listannotationtags"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1158,7 +1404,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_listannotationtags": {
@@ -1182,7 +1430,12 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "project_id", "has_annotations"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "project_id",
+                                        "has_annotations"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1190,7 +1443,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tags"],
+                        "required": [
+                            "tags"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1203,9 +1458,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_listlookuptables",
             "name": "list-lookup-tables",
-            "output": ["ActionOutput_mixpanel_listlookuptables"],
+            "output": [
+                "ActionOutput_mixpanel_listlookuptables"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_listlookuptables", "ActionOutput_mixpanel_listlookuptables"],
+            "usedModels": [
+                "ActionInput_mixpanel_listlookuptables",
+                "ActionOutput_mixpanel_listlookuptables"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1217,7 +1477,9 @@
                                 "description": "The Mixpanel project_id, used to authenticate service account credentials. Example: \"4040293\""
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_listlookuptables": {
@@ -1235,12 +1497,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1253,9 +1520,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_listschemasforentity",
             "name": "list-schemas-for-entity",
-            "output": ["ActionOutput_mixpanel_listschemasforentity"],
+            "output": [
+                "ActionOutput_mixpanel_listschemasforentity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_listschemasforentity", "ActionOutput_mixpanel_listschemasforentity"],
+            "usedModels": [
+                "ActionInput_mixpanel_listschemasforentity",
+                "ActionOutput_mixpanel_listschemasforentity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1270,7 +1542,12 @@
                             },
                             "entity_type": {
                                 "type": "string",
-                                "enum": ["event", "profile", "group", "lookup"],
+                                "enum": [
+                                    "event",
+                                    "profile",
+                                    "group",
+                                    "lookup"
+                                ],
                                 "description": "The entity type. Valid values: event, profile, group, lookup."
                             },
                             "limit": {
@@ -1284,7 +1561,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id", "entity_type"],
+                        "required": [
+                            "project_id",
+                            "entity_type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_listschemasforentity": {
@@ -1303,7 +1583,11 @@
                                         },
                                         "schemaJson": {}
                                     },
-                                    "required": ["entityType", "name", "schemaJson"],
+                                    "required": [
+                                        "entityType",
+                                        "name",
+                                        "schemaJson"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1311,7 +1595,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["results"],
+                        "required": [
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1324,9 +1610,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_listwarehouseimports",
             "name": "list-warehouse-imports",
-            "output": ["ActionOutput_mixpanel_listwarehouseimports"],
+            "output": [
+                "ActionOutput_mixpanel_listwarehouseimports"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_listwarehouseimports", "ActionOutput_mixpanel_listwarehouseimports"],
+            "usedModels": [
+                "ActionInput_mixpanel_listwarehouseimports",
+                "ActionOutput_mixpanel_listwarehouseimports"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1346,7 +1637,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_listwarehouseimports": {
@@ -1362,11 +1655,22 @@
                                         },
                                         "import_type": {
                                             "type": "string",
-                                            "enum": ["event_sync", "event_stream", "people", "groups", "lookup_table"]
+                                            "enum": [
+                                                "event_sync",
+                                                "event_stream",
+                                                "people",
+                                                "groups",
+                                                "lookup_table"
+                                            ]
                                         },
                                         "sync_mode": {
                                             "type": "string",
-                                            "enum": ["time_based", "mirror_mode", "full_sync", "one_time"]
+                                            "enum": [
+                                                "time_based",
+                                                "mirror_mode",
+                                                "full_sync",
+                                                "one_time"
+                                            ]
                                         },
                                         "created": {
                                             "type": "string"
@@ -1412,13 +1716,20 @@
                                             ]
                                         },
                                         "last_dispatch": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "is_deleted": {
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "import_type", "sync_mode"],
+                                    "required": [
+                                        "id",
+                                        "import_type",
+                                        "sync_mode"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1426,7 +1737,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1439,9 +1752,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_patchannotation",
             "name": "patch-annotation",
-            "output": ["ActionOutput_mixpanel_patchannotation"],
+            "output": [
+                "ActionOutput_mixpanel_patchannotation"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_patchannotation", "ActionOutput_mixpanel_patchannotation"],
+            "usedModels": [
+                "ActionInput_mixpanel_patchannotation",
+                "ActionOutput_mixpanel_patchannotation"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1468,7 +1786,10 @@
                                 }
                             }
                         },
-                        "required": ["project_id", "annotation_id"],
+                        "required": [
+                            "project_id",
+                            "annotation_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_patchannotation": {
@@ -1496,7 +1817,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "tags": {
@@ -1511,12 +1834,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1529,9 +1857,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_queryprofileactivity",
             "name": "query-profile-activity",
-            "output": ["ActionOutput_mixpanel_queryprofileactivity"],
+            "output": [
+                "ActionOutput_mixpanel_queryprofileactivity"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_queryprofileactivity", "ActionOutput_mixpanel_queryprofileactivity"],
+            "usedModels": [
+                "ActionInput_mixpanel_queryprofileactivity",
+                "ActionOutput_mixpanel_queryprofileactivity"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1568,7 +1901,12 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["project_id", "distinct_ids", "from_date", "to_date"],
+                        "required": [
+                            "project_id",
+                            "distinct_ids",
+                            "from_date",
+                            "to_date"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_queryprofileactivity": {
@@ -1590,16 +1928,23 @@
                                                 },
                                                 "properties": {}
                                             },
-                                            "required": ["event"],
+                                            "required": [
+                                                "event"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["events"],
+                                "required": [
+                                    "events"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status", "results"],
+                        "required": [
+                            "status",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1612,9 +1957,16 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_queryprofiles",
             "name": "query-profiles",
-            "output": ["ActionOutput_mixpanel_queryprofiles"],
-            "scopes": ["profile-query"],
-            "usedModels": ["ActionInput_mixpanel_queryprofiles", "ActionOutput_mixpanel_queryprofiles"],
+            "output": [
+                "ActionOutput_mixpanel_queryprofiles"
+            ],
+            "scopes": [
+                "profile-query"
+            ],
+            "usedModels": [
+                "ActionInput_mixpanel_queryprofiles",
+                "ActionOutput_mixpanel_queryprofiles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1687,7 +2039,10 @@
                                     "type": "object",
                                     "properties": {
                                         "$distinct_id": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "$properties": {
                                             "type": "object",
@@ -1697,7 +2052,9 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["$distinct_id"],
+                                    "required": [
+                                        "$distinct_id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1718,7 +2075,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1731,9 +2090,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_removegrouplistproperty",
             "name": "remove-group-list-property",
-            "output": ["ActionOutput_mixpanel_removegrouplistproperty"],
+            "output": [
+                "ActionOutput_mixpanel_removegrouplistproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_removegrouplistproperty", "ActionOutput_mixpanel_removegrouplistproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_removegrouplistproperty",
+                "ActionOutput_mixpanel_removegrouplistproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1760,12 +2124,21 @@
                                 "minItems": 1,
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 },
                                 "description": "Values to remove from the list property. Example: [\"feature-a\", \"feature-b\"]"
                             }
                         },
-                        "required": ["token", "group_key", "group_id", "property_name", "values"],
+                        "required": [
+                            "token",
+                            "group_key",
+                            "group_id",
+                            "property_name",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_removegrouplistproperty": {
@@ -1775,7 +2148,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1788,9 +2163,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_removeprofilelistproperty",
             "name": "remove-profile-list-property",
-            "output": ["ActionOutput_mixpanel_removeprofilelistproperty"],
+            "output": [
+                "ActionOutput_mixpanel_removeprofilelistproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_removeprofilelistproperty", "ActionOutput_mixpanel_removeprofilelistproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_removeprofilelistproperty",
+                "ActionOutput_mixpanel_removeprofilelistproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1820,10 +2200,19 @@
                             "region": {
                                 "description": "Data residency region. Defaults to \"us\".",
                                 "type": "string",
-                                "enum": ["us", "eu", "in"]
+                                "enum": [
+                                    "us",
+                                    "eu",
+                                    "in"
+                                ]
                             }
                         },
-                        "required": ["distinct_id", "property_name", "values", "project_token"],
+                        "required": [
+                            "distinct_id",
+                            "property_name",
+                            "values",
+                            "project_token"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_removeprofilelistproperty": {
@@ -1833,7 +2222,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1846,9 +2237,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_setgrouppropertyonce",
             "name": "set-group-property-once",
-            "output": ["ActionOutput_mixpanel_setgrouppropertyonce"],
+            "output": [
+                "ActionOutput_mixpanel_setgrouppropertyonce"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_setgrouppropertyonce", "ActionOutput_mixpanel_setgrouppropertyonce"],
+            "usedModels": [
+                "ActionInput_mixpanel_setgrouppropertyonce",
+                "ActionOutput_mixpanel_setgrouppropertyonce"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1878,10 +2274,19 @@
                             "region": {
                                 "description": "Data residency region. Defaults to us.",
                                 "type": "string",
-                                "enum": ["us", "eu", "in"]
+                                "enum": [
+                                    "us",
+                                    "eu",
+                                    "in"
+                                ]
                             }
                         },
-                        "required": ["token", "group_key", "group_id", "properties"],
+                        "required": [
+                            "token",
+                            "group_key",
+                            "group_id",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_setgrouppropertyonce": {
@@ -1894,7 +2299,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1907,9 +2314,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_setgroupproperty",
             "name": "set-group-property",
-            "output": ["ActionOutput_mixpanel_setgroupproperty"],
+            "output": [
+                "ActionOutput_mixpanel_setgroupproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_setgroupproperty", "ActionOutput_mixpanel_setgroupproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_setgroupproperty",
+                "ActionOutput_mixpanel_setgroupproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1933,7 +2345,11 @@
                                 "description": "Properties to set on the group profile."
                             }
                         },
-                        "required": ["group_key", "group_id", "properties"],
+                        "required": [
+                            "group_key",
+                            "group_id",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_setgroupproperty": {
@@ -1943,7 +2359,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1956,9 +2374,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_setprofilepropertyonce",
             "name": "set-profile-property-once",
-            "output": ["ActionOutput_mixpanel_setprofilepropertyonce"],
+            "output": [
+                "ActionOutput_mixpanel_setprofilepropertyonce"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_setprofilepropertyonce", "ActionOutput_mixpanel_setprofilepropertyonce"],
+            "usedModels": [
+                "ActionInput_mixpanel_setprofilepropertyonce",
+                "ActionOutput_mixpanel_setprofilepropertyonce"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1978,7 +2401,10 @@
                                 "description": "Properties to set if absent. Example: {\"First login date\": \"2024-01-01\"}"
                             }
                         },
-                        "required": ["distinct_id", "properties"],
+                        "required": [
+                            "distinct_id",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_setprofilepropertyonce": {
@@ -1988,10 +2414,15 @@
                                 "type": "number"
                             },
                             "error": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2004,9 +2435,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_setprofile",
             "name": "set-profile",
-            "output": ["ActionOutput_mixpanel_setprofile"],
+            "output": [
+                "ActionOutput_mixpanel_setprofile"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_setprofile", "ActionOutput_mixpanel_setprofile"],
+            "usedModels": [
+                "ActionInput_mixpanel_setprofile",
+                "ActionOutput_mixpanel_setprofile"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2048,7 +2484,11 @@
                                 "maximum": 1
                             }
                         },
-                        "required": ["token", "distinct_id", "properties"],
+                        "required": [
+                            "token",
+                            "distinct_id",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_setprofile": {
@@ -2073,7 +2513,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2086,9 +2528,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_trackevent",
             "name": "track-event",
-            "output": ["ActionOutput_mixpanel_trackevent"],
+            "output": [
+                "ActionOutput_mixpanel_trackevent"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_trackevent", "ActionOutput_mixpanel_trackevent"],
+            "usedModels": [
+                "ActionInput_mixpanel_trackevent",
+                "ActionOutput_mixpanel_trackevent"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2119,12 +2566,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["distinct_id"],
+                                "required": [
+                                    "distinct_id"
+                                ],
                                 "additionalProperties": {},
                                 "description": "Event properties. Must include distinct_id. Additional properties are passed through to Mixpanel."
                             }
                         },
-                        "required": ["project_id", "event", "properties"],
+                        "required": [
+                            "project_id",
+                            "event",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_trackevent": {
@@ -2139,7 +2592,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2152,9 +2607,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_uniongrouplistproperty",
             "name": "union-group-list-property",
-            "output": ["ActionOutput_mixpanel_uniongrouplistproperty"],
+            "output": [
+                "ActionOutput_mixpanel_uniongrouplistproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_uniongrouplistproperty", "ActionOutput_mixpanel_uniongrouplistproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_uniongrouplistproperty",
+                "ActionOutput_mixpanel_uniongrouplistproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2176,7 +2636,10 @@
                             "values": {
                                 "type": "array",
                                 "items": {
-                                    "type": ["string", "number"]
+                                    "type": [
+                                        "string",
+                                        "number"
+                                    ]
                                 },
                                 "description": "Values to union into the list property. Example: [\"feature-a\", \"feature-b\"]"
                             },
@@ -2185,7 +2648,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["group_key", "group_id", "property_name", "values"],
+                        "required": [
+                            "group_key",
+                            "group_id",
+                            "property_name",
+                            "values"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_uniongrouplistproperty": {
@@ -2198,7 +2666,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2211,9 +2681,16 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_unionprofilelistproperty",
             "name": "union-profile-list-property",
-            "output": ["ActionOutput_mixpanel_unionprofilelistproperty"],
-            "scopes": ["project:write"],
-            "usedModels": ["ActionInput_mixpanel_unionprofilelistproperty", "ActionOutput_mixpanel_unionprofilelistproperty"],
+            "output": [
+                "ActionOutput_mixpanel_unionprofilelistproperty"
+            ],
+            "scopes": [
+                "project:write"
+            ],
+            "usedModels": [
+                "ActionInput_mixpanel_unionprofilelistproperty",
+                "ActionOutput_mixpanel_unionprofilelistproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2232,7 +2709,10 @@
                                 "additionalProperties": {
                                     "type": "array",
                                     "items": {
-                                        "type": ["string", "number"]
+                                        "type": [
+                                            "string",
+                                            "number"
+                                        ]
                                     }
                                 },
                                 "description": "An object mapping property names to arrays of values to union into list properties. Example: { \"roles\": [\"admin\", \"editor\"] }"
@@ -2256,7 +2736,10 @@
                                 "maximum": 1
                             }
                         },
-                        "required": ["distinctId", "union"],
+                        "required": [
+                            "distinctId",
+                            "union"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_unionprofilelistproperty": {
@@ -2271,7 +2754,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2284,9 +2769,14 @@
             "endpoint": null,
             "input": "ActionInput_mixpanel_updateprofileproperty",
             "name": "update-profile-property",
-            "output": ["ActionOutput_mixpanel_updateprofileproperty"],
+            "output": [
+                "ActionOutput_mixpanel_updateprofileproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_mixpanel_updateprofileproperty", "ActionOutput_mixpanel_updateprofileproperty"],
+            "usedModels": [
+                "ActionInput_mixpanel_updateprofileproperty",
+                "ActionOutput_mixpanel_updateprofileproperty"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2310,7 +2800,11 @@
                                 "description": "The Mixpanel project token. Example: \"abc123...\""
                             }
                         },
-                        "required": ["distinct_id", "properties", "project_token"],
+                        "required": [
+                            "distinct_id",
+                            "properties",
+                            "project_token"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_mixpanel_updateprofileproperty": {
@@ -2333,7 +2827,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status", "distinct_id"],
+                        "required": [
+                            "status",
+                            "distinct_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2349,12 +2846,16 @@
             "endpoints": [],
             "input": null,
             "name": "annotations",
-            "output": ["Annotation"],
+            "output": [
+                "Annotation"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Annotation"],
+            "usedModels": [
+                "Annotation"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2392,17 +2893,25 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["id", "date"],
+                        "required": [
+                            "id",
+                            "date"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2411,12 +2920,17 @@
             "endpoints": [],
             "input": "SyncMetadata_mixpanel_events",
             "name": "events",
-            "output": ["Event"],
+            "output": [
+                "Event"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Event", "SyncMetadata_mixpanel_events"],
+            "usedModels": [
+                "Event",
+                "SyncMetadata_mixpanel_events"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2445,7 +2959,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "event", "time"],
+                        "required": [
+                            "id",
+                            "event",
+                            "time"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_mixpanel_events": {
@@ -2462,7 +2980,9 @@
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -2471,12 +2991,16 @@
             "endpoints": [],
             "input": null,
             "name": "lexicon-schemas",
-            "output": ["LexiconSchema"],
+            "output": [
+                "LexiconSchema"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LexiconSchema"],
+            "usedModels": [
+                "LexiconSchema"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2501,7 +3025,11 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "entityType", "name"],
+                        "required": [
+                            "id",
+                            "entityType",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2515,12 +3043,17 @@
             "endpoints": [],
             "input": "SyncMetadata_mixpanel_lookuptables",
             "name": "lookup-tables",
-            "output": ["LookupTable"],
+            "output": [
+                "LookupTable"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["LookupTable", "SyncMetadata_mixpanel_lookuptables"],
+            "usedModels": [
+                "LookupTable",
+                "SyncMetadata_mixpanel_lookuptables"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2535,7 +3068,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_mixpanel_lookuptables": {
@@ -2548,7 +3084,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2562,12 +3100,16 @@
             "endpoints": [],
             "input": null,
             "name": "project-service-accounts",
-            "output": ["ProjectServiceAccount"],
+            "output": [
+                "ProjectServiceAccount"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProjectServiceAccount"],
+            "usedModels": [
+                "ProjectServiceAccount"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -2618,12 +3160,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "service_account_id", "project_id"],
+                        "required": [
+                            "id",
+                            "service_account_id",
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

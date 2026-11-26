@@ -7,9 +7,17 @@
             "endpoint": null,
             "input": "ActionInput_make_clonescenario",
             "name": "clone-scenario",
-            "output": ["ActionOutput_make_clonescenario"],
-            "scopes": ["scenarios:read", "scenarios:write"],
-            "usedModels": ["ActionInput_make_clonescenario", "ActionOutput_make_clonescenario"],
+            "output": [
+                "ActionOutput_make_clonescenario"
+            ],
+            "scopes": [
+                "scenarios:read",
+                "scenarios:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_clonescenario",
+                "ActionOutput_make_clonescenario"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -41,7 +49,13 @@
                                 "description": "Scenario states; can be an empty object {}."
                             }
                         },
-                        "required": ["scenarioId", "organizationId", "teamId", "name", "states"],
+                        "required": [
+                            "scenarioId",
+                            "organizationId",
+                            "teamId",
+                            "name",
+                            "states"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_clonescenario": {
@@ -63,11 +77,16 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["scenario"],
+                        "required": [
+                            "scenario"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -80,9 +99,16 @@
             "endpoint": null,
             "input": "ActionInput_make_createdatastorerecord",
             "name": "create-data-store-record",
-            "output": ["ActionOutput_make_createdatastorerecord"],
-            "scopes": ["datastores:write"],
-            "usedModels": ["ActionInput_make_createdatastorerecord", "ActionOutput_make_createdatastorerecord"],
+            "output": [
+                "ActionOutput_make_createdatastorerecord"
+            ],
+            "scopes": [
+                "datastores:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_createdatastorerecord",
+                "ActionOutput_make_createdatastorerecord"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -106,7 +132,10 @@
                                 "description": "Record data matching the data store structure spec."
                             }
                         },
-                        "required": ["dataStoreId", "data"],
+                        "required": [
+                            "dataStoreId",
+                            "data"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_createdatastorerecord": {
@@ -123,7 +152,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["key", "data"],
+                        "required": [
+                            "key",
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -136,9 +168,16 @@
             "endpoint": null,
             "input": "ActionInput_make_createdatastore",
             "name": "create-data-store",
-            "output": ["ActionOutput_make_createdatastore"],
-            "scopes": ["datastores:write"],
-            "usedModels": ["ActionInput_make_createdatastore", "ActionOutput_make_createdatastore"],
+            "output": [
+                "ActionOutput_make_createdatastore"
+            ],
+            "scopes": [
+                "datastores:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_createdatastore",
+                "ActionOutput_make_createdatastore"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -164,7 +203,12 @@
                                 "description": "Maximum size in MB. Example: 1"
                             }
                         },
-                        "required": ["name", "teamId", "datastructureId", "maxSizeMB"],
+                        "required": [
+                            "name",
+                            "teamId",
+                            "datastructureId",
+                            "maxSizeMB"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_createdatastore": {
@@ -192,7 +236,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "teamId", "datastructureId", "records", "size", "maxSize"],
+                        "required": [
+                            "id",
+                            "name",
+                            "teamId",
+                            "datastructureId",
+                            "records",
+                            "size",
+                            "maxSize"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -205,9 +257,16 @@
             "endpoint": null,
             "input": "ActionInput_make_createdatastructure",
             "name": "create-data-structure",
-            "output": ["ActionOutput_make_createdatastructure"],
-            "scopes": ["udts:write"],
-            "usedModels": ["ActionInput_make_createdatastructure", "ActionOutput_make_createdatastructure"],
+            "output": [
+                "ActionOutput_make_createdatastructure"
+            ],
+            "scopes": [
+                "udts:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_createdatastructure",
+                "ActionOutput_make_createdatastructure"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -246,13 +305,21 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["type", "name"],
+                                    "required": [
+                                        "type",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "The data structure specification."
                             }
                         },
-                        "required": ["name", "teamId", "strict", "spec"],
+                        "required": [
+                            "name",
+                            "teamId",
+                            "strict",
+                            "spec"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_createdatastructure": {
@@ -294,13 +361,22 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["type", "name"],
+                                    "required": [
+                                        "type",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 },
                                 "description": "The data structure specification."
                             }
                         },
-                        "required": ["id", "teamId", "name", "strict", "spec"],
+                        "required": [
+                            "id",
+                            "teamId",
+                            "name",
+                            "strict",
+                            "spec"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -313,9 +389,16 @@
             "endpoint": null,
             "input": "ActionInput_make_createhook",
             "name": "create-hook",
-            "output": ["ActionOutput_make_createhook"],
-            "scopes": ["hooks:write"],
-            "usedModels": ["ActionInput_make_createhook", "ActionOutput_make_createhook"],
+            "output": [
+                "ActionOutput_make_createhook"
+            ],
+            "scopes": [
+                "hooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_createhook",
+                "ActionOutput_make_createhook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -347,7 +430,14 @@
                                 "description": "Set to true to return JSON payloads as strings."
                             }
                         },
-                        "required": ["name", "teamId", "typeName", "method", "headers", "stringify"],
+                        "required": [
+                            "name",
+                            "teamId",
+                            "typeName",
+                            "method",
+                            "headers",
+                            "stringify"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_createhook": {
@@ -366,13 +456,22 @@
                                 "type": "string"
                             },
                             "type": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "packageName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "theme": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "flags": {
                                 "anyOf": [
@@ -391,22 +490,40 @@
                                 ]
                             },
                             "editable": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "queueCount": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "queueLimit": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "enabled": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "gone": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "typeName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "data": {
                                 "anyOf": [
@@ -440,13 +557,22 @@
                                 ]
                             },
                             "scenarioId": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "url": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "teamId", "udid", "url"],
+                        "required": [
+                            "id",
+                            "name",
+                            "teamId",
+                            "udid",
+                            "url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -459,9 +585,16 @@
             "endpoint": null,
             "input": "ActionInput_make_createscenario",
             "name": "create-scenario",
-            "output": ["ActionOutput_make_createscenario"],
-            "scopes": ["scenarios:write"],
-            "usedModels": ["ActionInput_make_createscenario", "ActionOutput_make_createscenario"],
+            "output": [
+                "ActionOutput_make_createscenario"
+            ],
+            "scopes": [
+                "scenarios:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_createscenario",
+                "ActionOutput_make_createscenario"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -488,7 +621,9 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": {},
                                 "description": "The scenario scheduling details as an object. It will be JSON-encoded before sending."
                             },
@@ -501,7 +636,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["teamId", "blueprint", "scheduling"],
+                        "required": [
+                            "teamId",
+                            "blueprint",
+                            "scheduling"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_createscenario": {
@@ -514,31 +653,58 @@
                                         "type": "number"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "teamId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "hookId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "folderId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "isinvalid": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "isActive": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "islocked": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "isPaused": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "usedPackages": {
                                         "anyOf": [
@@ -554,7 +720,10 @@
                                         ]
                                     },
                                     "lastEdit": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "scheduling": {
                                         "anyOf": [
@@ -562,10 +731,16 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "type": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "interval": {
-                                                        "type": ["number", "null"]
+                                                        "type": [
+                                                            "number",
+                                                            "null"
+                                                        ]
                                                     }
                                                 },
                                                 "additionalProperties": false
@@ -576,16 +751,25 @@
                                         ]
                                     },
                                     "created": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "scenarioVersion": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "type": {
                                         "anyOf": [
                                             {
                                                 "type": "string",
-                                                "enum": ["scenario", "tool"]
+                                                "enum": [
+                                                    "scenario",
+                                                    "tool"
+                                                ]
                                             },
                                             {
                                                 "type": "null"
@@ -593,17 +777,27 @@
                                         ]
                                     },
                                     "deleted": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "deletedAt": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["scenario"],
+                        "required": [
+                            "scenario"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -616,9 +810,16 @@
             "endpoint": null,
             "input": "ActionInput_make_createteam",
             "name": "create-team",
-            "output": ["ActionOutput_make_createteam"],
-            "scopes": ["teams:write"],
-            "usedModels": ["ActionInput_make_createteam", "ActionOutput_make_createteam"],
+            "output": [
+                "ActionOutput_make_createteam"
+            ],
+            "scopes": [
+                "teams:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_createteam",
+                "ActionOutput_make_createteam"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -634,7 +835,10 @@
                                 "description": "The ID of the organization."
                             }
                         },
-                        "required": ["name", "organizationId"],
+                        "required": [
+                            "name",
+                            "organizationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_createteam": {
@@ -653,17 +857,29 @@
                                         "type": "number"
                                     },
                                     "operationsLimit": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "transferLimit": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id", "name", "organizationId"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "organizationId"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["team"],
+                        "required": [
+                            "team"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -676,9 +892,16 @@
             "endpoint": null,
             "input": "ActionInput_make_deletedatastorerecords",
             "name": "delete-data-store-records",
-            "output": ["ActionOutput_make_deletedatastorerecords"],
-            "scopes": ["datastores:write"],
-            "usedModels": ["ActionInput_make_deletedatastorerecords", "ActionOutput_make_deletedatastorerecords"],
+            "output": [
+                "ActionOutput_make_deletedatastorerecords"
+            ],
+            "scopes": [
+                "datastores:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_deletedatastorerecords",
+                "ActionOutput_make_deletedatastorerecords"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -708,7 +931,9 @@
                                 }
                             }
                         },
-                        "required": ["dataStoreId"],
+                        "required": [
+                            "dataStoreId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_deletedatastorerecords": {
@@ -722,7 +947,9 @@
                                 "description": "Keys of the deleted records."
                             }
                         },
-                        "required": ["keys"],
+                        "required": [
+                            "keys"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -735,9 +962,16 @@
             "endpoint": null,
             "input": "ActionInput_make_deletedatastore",
             "name": "delete-data-store",
-            "output": ["ActionOutput_make_deletedatastore"],
-            "scopes": ["datastores:write"],
-            "usedModels": ["ActionInput_make_deletedatastore", "ActionOutput_make_deletedatastore"],
+            "output": [
+                "ActionOutput_make_deletedatastore"
+            ],
+            "scopes": [
+                "datastores:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_deletedatastore",
+                "ActionOutput_make_deletedatastore"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -771,7 +1005,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_deletedatastore": {
@@ -785,7 +1021,9 @@
                                 "description": "The IDs of the deleted data stores."
                             }
                         },
-                        "required": ["dataStores"],
+                        "required": [
+                            "dataStores"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -798,9 +1036,16 @@
             "endpoint": null,
             "input": "ActionInput_make_deletehook",
             "name": "delete-hook",
-            "output": ["ActionOutput_make_deletehook"],
-            "scopes": ["hooks:write"],
-            "usedModels": ["ActionInput_make_deletehook", "ActionOutput_make_deletehook"],
+            "output": [
+                "ActionOutput_make_deletehook"
+            ],
+            "scopes": [
+                "hooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_deletehook",
+                "ActionOutput_make_deletehook"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -812,7 +1057,9 @@
                                 "description": "Hook ID. Example: 3329468"
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_deletehook": {
@@ -823,7 +1070,9 @@
                                 "description": "ID of the deleted hook"
                             }
                         },
-                        "required": ["hook"],
+                        "required": [
+                            "hook"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -836,9 +1085,16 @@
             "endpoint": null,
             "input": "ActionInput_make_deleteincompleteexecutions",
             "name": "delete-incomplete-executions",
-            "output": ["ActionOutput_make_deleteincompleteexecutions"],
-            "scopes": ["dlqs:write"],
-            "usedModels": ["ActionInput_make_deleteincompleteexecutions", "ActionOutput_make_deleteincompleteexecutions"],
+            "output": [
+                "ActionOutput_make_deleteincompleteexecutions"
+            ],
+            "scopes": [
+                "dlqs:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_deleteincompleteexecutions",
+                "ActionOutput_make_deleteincompleteexecutions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -865,7 +1121,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_deleteincompleteexecutions": {
@@ -879,7 +1137,9 @@
                                 "description": "IDs of the deleted incomplete executions."
                             }
                         },
-                        "required": ["dlqs"],
+                        "required": [
+                            "dlqs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -892,9 +1152,16 @@
             "endpoint": null,
             "input": "ActionInput_make_deletescenario",
             "name": "delete-scenario",
-            "output": ["ActionOutput_make_deletescenario"],
-            "scopes": ["scenarios:write"],
-            "usedModels": ["ActionInput_make_deletescenario", "ActionOutput_make_deletescenario"],
+            "output": [
+                "ActionOutput_make_deletescenario"
+            ],
+            "scopes": [
+                "scenarios:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_deletescenario",
+                "ActionOutput_make_deletescenario"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -906,7 +1173,9 @@
                                 "description": "Scenario ID. Example: 6413024"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_deletescenario": {
@@ -919,7 +1188,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "deleted"],
+                        "required": [
+                            "id",
+                            "deleted"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -932,9 +1204,16 @@
             "endpoint": null,
             "input": "ActionInput_make_disablehook",
             "name": "disable-hook",
-            "output": ["ActionOutput_make_disablehook"],
-            "scopes": ["hooks:write"],
-            "usedModels": ["ActionInput_make_disablehook", "ActionOutput_make_disablehook"],
+            "output": [
+                "ActionOutput_make_disablehook"
+            ],
+            "scopes": [
+                "hooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_disablehook",
+                "ActionOutput_make_disablehook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -946,7 +1225,9 @@
                                 "description": "The ID of the webhook to disable. Example: 3329422"
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_disablehook": {
@@ -956,7 +1237,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -969,9 +1252,16 @@
             "endpoint": null,
             "input": "ActionInput_make_enablehook",
             "name": "enable-hook",
-            "output": ["ActionOutput_make_enablehook"],
-            "scopes": ["hooks:write"],
-            "usedModels": ["ActionInput_make_enablehook", "ActionOutput_make_enablehook"],
+            "output": [
+                "ActionOutput_make_enablehook"
+            ],
+            "scopes": [
+                "hooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_enablehook",
+                "ActionOutput_make_enablehook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -983,7 +1273,9 @@
                                 "description": "The unique ID of the hook to enable. Example: 3329422"
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_enablehook": {
@@ -993,7 +1285,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1006,9 +1300,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getconnection",
             "name": "get-connection",
-            "output": ["ActionOutput_make_getconnection"],
-            "scopes": ["connections:read"],
-            "usedModels": ["ActionInput_make_getconnection", "ActionOutput_make_getconnection"],
+            "output": [
+                "ActionOutput_make_getconnection"
+            ],
+            "scopes": [
+                "connections:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getconnection",
+                "ActionOutput_make_getconnection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1019,7 +1320,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["connectionId"],
+                        "required": [
+                            "connectionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getconnection": {
@@ -1035,16 +1338,28 @@
                                         "type": "string"
                                     },
                                     "accountName": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "accountLabel": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "packageName": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "expire": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "metadata": {
                                         "anyOf": [
@@ -1052,13 +1367,19 @@
                                                 "type": "object",
                                                 "properties": {
                                                     "value": {
-                                                        "type": ["string", "null"]
+                                                        "type": [
+                                                            "string",
+                                                            "null"
+                                                        ]
                                                     },
                                                     "type": {
                                                         "anyOf": [
                                                             {
                                                                 "type": "string",
-                                                                "enum": ["string", "email"]
+                                                                "enum": [
+                                                                    "string",
+                                                                    "email"
+                                                                ]
                                                             },
                                                             {
                                                                 "type": "null"
@@ -1074,34 +1395,64 @@
                                         ]
                                     },
                                     "teamId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "theme": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "upgradeable": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "scopesCnt": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "scoped": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "accountType": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "editable": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "uid": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "connectedSystemId": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "organizationId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "scopes": {
                                         "anyOf": [
@@ -1120,7 +1471,11 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "name", "account"],
+                                                    "required": [
+                                                        "id",
+                                                        "name",
+                                                        "account"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -1130,11 +1485,16 @@
                                         ]
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["connection"],
+                        "required": [
+                            "connection"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1147,9 +1507,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getdatastore",
             "name": "get-data-store",
-            "output": ["ActionOutput_make_getdatastore"],
-            "scopes": ["datastores:read"],
-            "usedModels": ["ActionInput_make_getdatastore", "ActionOutput_make_getdatastore"],
+            "output": [
+                "ActionOutput_make_getdatastore"
+            ],
+            "scopes": [
+                "datastores:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getdatastore",
+                "ActionOutput_make_getdatastore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1161,7 +1528,9 @@
                                 "description": "The ID of the data store. Example: 141697"
                             }
                         },
-                        "required": ["dataStoreId"],
+                        "required": [
+                            "dataStoreId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getdatastore": {
@@ -1192,11 +1561,21 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["id", "name", "records", "size", "maxSize", "teamId", "datastructureId"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "records",
+                                    "size",
+                                    "maxSize",
+                                    "teamId",
+                                    "datastructureId"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["dataStore"],
+                        "required": [
+                            "dataStore"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1209,9 +1588,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getdatastructure",
             "name": "get-data-structure",
-            "output": ["ActionOutput_make_getdatastructure"],
-            "scopes": ["udts:read"],
-            "usedModels": ["ActionInput_make_getdatastructure", "ActionOutput_make_getdatastructure"],
+            "output": [
+                "ActionOutput_make_getdatastructure"
+            ],
+            "scopes": [
+                "udts:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getdatastructure",
+                "ActionOutput_make_getdatastructure"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1223,7 +1609,9 @@
                                 "description": "Data structure ID. Example: 477315"
                             }
                         },
-                        "required": ["dataStructureId"],
+                        "required": [
+                            "dataStructureId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getdatastructure": {
@@ -1256,16 +1644,27 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["name", "type", "required"],
+                                            "required": [
+                                                "name",
+                                                "type",
+                                                "required"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["id", "name", "teamId", "spec"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "teamId",
+                                    "spec"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["dataStructure"],
+                        "required": [
+                            "dataStructure"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1278,9 +1677,16 @@
             "endpoint": null,
             "input": "ActionInput_make_gethookincoming",
             "name": "get-hook-incoming",
-            "output": ["ActionOutput_make_gethookincoming"],
-            "scopes": ["hooks:read"],
-            "usedModels": ["ActionInput_make_gethookincoming", "ActionOutput_make_gethookincoming"],
+            "output": [
+                "ActionOutput_make_gethookincoming"
+            ],
+            "scopes": [
+                "hooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_gethookincoming",
+                "ActionOutput_make_gethookincoming"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1296,7 +1702,10 @@
                                 "description": "The ID of the queued webhook item. Example: \"b2dcd37766de51c8c246ddd8fd6d2afd\""
                             }
                         },
-                        "required": ["hookId", "incomingId"],
+                        "required": [
+                            "hookId",
+                            "incomingId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_gethookincoming": {
@@ -1325,11 +1734,19 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["id", "scope", "size", "created", "data"],
+                                "required": [
+                                    "id",
+                                    "scope",
+                                    "size",
+                                    "created",
+                                    "data"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["incoming"],
+                        "required": [
+                            "incoming"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1342,9 +1759,16 @@
             "endpoint": null,
             "input": "ActionInput_make_gethook",
             "name": "get-hook",
-            "output": ["ActionOutput_make_gethook"],
-            "scopes": ["hooks:read"],
-            "usedModels": ["ActionInput_make_gethook", "ActionOutput_make_gethook"],
+            "output": [
+                "ActionOutput_make_gethook"
+            ],
+            "scopes": [
+                "hooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_gethook",
+                "ActionOutput_make_gethook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1356,7 +1780,9 @@
                                 "description": "Hook ID. Example: 3329421"
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_gethook": {
@@ -1375,7 +1801,10 @@
                                 "type": "string"
                             },
                             "scenarioId": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "queueCount": {
                                 "type": "number"
@@ -1400,11 +1829,17 @@
                                 "type": "string"
                             },
                             "lastRun": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "dataStructure": {}
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1417,9 +1852,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getorganization",
             "name": "get-organization",
-            "output": ["ActionOutput_make_getorganization"],
-            "scopes": ["organizations:read"],
-            "usedModels": ["ActionInput_make_getorganization", "ActionOutput_make_getorganization"],
+            "output": [
+                "ActionOutput_make_getorganization"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getorganization",
+                "ActionOutput_make_getorganization"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1431,7 +1873,9 @@
                                 "description": "Organization ID. Example: 8242280"
                             }
                         },
-                        "required": ["organizationId"],
+                        "required": [
+                            "organizationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getorganization": {
@@ -1492,7 +1936,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1523,16 +1970,24 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["name", "enabled"],
+                                            "required": [
+                                                "name",
+                                                "enabled"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["organization"],
+                        "required": [
+                            "organization"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1545,9 +2000,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getscenarioblueprint",
             "name": "get-scenario-blueprint",
-            "output": ["ActionOutput_make_getscenarioblueprint"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_getscenarioblueprint", "ActionOutput_make_getscenarioblueprint"],
+            "output": [
+                "ActionOutput_make_getscenarioblueprint"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getscenarioblueprint",
+                "ActionOutput_make_getscenarioblueprint"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1559,7 +2021,9 @@
                                 "description": "The ID of the scenario. Example: 6413021"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getscenarioblueprint": {
@@ -1589,7 +2053,10 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["flow", "name"],
+                                "required": [
+                                    "flow",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "scheduling": {
@@ -1609,7 +2076,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["blueprint"],
+                        "required": [
+                            "blueprint"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1622,9 +2091,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getscenarioexecution",
             "name": "get-scenario-execution",
-            "output": ["ActionOutput_make_getscenarioexecution"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_getscenarioexecution", "ActionOutput_make_getscenarioexecution"],
+            "output": [
+                "ActionOutput_make_getscenarioexecution"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getscenarioexecution",
+                "ActionOutput_make_getscenarioexecution"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1640,7 +2116,10 @@
                                 "description": "The unique ID of the scenario execution. Example: \"8383f2871d634888a4debe8cdf444aa2\""
                             }
                         },
-                        "required": ["scenarioId", "executionId"],
+                        "required": [
+                            "scenarioId",
+                            "executionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getscenarioexecution": {
@@ -1682,7 +2161,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1695,9 +2176,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getscenariolog",
             "name": "get-scenario-log",
-            "output": ["ActionOutput_make_getscenariolog"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_getscenariolog", "ActionOutput_make_getscenariolog"],
+            "output": [
+                "ActionOutput_make_getscenariolog"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getscenariolog",
+                "ActionOutput_make_getscenariolog"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1713,7 +2201,10 @@
                                 "description": "Execution ID. Example: \"e0839e2109764dc8908187a6b42b8363\""
                             }
                         },
-                        "required": ["scenarioId", "executionId"],
+                        "required": [
+                            "scenarioId",
+                            "executionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getscenariolog": {
@@ -1780,7 +2271,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["name", "message"],
+                                "required": [
+                                    "name",
+                                    "message"
+                                ],
                                 "additionalProperties": false
                             },
                             "isReplayable": {
@@ -1796,7 +2290,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["imtId", "id", "timestamp", "type", "instant", "teamId", "organizationId"],
+                        "required": [
+                            "imtId",
+                            "id",
+                            "timestamp",
+                            "type",
+                            "instant",
+                            "teamId",
+                            "organizationId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1809,9 +2311,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getscenariousage",
             "name": "get-scenario-usage",
-            "output": ["ActionOutput_make_getscenariousage"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_getscenariousage", "ActionOutput_make_getscenariousage"],
+            "output": [
+                "ActionOutput_make_getscenariousage"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getscenariousage",
+                "ActionOutput_make_getscenariousage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1823,7 +2332,9 @@
                                 "description": "Scenario ID. Example: 6413021"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getscenariousage": {
@@ -1847,12 +2358,19 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["date", "operations", "centicredits", "dataTransfer"],
+                                    "required": [
+                                        "date",
+                                        "operations",
+                                        "centicredits",
+                                        "dataTransfer"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["data"],
+                        "required": [
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1865,9 +2383,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getscenario",
             "name": "get-scenario",
-            "output": ["ActionOutput_make_getscenario"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_getscenario", "ActionOutput_make_getscenario"],
+            "output": [
+                "ActionOutput_make_getscenario"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getscenario",
+                "ActionOutput_make_getscenario"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1879,7 +2404,9 @@
                                 "description": "Scenario ID. Example: 6413021"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getscenario": {
@@ -1912,7 +2439,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "scope"],
+                                            "required": [
+                                                "id",
+                                                "scope"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1983,7 +2513,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "updatedByUser": {
@@ -1999,7 +2531,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id"],
+                                        "required": [
+                                            "id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "nextExec": {
@@ -2018,11 +2552,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "name", "teamId"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "teamId"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["scenario"],
+                        "required": [
+                            "scenario"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2035,9 +2575,16 @@
             "endpoint": null,
             "input": "ActionInput_make_getteam",
             "name": "get-team",
-            "output": ["ActionOutput_make_getteam"],
-            "scopes": ["teams:read"],
-            "usedModels": ["ActionInput_make_getteam", "ActionOutput_make_getteam"],
+            "output": [
+                "ActionOutput_make_getteam"
+            ],
+            "scopes": [
+                "teams:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_getteam",
+                "ActionOutput_make_getteam"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2049,7 +2596,9 @@
                                 "description": "Team ID. Example: 2066772"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_getteam": {
@@ -2071,11 +2620,18 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "name", "organizationId", "globalAgentsEnabled"],
+                                "required": [
+                                    "id",
+                                    "name",
+                                    "organizationId",
+                                    "globalAgentsEnabled"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["team"],
+                        "required": [
+                            "team"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2088,9 +2644,16 @@
             "endpoint": null,
             "input": "ActionInput_make_learnstarthook",
             "name": "learn-start-hook",
-            "output": ["ActionOutput_make_learnstarthook"],
-            "scopes": ["hooks:write"],
-            "usedModels": ["ActionInput_make_learnstarthook", "ActionOutput_make_learnstarthook"],
+            "output": [
+                "ActionOutput_make_learnstarthook"
+            ],
+            "scopes": [
+                "hooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_learnstarthook",
+                "ActionOutput_make_learnstarthook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2102,7 +2665,9 @@
                                 "description": "Hook ID. Example: 3329422"
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_learnstarthook": {
@@ -2112,7 +2677,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2125,9 +2692,16 @@
             "endpoint": null,
             "input": "ActionInput_make_learnstophook",
             "name": "learn-stop-hook",
-            "output": ["ActionOutput_make_learnstophook"],
-            "scopes": ["hooks:write"],
-            "usedModels": ["ActionInput_make_learnstophook", "ActionOutput_make_learnstophook"],
+            "output": [
+                "ActionOutput_make_learnstophook"
+            ],
+            "scopes": [
+                "hooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_learnstophook",
+                "ActionOutput_make_learnstophook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2139,7 +2713,9 @@
                                 "description": "Hook ID. Example: 3329421"
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_learnstophook": {
@@ -2149,7 +2725,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2162,9 +2740,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listconnections",
             "name": "list-connections",
-            "output": ["ActionOutput_make_listconnections"],
-            "scopes": ["connections:read"],
-            "usedModels": ["ActionInput_make_listconnections", "ActionOutput_make_listconnections"],
+            "output": [
+                "ActionOutput_make_listconnections"
+            ],
+            "scopes": [
+                "connections:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listconnections",
+                "ActionOutput_make_listconnections"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2176,7 +2761,9 @@
                                 "description": "The unique ID of the team whose connections will be retrieved. Example: 2066772"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listconnections": {
@@ -2248,12 +2835,16 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["connections"],
+                        "required": [
+                            "connections"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2266,9 +2857,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listdatastorerecords",
             "name": "list-data-store-records",
-            "output": ["ActionOutput_make_listdatastorerecords"],
-            "scopes": ["datastores:read"],
-            "usedModels": ["ActionInput_make_listdatastorerecords", "ActionOutput_make_listdatastorerecords"],
+            "output": [
+                "ActionOutput_make_listdatastorerecords"
+            ],
+            "scopes": [
+                "datastores:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listdatastorerecords",
+                "ActionOutput_make_listdatastorerecords"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2290,7 +2888,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataStoreId"],
+                        "required": [
+                            "dataStoreId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listdatastorerecords": {
@@ -2312,7 +2912,10 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["key", "data"],
+                                    "required": [
+                                        "key",
+                                        "data"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2342,14 +2945,20 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["limit", "offset"],
+                                "required": [
+                                    "limit",
+                                    "offset"
+                                ],
                                 "additionalProperties": {}
                             },
                             "nextOffset": {
                                 "type": "number"
                             }
                         },
-                        "required": ["records", "count"],
+                        "required": [
+                            "records",
+                            "count"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2362,9 +2971,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listdatastores",
             "name": "list-data-stores",
-            "output": ["ActionOutput_make_listdatastores"],
-            "scopes": ["datastores:read"],
-            "usedModels": ["ActionInput_make_listdatastores", "ActionOutput_make_listdatastores"],
+            "output": [
+                "ActionOutput_make_listdatastores"
+            ],
+            "scopes": [
+                "datastores:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listdatastores",
+                "ActionOutput_make_listdatastores"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2380,7 +2996,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listdatastores": {
@@ -2410,7 +3028,14 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id", "name", "records", "size", "maxSize", "teamId"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "records",
+                                        "size",
+                                        "maxSize",
+                                        "teamId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2430,14 +3055,22 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["sortBy", "limit", "sortDir", "offset"],
+                                "required": [
+                                    "sortBy",
+                                    "limit",
+                                    "sortDir",
+                                    "offset"
+                                ],
                                 "additionalProperties": false
                             },
                             "nextCursor": {
                                 "type": "string"
                             }
                         },
-                        "required": ["dataStores", "pg"],
+                        "required": [
+                            "dataStores",
+                            "pg"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2450,9 +3083,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listdatastructures",
             "name": "list-data-structures",
-            "output": ["ActionOutput_make_listdatastructures"],
-            "scopes": ["udts:read"],
-            "usedModels": ["ActionInput_make_listdatastructures", "ActionOutput_make_listdatastructures"],
+            "output": [
+                "ActionOutput_make_listdatastructures"
+            ],
+            "scopes": [
+                "udts:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listdatastructures",
+                "ActionOutput_make_listdatastructures"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2474,7 +3114,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listdatastructures": {
@@ -2502,7 +3144,11 @@
                                             "items": {}
                                         }
                                     },
-                                    "required": ["id", "teamId", "name"],
+                                    "required": [
+                                        "id",
+                                        "teamId",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2510,7 +3156,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["dataStructures"],
+                        "required": [
+                            "dataStructures"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2523,9 +3171,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listhookincomings",
             "name": "list-hook-incomings",
-            "output": ["ActionOutput_make_listhookincomings"],
-            "scopes": ["hooks:read"],
-            "usedModels": ["ActionInput_make_listhookincomings", "ActionOutput_make_listhookincomings"],
+            "output": [
+                "ActionOutput_make_listhookincomings"
+            ],
+            "scopes": [
+                "hooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listhookincomings",
+                "ActionOutput_make_listhookincomings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2547,7 +3202,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listhookincomings": {
@@ -2576,7 +3233,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["id", "scope", "size"],
+                                    "required": [
+                                        "id",
+                                        "scope",
+                                        "size"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2584,7 +3245,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["incomings"],
+                        "required": [
+                            "incomings"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2597,9 +3260,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listhooks",
             "name": "list-hooks",
-            "output": ["ActionOutput_make_listhooks"],
-            "scopes": ["hooks:read"],
-            "usedModels": ["ActionInput_make_listhooks", "ActionOutput_make_listhooks"],
+            "output": [
+                "ActionOutput_make_listhooks"
+            ],
+            "scopes": [
+                "hooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listhooks",
+                "ActionOutput_make_listhooks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2627,7 +3297,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listhooks": {
@@ -2654,10 +3326,16 @@
                                             "type": "string"
                                         },
                                         "packageName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "theme": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "flags": {
                                             "type": "object",
@@ -2711,13 +3389,19 @@
                                             "additionalProperties": {}
                                         },
                                         "scenarioId": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "url": {
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2725,7 +3409,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["hooks"],
+                        "required": [
+                            "hooks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2738,9 +3424,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listincompleteexecutions",
             "name": "list-incomplete-executions",
-            "output": ["ActionOutput_make_listincompleteexecutions"],
-            "scopes": ["dlqs:read"],
-            "usedModels": ["ActionInput_make_listincompleteexecutions", "ActionOutput_make_listincompleteexecutions"],
+            "output": [
+                "ActionOutput_make_listincompleteexecutions"
+            ],
+            "scopes": [
+                "dlqs:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listincompleteexecutions",
+                "ActionOutput_make_listincompleteexecutions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2762,7 +3455,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listincompleteexecutions": {
@@ -2777,25 +3472,45 @@
                                             "type": "string"
                                         },
                                         "reason": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "size": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "resolved": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "retry": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "attempts": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2821,7 +3536,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2834,9 +3551,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_make_listorganizations"],
-            "scopes": ["organizations:read"],
-            "usedModels": ["ActionInput_make_listorganizations", "ActionOutput_make_listorganizations"],
+            "output": [
+                "ActionOutput_make_listorganizations"
+            ],
+            "scopes": [
+                "organizations:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listorganizations",
+                "ActionOutput_make_listorganizations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2881,7 +3605,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2913,7 +3640,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organizations"],
+                        "required": [
+                            "organizations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2926,9 +3655,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listscenariologs",
             "name": "list-scenario-logs",
-            "output": ["ActionOutput_make_listscenariologs"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_listscenariologs", "ActionOutput_make_listscenariologs"],
+            "output": [
+                "ActionOutput_make_listscenariologs"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listscenariologs",
+                "ActionOutput_make_listscenariologs"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2952,7 +3688,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listscenariologs": {
@@ -2985,16 +3723,25 @@
                                             "type": "number"
                                         },
                                         "id": {
-                                            "type": ["number", "string"]
+                                            "type": [
+                                                "number",
+                                                "string"
+                                            ]
                                         },
                                         "type": {
                                             "type": "string"
                                         },
                                         "authorId": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "authorName": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "instant": {
                                             "type": "boolean"
@@ -3006,7 +3753,11 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["imtId", "id", "type"],
+                                    "required": [
+                                        "imtId",
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3014,7 +3765,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["scenarioLogs"],
+                        "required": [
+                            "scenarioLogs"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3027,9 +3780,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listscenariomodulelogs",
             "name": "list-scenario-module-logs",
-            "output": ["ActionOutput_make_listscenariomodulelogs"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_listscenariomodulelogs", "ActionOutput_make_listscenariomodulelogs"],
+            "output": [
+                "ActionOutput_make_listscenariomodulelogs"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listscenariomodulelogs",
+                "ActionOutput_make_listscenariomodulelogs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3059,7 +3819,10 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["scenarioId", "moduleId"],
+                        "required": [
+                            "scenarioId",
+                            "moduleId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listscenariomodulelogs": {
@@ -3147,7 +3910,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["moduleLogs", "pg"],
+                        "required": [
+                            "moduleLogs",
+                            "pg"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3160,9 +3926,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listscenarios",
             "name": "list-scenarios",
-            "output": ["ActionOutput_make_listscenarios"],
-            "scopes": ["scenarios:read"],
-            "usedModels": ["ActionInput_make_listscenarios", "ActionOutput_make_listscenarios"],
+            "output": [
+                "ActionOutput_make_listscenarios"
+            ],
+            "scopes": [
+                "scenarios:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listscenarios",
+                "ActionOutput_make_listscenarios"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3219,13 +3992,22 @@
                                             "type": "number"
                                         },
                                         "name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "teamId": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "hookId": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "devices": {
                                             "anyOf": [
@@ -3241,7 +4023,10 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "scope"],
+                                                        "required": [
+                                                            "id",
+                                                            "scope"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
@@ -3251,31 +4036,58 @@
                                             ]
                                         },
                                         "deviceId": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "deviceScope": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "description": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "folderId": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "isinvalid": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "islinked": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "isActive": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "islocked": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "isPaused": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "usedPackages": {
                                             "anyOf": [
@@ -3291,7 +4103,10 @@
                                             ]
                                         },
                                         "lastEdit": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "scheduling": {
                                             "anyOf": [
@@ -3313,10 +4128,16 @@
                                             ]
                                         },
                                         "iswaiting": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "dlqCount": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "createdByUser": {
                                             "anyOf": [
@@ -3333,7 +4154,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3356,7 +4179,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -3365,28 +4190,51 @@
                                             ]
                                         },
                                         "nextExec": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "created": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "scenarioVersion": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "moduleSequenceId": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "deleted": {
-                                            "type": ["boolean", "null"]
+                                            "type": [
+                                                "boolean",
+                                                "null"
+                                            ]
                                         },
                                         "deletedAt": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3415,7 +4263,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["scenarios", "pg"],
+                        "required": [
+                            "scenarios",
+                            "pg"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3428,9 +4279,16 @@
             "endpoint": null,
             "input": "ActionInput_make_listteams",
             "name": "list-teams",
-            "output": ["ActionOutput_make_listteams"],
-            "scopes": ["teams:read"],
-            "usedModels": ["ActionInput_make_listteams", "ActionOutput_make_listteams"],
+            "output": [
+                "ActionOutput_make_listteams"
+            ],
+            "scopes": [
+                "teams:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_listteams",
+                "ActionOutput_make_listteams"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3442,7 +4300,9 @@
                                 "description": "Organization ID. Example: \"8242280\""
                             }
                         },
-                        "required": ["organizationId"],
+                        "required": [
+                            "organizationId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_listteams": {
@@ -3466,7 +4326,11 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["id", "name", "organizationId"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "organizationId"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3492,7 +4356,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["teams"],
+                        "required": [
+                            "teams"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3505,9 +4371,16 @@
             "endpoint": null,
             "input": "ActionInput_make_pinghook",
             "name": "ping-hook",
-            "output": ["ActionOutput_make_pinghook"],
-            "scopes": ["hooks:read"],
-            "usedModels": ["ActionInput_make_pinghook", "ActionOutput_make_pinghook"],
+            "output": [
+                "ActionOutput_make_pinghook"
+            ],
+            "scopes": [
+                "hooks:read"
+            ],
+            "usedModels": [
+                "ActionInput_make_pinghook",
+                "ActionOutput_make_pinghook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3521,7 +4394,9 @@
                                 "description": "The ID of the hook to ping. Example: 3329421"
                             }
                         },
-                        "required": ["hookId"],
+                        "required": [
+                            "hookId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_pinghook": {
@@ -3551,7 +4426,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["name", "type"],
+                                    "required": [
+                                        "name",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
@@ -3568,9 +4446,16 @@
             "endpoint": null,
             "input": "ActionInput_make_runscenario",
             "name": "run-scenario",
-            "output": ["ActionOutput_make_runscenario"],
-            "scopes": ["scenarios:run"],
-            "usedModels": ["ActionInput_make_runscenario", "ActionOutput_make_runscenario"],
+            "output": [
+                "ActionOutput_make_runscenario"
+            ],
+            "scopes": [
+                "scenarios:run"
+            ],
+            "usedModels": [
+                "ActionInput_make_runscenario",
+                "ActionOutput_make_runscenario"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3590,7 +4475,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_runscenario": {
@@ -3634,7 +4521,10 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["executionId", "status"],
+                        "required": [
+                            "executionId",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3647,9 +4537,16 @@
             "endpoint": null,
             "input": "ActionInput_make_startscenario",
             "name": "start-scenario",
-            "output": ["ActionOutput_make_startscenario"],
-            "scopes": ["scenarios:write"],
-            "usedModels": ["ActionInput_make_startscenario", "ActionOutput_make_startscenario"],
+            "output": [
+                "ActionOutput_make_startscenario"
+            ],
+            "scopes": [
+                "scenarios:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_startscenario",
+                "ActionOutput_make_startscenario"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3661,7 +4558,9 @@
                                 "description": "Scenario ID. Example: 6413021"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_startscenario": {
@@ -3680,11 +4579,17 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "islinked", "isActive"],
+                                "required": [
+                                    "id",
+                                    "islinked",
+                                    "isActive"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["scenario"],
+                        "required": [
+                            "scenario"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3697,9 +4602,16 @@
             "endpoint": null,
             "input": "ActionInput_make_stopscenario",
             "name": "stop-scenario",
-            "output": ["ActionOutput_make_stopscenario"],
-            "scopes": ["scenarios:write"],
-            "usedModels": ["ActionInput_make_stopscenario", "ActionOutput_make_stopscenario"],
+            "output": [
+                "ActionOutput_make_stopscenario"
+            ],
+            "scopes": [
+                "scenarios:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_stopscenario",
+                "ActionOutput_make_stopscenario"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3711,7 +4623,9 @@
                                 "description": "Scenario ID. Example: 6413021"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_stopscenario": {
@@ -3730,11 +4644,17 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "islinked", "isActive"],
+                                "required": [
+                                    "id",
+                                    "islinked",
+                                    "isActive"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["scenario"],
+                        "required": [
+                            "scenario"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3747,9 +4667,16 @@
             "endpoint": null,
             "input": "ActionInput_make_testconnection",
             "name": "test-connection",
-            "output": ["ActionOutput_make_testconnection"],
-            "scopes": ["connections:write"],
-            "usedModels": ["ActionInput_make_testconnection", "ActionOutput_make_testconnection"],
+            "output": [
+                "ActionOutput_make_testconnection"
+            ],
+            "scopes": [
+                "connections:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_testconnection",
+                "ActionOutput_make_testconnection"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3761,7 +4688,9 @@
                                 "description": "The ID of the connection to test. Example: 8708889"
                             }
                         },
-                        "required": ["connectionId"],
+                        "required": [
+                            "connectionId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_testconnection": {
@@ -3772,7 +4701,9 @@
                             },
                             "connection": {}
                         },
-                        "required": ["verified"],
+                        "required": [
+                            "verified"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3785,9 +4716,16 @@
             "endpoint": null,
             "input": "ActionInput_make_updateconnectionname",
             "name": "update-connection-name",
-            "output": ["ActionOutput_make_updateconnectionname"],
-            "scopes": ["connections:write"],
-            "usedModels": ["ActionInput_make_updateconnectionname", "ActionOutput_make_updateconnectionname"],
+            "output": [
+                "ActionOutput_make_updateconnectionname"
+            ],
+            "scopes": [
+                "connections:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_updateconnectionname",
+                "ActionOutput_make_updateconnectionname"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3804,7 +4742,10 @@
                                 "description": "The new display name for the connection."
                             }
                         },
-                        "required": ["connectionId", "name"],
+                        "required": [
+                            "connectionId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_updateconnectionname": {
@@ -3817,16 +4758,28 @@
                                 "type": "string"
                             },
                             "accountName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "accountLabel": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "packageName": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "expire": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "metadata": {
                                 "anyOf": [
@@ -3848,37 +4801,70 @@
                                 ]
                             },
                             "teamId": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "theme": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "upgradeable": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "scopesCnt": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             },
                             "scoped": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "accountType": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "editable": {
-                                "type": ["boolean", "null"]
+                                "type": [
+                                    "boolean",
+                                    "null"
+                                ]
                             },
                             "uid": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "connectedSystemId": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organizationId": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3891,9 +4877,16 @@
             "endpoint": null,
             "input": "ActionInput_make_updatedatastorerecord",
             "name": "update-data-store-record",
-            "output": ["ActionOutput_make_updatedatastorerecord"],
-            "scopes": ["datastores:write"],
-            "usedModels": ["ActionInput_make_updatedatastorerecord", "ActionOutput_make_updatedatastorerecord"],
+            "output": [
+                "ActionOutput_make_updatedatastorerecord"
+            ],
+            "scopes": [
+                "datastores:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_updatedatastorerecord",
+                "ActionOutput_make_updatedatastorerecord"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3918,7 +4911,11 @@
                                 "description": "Partial data object to update. Unspecified fields are left unchanged."
                             }
                         },
-                        "required": ["dataStoreId", "dataStoreKeyRecord", "data"],
+                        "required": [
+                            "dataStoreId",
+                            "dataStoreKeyRecord",
+                            "data"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_updatedatastorerecord": {
@@ -3935,7 +4932,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["key", "data"],
+                        "required": [
+                            "key",
+                            "data"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3948,9 +4948,16 @@
             "endpoint": null,
             "input": "ActionInput_make_updatedatastore",
             "name": "update-data-store",
-            "output": ["ActionOutput_make_updatedatastore"],
-            "scopes": ["datastores:write"],
-            "usedModels": ["ActionInput_make_updatedatastore", "ActionOutput_make_updatedatastore"],
+            "output": [
+                "ActionOutput_make_updatedatastore"
+            ],
+            "scopes": [
+                "datastores:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_updatedatastore",
+                "ActionOutput_make_updatedatastore"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3974,7 +4981,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["dataStoreId"],
+                        "required": [
+                            "dataStoreId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_updatedatastore": {
@@ -4002,7 +5011,14 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "records", "size", "maxSize", "teamId"],
+                        "required": [
+                            "id",
+                            "name",
+                            "records",
+                            "size",
+                            "maxSize",
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4015,9 +5031,16 @@
             "endpoint": null,
             "input": "ActionInput_make_updatedatastructure",
             "name": "update-data-structure",
-            "output": ["ActionOutput_make_updatedatastructure"],
-            "scopes": ["udts:write"],
-            "usedModels": ["ActionInput_make_updatedatastructure", "ActionOutput_make_updatedatastructure"],
+            "output": [
+                "ActionOutput_make_updatedatastructure"
+            ],
+            "scopes": [
+                "udts:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_updatedatastructure",
+                "ActionOutput_make_updatedatastructure"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4043,7 +5066,9 @@
                                 }
                             }
                         },
-                        "required": ["dataStructureId"],
+                        "required": [
+                            "dataStructureId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_updatedatastructure": {
@@ -4083,12 +5108,20 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["type", "name"],
+                                    "required": [
+                                        "type",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["id", "teamId", "name", "strict"],
+                        "required": [
+                            "id",
+                            "teamId",
+                            "name",
+                            "strict"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -4101,9 +5134,16 @@
             "endpoint": null,
             "input": "ActionInput_make_updatehook",
             "name": "update-hook",
-            "output": ["ActionOutput_make_updatehook"],
-            "scopes": ["hooks:write"],
-            "usedModels": ["ActionInput_make_updatehook", "ActionOutput_make_updatehook"],
+            "output": [
+                "ActionOutput_make_updatehook"
+            ],
+            "scopes": [
+                "hooks:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_updatehook",
+                "ActionOutput_make_updatehook"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4119,7 +5159,10 @@
                                 "description": "The new name for the hook."
                             }
                         },
-                        "required": ["hookId", "name"],
+                        "required": [
+                            "hookId",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_updatehook": {
@@ -4141,7 +5184,10 @@
                                         "type": "number"
                                     },
                                     "scenarioId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "url": {
                                         "type": "string"
@@ -4155,11 +5201,16 @@
                                     "dataStructure": {},
                                     "incomings": {}
                                 },
-                                "required": ["id", "name"],
+                                "required": [
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["hook"],
+                        "required": [
+                            "hook"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4172,9 +5223,16 @@
             "endpoint": null,
             "input": "ActionInput_make_updatescenario",
             "name": "update-scenario",
-            "output": ["ActionOutput_make_updatescenario"],
-            "scopes": ["scenarios:write"],
-            "usedModels": ["ActionInput_make_updatescenario", "ActionOutput_make_updatescenario"],
+            "output": [
+                "ActionOutput_make_updatescenario"
+            ],
+            "scopes": [
+                "scenarios:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_updatescenario",
+                "ActionOutput_make_updatescenario"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4198,7 +5256,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["scenarioId"],
+                        "required": [
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_updatescenario": {
@@ -4211,13 +5271,22 @@
                                         "type": "number"
                                     },
                                     "name": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "teamId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "hookId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "devices": {
                                         "anyOf": [
@@ -4233,7 +5302,9 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id"],
+                                                    "required": [
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
@@ -4243,31 +5314,58 @@
                                         ]
                                     },
                                     "deviceId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "deviceScope": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "description": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "folderId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "isinvalid": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "islinked": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "isActive": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "islocked": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "isPaused": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "usedPackages": {
                                         "anyOf": [
@@ -4283,7 +5381,10 @@
                                         ]
                                     },
                                     "lastEdit": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "scheduling": {
                                         "anyOf": [
@@ -4305,10 +5406,16 @@
                                         ]
                                     },
                                     "iswaiting": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "dlqCount": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "createdByUser": {
                                         "anyOf": [
@@ -4325,7 +5432,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4348,7 +5457,9 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4357,32 +5468,57 @@
                                         ]
                                     },
                                     "nextExec": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "created": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "scenarioVersion": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "moduleSequenceId": {
-                                        "type": ["number", "null"]
+                                        "type": [
+                                            "number",
+                                            "null"
+                                        ]
                                     },
                                     "type": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "deleted": {
-                                        "type": ["boolean", "null"]
+                                        "type": [
+                                            "boolean",
+                                            "null"
+                                        ]
                                     },
                                     "deletedAt": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["scenario"],
+                        "required": [
+                            "scenario"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4395,9 +5531,16 @@
             "endpoint": null,
             "input": "ActionInput_make_updateteam",
             "name": "update-team",
-            "output": ["ActionOutput_make_updateteam"],
-            "scopes": ["teams:write"],
-            "usedModels": ["ActionInput_make_updateteam", "ActionOutput_make_updateteam"],
+            "output": [
+                "ActionOutput_make_updateteam"
+            ],
+            "scopes": [
+                "teams:write"
+            ],
+            "usedModels": [
+                "ActionInput_make_updateteam",
+                "ActionOutput_make_updateteam"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4417,7 +5560,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["teamId"],
+                        "required": [
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_make_updateteam": {
@@ -4440,7 +5585,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4456,12 +5603,17 @@
             "endpoints": [],
             "input": "SyncMetadata_make_connections",
             "name": "connections",
-            "output": ["Connection"],
+            "output": [
+                "Connection"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Connection", "SyncMetadata_make_connections"],
+            "usedModels": [
+                "Connection",
+                "SyncMetadata_make_connections"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4524,7 +5676,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_make_connections": {
@@ -4534,7 +5689,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4548,12 +5705,16 @@
             "endpoints": [],
             "input": null,
             "name": "data-store-records",
-            "output": ["DataStoreRecord"],
+            "output": [
+                "DataStoreRecord"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DataStoreRecord"],
+            "usedModels": [
+                "DataStoreRecord"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4578,12 +5739,18 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "dataStoreId", "key"],
+                        "required": [
+                            "id",
+                            "dataStoreId",
+                            "key"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4592,12 +5759,16 @@
             "endpoints": [],
             "input": null,
             "name": "data-stores",
-            "output": ["DataStore"],
+            "output": [
+                "DataStore"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DataStore"],
+            "usedModels": [
+                "DataStore"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4624,12 +5795,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4638,12 +5813,16 @@
             "endpoints": [],
             "input": null,
             "name": "hooks",
-            "output": ["Hook"],
+            "output": [
+                "Hook"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Hook"],
+            "usedModels": [
+                "Hook"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4728,7 +5907,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "teamId"],
+                        "required": [
+                            "id",
+                            "name",
+                            "teamId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4742,12 +5925,17 @@
             "endpoints": [],
             "input": "SyncMetadata_make_incompleteexecutions",
             "name": "incomplete-executions",
-            "output": ["IncompleteExecution"],
+            "output": [
+                "IncompleteExecution"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["IncompleteExecution", "SyncMetadata_make_incompleteexecutions"],
+            "usedModels": [
+                "IncompleteExecution",
+                "SyncMetadata_make_incompleteexecutions"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4786,14 +5974,20 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["id", "scenarioId"],
+                        "required": [
+                            "id",
+                            "scenarioId"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_make_incompleteexecutions": {
                         "type": "object",
                         "properties": {
                             "teamId": {
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -4809,12 +6003,16 @@
             "endpoints": [],
             "input": null,
             "name": "organizations",
-            "output": ["Organization"],
+            "output": [
+                "Organization"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Organization"],
+            "usedModels": [
+                "Organization"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4867,7 +6065,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -4887,12 +6088,17 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4901,12 +6107,16 @@
             "endpoints": [],
             "input": null,
             "name": "scenario-executions",
-            "output": ["ScenarioExecution"],
+            "output": [
+                "ScenarioExecution"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ScenarioExecution"],
+            "usedModels": [
+                "ScenarioExecution"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4943,12 +6153,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "scenarioId", "imtId"],
+                        "required": [
+                            "id",
+                            "scenarioId",
+                            "imtId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4957,12 +6173,17 @@
             "endpoints": [],
             "input": "SyncMetadata_make_scenarios",
             "name": "scenarios",
-            "output": ["Scenario"],
+            "output": [
+                "Scenario"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Scenario", "SyncMetadata_make_scenarios"],
+            "usedModels": [
+                "Scenario",
+                "SyncMetadata_make_scenarios"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5049,7 +6270,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_make_scenarios": {
@@ -5059,7 +6282,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_id"],
+                        "required": [
+                            "team_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5073,12 +6298,16 @@
             "endpoints": [],
             "input": null,
             "name": "teams",
-            "output": ["Team"],
+            "output": [
+                "Team"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Team"],
+            "usedModels": [
+                "Team"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5114,12 +6343,17 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "organizationId"],
+                        "required": [
+                            "id",
+                            "organizationId"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

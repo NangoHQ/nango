@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_appendblockchildren",
             "name": "append-block-children",
-            "output": ["ActionOutput_notion_appendblockchildren"],
+            "output": [
+                "ActionOutput_notion_appendblockchildren"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_appendblockchildren", "ActionOutput_notion_appendblockchildren"],
+            "usedModels": [
+                "ActionInput_notion_appendblockchildren",
+                "ActionOutput_notion_appendblockchildren"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -53,22 +58,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "paragraph"],
+                                            "required": [
+                                                "type",
+                                                "paragraph"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -99,22 +114,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "heading_1"],
+                                            "required": [
+                                                "type",
+                                                "heading_1"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -145,22 +170,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "heading_2"],
+                                            "required": [
+                                                "type",
+                                                "heading_2"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -191,22 +226,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "heading_3"],
+                                            "required": [
+                                                "type",
+                                                "heading_3"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -237,22 +282,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "bulleted_list_item"],
+                                            "required": [
+                                                "type",
+                                                "bulleted_list_item"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -283,22 +338,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "numbered_list_item"],
+                                            "required": [
+                                                "type",
+                                                "numbered_list_item"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -329,11 +394,16 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
@@ -343,11 +413,16 @@
                                                             "type": "boolean"
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "to_do"],
+                                            "required": [
+                                                "type",
+                                                "to_do"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -378,22 +453,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "quote"],
+                                            "required": [
+                                                "type",
+                                                "quote"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -424,22 +509,32 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
                                                             }
                                                         }
                                                     },
-                                                    "required": ["rich_text"],
+                                                    "required": [
+                                                        "rich_text"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "callout"],
+                                            "required": [
+                                                "type",
+                                                "callout"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -470,11 +565,16 @@
                                                                                         "type": "string"
                                                                                     }
                                                                                 },
-                                                                                "required": ["content"],
+                                                                                "required": [
+                                                                                    "content"
+                                                                                ],
                                                                                 "additionalProperties": false
                                                                             }
                                                                         },
-                                                                        "required": ["type", "text"],
+                                                                        "required": [
+                                                                            "type",
+                                                                            "text"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     }
                                                                 ]
@@ -484,11 +584,17 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["rich_text", "language"],
+                                                    "required": [
+                                                        "rich_text",
+                                                        "language"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "code"],
+                                            "required": [
+                                                "type",
+                                                "code"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         {
@@ -504,7 +610,10 @@
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type", "divider"],
+                                            "required": [
+                                                "type",
+                                                "divider"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     ]
@@ -528,11 +637,16 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["id"],
+                                                "required": [
+                                                    "id"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
-                                        "required": ["type", "after_block"],
+                                        "required": [
+                                            "type",
+                                            "after_block"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -543,7 +657,9 @@
                                                 "const": "start"
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -554,13 +670,18 @@
                                                 "const": "end"
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ]
                             }
                         },
-                        "required": ["block_id", "children"],
+                        "required": [
+                            "block_id",
+                            "children"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_appendblockchildren": {
@@ -602,7 +723,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["object", "id"],
+                                            "required": [
+                                                "object",
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "last_edited_by": {
@@ -616,7 +740,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["object", "id"],
+                                            "required": [
+                                                "object",
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "has_children": {
@@ -629,18 +756,29 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["object", "id", "type"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "has_more": {
                                 "type": "boolean"
                             }
                         },
-                        "required": ["object", "results", "has_more"],
+                        "required": [
+                            "object",
+                            "results",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -653,9 +791,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_appendbulletedlist",
             "name": "append-bulleted-list",
-            "output": ["ActionOutput_notion_appendbulletedlist"],
+            "output": [
+                "ActionOutput_notion_appendbulletedlist"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_appendbulletedlist", "ActionOutput_notion_appendbulletedlist"],
+            "usedModels": [
+                "ActionInput_notion_appendbulletedlist",
+                "ActionOutput_notion_appendbulletedlist"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -672,7 +815,10 @@
                                 "description": "Array of bulleted list item blocks."
                             }
                         },
-                        "required": ["block_id", "children"],
+                        "required": [
+                            "block_id",
+                            "children"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_appendbulletedlist": {
@@ -686,7 +832,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["object", "results"],
+                        "required": [
+                            "object",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -699,9 +848,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_appendcalloutblock",
             "name": "append-callout-block",
-            "output": ["ActionOutput_notion_appendcalloutblock"],
+            "output": [
+                "ActionOutput_notion_appendcalloutblock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_appendcalloutblock", "ActionOutput_notion_appendcalloutblock"],
+            "usedModels": [
+                "ActionInput_notion_appendcalloutblock",
+                "ActionOutput_notion_appendcalloutblock"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -718,7 +872,10 @@
                                 "description": "Array of callout block objects."
                             }
                         },
-                        "required": ["block_id", "children"],
+                        "required": [
+                            "block_id",
+                            "children"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_appendcalloutblock": {
@@ -732,7 +889,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["object", "results"],
+                        "required": [
+                            "object",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -745,9 +905,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_appendcodeblock",
             "name": "append-code-block",
-            "output": ["ActionOutput_notion_appendcodeblock"],
+            "output": [
+                "ActionOutput_notion_appendcodeblock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_appendcodeblock", "ActionOutput_notion_appendcodeblock"],
+            "usedModels": [
+                "ActionInput_notion_appendcodeblock",
+                "ActionOutput_notion_appendcodeblock"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -764,7 +929,10 @@
                                 "description": "Array of code block objects."
                             }
                         },
-                        "required": ["block_id", "children"],
+                        "required": [
+                            "block_id",
+                            "children"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_appendcodeblock": {
@@ -778,7 +946,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["object", "results"],
+                        "required": [
+                            "object",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -791,9 +962,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_appenddivider",
             "name": "append-divider",
-            "output": ["ActionOutput_notion_appenddivider"],
+            "output": [
+                "ActionOutput_notion_appenddivider"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_appenddivider", "ActionOutput_notion_appenddivider"],
+            "usedModels": [
+                "ActionInput_notion_appenddivider",
+                "ActionOutput_notion_appenddivider"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -810,7 +986,10 @@
                                 "description": "Array containing divider block. Example: [{\"divider\":{}}]"
                             }
                         },
-                        "required": ["block_id", "children"],
+                        "required": [
+                            "block_id",
+                            "children"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_appenddivider": {
@@ -824,7 +1003,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["object", "results"],
+                        "required": [
+                            "object",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -837,9 +1019,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_appendheadingblock",
             "name": "append-heading-block",
-            "output": ["ActionOutput_notion_appendheadingblock"],
+            "output": [
+                "ActionOutput_notion_appendheadingblock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_appendheadingblock", "ActionOutput_notion_appendheadingblock"],
+            "usedModels": [
+                "ActionInput_notion_appendheadingblock",
+                "ActionOutput_notion_appendheadingblock"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -856,7 +1043,10 @@
                                 "description": "Array of heading block objects. Example: [{\"heading_2\":{\"rich_text\":[{\"text\":{\"content\":\"Section Title\"}}]}}]"
                             }
                         },
-                        "required": ["block_id", "children"],
+                        "required": [
+                            "block_id",
+                            "children"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_appendheadingblock": {
@@ -870,7 +1060,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["object", "results"],
+                        "required": [
+                            "object",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -883,9 +1076,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_appendtodoblock",
             "name": "append-todo-block",
-            "output": ["ActionOutput_notion_appendtodoblock"],
+            "output": [
+                "ActionOutput_notion_appendtodoblock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_appendtodoblock", "ActionOutput_notion_appendtodoblock"],
+            "usedModels": [
+                "ActionInput_notion_appendtodoblock",
+                "ActionOutput_notion_appendtodoblock"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -902,7 +1100,10 @@
                                 "description": "Array of to-do block objects."
                             }
                         },
-                        "required": ["block_id", "children"],
+                        "required": [
+                            "block_id",
+                            "children"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_appendtodoblock": {
@@ -916,7 +1117,10 @@
                                 "items": {}
                             }
                         },
-                        "required": ["object", "results"],
+                        "required": [
+                            "object",
+                            "results"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -929,9 +1133,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_archivepage",
             "name": "archive-page",
-            "output": ["ActionOutput_notion_archivepage"],
+            "output": [
+                "ActionOutput_notion_archivepage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_archivepage", "ActionOutput_notion_archivepage"],
+            "usedModels": [
+                "ActionInput_notion_archivepage",
+                "ActionOutput_notion_archivepage"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -943,7 +1152,9 @@
                                 "description": "Notion page ID to archive. Example: \"a1b2c3d4-e5f6-7890-abcd-ef1234567890\""
                             }
                         },
-                        "required": ["page_id"],
+                        "required": [
+                            "page_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_archivepage": {
@@ -968,7 +1179,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "archived"],
+                        "required": [
+                            "id",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -981,9 +1195,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_notion_createcomment"],
+            "output": [
+                "ActionOutput_notion_createcomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_createcomment", "ActionOutput_notion_createcomment"],
+            "usedModels": [
+                "ActionInput_notion_createcomment",
+                "ActionOutput_notion_createcomment"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1022,7 +1241,9 @@
                                                                                     "type": "string"
                                                                                 }
                                                                             },
-                                                                            "required": ["url"],
+                                                                            "required": [
+                                                                                "url"
+                                                                            ],
                                                                             "additionalProperties": false
                                                                         },
                                                                         {
@@ -1031,7 +1252,9 @@
                                                                     ]
                                                                 }
                                                             },
-                                                            "required": ["content"],
+                                                            "required": [
+                                                                "content"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "annotations": {
@@ -1043,10 +1266,16 @@
                                                             "type": "string"
                                                         },
                                                         "href": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["type", "text"],
+                                                    "required": [
+                                                        "type",
+                                                        "text"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1062,7 +1291,10 @@
                                                             "additionalProperties": {}
                                                         }
                                                     },
-                                                    "required": ["type", "mention"],
+                                                    "required": [
+                                                        "type",
+                                                        "mention"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1079,11 +1311,16 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["expression"],
+                                                            "required": [
+                                                                "expression"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["type", "equation"],
+                                                    "required": [
+                                                        "type",
+                                                        "equation"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1099,7 +1336,10 @@
                                         "not": {}
                                     }
                                 },
-                                "required": ["page_id", "rich_text"],
+                                "required": [
+                                    "page_id",
+                                    "rich_text"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1117,7 +1357,10 @@
                                         "not": {}
                                     }
                                 },
-                                "required": ["page_id", "markdown"],
+                                "required": [
+                                    "page_id",
+                                    "markdown"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1153,7 +1396,9 @@
                                                                                     "type": "string"
                                                                                 }
                                                                             },
-                                                                            "required": ["url"],
+                                                                            "required": [
+                                                                                "url"
+                                                                            ],
                                                                             "additionalProperties": false
                                                                         },
                                                                         {
@@ -1162,7 +1407,9 @@
                                                                     ]
                                                                 }
                                                             },
-                                                            "required": ["content"],
+                                                            "required": [
+                                                                "content"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "annotations": {
@@ -1174,10 +1421,16 @@
                                                             "type": "string"
                                                         },
                                                         "href": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["type", "text"],
+                                                    "required": [
+                                                        "type",
+                                                        "text"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1193,7 +1446,10 @@
                                                             "additionalProperties": {}
                                                         }
                                                     },
-                                                    "required": ["type", "mention"],
+                                                    "required": [
+                                                        "type",
+                                                        "mention"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1210,11 +1466,16 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["expression"],
+                                                            "required": [
+                                                                "expression"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["type", "equation"],
+                                                    "required": [
+                                                        "type",
+                                                        "equation"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1230,7 +1491,10 @@
                                         "not": {}
                                     }
                                 },
-                                "required": ["block_id", "rich_text"],
+                                "required": [
+                                    "block_id",
+                                    "rich_text"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1248,7 +1512,10 @@
                                         "not": {}
                                     }
                                 },
-                                "required": ["block_id", "markdown"],
+                                "required": [
+                                    "block_id",
+                                    "markdown"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1284,7 +1551,9 @@
                                                                                     "type": "string"
                                                                                 }
                                                                             },
-                                                                            "required": ["url"],
+                                                                            "required": [
+                                                                                "url"
+                                                                            ],
                                                                             "additionalProperties": false
                                                                         },
                                                                         {
@@ -1293,7 +1562,9 @@
                                                                     ]
                                                                 }
                                                             },
-                                                            "required": ["content"],
+                                                            "required": [
+                                                                "content"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         "annotations": {
@@ -1305,10 +1576,16 @@
                                                             "type": "string"
                                                         },
                                                         "href": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
-                                                    "required": ["type", "text"],
+                                                    "required": [
+                                                        "type",
+                                                        "text"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1324,7 +1601,10 @@
                                                             "additionalProperties": {}
                                                         }
                                                     },
-                                                    "required": ["type", "mention"],
+                                                    "required": [
+                                                        "type",
+                                                        "mention"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1341,11 +1621,16 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["expression"],
+                                                            "required": [
+                                                                "expression"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
-                                                    "required": ["type", "equation"],
+                                                    "required": [
+                                                        "type",
+                                                        "equation"
+                                                    ],
                                                     "additionalProperties": false
                                                 },
                                                 {
@@ -1361,7 +1646,10 @@
                                         "not": {}
                                     }
                                 },
-                                "required": ["discussion_id", "rich_text"],
+                                "required": [
+                                    "discussion_id",
+                                    "rich_text"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -1379,7 +1667,10 @@
                                         "not": {}
                                     }
                                 },
-                                "required": ["discussion_id", "markdown"],
+                                "required": [
+                                    "discussion_id",
+                                    "markdown"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -1396,7 +1687,10 @@
                                 "const": "comment"
                             }
                         },
-                        "required": ["id", "object"],
+                        "required": [
+                            "id",
+                            "object"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1409,9 +1703,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_createdatabase",
             "name": "create-database",
-            "output": ["ActionOutput_notion_createdatabase"],
+            "output": [
+                "ActionOutput_notion_createdatabase"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_createdatabase", "ActionOutput_notion_createdatabase"],
+            "usedModels": [
+                "ActionInput_notion_createdatabase",
+                "ActionOutput_notion_createdatabase"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1426,7 +1725,9 @@
                                         "description": "Parent page ID. Example: \"2b6ce298-3121-80ae-bfe1-f8984b993639\""
                                     }
                                 },
-                                "required": ["page_id"],
+                                "required": [
+                                    "page_id"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Parent page where database will be created."
                             },
@@ -1442,11 +1743,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["content"],
+                                            "required": [
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["text"],
+                                    "required": [
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Database title as rich text array."
@@ -1460,7 +1765,11 @@
                                 "description": "Database property schema. Example: {\"Name\":{\"title\":{}},\"Description\":{\"rich_text\":{}}}"
                             }
                         },
-                        "required": ["parent", "title", "properties"],
+                        "required": [
+                            "parent",
+                            "title",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_createdatabase": {
@@ -1487,7 +1796,13 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "object", "created_time", "title", "properties"],
+                        "required": [
+                            "id",
+                            "object",
+                            "created_time",
+                            "title",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1500,9 +1815,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_createdatasource",
             "name": "create-data-source",
-            "output": ["ActionOutput_notion_createdatasource"],
+            "output": [
+                "ActionOutput_notion_createdatasource"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_createdatasource", "ActionOutput_notion_createdatasource"],
+            "usedModels": [
+                "ActionInput_notion_createdatasource",
+                "ActionOutput_notion_createdatasource"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1529,7 +1849,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "emoji"],
+                                "required": [
+                                    "type",
+                                    "emoji"
+                                ],
                                 "additionalProperties": false
                             },
                             "properties": {
@@ -1539,7 +1862,10 @@
                                 "description": "Property schema of the data source. Example: { \"Name\": { \"title\": {} }, \"Status\": { \"select\": { \"options\": [{ \"name\": \"To Do\", \"color\": \"red\" }] } } }"
                             }
                         },
-                        "required": ["databaseId", "properties"],
+                        "required": [
+                            "databaseId",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_createdatasource": {
@@ -1558,7 +1884,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "databaseId"],
+                        "required": [
+                            "id",
+                            "databaseId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1571,9 +1900,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_createpage",
             "name": "create-page",
-            "output": ["ActionOutput_notion_createpage"],
+            "output": [
+                "ActionOutput_notion_createpage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_createpage", "ActionOutput_notion_createpage"],
+            "usedModels": [
+                "ActionInput_notion_createpage",
+                "ActionOutput_notion_createpage"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1607,7 +1941,12 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["emoji", "external", "file", "custom_emoji"]
+                                        "enum": [
+                                            "emoji",
+                                            "external",
+                                            "file",
+                                            "custom_emoji"
+                                        ]
                                     },
                                     "emoji": {
                                         "type": "string"
@@ -1619,7 +1958,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["url"],
+                                        "required": [
+                                            "url"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "file": {
@@ -1631,7 +1972,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "cover": {
@@ -1639,7 +1982,10 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["external", "file"]
+                                        "enum": [
+                                            "external",
+                                            "file"
+                                        ]
                                     },
                                     "external": {
                                         "type": "object",
@@ -1648,7 +1994,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["url"],
+                                        "required": [
+                                            "url"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "file": {
@@ -1657,7 +2005,9 @@
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "children": {
@@ -1667,7 +2017,15 @@
                                     "properties": {
                                         "type": {
                                             "type": "string",
-                                            "enum": ["paragraph", "heading_1", "heading_2", "heading_3", "bulleted_list_item", "numbered_list_item", "to_do"]
+                                            "enum": [
+                                                "paragraph",
+                                                "heading_1",
+                                                "heading_2",
+                                                "heading_3",
+                                                "bulleted_list_item",
+                                                "numbered_list_item",
+                                                "to_do"
+                                            ]
                                         },
                                         "text": {
                                             "type": "string"
@@ -1676,7 +2034,10 @@
                                             "type": "boolean"
                                         }
                                     },
-                                    "required": ["type", "text"],
+                                    "required": [
+                                        "type",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1685,7 +2046,11 @@
                                 "properties": {
                                     "type": {
                                         "type": "string",
-                                        "enum": ["none", "default", "template_id"]
+                                        "enum": [
+                                            "none",
+                                            "default",
+                                            "template_id"
+                                        ]
                                     },
                                     "template_id": {
                                         "type": "string"
@@ -1694,14 +2059,18 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "markdown": {
                                 "type": "string"
                             }
                         },
-                        "required": ["parent"],
+                        "required": [
+                            "parent"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_createpage": {
@@ -1737,7 +2106,9 @@
                             "cover": {},
                             "properties": {}
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1750,9 +2121,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_deleteblock",
             "name": "delete-block",
-            "output": ["ActionOutput_notion_deleteblock"],
+            "output": [
+                "ActionOutput_notion_deleteblock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_deleteblock", "ActionOutput_notion_deleteblock"],
+            "usedModels": [
+                "ActionInput_notion_deleteblock",
+                "ActionOutput_notion_deleteblock"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1764,7 +2140,9 @@
                                 "description": "The ID of the block to delete/archive. Example: \"12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["block_id"],
+                        "required": [
+                            "block_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_deleteblock": {
@@ -1780,7 +2158,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type", "archived"],
+                        "required": [
+                            "id",
+                            "type",
+                            "archived"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1793,9 +2175,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_duplicatepage",
             "name": "duplicate-page",
-            "output": ["ActionOutput_notion_duplicatepage"],
+            "output": [
+                "ActionOutput_notion_duplicatepage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_duplicatepage", "ActionOutput_notion_duplicatepage"],
+            "usedModels": [
+                "ActionInput_notion_duplicatepage",
+                "ActionOutput_notion_duplicatepage"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1815,7 +2202,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["page_id"],
+                        "required": [
+                            "page_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_duplicatepage": {
@@ -1834,7 +2223,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1847,9 +2238,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_getbotuser",
             "name": "get-bot-user",
-            "output": ["ActionOutput_notion_getbotuser"],
+            "output": [
+                "ActionOutput_notion_getbotuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_getbotuser", "ActionOutput_notion_getbotuser"],
+            "usedModels": [
+                "ActionInput_notion_getbotuser",
+                "ActionOutput_notion_getbotuser"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -1882,7 +2278,10 @@
                                         "properties": {
                                             "type": {
                                                 "type": "string",
-                                                "enum": ["user", "workspace"]
+                                                "enum": [
+                                                    "user",
+                                                    "workspace"
+                                                ]
                                             },
                                             "user_id": {
                                                 "type": "string"
@@ -1894,7 +2293,9 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["type"],
+                                        "required": [
+                                            "type"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "workspace_id": {
@@ -1907,11 +2308,19 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["owner", "workspace_id", "max_file_upload_size_in_bytes"],
+                                "required": [
+                                    "owner",
+                                    "workspace_id",
+                                    "max_file_upload_size_in_bytes"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type", "bot"],
+                        "required": [
+                            "id",
+                            "type",
+                            "bot"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1924,9 +2333,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_getpageasmarkdown",
             "name": "get-page-as-markdown",
-            "output": ["ActionOutput_notion_getpageasmarkdown"],
+            "output": [
+                "ActionOutput_notion_getpageasmarkdown"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_getpageasmarkdown", "ActionOutput_notion_getpageasmarkdown"],
+            "usedModels": [
+                "ActionInput_notion_getpageasmarkdown",
+                "ActionOutput_notion_getpageasmarkdown"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1942,7 +2356,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["page_id"],
+                        "required": [
+                            "page_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_getpageasmarkdown": {
@@ -1964,7 +2380,12 @@
                                 }
                             }
                         },
-                        "required": ["id", "markdown", "truncated", "unknown_block_ids"],
+                        "required": [
+                            "id",
+                            "markdown",
+                            "truncated",
+                            "unknown_block_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1977,9 +2398,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_getpagepropertyitem",
             "name": "get-page-property-item",
-            "output": ["ActionOutput_notion_getpagepropertyitem"],
+            "output": [
+                "ActionOutput_notion_getpagepropertyitem"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_getpagepropertyitem", "ActionOutput_notion_getpagepropertyitem"],
+            "usedModels": [
+                "ActionInput_notion_getpagepropertyitem",
+                "ActionOutput_notion_getpagepropertyitem"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2005,7 +2431,10 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["page_id", "property_id"],
+                        "required": [
+                            "page_id",
+                            "property_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_getpagepropertyitem": {
@@ -2024,7 +2453,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["object", "id", "type"],
+                                "required": [
+                                    "object",
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": {}
                             },
                             {
@@ -2046,7 +2479,10 @@
                                         }
                                     },
                                     "next_cursor": {
-                                        "type": ["string", "null"]
+                                        "type": [
+                                            "string",
+                                            "null"
+                                        ]
                                     },
                                     "has_more": {
                                         "type": "boolean"
@@ -2057,7 +2493,12 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["object", "type", "results", "has_more"],
+                                "required": [
+                                    "object",
+                                    "type",
+                                    "results",
+                                    "has_more"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -2072,9 +2513,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_notion_getuser"],
+            "output": [
+                "ActionOutput_notion_getuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_getuser", "ActionOutput_notion_getuser"],
+            "usedModels": [
+                "ActionInput_notion_getuser",
+                "ActionOutput_notion_getuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2086,7 +2532,9 @@
                                 "description": "User ID to retrieve. Example: \"e79a0b74-3aba-4149-9f74-0bb5791a6ee6\""
                             }
                         },
-                        "required": ["userId"],
+                        "required": [
+                            "userId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_getuser": {
@@ -2103,7 +2551,10 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["person", "bot"]
+                                "enum": [
+                                    "person",
+                                    "bot"
+                                ]
                             },
                             "email": {
                                 "type": "string"
@@ -2124,11 +2575,16 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2141,9 +2597,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_listblockchildren",
             "name": "list-block-children",
-            "output": ["ActionOutput_notion_listblockchildren"],
+            "output": [
+                "ActionOutput_notion_listblockchildren"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_listblockchildren", "ActionOutput_notion_listblockchildren"],
+            "usedModels": [
+                "ActionInput_notion_listblockchildren",
+                "ActionOutput_notion_listblockchildren"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2165,7 +2626,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["block_id"],
+                        "required": [
+                            "block_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_listblockchildren": {
@@ -2213,7 +2676,11 @@
                                             "additionalProperties": {}
                                         }
                                     },
-                                    "required": ["object", "id", "type"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2224,7 +2691,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["results", "has_more"],
+                        "required": [
+                            "results",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2237,9 +2707,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_notion_listcomments"],
+            "output": [
+                "ActionOutput_notion_listcomments"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_listcomments", "ActionOutput_notion_listcomments"],
+            "usedModels": [
+                "ActionInput_notion_listcomments",
+                "ActionOutput_notion_listcomments"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2261,7 +2736,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["block_id"],
+                        "required": [
+                            "block_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_listcomments": {
@@ -2294,7 +2771,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "discussion_id": {
@@ -2335,11 +2814,16 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["email"],
+                                                    "required": [
+                                                        "email"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["object", "id"],
+                                            "required": [
+                                                "object",
+                                                "id"
+                                            ],
                                             "additionalProperties": {}
                                         },
                                         "rich_text": {
@@ -2365,7 +2849,9 @@
                                                                                 "type": "string"
                                                                             }
                                                                         },
-                                                                        "required": ["url"],
+                                                                        "required": [
+                                                                            "url"
+                                                                        ],
                                                                         "additionalProperties": false
                                                                     },
                                                                     {
@@ -2374,7 +2860,9 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["content"],
+                                                        "required": [
+                                                            "content"
+                                                        ],
                                                         "additionalProperties": false
                                                     },
                                                     "annotations": {
@@ -2406,7 +2894,16 @@
                                             }
                                         }
                                     },
-                                    "required": ["object", "id", "parent", "discussion_id", "created_time", "last_edited_time", "created_by", "rich_text"],
+                                    "required": [
+                                        "object",
+                                        "id",
+                                        "parent",
+                                        "discussion_id",
+                                        "created_time",
+                                        "last_edited_time",
+                                        "created_by",
+                                        "rich_text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2417,7 +2914,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["comments", "has_more"],
+                        "required": [
+                            "comments",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2430,9 +2930,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_listdatasourcetemplates",
             "name": "list-data-source-templates",
-            "output": ["ActionOutput_notion_listdatasourcetemplates"],
+            "output": [
+                "ActionOutput_notion_listdatasourcetemplates"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_listdatasourcetemplates", "ActionOutput_notion_listdatasourcetemplates"],
+            "usedModels": [
+                "ActionInput_notion_listdatasourcetemplates",
+                "ActionOutput_notion_listdatasourcetemplates"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2458,7 +2963,9 @@
                                 "maximum": 100
                             }
                         },
-                        "required": ["dataSourceId"],
+                        "required": [
+                            "dataSourceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_listdatasourcetemplates": {
@@ -2482,7 +2989,11 @@
                                             "description": "Whether this template is the default template for the data source."
                                         }
                                     },
-                                    "required": ["id", "name", "isDefault"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "isDefault"
+                                    ],
                                     "additionalProperties": false
                                 },
                                 "description": "Array of templates available in this data source."
@@ -2496,7 +3007,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["templates", "hasMore"],
+                        "required": [
+                            "templates",
+                            "hasMore"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2509,9 +3023,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_notion_listusers"],
+            "output": [
+                "ActionOutput_notion_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_listusers", "ActionOutput_notion_listusers"],
+            "usedModels": [
+                "ActionInput_notion_listusers",
+                "ActionOutput_notion_listusers"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2542,7 +3061,10 @@
                                         },
                                         "type": {
                                             "type": "string",
-                                            "enum": ["person", "bot"]
+                                            "enum": [
+                                                "person",
+                                                "bot"
+                                            ]
                                         },
                                         "name": {
                                             "type": "string"
@@ -2554,7 +3076,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2565,7 +3090,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["users", "has_more"],
+                        "required": [
+                            "users",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2578,9 +3106,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_querydatabasefiltered",
             "name": "query-database-filtered",
-            "output": ["ActionOutput_notion_querydatabasefiltered"],
+            "output": [
+                "ActionOutput_notion_querydatabasefiltered"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_querydatabasefiltered", "ActionOutput_notion_querydatabasefiltered"],
+            "usedModels": [
+                "ActionInput_notion_querydatabasefiltered",
+                "ActionOutput_notion_querydatabasefiltered"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2603,7 +3136,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["database_id", "filter"],
+                        "required": [
+                            "database_id",
+                            "filter"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_querydatabasefiltered": {
@@ -2620,10 +3156,18 @@
                                 "type": "boolean"
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "results", "has_more", "next_cursor"],
+                        "required": [
+                            "object",
+                            "results",
+                            "has_more",
+                            "next_cursor"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2636,9 +3180,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_querydatabasesorted",
             "name": "query-database-sorted",
-            "output": ["ActionOutput_notion_querydatabasesorted"],
+            "output": [
+                "ActionOutput_notion_querydatabasesorted"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_querydatabasesorted", "ActionOutput_notion_querydatabasesorted"],
+            "usedModels": [
+                "ActionInput_notion_querydatabasesorted",
+                "ActionOutput_notion_querydatabasesorted"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2663,7 +3212,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["database_id", "sorts"],
+                        "required": [
+                            "database_id",
+                            "sorts"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_querydatabasesorted": {
@@ -2680,10 +3232,18 @@
                                 "type": "boolean"
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "results", "has_more", "next_cursor"],
+                        "required": [
+                            "object",
+                            "results",
+                            "has_more",
+                            "next_cursor"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2696,9 +3256,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_querydatabase",
             "name": "query-database",
-            "output": ["ActionOutput_notion_querydatabase"],
+            "output": [
+                "ActionOutput_notion_querydatabase"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_querydatabase", "ActionOutput_notion_querydatabase"],
+            "usedModels": [
+                "ActionInput_notion_querydatabase",
+                "ActionOutput_notion_querydatabase"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2726,7 +3291,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["database_id"],
+                        "required": [
+                            "database_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_querydatabase": {
@@ -2743,10 +3310,18 @@
                                 "type": "boolean"
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "results", "has_more", "next_cursor"],
+                        "required": [
+                            "object",
+                            "results",
+                            "has_more",
+                            "next_cursor"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2759,9 +3334,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_movepage",
             "name": "move-page",
-            "output": ["ActionOutput_notion_movepage"],
+            "output": [
+                "ActionOutput_notion_movepage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_movepage", "ActionOutput_notion_movepage"],
+            "usedModels": [
+                "ActionInput_notion_movepage",
+                "ActionOutput_notion_movepage"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2786,7 +3366,10 @@
                                                 "description": "The ID of the parent page to move the page under. Example: \"b55c9c91-384d-452b-81db-d1ef79372b75\""
                                             }
                                         },
-                                        "required": ["type", "page_id"],
+                                        "required": [
+                                            "type",
+                                            "page_id"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -2801,14 +3384,20 @@
                                                 "description": "The ID of the data source (database) to move the page into. Example: \"1c7b35e6-e67f-8096-bf3f-000ba938459e\""
                                             }
                                         },
-                                        "required": ["type", "data_source_id"],
+                                        "required": [
+                                            "type",
+                                            "data_source_id"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 ],
                                 "description": "The new parent location for the page. Either a page_id or data_source_id parent."
                             }
                         },
-                        "required": ["page_id", "parent"],
+                        "required": [
+                            "page_id",
+                            "parent"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_movepage": {
@@ -2846,7 +3435,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "archived": {
@@ -2862,7 +3453,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "object", "parent"],
+                        "required": [
+                            "id",
+                            "object",
+                            "parent"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2875,9 +3470,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_querydatasource",
             "name": "query-data-source",
-            "output": ["ActionOutput_notion_querydatasource"],
+            "output": [
+                "ActionOutput_notion_querydatasource"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_querydatasource", "ActionOutput_notion_querydatasource"],
+            "usedModels": [
+                "ActionInput_notion_querydatasource",
+                "ActionOutput_notion_querydatasource"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2914,7 +3514,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["data_source_id"],
+                        "required": [
+                            "data_source_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_querydatasource": {
@@ -2944,7 +3546,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["results", "has_more"],
+                        "required": [
+                            "results",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2957,9 +3562,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_restorepage",
             "name": "restore-page",
-            "output": ["ActionOutput_notion_restorepage"],
+            "output": [
+                "ActionOutput_notion_restorepage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_restorepage", "ActionOutput_notion_restorepage"],
+            "usedModels": [
+                "ActionInput_notion_restorepage",
+                "ActionOutput_notion_restorepage"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -2971,7 +3581,9 @@
                                 "description": "The ID of the page to restore from trash. Example: \"12345678-1234-1234-1234-123456789012\""
                             }
                         },
-                        "required": ["pageId"],
+                        "required": [
+                            "pageId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_restorepage": {
@@ -2999,7 +3611,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "object"],
+                        "required": [
+                            "id",
+                            "object"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3012,9 +3627,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrieveblock",
             "name": "retrieve-block",
-            "output": ["ActionOutput_notion_retrieveblock"],
+            "output": [
+                "ActionOutput_notion_retrieveblock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrieveblock", "ActionOutput_notion_retrieveblock"],
+            "usedModels": [
+                "ActionInput_notion_retrieveblock",
+                "ActionOutput_notion_retrieveblock"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -3026,7 +3646,9 @@
                                 "description": "Block ID. Example: \"c02fc1d3-db8b-45c5-a222-27595b15aea7\""
                             }
                         },
-                        "required": ["block_id"],
+                        "required": [
+                            "block_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrieveblock": {
@@ -3055,7 +3677,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "object", "type"],
+                        "required": [
+                            "id",
+                            "object",
+                            "type"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3068,9 +3694,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrieveblockchildren",
             "name": "retrieve-block-children",
-            "output": ["ActionOutput_notion_retrieveblockchildren"],
+            "output": [
+                "ActionOutput_notion_retrieveblockchildren"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrieveblockchildren", "ActionOutput_notion_retrieveblockchildren"],
+            "usedModels": [
+                "ActionInput_notion_retrieveblockchildren",
+                "ActionOutput_notion_retrieveblockchildren"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3090,7 +3721,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["block_id"],
+                        "required": [
+                            "block_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrieveblockchildren": {
@@ -3107,10 +3740,18 @@
                                 "type": "boolean"
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "results", "has_more", "next_cursor"],
+                        "required": [
+                            "object",
+                            "results",
+                            "has_more",
+                            "next_cursor"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3123,9 +3764,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrievecomment",
             "name": "retrieve-comment",
-            "output": ["ActionOutput_notion_retrievecomment"],
+            "output": [
+                "ActionOutput_notion_retrievecomment"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrievecomment", "ActionOutput_notion_retrievecomment"],
+            "usedModels": [
+                "ActionInput_notion_retrievecomment",
+                "ActionOutput_notion_retrievecomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3137,7 +3783,9 @@
                                 "description": "The ID of the comment to retrieve. Example: \"c02fc1d3-db8b-45c5-a222-27595b15aea7\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrievecomment": {
@@ -3159,7 +3807,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "discussion_id": {
@@ -3180,7 +3830,9 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["content"],
+                                            "required": [
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "mention": {
@@ -3199,11 +3851,16 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["object", "id"],
+                                                    "required": [
+                                                        "object",
+                                                        "id"
+                                                    ],
                                                     "additionalProperties": false
                                                 }
                                             },
-                                            "required": ["type"],
+                                            "required": [
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "annotations": {
@@ -3234,7 +3891,10 @@
                                             "type": "string"
                                         },
                                         "href": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -3250,14 +3910,22 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["object", "id"],
+                                "required": [
+                                    "object",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_time": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "parent", "discussion_id", "rich_text"],
+                        "required": [
+                            "id",
+                            "parent",
+                            "discussion_id",
+                            "rich_text"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3270,9 +3938,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrievedatasource",
             "name": "retrieve-data-source",
-            "output": ["ActionOutput_notion_retrievedatasource"],
+            "output": [
+                "ActionOutput_notion_retrievedatasource"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrievedatasource", "ActionOutput_notion_retrievedatasource"],
+            "usedModels": [
+                "ActionInput_notion_retrievedatasource",
+                "ActionOutput_notion_retrievedatasource"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -3284,7 +3957,9 @@
                                 "description": "The ID of the Notion data source to retrieve. Example: \"d9824bdc-8445-4327-be8b-5b47500af6ce\""
                             }
                         },
-                        "required": ["data_source_id"],
+                        "required": [
+                            "data_source_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrievedatasource": {
@@ -3334,10 +4009,16 @@
                                 "type": "string"
                             },
                             "public_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "id"],
+                        "required": [
+                            "object",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3350,9 +4031,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrievedatabase",
             "name": "retrieve-database",
-            "output": ["ActionOutput_notion_retrievedatabase"],
+            "output": [
+                "ActionOutput_notion_retrievedatabase"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrievedatabase", "ActionOutput_notion_retrievedatabase"],
+            "usedModels": [
+                "ActionInput_notion_retrievedatabase",
+                "ActionOutput_notion_retrievedatabase"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3364,7 +4050,9 @@
                                 "description": "The ID of the database to retrieve. Example: \"2b6ce298-3121-8079-a497-d3eca16d875c\""
                             }
                         },
-                        "required": ["database_id"],
+                        "required": [
+                            "database_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrievedatabase": {
@@ -3394,7 +4082,14 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "object", "created_time", "last_edited_time", "title", "properties"],
+                        "required": [
+                            "id",
+                            "object",
+                            "created_time",
+                            "last_edited_time",
+                            "title",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3407,9 +4102,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrievepageproperty",
             "name": "retrieve-page-property",
-            "output": ["ActionOutput_notion_retrievepageproperty"],
+            "output": [
+                "ActionOutput_notion_retrievepageproperty"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrievepageproperty", "ActionOutput_notion_retrievepageproperty"],
+            "usedModels": [
+                "ActionInput_notion_retrievepageproperty",
+                "ActionOutput_notion_retrievepageproperty"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3425,7 +4125,10 @@
                                 "description": "The ID or name of the property to retrieve. Example: \"title\""
                             }
                         },
-                        "required": ["page_id", "property_id"],
+                        "required": [
+                            "page_id",
+                            "property_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrievepageproperty": {
@@ -3443,7 +4146,10 @@
                             },
                             "property_item": {}
                         },
-                        "required": ["object", "type"],
+                        "required": [
+                            "object",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3456,9 +4162,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrievepage",
             "name": "retrieve-page",
-            "output": ["ActionOutput_notion_retrievepage"],
+            "output": [
+                "ActionOutput_notion_retrievepage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrievepage", "ActionOutput_notion_retrievepage"],
+            "usedModels": [
+                "ActionInput_notion_retrievepage",
+                "ActionOutput_notion_retrievepage"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3470,7 +4181,9 @@
                                 "description": "The ID of the page to retrieve. Example: \"b55c9c91-384d-452b-81db-d1ef79372b75\""
                             }
                         },
-                        "required": ["page_id"],
+                        "required": [
+                            "page_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrievepage": {
@@ -3523,7 +4236,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": {}
                             },
                             "properties": {
@@ -3546,7 +4261,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["type", "emoji"],
+                                                "required": [
+                                                    "type",
+                                                    "emoji"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -3563,11 +4281,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["url"],
+                                                        "required": [
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "external"],
+                                                "required": [
+                                                    "type",
+                                                    "external"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -3587,11 +4310,17 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["url", "expiry_time"],
+                                                        "required": [
+                                                            "url",
+                                                            "expiry_time"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "file"],
+                                                "required": [
+                                                    "type",
+                                                    "file"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -3614,11 +4343,18 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id", "name", "url"],
+                                                        "required": [
+                                                            "id",
+                                                            "name",
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "custom_emoji"],
+                                                "required": [
+                                                    "type",
+                                                    "custom_emoji"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -3638,11 +4374,17 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["name", "color"],
+                                                        "required": [
+                                                            "name",
+                                                            "color"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "icon"],
+                                                "required": [
+                                                    "type",
+                                                    "icon"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ]
@@ -3670,11 +4412,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["url"],
+                                                        "required": [
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "external"],
+                                                "required": [
+                                                    "type",
+                                                    "external"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -3694,11 +4441,17 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["url", "expiry_time"],
+                                                        "required": [
+                                                            "url",
+                                                            "expiry_time"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "file"],
+                                                "required": [
+                                                    "type",
+                                                    "file"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ]
@@ -3718,7 +4471,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "object"],
+                                "required": [
+                                    "id",
+                                    "object"
+                                ],
                                 "additionalProperties": {}
                             },
                             "last_edited_by": {
@@ -3731,7 +4487,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "object"],
+                                "required": [
+                                    "id",
+                                    "object"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
@@ -3763,9 +4522,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_retrieveuser",
             "name": "retrieve-user",
-            "output": ["ActionOutput_notion_retrieveuser"],
+            "output": [
+                "ActionOutput_notion_retrieveuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_retrieveuser", "ActionOutput_notion_retrieveuser"],
+            "usedModels": [
+                "ActionInput_notion_retrieveuser",
+                "ActionOutput_notion_retrieveuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3777,7 +4541,9 @@
                                 "description": "The ID of the user to retrieve. Example: \"d42542a8-a81c-4386-aa95-313aa4e818b3\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_retrieveuser": {
@@ -3796,10 +4562,19 @@
                                 "type": "string"
                             },
                             "avatar_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "object", "type", "name", "avatar_url"],
+                        "required": [
+                            "id",
+                            "object",
+                            "type",
+                            "name",
+                            "avatar_url"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3812,9 +4587,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_searchdatabases",
             "name": "search-databases",
-            "output": ["ActionOutput_notion_searchdatabases"],
+            "output": [
+                "ActionOutput_notion_searchdatabases"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_searchdatabases", "ActionOutput_notion_searchdatabases"],
+            "usedModels": [
+                "ActionInput_notion_searchdatabases",
+                "ActionOutput_notion_searchdatabases"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3850,10 +4630,18 @@
                                 "type": "boolean"
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "results", "has_more", "next_cursor"],
+                        "required": [
+                            "object",
+                            "results",
+                            "has_more",
+                            "next_cursor"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3866,9 +4654,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_searchpages",
             "name": "search-pages",
-            "output": ["ActionOutput_notion_searchpages"],
+            "output": [
+                "ActionOutput_notion_searchpages"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_searchpages", "ActionOutput_notion_searchpages"],
+            "usedModels": [
+                "ActionInput_notion_searchpages",
+                "ActionOutput_notion_searchpages"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3904,10 +4697,18 @@
                                 "type": "boolean"
                             },
                             "next_cursor": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "results", "has_more", "next_cursor"],
+                        "required": [
+                            "object",
+                            "results",
+                            "has_more",
+                            "next_cursor"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3920,9 +4721,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_search",
             "name": "search",
-            "output": ["ActionOutput_notion_search"],
+            "output": [
+                "ActionOutput_notion_search"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_search", "ActionOutput_notion_search"],
+            "usedModels": [
+                "ActionInput_notion_search",
+                "ActionOutput_notion_search"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -3942,10 +4748,16 @@
                                     },
                                     "value": {
                                         "type": "string",
-                                        "enum": ["page", "data_source"]
+                                        "enum": [
+                                            "page",
+                                            "data_source"
+                                        ]
                                     }
                                 },
-                                "required": ["property", "value"],
+                                "required": [
+                                    "property",
+                                    "value"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Filter to search only pages or only data_sources."
                             },
@@ -3954,14 +4766,23 @@
                                 "properties": {
                                     "timestamp": {
                                         "type": "string",
-                                        "enum": ["last_edited_time", "created_time"]
+                                        "enum": [
+                                            "last_edited_time",
+                                            "created_time"
+                                        ]
                                     },
                                     "direction": {
                                         "type": "string",
-                                        "enum": ["ascending", "descending"]
+                                        "enum": [
+                                            "ascending",
+                                            "descending"
+                                        ]
                                     }
                                 },
-                                "required": ["timestamp", "direction"],
+                                "required": [
+                                    "timestamp",
+                                    "direction"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Sort order for results."
                             },
@@ -3992,7 +4813,10 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["results", "has_more"],
+                        "required": [
+                            "results",
+                            "has_more"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4005,9 +4829,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_updateblock",
             "name": "update-block",
-            "output": ["ActionOutput_notion_updateblock"],
+            "output": [
+                "ActionOutput_notion_updateblock"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_updateblock", "ActionOutput_notion_updateblock"],
+            "usedModels": [
+                "ActionInput_notion_updateblock",
+                "ActionOutput_notion_updateblock"
+            ],
             "version": "2.0.2",
             "json_schema": {
                 "definitions": {
@@ -4024,7 +4853,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["block_id", "content"],
+                        "required": [
+                            "block_id",
+                            "content"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_updateblock": {
@@ -4040,7 +4872,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "object"],
+                        "required": [
+                            "id",
+                            "type",
+                            "object"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4053,9 +4889,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_updatedatasource",
             "name": "update-data-source",
-            "output": ["ActionOutput_notion_updatedatasource"],
+            "output": [
+                "ActionOutput_notion_updatedatasource"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_updatedatasource", "ActionOutput_notion_updatedatasource"],
+            "usedModels": [
+                "ActionInput_notion_updatedatasource",
+                "ActionOutput_notion_updatedatasource"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4092,7 +4933,9 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["url"],
+                                                            "required": [
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -4101,11 +4944,16 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["content"],
+                                            "required": [
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["type", "text"],
+                                    "required": [
+                                        "type",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4135,7 +4983,9 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["url"],
+                                                            "required": [
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -4144,11 +4994,16 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["content"],
+                                            "required": [
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["type", "text"],
+                                    "required": [
+                                        "type",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4167,7 +5022,10 @@
                                                     "type": "string"
                                                 },
                                                 "description": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "type": {
                                                     "type": "string"
@@ -4197,7 +5055,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "database_id"],
+                                "required": [
+                                    "type",
+                                    "database_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "icon": {
@@ -4216,7 +5077,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["type", "emoji"],
+                                                "required": [
+                                                    "type",
+                                                    "emoji"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4233,11 +5097,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["url"],
+                                                        "required": [
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "external"],
+                                                "required": [
+                                                    "type",
+                                                    "external"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4257,11 +5126,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["url"],
+                                                        "required": [
+                                                            "url"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "file"],
+                                                "required": [
+                                                    "type",
+                                                    "file"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4284,11 +5158,16 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["id"],
+                                                        "required": [
+                                                            "id"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "custom_emoji"],
+                                                "required": [
+                                                    "type",
+                                                    "custom_emoji"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             {
@@ -4320,11 +5199,16 @@
                                                                 ]
                                                             }
                                                         },
-                                                        "required": ["name"],
+                                                        "required": [
+                                                            "name"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 },
-                                                "required": ["type", "icon"],
+                                                "required": [
+                                                    "type",
+                                                    "icon"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         ]
@@ -4335,7 +5219,9 @@
                                 ]
                             }
                         },
-                        "required": ["dataSourceId"],
+                        "required": [
+                            "dataSourceId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_updatedatasource": {
@@ -4372,7 +5258,9 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["url"],
+                                                            "required": [
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -4381,7 +5269,9 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["content"],
+                                            "required": [
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "annotations": {
@@ -4393,10 +5283,16 @@
                                             "type": "string"
                                         },
                                         "href": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["type", "text"],
+                                    "required": [
+                                        "type",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4423,7 +5319,9 @@
                                                                     "type": "string"
                                                                 }
                                                             },
-                                                            "required": ["url"],
+                                                            "required": [
+                                                                "url"
+                                                            ],
                                                             "additionalProperties": false
                                                         },
                                                         {
@@ -4432,7 +5330,9 @@
                                                     ]
                                                 }
                                             },
-                                            "required": ["content"],
+                                            "required": [
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "annotations": {
@@ -4444,10 +5344,16 @@
                                             "type": "string"
                                         },
                                         "href": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["type", "text"],
+                                    "required": [
+                                        "type",
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4462,7 +5368,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "database_id"],
+                                "required": [
+                                    "type",
+                                    "database_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "database_parent": {
@@ -4484,7 +5393,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "is_inline": {
@@ -4512,7 +5423,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["object", "id"],
+                                "required": [
+                                    "object",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "last_edited_by": {
@@ -4526,7 +5440,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["object", "id"],
+                                "required": [
+                                    "object",
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "properties": {
@@ -4553,10 +5470,16 @@
                                 "type": "string"
                             },
                             "public_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["object", "id"],
+                        "required": [
+                            "object",
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4569,9 +5492,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_updatedatabase",
             "name": "update-database",
-            "output": ["ActionOutput_notion_updatedatabase"],
+            "output": [
+                "ActionOutput_notion_updatedatabase"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_updatedatabase", "ActionOutput_notion_updatedatabase"],
+            "usedModels": [
+                "ActionInput_notion_updatedatabase",
+                "ActionOutput_notion_updatedatabase"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4595,11 +5523,15 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["content"],
+                                            "required": [
+                                                "content"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["text"],
+                                    "required": [
+                                        "text"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -4617,7 +5549,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["database_id"],
+                        "required": [
+                            "database_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_updatedatabase": {
@@ -4641,7 +5575,12 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "object", "title", "properties"],
+                        "required": [
+                            "id",
+                            "object",
+                            "title",
+                            "properties"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4654,9 +5593,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_updatepagemarkdown",
             "name": "update-page-markdown",
-            "output": ["ActionOutput_notion_updatepagemarkdown"],
+            "output": [
+                "ActionOutput_notion_updatepagemarkdown"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_updatepagemarkdown", "ActionOutput_notion_updatepagemarkdown"],
+            "usedModels": [
+                "ActionInput_notion_updatepagemarkdown",
+                "ActionOutput_notion_updatepagemarkdown"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -4669,7 +5613,12 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["update_content", "replace_content", "insert_content", "replace_content_range"],
+                                "enum": [
+                                    "update_content",
+                                    "replace_content",
+                                    "insert_content",
+                                    "replace_content_range"
+                                ],
                                 "description": "Command type for the update operation."
                             },
                             "update_content": {
@@ -4693,7 +5642,10 @@
                                                     "type": "boolean"
                                                 }
                                             },
-                                            "required": ["old_str", "new_str"],
+                                            "required": [
+                                                "old_str",
+                                                "new_str"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "description": "Array of search-and-replace operations."
@@ -4703,7 +5655,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["content_updates"],
+                                "required": [
+                                    "content_updates"
+                                ],
                                 "additionalProperties": false
                             },
                             "replace_content": {
@@ -4718,7 +5672,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["new_str"],
+                                "required": [
+                                    "new_str"
+                                ],
                                 "additionalProperties": false
                             },
                             "insert_content": {
@@ -4733,7 +5689,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["content"],
+                                "required": [
+                                    "content"
+                                ],
                                 "additionalProperties": false
                             },
                             "replace_content_range": {
@@ -4752,11 +5710,17 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["content", "range"],
+                                "required": [
+                                    "content",
+                                    "range"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["page_id", "type"],
+                        "required": [
+                            "page_id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_updatepagemarkdown": {
@@ -4778,7 +5742,11 @@
                                 }
                             }
                         },
-                        "required": ["id", "markdown", "truncated"],
+                        "required": [
+                            "id",
+                            "markdown",
+                            "truncated"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4791,9 +5759,14 @@
             "endpoint": null,
             "input": "ActionInput_notion_updatepage",
             "name": "update-page",
-            "output": ["ActionOutput_notion_updatepage"],
+            "output": [
+                "ActionOutput_notion_updatepage"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_notion_updatepage", "ActionOutput_notion_updatepage"],
+            "usedModels": [
+                "ActionInput_notion_updatepage",
+                "ActionOutput_notion_updatepage"
+            ],
             "version": "2.0.1",
             "json_schema": {
                 "definitions": {
@@ -4826,7 +5799,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["page_id"],
+                        "required": [
+                            "page_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_notion_updatepage": {
@@ -4857,7 +5832,10 @@
                                 "type": "string"
                             },
                             "public_url": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "parent": {},
                             "properties": {},
@@ -4866,7 +5844,9 @@
                             "created_by": {},
                             "last_edited_by": {}
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4887,12 +5867,16 @@
             ],
             "input": null,
             "name": "content-metadata",
-            "output": ["ContentMetadata"],
+            "output": [
+                "ContentMetadata"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ContentMetadata"],
+            "usedModels": [
+                "ContentMetadata"
+            ],
             "version": "3.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4905,7 +5889,10 @@
                             },
                             "object_type": {
                                 "type": "string",
-                                "enum": ["page", "data_source"]
+                                "enum": [
+                                    "page",
+                                    "data_source"
+                                ]
                             },
                             "title": {
                                 "type": "string"
@@ -4932,12 +5919,19 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "object_type", "created_time", "last_edited_time"],
+                        "required": [
+                            "id",
+                            "object_type",
+                            "created_time",
+                            "last_edited_time"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -4951,12 +5945,16 @@
             ],
             "input": null,
             "name": "data-source-entries",
-            "output": ["DataSourceEntry"],
+            "output": [
+                "DataSourceEntry"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DataSourceEntry"],
+            "usedModels": [
+                "DataSourceEntry"
+            ],
             "version": "1.1.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -4999,12 +5997,21 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "data_source_id", "created_time", "last_edited_time", "url", "in_trash"],
+                        "required": [
+                            "id",
+                            "data_source_id",
+                            "created_time",
+                            "last_edited_time",
+                            "url",
+                            "in_trash"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5018,12 +6025,16 @@
             ],
             "input": null,
             "name": "data-source-templates",
-            "output": ["DataSourceTemplate"],
+            "output": [
+                "DataSourceTemplate"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DataSourceTemplate"],
+            "usedModels": [
+                "DataSourceTemplate"
+            ],
             "version": "1.1.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5047,12 +6058,18 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "data_source_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "data_source_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5066,12 +6083,16 @@
             ],
             "input": null,
             "name": "data-sources",
-            "output": ["DataSource"],
+            "output": [
+                "DataSource"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["DataSource"],
+            "usedModels": [
+                "DataSource"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5126,12 +6147,16 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -5145,12 +6170,16 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "2.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -5166,18 +6195,26 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["person", "bot"]
+                                "enum": [
+                                    "person",
+                                    "bot"
+                                ]
                             },
                             "avatar_url": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

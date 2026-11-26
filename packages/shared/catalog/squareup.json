@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_batchretrievecatalogobjects",
             "name": "batch-retrieve-catalog-objects",
-            "output": ["ActionOutput_squareup_batchretrievecatalogobjects"],
-            "scopes": ["ITEMS_READ"],
-            "usedModels": ["ActionInput_squareup_batchretrievecatalogobjects", "ActionOutput_squareup_batchretrievecatalogobjects"],
+            "output": [
+                "ActionOutput_squareup_batchretrievecatalogobjects"
+            ],
+            "scopes": [
+                "ITEMS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_batchretrievecatalogobjects",
+                "ActionOutput_squareup_batchretrievecatalogobjects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -41,7 +48,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["object_ids"],
+                        "required": [
+                            "object_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_batchretrievecatalogobjects": {
@@ -59,7 +68,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "id"],
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -75,7 +87,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["type", "id"],
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
@@ -92,9 +107,17 @@
             "endpoint": null,
             "input": "ActionInput_squareup_cancelinvoice",
             "name": "cancel-invoice",
-            "output": ["ActionOutput_squareup_cancelinvoice"],
-            "scopes": ["INVOICES_WRITE", "ORDERS_WRITE"],
-            "usedModels": ["ActionInput_squareup_cancelinvoice", "ActionOutput_squareup_cancelinvoice"],
+            "output": [
+                "ActionOutput_squareup_cancelinvoice"
+            ],
+            "scopes": [
+                "INVOICES_WRITE",
+                "ORDERS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_cancelinvoice",
+                "ActionOutput_squareup_cancelinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -112,7 +135,10 @@
                                 "description": "The current version of the invoice. Example: 1"
                             }
                         },
-                        "required": ["invoice_id", "version"],
+                        "required": [
+                            "invoice_id",
+                            "version"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_cancelinvoice": {
@@ -244,7 +270,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "version", "status"],
+                        "required": [
+                            "id",
+                            "version",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -257,9 +287,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_cancelpayment",
             "name": "cancel-payment",
-            "output": ["ActionOutput_squareup_cancelpayment"],
-            "scopes": ["PAYMENTS_WRITE"],
-            "usedModels": ["ActionInput_squareup_cancelpayment", "ActionOutput_squareup_cancelpayment"],
+            "output": [
+                "ActionOutput_squareup_cancelpayment"
+            ],
+            "scopes": [
+                "PAYMENTS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_cancelpayment",
+                "ActionOutput_squareup_cancelpayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -271,7 +308,9 @@
                                 "description": "The ID of the payment to cancel. Only payments with APPROVED status can be cancelled. Example: \"BC5A8XpB9k3D5IOVW3R2bR0pCZ9YY\""
                             }
                         },
-                        "required": ["payment_id"],
+                        "required": [
+                            "payment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_cancelpayment": {
@@ -293,7 +332,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "total_money": {
@@ -306,7 +348,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "approved_money": {
@@ -319,7 +364,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "tip_money": {
@@ -332,7 +380,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -402,7 +453,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -415,9 +469,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_cancelsubscription",
             "name": "cancel-subscription",
-            "output": ["ActionOutput_squareup_cancelsubscription"],
-            "scopes": ["SUBSCRIPTIONS_WRITE"],
-            "usedModels": ["ActionInput_squareup_cancelsubscription", "ActionOutput_squareup_cancelsubscription"],
+            "output": [
+                "ActionOutput_squareup_cancelsubscription"
+            ],
+            "scopes": [
+                "SUBSCRIPTIONS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_cancelsubscription",
+                "ActionOutput_squareup_cancelsubscription"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -429,7 +490,9 @@
                                 "description": "The ID of the subscription to cancel. Example: \"c1fd8f96-a883-4f62-a5fb-006272e7dbb8\""
                             }
                         },
-                        "required": ["subscription_id"],
+                        "required": [
+                            "subscription_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_cancelsubscription": {
@@ -459,7 +522,9 @@
                                 }
                             }
                         },
-                        "required": ["subscription"],
+                        "required": [
+                            "subscription"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -472,9 +537,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_createcustomer",
             "name": "create-customer",
-            "output": ["ActionOutput_squareup_createcustomer"],
-            "scopes": ["CUSTOMERS_WRITE"],
-            "usedModels": ["ActionInput_squareup_createcustomer", "ActionOutput_squareup_createcustomer"],
+            "output": [
+                "ActionOutput_squareup_createcustomer"
+            ],
+            "scopes": [
+                "CUSTOMERS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_createcustomer",
+                "ActionOutput_squareup_createcustomer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -676,7 +748,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -689,9 +765,17 @@
             "endpoint": null,
             "input": "ActionInput_squareup_createinvoice",
             "name": "create-invoice",
-            "output": ["ActionOutput_squareup_createinvoice"],
-            "scopes": ["INVOICES_WRITE", "ORDERS_WRITE"],
-            "usedModels": ["ActionInput_squareup_createinvoice", "ActionOutput_squareup_createinvoice"],
+            "output": [
+                "ActionOutput_squareup_createinvoice"
+            ],
+            "scopes": [
+                "INVOICES_WRITE",
+                "ORDERS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_createinvoice",
+                "ActionOutput_squareup_createinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -741,12 +825,24 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["card", "square_gift_card", "bank_account", "buy_now_pay_later", "cash_app_pay"],
+                                "required": [
+                                    "card",
+                                    "square_gift_card",
+                                    "bank_account",
+                                    "buy_now_pay_later",
+                                    "cash_app_pay"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Accepted payment methods for the invoice."
                             }
                         },
-                        "required": ["order_id", "location_id", "customer_id", "due_date", "accepted_payment_methods"],
+                        "required": [
+                            "order_id",
+                            "location_id",
+                            "customer_id",
+                            "due_date",
+                            "accepted_payment_methods"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_createinvoice": {
@@ -792,7 +888,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["customer_id"],
+                                "required": [
+                                    "customer_id"
+                                ],
                                 "additionalProperties": false
                             },
                             "accepted_payment_methods": {
@@ -814,7 +912,13 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["card", "square_gift_card", "bank_account", "buy_now_pay_later", "cash_app_pay"],
+                                "required": [
+                                    "card",
+                                    "square_gift_card",
+                                    "bank_account",
+                                    "buy_now_pay_later",
+                                    "cash_app_pay"
+                                ],
                                 "additionalProperties": false
                             },
                             "payment_requests": {
@@ -847,7 +951,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "currency"],
+                                            "required": [
+                                                "amount",
+                                                "currency"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "total_completed_amount_money": {
@@ -860,11 +967,16 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "currency"],
+                                            "required": [
+                                                "amount",
+                                                "currency"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["request_type"],
+                                    "required": [
+                                        "request_type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -881,7 +993,15 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "version", "location_id", "order_id", "status", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "version",
+                            "location_id",
+                            "order_id",
+                            "status",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -894,9 +1014,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_createorder",
             "name": "create-order",
-            "output": ["ActionOutput_squareup_createorder"],
-            "scopes": ["ORDERS_WRITE"],
-            "usedModels": ["ActionInput_squareup_createorder", "ActionOutput_squareup_createorder"],
+            "output": [
+                "ActionOutput_squareup_createorder"
+            ],
+            "scopes": [
+                "ORDERS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_createorder",
+                "ActionOutput_squareup_createorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1049,7 +1176,9 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["quantity"],
+                                            "required": [
+                                                "quantity"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1163,11 +1292,15 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["location_id"],
+                                "required": [
+                                    "location_id"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["order"],
+                        "required": [
+                            "order"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_createorder": {
@@ -1314,7 +1447,9 @@
                                                     }
                                                 }
                                             },
-                                            "required": ["quantity"],
+                                            "required": [
+                                                "quantity"
+                                            ],
                                             "additionalProperties": {}
                                         }
                                     },
@@ -1428,7 +1563,9 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["location_id"],
+                                "required": [
+                                    "location_id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "errors": {
@@ -1440,7 +1577,9 @@
                                 }
                             }
                         },
-                        "required": ["order"],
+                        "required": [
+                            "order"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1453,9 +1592,18 @@
             "endpoint": null,
             "input": "ActionInput_squareup_createpayment",
             "name": "create-payment",
-            "output": ["ActionOutput_squareup_createpayment"],
-            "scopes": ["PAYMENTS_WRITE", "MERCHANT_PROFILE_READ", "PAYMENTS_WRITE_ADDITIONAL_RECIPIENTS"],
-            "usedModels": ["ActionInput_squareup_createpayment", "ActionOutput_squareup_createpayment"],
+            "output": [
+                "ActionOutput_squareup_createpayment"
+            ],
+            "scopes": [
+                "PAYMENTS_WRITE",
+                "MERCHANT_PROFILE_READ",
+                "PAYMENTS_WRITE_ADDITIONAL_RECIPIENTS"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_createpayment",
+                "ActionOutput_squareup_createpayment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1482,7 +1630,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false,
                                 "description": "Amount to charge, in smallest currency denomination. Example: { amount: 1000, currency: \"USD\" }"
                             },
@@ -1521,7 +1672,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "app_fee_money": {
@@ -1535,7 +1689,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "buyer_email_address": {
@@ -1559,7 +1716,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["idempotency_key", "source_id", "amount_money"],
+                        "required": [
+                            "idempotency_key",
+                            "source_id",
+                            "amount_money"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_createpayment": {
@@ -1584,7 +1745,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "tip_money": {
@@ -1597,7 +1761,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "app_fee_money": {
@@ -1610,7 +1777,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
@@ -1647,7 +1817,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "approved_money": {
@@ -1660,7 +1833,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "receipt_number": {
@@ -1679,7 +1855,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1692,9 +1870,21 @@
             "endpoint": null,
             "input": "ActionInput_squareup_createsubscription",
             "name": "create-subscription",
-            "output": ["ActionOutput_squareup_createsubscription"],
-            "scopes": ["CUSTOMERS_READ", "PAYMENTS_WRITE", "SUBSCRIPTIONS_WRITE", "ITEMS_READ", "ORDERS_WRITE", "INVOICES_WRITE"],
-            "usedModels": ["ActionInput_squareup_createsubscription", "ActionOutput_squareup_createsubscription"],
+            "output": [
+                "ActionOutput_squareup_createsubscription"
+            ],
+            "scopes": [
+                "CUSTOMERS_READ",
+                "PAYMENTS_WRITE",
+                "SUBSCRIPTIONS_WRITE",
+                "ITEMS_READ",
+                "ORDERS_WRITE",
+                "INVOICES_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_createsubscription",
+                "ActionOutput_squareup_createsubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1739,7 +1929,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "timezone": {
@@ -1765,7 +1958,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["ordinal"],
+                                    "required": [
+                                        "ordinal"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1774,7 +1969,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["location_id", "plan_variation_id", "customer_id", "card_id"],
+                        "required": [
+                            "location_id",
+                            "plan_variation_id",
+                            "customer_id",
+                            "card_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_createsubscription": {
@@ -1826,7 +2026,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "version": {
@@ -1878,11 +2081,15 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["subscription"],
+                        "required": [
+                            "subscription"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1895,9 +2102,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_createteammember",
             "name": "create-team-member",
-            "output": ["ActionOutput_squareup_createteammember"],
-            "scopes": ["EMPLOYEES_WRITE"],
-            "usedModels": ["ActionInput_squareup_createteammember", "ActionOutput_squareup_createteammember"],
+            "output": [
+                "ActionOutput_squareup_createteammember"
+            ],
+            "scopes": [
+                "EMPLOYEES_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_createteammember",
+                "ActionOutput_squareup_createteammember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1925,7 +2139,10 @@
                             "status": {
                                 "description": "The status of the team member.",
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ]
                             },
                             "email_address": {
                                 "description": "The email address associated with the team member.",
@@ -1941,7 +2158,10 @@
                                 "properties": {
                                     "assignment_type": {
                                         "type": "string",
-                                        "enum": ["EXPLICIT_LOCATIONS", "ALL_CURRENT_AND_FUTURE_LOCATIONS"]
+                                        "enum": [
+                                            "EXPLICIT_LOCATIONS",
+                                            "ALL_CURRENT_AND_FUTURE_LOCATIONS"
+                                        ]
                                     },
                                     "location_ids": {
                                         "type": "array",
@@ -1950,11 +2170,16 @@
                                         }
                                     }
                                 },
-                                "required": ["assignment_type"],
+                                "required": [
+                                    "assignment_type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["given_name", "family_name"],
+                        "required": [
+                            "given_name",
+                            "family_name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_createteammember": {
@@ -2006,7 +2231,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2019,9 +2246,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_deletecatalogobject",
             "name": "delete-catalog-object",
-            "output": ["ActionOutput_squareup_deletecatalogobject"],
-            "scopes": ["ITEMS_WRITE"],
-            "usedModels": ["ActionInput_squareup_deletecatalogobject", "ActionOutput_squareup_deletecatalogobject"],
+            "output": [
+                "ActionOutput_squareup_deletecatalogobject"
+            ],
+            "scopes": [
+                "ITEMS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_deletecatalogobject",
+                "ActionOutput_squareup_deletecatalogobject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2033,7 +2267,9 @@
                                 "description": "The ID of the catalog object to delete. Example: \"7SB3ZQYJ5GDMVFL7JK46JCHT\""
                             }
                         },
-                        "required": ["object_id"],
+                        "required": [
+                            "object_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_deletecatalogobject": {
@@ -2049,7 +2285,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["deleted_object_ids"],
+                        "required": [
+                            "deleted_object_ids"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2062,9 +2300,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_deletecustomer",
             "name": "delete-customer",
-            "output": ["ActionOutput_squareup_deletecustomer"],
-            "scopes": ["CUSTOMERS_WRITE"],
-            "usedModels": ["ActionInput_squareup_deletecustomer", "ActionOutput_squareup_deletecustomer"],
+            "output": [
+                "ActionOutput_squareup_deletecustomer"
+            ],
+            "scopes": [
+                "CUSTOMERS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_deletecustomer",
+                "ActionOutput_squareup_deletecustomer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2080,7 +2325,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["customer_id"],
+                        "required": [
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_deletecustomer": {
@@ -2095,7 +2342,10 @@
                                 "description": "Whether the deletion was successful."
                             }
                         },
-                        "required": ["customer_id", "success"],
+                        "required": [
+                            "customer_id",
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2108,9 +2358,17 @@
             "endpoint": null,
             "input": "ActionInput_squareup_deleteinvoice",
             "name": "delete-invoice",
-            "output": ["ActionOutput_squareup_deleteinvoice"],
-            "scopes": ["ORDERS_WRITE", "INVOICES_WRITE"],
-            "usedModels": ["ActionInput_squareup_deleteinvoice", "ActionOutput_squareup_deleteinvoice"],
+            "output": [
+                "ActionOutput_squareup_deleteinvoice"
+            ],
+            "scopes": [
+                "ORDERS_WRITE",
+                "INVOICES_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_deleteinvoice",
+                "ActionOutput_squareup_deleteinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2128,7 +2386,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["invoice_id"],
+                        "required": [
+                            "invoice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_deleteinvoice": {
@@ -2138,7 +2398,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2151,9 +2413,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_getcustomer",
             "name": "get-customer",
-            "output": ["ActionOutput_squareup_getcustomer"],
-            "scopes": ["CUSTOMERS_READ"],
-            "usedModels": ["ActionInput_squareup_getcustomer", "ActionOutput_squareup_getcustomer"],
+            "output": [
+                "ActionOutput_squareup_getcustomer"
+            ],
+            "scopes": [
+                "CUSTOMERS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_getcustomer",
+                "ActionOutput_squareup_getcustomer"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2165,7 +2434,9 @@
                                 "description": "Square customer ID. Example: \"D0W2WW574N4NKXWH7ZATYCF1J0\""
                             }
                         },
-                        "required": ["customer_id"],
+                        "required": [
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_getcustomer": {
@@ -2181,25 +2452,46 @@
                                 "type": "string"
                             },
                             "given_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "family_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "nickname": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "company_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email_address": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "birthday": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "address": {
                                 "anyOf": [
@@ -2207,46 +2499,88 @@
                                         "type": "object",
                                         "properties": {
                                             "address_line_1": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "address_line_2": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "address_line_3": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "locality": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "sublocality": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "sublocality_2": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "sublocality_3": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "administrative_district_level_1": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "administrative_district_level_2": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "administrative_district_level_3": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "postal_code": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "country": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "first_name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "last_name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -2257,7 +2591,10 @@
                                 ]
                             },
                             "note": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "preferences": {
                                 "anyOf": [
@@ -2298,7 +2635,10 @@
                                         "type": "object",
                                         "properties": {
                                             "eu_vat": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": {}
@@ -2309,7 +2649,9 @@
                                 ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2322,9 +2664,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_getinvoice",
             "name": "get-invoice",
-            "output": ["ActionOutput_squareup_getinvoice"],
-            "scopes": ["INVOICES_READ"],
-            "usedModels": ["ActionInput_squareup_getinvoice", "ActionOutput_squareup_getinvoice"],
+            "output": [
+                "ActionOutput_squareup_getinvoice"
+            ],
+            "scopes": [
+                "INVOICES_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_getinvoice",
+                "ActionOutput_squareup_getinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2336,7 +2685,9 @@
                                 "description": "The ID of the invoice to retrieve. Example: \"inv:0-ChClKzUTL1Ssf3Kybdil5LEXEL4I\""
                             }
                         },
-                        "required": ["invoice_id"],
+                        "required": [
+                            "invoice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_getinvoice": {
@@ -2381,7 +2732,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "version", "location_id", "status"],
+                        "required": [
+                            "id",
+                            "version",
+                            "location_id",
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2394,9 +2750,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_getorder",
             "name": "get-order",
-            "output": ["ActionOutput_squareup_getorder"],
-            "scopes": ["ORDERS_READ"],
-            "usedModels": ["ActionInput_squareup_getorder", "ActionOutput_squareup_getorder"],
+            "output": [
+                "ActionOutput_squareup_getorder"
+            ],
+            "scopes": [
+                "ORDERS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_getorder",
+                "ActionOutput_squareup_getorder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2412,7 +2775,9 @@
                                 "description": "Order IDs to retrieve. Example: [\"nT6eTFlDa7Ko7PDjNEJX7ij1jpeZY\"]"
                             }
                         },
-                        "required": ["order_ids"],
+                        "required": [
+                            "order_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_getorder": {
@@ -2462,12 +2827,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["orders"],
+                        "required": [
+                            "orders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2480,9 +2849,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_getpayment",
             "name": "get-payment",
-            "output": ["ActionOutput_squareup_getpayment"],
-            "scopes": ["PAYMENTS_READ"],
-            "usedModels": ["ActionInput_squareup_getpayment", "ActionOutput_squareup_getpayment"],
+            "output": [
+                "ActionOutput_squareup_getpayment"
+            ],
+            "scopes": [
+                "PAYMENTS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_getpayment",
+                "ActionOutput_squareup_getpayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2494,7 +2870,9 @@
                                 "description": "A unique ID for the desired payment. Example: \"f3YEx4hWP1mDncRMtBjc4TM4OKNZY\""
                             }
                         },
-                        "required": ["payment_id"],
+                        "required": [
+                            "payment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_getpayment": {
@@ -2519,7 +2897,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "status": {
@@ -2621,7 +3002,10 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["amount", "currency"],
+                                            "required": [
+                                                "amount",
+                                                "currency"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -2641,7 +3025,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "approved_money": {
@@ -2654,7 +3041,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "receipt_number": {
@@ -2688,7 +3078,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2701,9 +3093,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_getrefund",
             "name": "get-refund",
-            "output": ["ActionOutput_squareup_getrefund"],
-            "scopes": ["PAYMENTS_READ"],
-            "usedModels": ["ActionInput_squareup_getrefund", "ActionOutput_squareup_getrefund"],
+            "output": [
+                "ActionOutput_squareup_getrefund"
+            ],
+            "scopes": [
+                "PAYMENTS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_getrefund",
+                "ActionOutput_squareup_getrefund"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2715,7 +3114,9 @@
                                 "description": "The unique ID for the desired PaymentRefund. Example: \"bP9mAsEMYPUGjjGNaNO5ZDVyLhSZY_69MmgHubkLqx9wGhnmenRUHOaKitE6llfZuxcWYjGxd\""
                             }
                         },
-                        "required": ["refund_id"],
+                        "required": [
+                            "refund_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_getrefund": {
@@ -2809,11 +3210,15 @@
                                         "type": "number"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["refund"],
+                        "required": [
+                            "refund"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2826,9 +3231,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_getsubscription",
             "name": "get-subscription",
-            "output": ["ActionOutput_squareup_getsubscription"],
-            "scopes": ["SUBSCRIPTIONS_READ"],
-            "usedModels": ["ActionInput_squareup_getsubscription", "ActionOutput_squareup_getsubscription"],
+            "output": [
+                "ActionOutput_squareup_getsubscription"
+            ],
+            "scopes": [
+                "SUBSCRIPTIONS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_getsubscription",
+                "ActionOutput_squareup_getsubscription"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -2840,7 +3252,9 @@
                                 "description": "The ID of the subscription to retrieve. Example: \"dc26d923-cb1e-45ab-adda-372cb0a4e550\""
                             }
                         },
-                        "required": ["subscription_id"],
+                        "required": [
+                            "subscription_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_getsubscription": {
@@ -2922,7 +3336,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "location_id"],
+                        "required": [
+                            "id",
+                            "location_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -2935,9 +3352,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_getteammember",
             "name": "get-team-member",
-            "output": ["ActionOutput_squareup_getteammember"],
-            "scopes": ["EMPLOYEES_READ"],
-            "usedModels": ["ActionInput_squareup_getteammember", "ActionOutput_squareup_getteammember"],
+            "output": [
+                "ActionOutput_squareup_getteammember"
+            ],
+            "scopes": [
+                "EMPLOYEES_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_getteammember",
+                "ActionOutput_squareup_getteammember"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2949,7 +3373,9 @@
                                 "description": "The ID of the team member to retrieve. Example: \"TMAj3tlDagDQmCFz\""
                             }
                         },
-                        "required": ["team_member_id"],
+                        "required": [
+                            "team_member_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_getteammember": {
@@ -2995,7 +3421,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -3008,9 +3436,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_listcustomers",
             "name": "list-customers",
-            "output": ["ActionOutput_squareup_listcustomers"],
-            "scopes": ["CUSTOMERS_READ"],
-            "usedModels": ["ActionInput_squareup_listcustomers", "ActionOutput_squareup_listcustomers"],
+            "output": [
+                "ActionOutput_squareup_listcustomers"
+            ],
+            "scopes": [
+                "CUSTOMERS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_listcustomers",
+                "ActionOutput_squareup_listcustomers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3042,19 +3477,34 @@
                                             "type": "string"
                                         },
                                         "given_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "family_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "nickname": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "company_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email_address": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "address": {
                                             "anyOf": [
@@ -3071,16 +3521,28 @@
                                             ]
                                         },
                                         "phone_number": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "birthday": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "reference_id": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "note": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "preferences": {
                                             "anyOf": [
@@ -3097,7 +3559,10 @@
                                             ]
                                         },
                                         "creation_source": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "group_ids": {
                                             "anyOf": [
@@ -3126,7 +3591,9 @@
                                             ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3134,7 +3601,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["customers"],
+                        "required": [
+                            "customers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3147,9 +3616,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_listinvoices",
             "name": "list-invoices",
-            "output": ["ActionOutput_squareup_listinvoices"],
-            "scopes": ["INVOICES_READ"],
-            "usedModels": ["ActionInput_squareup_listinvoices", "ActionOutput_squareup_listinvoices"],
+            "output": [
+                "ActionOutput_squareup_listinvoices"
+            ],
+            "scopes": [
+                "INVOICES_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_listinvoices",
+                "ActionOutput_squareup_listinvoices"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3171,7 +3647,9 @@
                                 "maximum": 200
                             }
                         },
-                        "required": ["location_id"],
+                        "required": [
+                            "location_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_listinvoices": {
@@ -3203,7 +3681,14 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "version", "location_id", "status", "created_at", "updated_at"],
+                                    "required": [
+                                        "id",
+                                        "version",
+                                        "location_id",
+                                        "status",
+                                        "created_at",
+                                        "updated_at"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3211,7 +3696,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["invoices"],
+                        "required": [
+                            "invoices"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3224,9 +3711,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_listlocations",
             "name": "list-locations",
-            "output": ["ActionOutput_squareup_listlocations"],
-            "scopes": ["MERCHANT_PROFILE_READ"],
-            "usedModels": ["ActionInput_squareup_listlocations", "ActionOutput_squareup_listlocations"],
+            "output": [
+                "ActionOutput_squareup_listlocations"
+            ],
+            "scopes": [
+                "MERCHANT_PROFILE_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_listlocations",
+                "ActionOutput_squareup_listlocations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3249,7 +3743,9 @@
                                 }
                             }
                         },
-                        "required": ["locations"],
+                        "required": [
+                            "locations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3262,9 +3758,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_listorders",
             "name": "list-orders",
-            "output": ["ActionOutput_squareup_listorders"],
-            "scopes": ["ORDERS_READ"],
-            "usedModels": ["ActionInput_squareup_listorders", "ActionOutput_squareup_listorders"],
+            "output": [
+                "ActionOutput_squareup_listorders"
+            ],
+            "scopes": [
+                "ORDERS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_listorders",
+                "ActionOutput_squareup_listorders"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3289,7 +3792,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["location_ids"],
+                        "required": [
+                            "location_ids"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_listorders": {
@@ -3450,7 +3955,10 @@
                                             }
                                         }
                                     },
-                                    "required": ["id", "version"],
+                                    "required": [
+                                        "id",
+                                        "version"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3458,7 +3966,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["orders"],
+                        "required": [
+                            "orders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3471,9 +3981,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_listpayments",
             "name": "list-payments",
-            "output": ["ActionOutput_squareup_listpayments"],
-            "scopes": ["PAYMENTS_READ"],
-            "usedModels": ["ActionInput_squareup_listpayments", "ActionOutput_squareup_listpayments"],
+            "output": [
+                "ActionOutput_squareup_listpayments"
+            ],
+            "scopes": [
+                "PAYMENTS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_listpayments",
+                "ActionOutput_squareup_listpayments"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3491,7 +4008,10 @@
                             "sort_order": {
                                 "description": "Sort order. Default: DESC.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             },
                             "cursor": {
                                 "description": "Pagination cursor from a previous response.",
@@ -3542,7 +4062,10 @@
                             "sort_field": {
                                 "description": "Field to sort by. Default: CREATED_AT.",
                                 "type": "string",
-                                "enum": ["CREATED_AT", "UPDATED_AT"]
+                                "enum": [
+                                    "CREATED_AT",
+                                    "UPDATED_AT"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -3745,7 +4268,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -3753,7 +4278,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["payments"],
+                        "required": [
+                            "payments"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3766,9 +4293,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_listrefunds",
             "name": "list-refunds",
-            "output": ["ActionOutput_squareup_listrefunds"],
-            "scopes": ["PAYMENTS_READ"],
-            "usedModels": ["ActionInput_squareup_listrefunds", "ActionOutput_squareup_listrefunds"],
+            "output": [
+                "ActionOutput_squareup_listrefunds"
+            ],
+            "scopes": [
+                "PAYMENTS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_listrefunds",
+                "ActionOutput_squareup_listrefunds"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -3935,7 +4469,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -3943,7 +4479,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["refunds"],
+                        "required": [
+                            "refunds"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3956,9 +4494,21 @@
             "endpoint": null,
             "input": "ActionInput_squareup_pausesubscription",
             "name": "pause-subscription",
-            "output": ["ActionOutput_squareup_pausesubscription"],
-            "scopes": ["CUSTOMERS_READ", "PAYMENTS_WRITE", "SUBSCRIPTIONS_WRITE", "ITEMS_READ", "ORDERS_WRITE", "INVOICES_WRITE"],
-            "usedModels": ["ActionInput_squareup_pausesubscription", "ActionOutput_squareup_pausesubscription"],
+            "output": [
+                "ActionOutput_squareup_pausesubscription"
+            ],
+            "scopes": [
+                "CUSTOMERS_READ",
+                "PAYMENTS_WRITE",
+                "SUBSCRIPTIONS_WRITE",
+                "ITEMS_READ",
+                "ORDERS_WRITE",
+                "INVOICES_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_pausesubscription",
+                "ActionOutput_squareup_pausesubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -3993,7 +4543,9 @@
                                 "maxLength": 255
                             }
                         },
-                        "required": ["subscription_id"],
+                        "required": [
+                            "subscription_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_pausesubscription": {
@@ -4035,7 +4587,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "status"],
+                                "required": [
+                                    "id",
+                                    "status"
+                                ],
                                 "additionalProperties": {}
                             },
                             "actions": {
@@ -4069,9 +4624,17 @@
             "endpoint": null,
             "input": "ActionInput_squareup_payorder",
             "name": "pay-order",
-            "output": ["ActionOutput_squareup_payorder"],
-            "scopes": ["ORDERS_WRITE", "PAYMENTS_WRITE"],
-            "usedModels": ["ActionInput_squareup_payorder", "ActionOutput_squareup_payorder"],
+            "output": [
+                "ActionOutput_squareup_payorder"
+            ],
+            "scopes": [
+                "ORDERS_WRITE",
+                "PAYMENTS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_payorder",
+                "ActionOutput_squareup_payorder"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4096,7 +4659,11 @@
                                 "description": "Unique idempotency key for this request. Max length 192."
                             }
                         },
-                        "required": ["order_id", "payment_ids", "idempotency_key"],
+                        "required": [
+                            "order_id",
+                            "payment_ids",
+                            "idempotency_key"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_payorder": {
@@ -4133,7 +4700,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "total_tax_money": {
@@ -4146,7 +4716,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "total_discount_money": {
@@ -4159,7 +4732,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "total_tip_money": {
@@ -4172,7 +4748,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "total_service_charge_money": {
@@ -4185,7 +4764,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "net_amounts": {
@@ -4201,7 +4783,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "tax_money": {
@@ -4214,7 +4799,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "discount_money": {
@@ -4227,7 +4815,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "tip_money": {
@@ -4240,7 +4831,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "service_charge_money": {
@@ -4253,7 +4847,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
@@ -4293,7 +4890,9 @@
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -4306,9 +4905,18 @@
             "endpoint": null,
             "input": "ActionInput_squareup_publishinvoice",
             "name": "publish-invoice",
-            "output": ["ActionOutput_squareup_publishinvoice"],
-            "scopes": ["INVOICES_WRITE", "ORDERS_WRITE", "INVOICES_READ"],
-            "usedModels": ["ActionInput_squareup_publishinvoice", "ActionOutput_squareup_publishinvoice"],
+            "output": [
+                "ActionOutput_squareup_publishinvoice"
+            ],
+            "scopes": [
+                "INVOICES_WRITE",
+                "ORDERS_WRITE",
+                "INVOICES_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_publishinvoice",
+                "ActionOutput_squareup_publishinvoice"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4320,7 +4928,9 @@
                                 "description": "The ID of the draft invoice to publish. Example: \"inv:0-ChCOCo8Wfl5qlQMMklqY-IpxEL4I\""
                             }
                         },
-                        "required": ["invoice_id"],
+                        "required": [
+                            "invoice_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_publishinvoice": {
@@ -4412,11 +5022,20 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["id", "version", "location_id", "status", "created_at", "updated_at"],
+                                "required": [
+                                    "id",
+                                    "version",
+                                    "location_id",
+                                    "status",
+                                    "created_at",
+                                    "updated_at"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["invoice"],
+                        "required": [
+                            "invoice"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4429,9 +5048,17 @@
             "endpoint": null,
             "input": "ActionInput_squareup_refundpayment",
             "name": "refund-payment",
-            "output": ["ActionOutput_squareup_refundpayment"],
-            "scopes": ["PAYMENTS_WRITE", "PAYMENTS_WRITE_ADDITIONAL_RECIPIENTS"],
-            "usedModels": ["ActionInput_squareup_refundpayment", "ActionOutput_squareup_refundpayment"],
+            "output": [
+                "ActionOutput_squareup_refundpayment"
+            ],
+            "scopes": [
+                "PAYMENTS_WRITE",
+                "PAYMENTS_WRITE_ADDITIONAL_RECIPIENTS"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_refundpayment",
+                "ActionOutput_squareup_refundpayment"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4459,7 +5086,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "The amount of money to refund in the smallest denomination of the applicable currency."
                                     },
@@ -4485,7 +5115,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "destination_id": {
@@ -4498,7 +5131,11 @@
                                         "maxLength": 192
                                     }
                                 },
-                                "required": ["payment_id", "amount_money", "idempotency_key"],
+                                "required": [
+                                    "payment_id",
+                                    "amount_money",
+                                    "idempotency_key"
+                                ],
                                 "additionalProperties": false
                             },
                             {
@@ -4527,7 +5164,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false,
                                         "description": "The amount of money to refund in the smallest denomination of the applicable currency."
                                     },
@@ -4553,7 +5193,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "customer_id": {
@@ -4579,12 +5222,17 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["amount", "currency"],
+                                                "required": [
+                                                    "amount",
+                                                    "currency"
+                                                ],
                                                 "additionalProperties": false,
                                                 "description": "The amount and currency of the money supplied by the seller."
                                             }
                                         },
-                                        "required": ["seller_supplied_money"],
+                                        "required": [
+                                            "seller_supplied_money"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     "external_details": {
@@ -4607,11 +5255,20 @@
                                                 "maxLength": 255
                                             }
                                         },
-                                        "required": ["type", "source"],
+                                        "required": [
+                                            "type",
+                                            "source"
+                                        ],
                                         "additionalProperties": false
                                     }
                                 },
-                                "required": ["unlinked", "destination_id", "location_id", "amount_money", "idempotency_key"],
+                                "required": [
+                                    "unlinked",
+                                    "destination_id",
+                                    "location_id",
+                                    "amount_money",
+                                    "idempotency_key"
+                                ],
                                 "additionalProperties": false
                             }
                         ]
@@ -4635,7 +5292,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "app_fee_money": {
@@ -4648,7 +5308,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "bank_account_details": {
@@ -4683,7 +5346,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["amount", "currency"],
+                                                "required": [
+                                                    "amount",
+                                                    "currency"
+                                                ],
                                                 "additionalProperties": false
                                             },
                                             "change_back_money": {
@@ -4696,7 +5362,10 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["amount", "currency"],
+                                                "required": [
+                                                    "amount",
+                                                    "currency"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         },
@@ -4766,7 +5435,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "amount_money"],
+                        "required": [
+                            "id",
+                            "amount_money"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -4779,9 +5451,21 @@
             "endpoint": null,
             "input": "ActionInput_squareup_resumesubscription",
             "name": "resume-subscription",
-            "output": ["ActionOutput_squareup_resumesubscription"],
-            "scopes": ["CUSTOMERS_READ", "PAYMENTS_WRITE", "SUBSCRIPTIONS_WRITE", "ITEMS_READ", "ORDERS_WRITE", "INVOICES_WRITE"],
-            "usedModels": ["ActionInput_squareup_resumesubscription", "ActionOutput_squareup_resumesubscription"],
+            "output": [
+                "ActionOutput_squareup_resumesubscription"
+            ],
+            "scopes": [
+                "CUSTOMERS_READ",
+                "PAYMENTS_WRITE",
+                "SUBSCRIPTIONS_WRITE",
+                "ITEMS_READ",
+                "ORDERS_WRITE",
+                "INVOICES_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_resumesubscription",
+                "ActionOutput_squareup_resumesubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -4801,7 +5485,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["subscription_id", "resume_change_timing"],
+                        "required": [
+                            "subscription_id",
+                            "resume_change_timing"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_resumesubscription": {
@@ -4841,7 +5528,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             },
                             "actions": {
@@ -4863,7 +5552,9 @@
                                 }
                             }
                         },
-                        "required": ["subscription"],
+                        "required": [
+                            "subscription"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -4876,9 +5567,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_retrievecatalogobject",
             "name": "retrieve-catalog-object",
-            "output": ["ActionOutput_squareup_retrievecatalogobject"],
-            "scopes": ["ITEMS_READ"],
-            "usedModels": ["ActionInput_squareup_retrievecatalogobject", "ActionOutput_squareup_retrievecatalogobject"],
+            "output": [
+                "ActionOutput_squareup_retrievecatalogobject"
+            ],
+            "scopes": [
+                "ITEMS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_retrievecatalogobject",
+                "ActionOutput_squareup_retrievecatalogobject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -4890,7 +5588,9 @@
                                 "description": "The object ID of any type of catalog objects to be retrieved. Example: \"DJXLBF4XHUSECQ4P6UDOB7KE\""
                             }
                         },
-                        "required": ["object_id"],
+                        "required": [
+                            "object_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_retrievecatalogobject": {
@@ -4926,9 +5626,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_searchcatalogobjects",
             "name": "search-catalog-objects",
-            "output": ["ActionOutput_squareup_searchcatalogobjects"],
-            "scopes": ["ITEMS_READ"],
-            "usedModels": ["ActionInput_squareup_searchcatalogobjects", "ActionOutput_squareup_searchcatalogobjects"],
+            "output": [
+                "ActionOutput_squareup_searchcatalogobjects"
+            ],
+            "scopes": [
+                "ITEMS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_searchcatalogobjects",
+                "ActionOutput_squareup_searchcatalogobjects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5001,7 +5708,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["objects"],
+                        "required": [
+                            "objects"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5014,9 +5723,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_searchcustomers",
             "name": "search-customers",
-            "output": ["ActionOutput_squareup_searchcustomers"],
-            "scopes": ["CUSTOMERS_READ"],
-            "usedModels": ["ActionInput_squareup_searchcustomers", "ActionOutput_squareup_searchcustomers"],
+            "output": [
+                "ActionOutput_squareup_searchcustomers"
+            ],
+            "scopes": [
+                "CUSTOMERS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_searchcustomers",
+                "ActionOutput_squareup_searchcustomers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5048,12 +5764,18 @@
                             "sort_field": {
                                 "description": "Field to sort by.",
                                 "type": "string",
-                                "enum": ["CREATED_AT", "DEFAULT"]
+                                "enum": [
+                                    "CREATED_AT",
+                                    "DEFAULT"
+                                ]
                             },
                             "sort_order": {
                                 "description": "Sort order.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             }
                         },
                         "additionalProperties": false
@@ -5076,19 +5798,34 @@
                                             "type": "string"
                                         },
                                         "given_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "family_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "company_name": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "email_address": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "phone_number": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "address": {
                                             "anyOf": [
@@ -5096,46 +5833,88 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "address_line_1": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "address_line_2": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "address_line_3": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "locality": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "sublocality": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "sublocality_2": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "sublocality_3": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "administrative_district_level_1": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "administrative_district_level_2": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "administrative_district_level_3": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "postal_code": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "country": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "first_name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         },
                                                         "last_name": {
-                                                            "type": ["string", "null"]
+                                                            "type": [
+                                                                "string",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -5151,7 +5930,10 @@
                                                     "type": "object",
                                                     "properties": {
                                                         "email_unsubscribed": {
-                                                            "type": ["boolean", "null"]
+                                                            "type": [
+                                                                "boolean",
+                                                                "null"
+                                                            ]
                                                         }
                                                     },
                                                     "additionalProperties": false
@@ -5162,7 +5944,10 @@
                                             ]
                                         },
                                         "creation_source": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "group_ids": {
                                             "anyOf": [
@@ -5191,10 +5976,15 @@
                                             ]
                                         },
                                         "version": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5207,7 +5997,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["customers"],
+                        "required": [
+                            "customers"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5220,9 +6012,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_searchsubscriptions",
             "name": "search-subscriptions",
-            "output": ["ActionOutput_squareup_searchsubscriptions"],
-            "scopes": ["SUBSCRIPTIONS_READ"],
-            "usedModels": ["ActionInput_squareup_searchsubscriptions", "ActionOutput_squareup_searchsubscriptions"],
+            "output": [
+                "ActionOutput_squareup_searchsubscriptions"
+            ],
+            "scopes": [
+                "SUBSCRIPTIONS_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_searchsubscriptions",
+                "ActionOutput_squareup_searchsubscriptions"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5280,7 +6079,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -5288,7 +6089,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["subscriptions"],
+                        "required": [
+                            "subscriptions"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5301,9 +6104,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_searchteammembers",
             "name": "search-team-members",
-            "output": ["ActionOutput_squareup_searchteammembers"],
-            "scopes": ["EMPLOYEES_READ"],
-            "usedModels": ["ActionInput_squareup_searchteammembers", "ActionOutput_squareup_searchteammembers"],
+            "output": [
+                "ActionOutput_squareup_searchteammembers"
+            ],
+            "scopes": [
+                "EMPLOYEES_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_searchteammembers",
+                "ActionOutput_squareup_searchteammembers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5365,7 +6175,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -5374,7 +6186,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["team_members"],
+                        "required": [
+                            "team_members"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5387,9 +6201,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_updatecustomer",
             "name": "update-customer",
-            "output": ["ActionOutput_squareup_updatecustomer"],
-            "scopes": ["CUSTOMERS_WRITE"],
-            "usedModels": ["ActionInput_squareup_updatecustomer", "ActionOutput_squareup_updatecustomer"],
+            "output": [
+                "ActionOutput_squareup_updatecustomer"
+            ],
+            "scopes": [
+                "CUSTOMERS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_updatecustomer",
+                "ActionOutput_squareup_updatecustomer"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5496,7 +6317,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["customer_id"],
+                        "required": [
+                            "customer_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_updatecustomer": {
@@ -5614,7 +6437,9 @@
                                 }
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -5627,9 +6452,18 @@
             "endpoint": null,
             "input": "ActionInput_squareup_updateinvoice",
             "name": "update-invoice",
-            "output": ["ActionOutput_squareup_updateinvoice"],
-            "scopes": ["INVOICES_WRITE", "ORDERS_WRITE", "INVOICES_READ"],
-            "usedModels": ["ActionInput_squareup_updateinvoice", "ActionOutput_squareup_updateinvoice"],
+            "output": [
+                "ActionOutput_squareup_updateinvoice"
+            ],
+            "scopes": [
+                "INVOICES_WRITE",
+                "ORDERS_WRITE",
+                "INVOICES_READ"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_updateinvoice",
+                "ActionOutput_squareup_updateinvoice"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -5653,7 +6487,10 @@
                                 "maxLength": 128
                             }
                         },
-                        "required": ["invoice_id", "invoice"],
+                        "required": [
+                            "invoice_id",
+                            "invoice"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_updateinvoice": {
@@ -5719,7 +6556,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "version", "location_id", "status"],
+                        "required": [
+                            "id",
+                            "version",
+                            "location_id",
+                            "status"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -5732,9 +6574,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_updateorder",
             "name": "update-order",
-            "output": ["ActionOutput_squareup_updateorder"],
-            "scopes": ["ORDERS_WRITE"],
-            "usedModels": ["ActionInput_squareup_updateorder", "ActionOutput_squareup_updateorder"],
+            "output": [
+                "ActionOutput_squareup_updateorder"
+            ],
+            "scopes": [
+                "ORDERS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_updateorder",
+                "ActionOutput_squareup_updateorder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5770,7 +6619,11 @@
                                 "maxLength": 192
                             }
                         },
-                        "required": ["order_id", "version", "order"],
+                        "required": [
+                            "order_id",
+                            "version",
+                            "order"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_updateorder": {
@@ -5843,9 +6696,21 @@
             "endpoint": null,
             "input": "ActionInput_squareup_updatesubscription",
             "name": "update-subscription",
-            "output": ["ActionOutput_squareup_updatesubscription"],
-            "scopes": ["CUSTOMERS_READ", "PAYMENTS_WRITE", "SUBSCRIPTIONS_WRITE", "ITEMS_READ", "ORDERS_WRITE", "INVOICES_WRITE"],
-            "usedModels": ["ActionInput_squareup_updatesubscription", "ActionOutput_squareup_updatesubscription"],
+            "output": [
+                "ActionOutput_squareup_updatesubscription"
+            ],
+            "scopes": [
+                "CUSTOMERS_READ",
+                "PAYMENTS_WRITE",
+                "SUBSCRIPTIONS_WRITE",
+                "ITEMS_READ",
+                "ORDERS_WRITE",
+                "INVOICES_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_updatesubscription",
+                "ActionOutput_squareup_updatesubscription"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -5858,15 +6723,24 @@
                             },
                             "card_id": {
                                 "description": "The ID of the subscriber's card used to charge for the subscription. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "canceled_date": {
                                 "description": "YYYY-MM-DD formatted date to cancel the subscription. Set to null to clear.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "tax_percentage": {
                                 "description": "Tax percentage in decimal form without a % sign. Example: \"7.5\" for 7.5%.",
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "price_override_money": {
                                 "description": "Custom price override for STATIC-priced subscription plan variations.",
@@ -5881,7 +6755,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["amount", "currency"],
+                                        "required": [
+                                            "amount",
+                                            "currency"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -5894,7 +6771,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["subscription_id"],
+                        "required": [
+                            "subscription_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_updatesubscription": {
@@ -5916,7 +6795,10 @@
                                 "type": "string"
                             },
                             "canceled_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "charged_through_date": {
                                 "type": "string"
@@ -5925,7 +6807,10 @@
                                 "type": "string"
                             },
                             "tax_percentage": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "invoice_ids": {
                                 "type": "array",
@@ -5939,10 +6824,16 @@
                                         "type": "object",
                                         "properties": {
                                             "amount": {
-                                                "type": ["number", "null"]
+                                                "type": [
+                                                    "number",
+                                                    "null"
+                                                ]
                                             },
                                             "currency": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -5959,7 +6850,10 @@
                                 "type": "string"
                             },
                             "card_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "timezone": {
                                 "type": "string"
@@ -5970,7 +6864,10 @@
                                         "type": "object",
                                         "properties": {
                                             "name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -5984,10 +6881,15 @@
                                 "type": "number"
                             },
                             "completed_date": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6000,9 +6902,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_updateteammember",
             "name": "update-team-member",
-            "output": ["ActionOutput_squareup_updateteammember"],
-            "scopes": ["EMPLOYEES_WRITE"],
-            "usedModels": ["ActionInput_squareup_updateteammember", "ActionOutput_squareup_updateteammember"],
+            "output": [
+                "ActionOutput_squareup_updateteammember"
+            ],
+            "scopes": [
+                "EMPLOYEES_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_updateteammember",
+                "ActionOutput_squareup_updateteammember"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6032,7 +6941,10 @@
                             "status": {
                                 "description": "The status of the team member.",
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ]
                             },
                             "assigned_locations": {
                                 "description": "The locations the team member is assigned to.",
@@ -6040,7 +6952,10 @@
                                 "properties": {
                                     "assignment_type": {
                                         "type": "string",
-                                        "enum": ["EXPLICIT_LOCATIONS", "ALL_CURRENT_AND_FUTURE_LOCATIONS"]
+                                        "enum": [
+                                            "EXPLICIT_LOCATIONS",
+                                            "ALL_CURRENT_AND_FUTURE_LOCATIONS"
+                                        ]
                                     },
                                     "location_ids": {
                                         "type": "array",
@@ -6049,11 +6964,15 @@
                                         }
                                     }
                                 },
-                                "required": ["assignment_type"],
+                                "required": [
+                                    "assignment_type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["team_member_id"],
+                        "required": [
+                            "team_member_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_updateteammember": {
@@ -6076,14 +6995,20 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ]
                             },
                             "assigned_locations": {
                                 "type": "object",
                                 "properties": {
                                     "assignment_type": {
                                         "type": "string",
-                                        "enum": ["EXPLICIT_LOCATIONS", "ALL_CURRENT_AND_FUTURE_LOCATIONS"]
+                                        "enum": [
+                                            "EXPLICIT_LOCATIONS",
+                                            "ALL_CURRENT_AND_FUTURE_LOCATIONS"
+                                        ]
                                     },
                                     "location_ids": {
                                         "type": "array",
@@ -6092,11 +7017,15 @@
                                         }
                                     }
                                 },
-                                "required": ["assignment_type"],
+                                "required": [
+                                    "assignment_type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6109,9 +7038,16 @@
             "endpoint": null,
             "input": "ActionInput_squareup_upsertcatalogobject",
             "name": "upsert-catalog-object",
-            "output": ["ActionOutput_squareup_upsertcatalogobject"],
-            "scopes": ["ITEMS_WRITE"],
-            "usedModels": ["ActionInput_squareup_upsertcatalogobject", "ActionOutput_squareup_upsertcatalogobject"],
+            "output": [
+                "ActionOutput_squareup_upsertcatalogobject"
+            ],
+            "scopes": [
+                "ITEMS_WRITE"
+            ],
+            "usedModels": [
+                "ActionInput_squareup_upsertcatalogobject",
+                "ActionOutput_squareup_upsertcatalogobject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -6210,12 +7146,18 @@
                                         "additionalProperties": {}
                                     }
                                 },
-                                "required": ["type", "id"],
+                                "required": [
+                                    "type",
+                                    "id"
+                                ],
                                 "additionalProperties": {},
                                 "description": "Catalog object to create or update."
                             }
                         },
-                        "required": ["idempotency_key", "object"],
+                        "required": [
+                            "idempotency_key",
+                            "object"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_squareup_upsertcatalogobject": {
@@ -6239,7 +7181,9 @@
                                 }
                             }
                         },
-                        "required": ["catalog_object"],
+                        "required": [
+                            "catalog_object"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -6255,12 +7199,18 @@
             "endpoints": [],
             "input": null,
             "name": "catalog-objects",
-            "output": ["CatalogObject"],
+            "output": [
+                "CatalogObject"
+            ],
             "runs": "every hour",
-            "scopes": ["ITEMS_READ"],
+            "scopes": [
+                "ITEMS_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["CatalogObject"],
+            "usedModels": [
+                "CatalogObject"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6281,12 +7231,18 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type", "updated_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "updated_at"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6295,12 +7251,18 @@
             "endpoints": [],
             "input": null,
             "name": "customers",
-            "output": ["Customer"],
+            "output": [
+                "Customer"
+            ],
             "runs": "every hour",
-            "scopes": ["CUSTOMERS_READ"],
+            "scopes": [
+                "CUSTOMERS_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Customer"],
+            "usedModels": [
+                "Customer"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6318,19 +7280,34 @@
                                 "type": "string"
                             },
                             "given_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "family_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "email_address": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "phone_number": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "company_name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "address": {
                                 "anyOf": [
@@ -6338,22 +7315,40 @@
                                         "type": "object",
                                         "properties": {
                                             "address_line_1": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "address_line_2": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "locality": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "administrative_district_level_1": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "postal_code": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "country": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -6369,7 +7364,10 @@
                                         "type": "object",
                                         "properties": {
                                             "email_unsubscribed": {
-                                                "type": ["boolean", "null"]
+                                                "type": [
+                                                    "boolean",
+                                                    "null"
+                                                ]
                                             }
                                         },
                                         "additionalProperties": false
@@ -6380,13 +7378,22 @@
                                 ]
                             },
                             "reference_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "note": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "creation_source": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "group_ids": {
                                 "anyOf": [
@@ -6415,15 +7422,23 @@
                                 ]
                             },
                             "version": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id", "updated_at"],
+                        "required": [
+                            "id",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6432,12 +7447,19 @@
             "endpoints": [],
             "input": null,
             "name": "invoices",
-            "output": ["Invoice"],
+            "output": [
+                "Invoice"
+            ],
             "runs": "every hour",
-            "scopes": ["MERCHANT_PROFILE_READ", "INVOICES_READ"],
+            "scopes": [
+                "MERCHANT_PROFILE_READ",
+                "INVOICES_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Invoice"],
+            "usedModels": [
+                "Invoice"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6449,12 +7471,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6463,12 +7489,18 @@
             "endpoints": [],
             "input": null,
             "name": "locations",
-            "output": ["Location"],
+            "output": [
+                "Location"
+            ],
             "runs": "every hour",
-            "scopes": ["MERCHANT_PROFILE_READ"],
+            "scopes": [
+                "MERCHANT_PROFILE_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Location"],
+            "usedModels": [
+                "Location"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6585,7 +7617,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -6599,12 +7633,19 @@
             "endpoints": [],
             "input": null,
             "name": "orders",
-            "output": ["Order"],
+            "output": [
+                "Order"
+            ],
             "runs": "every hour",
-            "scopes": ["MERCHANT_PROFILE_READ", "ORDERS_READ"],
+            "scopes": [
+                "MERCHANT_PROFILE_READ",
+                "ORDERS_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Order"],
+            "usedModels": [
+                "Order"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6622,12 +7663,17 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "location_id"],
+                        "required": [
+                            "id",
+                            "location_id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6636,12 +7682,18 @@
             "endpoints": [],
             "input": null,
             "name": "payments",
-            "output": ["Payment"],
+            "output": [
+                "Payment"
+            ],
             "runs": "every hour",
-            "scopes": ["PAYMENTS_READ"],
+            "scopes": [
+                "PAYMENTS_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Payment"],
+            "usedModels": [
+                "Payment"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6671,7 +7723,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "total_money": {
@@ -6684,7 +7739,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "approved_money": {
@@ -6697,7 +7755,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["amount", "currency"],
+                                "required": [
+                                    "amount",
+                                    "currency"
+                                ],
                                 "additionalProperties": false
                             },
                             "location_id": {
@@ -6740,12 +7801,19 @@
                             },
                             "application_details": {}
                         },
-                        "required": ["id", "status", "created_at", "updated_at"],
+                        "required": [
+                            "id",
+                            "status",
+                            "created_at",
+                            "updated_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6754,12 +7822,18 @@
             "endpoints": [],
             "input": null,
             "name": "refunds",
-            "output": ["Refund"],
+            "output": [
+                "Refund"
+            ],
             "runs": "every hour",
-            "scopes": ["PAYMENTS_READ"],
+            "scopes": [
+                "PAYMENTS_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Refund"],
+            "usedModels": [
+                "Refund"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6831,12 +7905,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6845,12 +7923,18 @@
             "endpoints": [],
             "input": null,
             "name": "subscriptions",
-            "output": ["Subscription"],
+            "output": [
+                "Subscription"
+            ],
             "runs": "every hour",
-            "scopes": ["SUBSCRIPTIONS_READ"],
+            "scopes": [
+                "SUBSCRIPTIONS_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Subscription"],
+            "usedModels": [
+                "Subscription"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6939,12 +8023,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -6953,12 +8041,18 @@
             "endpoints": [],
             "input": null,
             "name": "team-members",
-            "output": ["TeamMember"],
+            "output": [
+                "TeamMember"
+            ],
             "runs": "every hour",
-            "scopes": ["EMPLOYEES_READ"],
+            "scopes": [
+                "EMPLOYEES_READ"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["TeamMember"],
+            "usedModels": [
+                "TeamMember"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -6977,7 +8071,10 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["ACTIVE", "INACTIVE"]
+                                "enum": [
+                                    "ACTIVE",
+                                    "INACTIVE"
+                                ]
                             },
                             "given_name": {
                                 "type": "string"
@@ -6998,12 +8095,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {

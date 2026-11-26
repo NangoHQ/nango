@@ -7,9 +7,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_connectsecure_createuser"],
+            "output": [
+                "ActionOutput_connectsecure_createuser"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_createuser", "ActionOutput_connectsecure_createuser"],
+            "usedModels": [
+                "ActionInput_connectsecure_createuser",
+                "ActionOutput_connectsecure_createuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -44,7 +49,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["email", "first_name", "last_name", "roles", "password"],
+                        "required": [
+                            "email",
+                            "first_name",
+                            "last_name",
+                            "roles",
+                            "password"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_connectsecure_createuser": {
@@ -84,9 +95,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_getasset",
             "name": "get-asset",
-            "output": ["ActionOutput_connectsecure_getasset"],
+            "output": [
+                "ActionOutput_connectsecure_getasset"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_getasset", "ActionOutput_connectsecure_getasset"],
+            "usedModels": [
+                "ActionInput_connectsecure_getasset",
+                "ActionOutput_connectsecure_getasset"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -99,7 +115,9 @@
                                 "description": "Asset ID. Example: \"152060779\""
                             }
                         },
-                        "required": ["asset_id"],
+                        "required": [
+                            "asset_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_connectsecure_getasset": {
@@ -117,9 +135,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_getcompany",
             "name": "get-company",
-            "output": ["ActionOutput_connectsecure_getcompany"],
+            "output": [
+                "ActionOutput_connectsecure_getcompany"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_getcompany", "ActionOutput_connectsecure_getcompany"],
+            "usedModels": [
+                "ActionInput_connectsecure_getcompany",
+                "ActionOutput_connectsecure_getcompany"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -131,7 +154,9 @@
                                 "description": "Company ID. Example: 16637"
                             }
                         },
-                        "required": ["company_id"],
+                        "required": [
+                            "company_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_connectsecure_getcompany": {
@@ -168,7 +193,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -181,9 +208,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_getcompliancemaster",
             "name": "get-compliance-master",
-            "output": ["ActionOutput_connectsecure_getcompliancemaster"],
+            "output": [
+                "ActionOutput_connectsecure_getcompliancemaster"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_getcompliancemaster", "ActionOutput_connectsecure_getcompliancemaster"],
+            "usedModels": [
+                "ActionInput_connectsecure_getcompliancemaster",
+                "ActionOutput_connectsecure_getcompliancemaster"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -215,19 +247,33 @@
                                             "type": "string"
                                         },
                                         "cis_control": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "cis_safeguard": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "cis_title": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "command": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["check_id"],
+                                    "required": [
+                                        "check_id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -235,7 +281,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -248,9 +296,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_getpasswordpolicy",
             "name": "get-password-policy",
-            "output": ["ActionOutput_connectsecure_getpasswordpolicy"],
+            "output": [
+                "ActionOutput_connectsecure_getpasswordpolicy"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_getpasswordpolicy", "ActionOutput_connectsecure_getpasswordpolicy"],
+            "usedModels": [
+                "ActionInput_connectsecure_getpasswordpolicy",
+                "ActionOutput_connectsecure_getpasswordpolicy"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -284,7 +337,13 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["has_lowercase", "has_number", "has_symbol", "has_uppercase", "min_length"],
+                        "required": [
+                            "has_lowercase",
+                            "has_number",
+                            "has_symbol",
+                            "has_uppercase",
+                            "min_length"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -297,9 +356,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listagents",
             "name": "list-agents",
-            "output": ["ActionOutput_connectsecure_listagents"],
+            "output": [
+                "ActionOutput_connectsecure_listagents"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listagents", "ActionOutput_connectsecure_listagents"],
+            "usedModels": [
+                "ActionInput_connectsecure_listagents",
+                "ActionOutput_connectsecure_listagents"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -333,7 +397,9 @@
                                             "type": "number"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -342,7 +408,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -355,9 +423,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listapproverusers",
             "name": "list-approver-users",
-            "output": ["ActionOutput_connectsecure_listapproverusers"],
+            "output": [
+                "ActionOutput_connectsecure_listapproverusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listapproverusers", "ActionOutput_connectsecure_listapproverusers"],
+            "usedModels": [
+                "ActionInput_connectsecure_listapproverusers",
+                "ActionOutput_connectsecure_listapproverusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -369,7 +442,9 @@
                                 "description": "Company ID to filter approver users. Example: \"16637\""
                             }
                         },
-                        "required": ["company_id"],
+                        "required": [
+                            "company_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_connectsecure_listapproverusers": {
@@ -414,7 +489,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -422,7 +499,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["users"],
+                        "required": [
+                            "users"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -435,9 +514,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listassets",
             "name": "list-assets",
-            "output": ["ActionOutput_connectsecure_listassets"],
+            "output": [
+                "ActionOutput_connectsecure_listassets"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listassets", "ActionOutput_connectsecure_listassets"],
+            "usedModels": [
+                "ActionInput_connectsecure_listassets",
+                "ActionOutput_connectsecure_listassets"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -484,7 +568,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -492,7 +578,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["assets"],
+                        "required": [
+                            "assets"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -505,9 +593,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listcompanies",
             "name": "list-companies",
-            "output": ["ActionOutput_connectsecure_listcompanies"],
+            "output": [
+                "ActionOutput_connectsecure_listcompanies"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listcompanies", "ActionOutput_connectsecure_listcompanies"],
+            "usedModels": [
+                "ActionInput_connectsecure_listcompanies",
+                "ActionOutput_connectsecure_listcompanies"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -563,7 +656,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -575,7 +670,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -588,9 +685,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listcompliancetypes",
             "name": "list-compliance-types",
-            "output": ["ActionOutput_connectsecure_listcompliancetypes"],
+            "output": [
+                "ActionOutput_connectsecure_listcompliancetypes"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listcompliancetypes", "ActionOutput_connectsecure_listcompliancetypes"],
+            "usedModels": [
+                "ActionInput_connectsecure_listcompliancetypes",
+                "ActionOutput_connectsecure_listcompliancetypes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -620,12 +722,18 @@
                                             }
                                         }
                                     },
-                                    "required": ["name", "table_name", "value"],
+                                    "required": [
+                                        "name",
+                                        "table_name",
+                                        "value"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["frameworks"],
+                        "required": [
+                            "frameworks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -638,9 +746,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listcredentials",
             "name": "list-credentials",
-            "output": ["ActionOutput_connectsecure_listcredentials"],
+            "output": [
+                "ActionOutput_connectsecure_listcredentials"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listcredentials", "ActionOutput_connectsecure_listcredentials"],
+            "usedModels": [
+                "ActionInput_connectsecure_listcredentials",
+                "ActionOutput_connectsecure_listcredentials"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -674,7 +787,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -687,9 +803,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listintegrations",
             "name": "list-integrations",
-            "output": ["ActionOutput_connectsecure_listintegrations"],
+            "output": [
+                "ActionOutput_connectsecure_listintegrations"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listintegrations", "ActionOutput_connectsecure_listintegrations"],
+            "usedModels": [
+                "ActionInput_connectsecure_listintegrations",
+                "ActionOutput_connectsecure_listintegrations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -745,7 +866,9 @@
                                                                 },
                                                                 "default_value": {}
                                                             },
-                                                            "required": ["name"],
+                                                            "required": [
+                                                                "name"
+                                                            ],
                                                             "additionalProperties": false
                                                         }
                                                     },
@@ -753,7 +876,11 @@
                                                         "type": "string"
                                                     }
                                                 },
-                                                "required": ["name", "method", "destination"],
+                                                "required": [
+                                                    "name",
+                                                    "method",
+                                                    "destination"
+                                                ],
                                                 "additionalProperties": false
                                             }
                                         }
@@ -762,7 +889,9 @@
                                 }
                             }
                         },
-                        "required": ["integrations"],
+                        "required": [
+                            "integrations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -775,9 +904,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listjobs",
             "name": "list-jobs",
-            "output": ["ActionOutput_connectsecure_listjobs"],
+            "output": [
+                "ActionOutput_connectsecure_listjobs"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listjobs", "ActionOutput_connectsecure_listjobs"],
+            "usedModels": [
+                "ActionInput_connectsecure_listjobs",
+                "ActionOutput_connectsecure_listjobs"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -819,7 +953,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items", "total"],
+                        "required": [
+                            "items",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -832,9 +969,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listproblemgroups",
             "name": "list-problem-groups",
-            "output": ["ActionOutput_connectsecure_listproblemgroups"],
+            "output": [
+                "ActionOutput_connectsecure_listproblemgroups"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listproblemgroups", "ActionOutput_connectsecure_listproblemgroups"],
+            "usedModels": [
+                "ActionInput_connectsecure_listproblemgroups",
+                "ActionOutput_connectsecure_listproblemgroups"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -885,7 +1027,14 @@
                                             "description": "Numeric weight assigned to the group."
                                         }
                                     },
-                                    "required": ["id", "problem_group_name", "problem_group_type", "severity", "sequence", "weightage"],
+                                    "required": [
+                                        "id",
+                                        "problem_group_name",
+                                        "problem_group_type",
+                                        "severity",
+                                        "sequence",
+                                        "weightage"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -894,7 +1043,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -907,9 +1058,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listproblemssummary",
             "name": "list-problems-summary",
-            "output": ["ActionOutput_connectsecure_listproblemssummary"],
+            "output": [
+                "ActionOutput_connectsecure_listproblemssummary"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listproblemssummary", "ActionOutput_connectsecure_listproblemssummary"],
+            "usedModels": [
+                "ActionInput_connectsecure_listproblemssummary",
+                "ActionOutput_connectsecure_listproblemssummary"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -977,7 +1133,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["problems", "total"],
+                        "required": [
+                            "problems",
+                            "total"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -990,9 +1149,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listroles",
             "name": "list-roles",
-            "output": ["ActionOutput_connectsecure_listroles"],
+            "output": [
+                "ActionOutput_connectsecure_listroles"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listroles", "ActionOutput_connectsecure_listroles"],
+            "usedModels": [
+                "ActionInput_connectsecure_listroles",
+                "ActionOutput_connectsecure_listroles"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1011,7 +1175,9 @@
                                 }
                             }
                         },
-                        "required": ["roles"],
+                        "required": [
+                            "roles"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1024,9 +1190,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listsettings",
             "name": "list-settings",
-            "output": ["ActionOutput_connectsecure_listsettings"],
+            "output": [
+                "ActionOutput_connectsecure_listsettings"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listsettings", "ActionOutput_connectsecure_listsettings"],
+            "usedModels": [
+                "ActionInput_connectsecure_listsettings",
+                "ActionOutput_connectsecure_listsettings"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1075,7 +1246,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1083,7 +1256,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1096,9 +1271,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listusers",
             "name": "list-users",
-            "output": ["ActionOutput_connectsecure_listusers"],
+            "output": [
+                "ActionOutput_connectsecure_listusers"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listusers", "ActionOutput_connectsecure_listusers"],
+            "usedModels": [
+                "ActionInput_connectsecure_listusers",
+                "ActionOutput_connectsecure_listusers"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1146,10 +1326,15 @@
                                             "type": "string"
                                         },
                                         "mobile": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1160,7 +1345,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1173,9 +1360,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_listvulnerabilities",
             "name": "list-vulnerabilities",
-            "output": ["ActionOutput_connectsecure_listvulnerabilities"],
+            "output": [
+                "ActionOutput_connectsecure_listvulnerabilities"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_listvulnerabilities", "ActionOutput_connectsecure_listvulnerabilities"],
+            "usedModels": [
+                "ActionInput_connectsecure_listvulnerabilities",
+                "ActionOutput_connectsecure_listvulnerabilities"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1242,7 +1434,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1255,9 +1449,14 @@
             "endpoint": null,
             "input": "ActionInput_connectsecure_updateuserrole",
             "name": "update-user-role",
-            "output": ["ActionOutput_connectsecure_updateuserrole"],
+            "output": [
+                "ActionOutput_connectsecure_updateuserrole"
+            ],
             "scopes": [],
-            "usedModels": ["ActionInput_connectsecure_updateuserrole", "ActionOutput_connectsecure_updateuserrole"],
+            "usedModels": [
+                "ActionInput_connectsecure_updateuserrole",
+                "ActionOutput_connectsecure_updateuserrole"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1296,7 +1495,15 @@
                                 "description": "User email address."
                             }
                         },
-                        "required": ["user_id", "roles", "included", "excluded", "first_name", "last_name", "email"],
+                        "required": [
+                            "user_id",
+                            "roles",
+                            "included",
+                            "excluded",
+                            "first_name",
+                            "last_name",
+                            "email"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_connectsecure_updateuserrole": {
@@ -1309,7 +1516,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["status"],
+                        "required": [
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1325,12 +1534,16 @@
             "endpoints": [],
             "input": null,
             "name": "agents",
-            "output": ["Agent"],
+            "output": [
+                "Agent"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Agent"],
+            "usedModels": [
+                "Agent"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1387,7 +1600,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1401,12 +1616,16 @@
             "endpoints": [],
             "input": null,
             "name": "assets",
-            "output": ["Asset"],
+            "output": [
+                "Asset"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Asset"],
+            "usedModels": [
+                "Asset"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1418,12 +1637,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1432,12 +1655,16 @@
             "endpoints": [],
             "input": null,
             "name": "companies",
-            "output": ["Company"],
+            "output": [
+                "Company"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Company"],
+            "usedModels": [
+                "Company"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1458,7 +1685,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1472,12 +1701,16 @@
             "endpoints": [],
             "input": null,
             "name": "compliance_master",
-            "output": ["ComplianceMasterCheck"],
+            "output": [
+                "ComplianceMasterCheck"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": true,
-            "usedModels": ["ComplianceMasterCheck"],
+            "usedModels": [
+                "ComplianceMasterCheck"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1499,12 +1732,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1513,12 +1750,16 @@
             "endpoints": [],
             "input": null,
             "name": "problem_groups",
-            "output": ["ProblemGroup"],
+            "output": [
+                "ProblemGroup"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["ProblemGroup"],
+            "usedModels": [
+                "ProblemGroup"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1557,7 +1798,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "problem_group_name", "problem_group_type", "severity", "sequence", "weightage"],
+                        "required": [
+                            "id",
+                            "problem_group_name",
+                            "problem_group_type",
+                            "severity",
+                            "sequence",
+                            "weightage"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1571,12 +1819,16 @@
             "endpoints": [],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "1.0.0",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1615,7 +1867,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1629,12 +1883,16 @@
             "endpoints": [],
             "input": null,
             "name": "vulnerabilities",
-            "output": ["Vulnerability"],
+            "output": [
+                "Vulnerability"
+            ],
             "runs": "every hour",
             "scopes": [],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Vulnerability"],
+            "usedModels": [
+                "Vulnerability"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1682,7 +1940,9 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

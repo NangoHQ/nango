@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_box_copyfile",
             "name": "copy-file",
-            "output": ["ActionOutput_box_copyfile"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_copyfile", "ActionOutput_box_copyfile"],
+            "output": [
+                "ActionOutput_box_copyfile"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_copyfile",
+                "ActionOutput_box_copyfile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -29,7 +36,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["file_id", "parent_folder_id"],
+                        "required": [
+                            "file_id",
+                            "parent_folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_copyfile": {
@@ -60,7 +70,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -73,9 +87,16 @@
             "endpoint": null,
             "input": "ActionInput_box_copyfolder",
             "name": "copy-folder",
-            "output": ["ActionOutput_box_copyfolder"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_copyfolder", "ActionOutput_box_copyfolder"],
+            "output": [
+                "ActionOutput_box_copyfolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_copyfolder",
+                "ActionOutput_box_copyfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -95,7 +116,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folder_id", "destination_folder_id"],
+                        "required": [
+                            "folder_id",
+                            "destination_folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_copyfolder": {
@@ -109,7 +133,9 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["folder"]
+                                "enum": [
+                                    "folder"
+                                ]
                             },
                             "parent": {
                                 "type": "object",
@@ -121,7 +147,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -137,7 +165,11 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -150,9 +182,16 @@
             "endpoint": null,
             "input": "ActionInput_box_createcollaboration",
             "name": "create-collaboration",
-            "output": ["ActionOutput_box_createcollaboration"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_createcollaboration", "ActionOutput_box_createcollaboration"],
+            "output": [
+                "ActionOutput_box_createcollaboration"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_createcollaboration",
+                "ActionOutput_box_createcollaboration"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -161,7 +200,10 @@
                         "properties": {
                             "item_type": {
                                 "type": "string",
-                                "enum": ["file", "folder"],
+                                "enum": [
+                                    "file",
+                                    "folder"
+                                ],
                                 "description": "The type of item to grant access to. Example: \"folder\""
                             },
                             "item_id": {
@@ -170,7 +212,10 @@
                             },
                             "accessible_by_type": {
                                 "type": "string",
-                                "enum": ["user", "group"],
+                                "enum": [
+                                    "user",
+                                    "group"
+                                ],
                                 "description": "The type of collaborator to invite. Example: \"user\""
                             },
                             "accessible_by_id": {
@@ -185,7 +230,15 @@
                             },
                             "role": {
                                 "type": "string",
-                                "enum": ["editor", "viewer", "previewer", "uploader", "previewer uploader", "viewer uploader", "co-owner"],
+                                "enum": [
+                                    "editor",
+                                    "viewer",
+                                    "previewer",
+                                    "uploader",
+                                    "previewer uploader",
+                                    "viewer uploader",
+                                    "co-owner"
+                                ],
                                 "description": "The level of access granted. Example: \"editor\""
                             },
                             "is_access_only": {
@@ -207,7 +260,12 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["item_type", "item_id", "accessible_by_type", "role"],
+                        "required": [
+                            "item_type",
+                            "item_id",
+                            "accessible_by_type",
+                            "role"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_createcollaboration": {
@@ -232,7 +290,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "accessible_by": {
@@ -251,7 +312,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "invite_email": {
@@ -279,7 +343,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "role"],
+                        "required": [
+                            "id",
+                            "type",
+                            "role"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -292,9 +360,16 @@
             "endpoint": null,
             "input": "ActionInput_box_createcomment",
             "name": "create-comment",
-            "output": ["ActionOutput_box_createcomment"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_createcomment", "ActionOutput_box_createcomment"],
+            "output": [
+                "ActionOutput_box_createcomment"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_createcomment",
+                "ActionOutput_box_createcomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -310,7 +385,10 @@
                                 "description": "The text of the comment."
                             }
                         },
-                        "required": ["file_id", "message"],
+                        "required": [
+                            "file_id",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_createcomment": {
@@ -347,7 +425,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -366,11 +447,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -383,9 +470,16 @@
             "endpoint": null,
             "input": "ActionInput_box_createfolder",
             "name": "create-folder",
-            "output": ["ActionOutput_box_createfolder"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_createfolder", "ActionOutput_box_createfolder"],
+            "output": [
+                "ActionOutput_box_createfolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_createfolder",
+                "ActionOutput_box_createfolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -401,7 +495,10 @@
                                 "description": "The ID of the parent folder. Use \"0\" for the root folder. Example: \"382205380769\""
                             }
                         },
-                        "required": ["name", "parent_folder_id"],
+                        "required": [
+                            "name",
+                            "parent_folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_createfolder": {
@@ -452,16 +549,25 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "name"],
+                                            "required": [
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["entries"],
+                                "required": [
+                                    "entries"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -474,9 +580,16 @@
             "endpoint": null,
             "input": "ActionInput_box_createuser",
             "name": "create-user",
-            "output": ["ActionOutput_box_createuser"],
-            "scopes": ["manage_managed_users"],
-            "usedModels": ["ActionInput_box_createuser", "ActionOutput_box_createuser"],
+            "output": [
+                "ActionOutput_box_createuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_createuser",
+                "ActionOutput_box_createuser"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -494,7 +607,10 @@
                             "role": {
                                 "description": "The user's enterprise role.",
                                 "type": "string",
-                                "enum": ["coadmin", "user"]
+                                "enum": [
+                                    "coadmin",
+                                    "user"
+                                ]
                             },
                             "language": {
                                 "description": "The language of the user in ISO 639-1 format.",
@@ -549,7 +665,12 @@
                             "status": {
                                 "description": "The user's account status.",
                                 "type": "string",
-                                "enum": ["active", "inactive", "cannot_delete_edit", "cannot_delete_edit_upload"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "cannot_delete_edit",
+                                    "cannot_delete_edit_upload"
+                                ]
                             },
                             "external_app_user_id": {
                                 "description": "An external identifier for an app user.",
@@ -576,7 +697,10 @@
                                 }
                             }
                         },
-                        "required": ["name", "login"],
+                        "required": [
+                            "name",
+                            "login"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_createuser": {
@@ -652,7 +776,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -665,9 +791,16 @@
             "endpoint": null,
             "input": "ActionInput_box_deletecollaboration",
             "name": "delete-collaboration",
-            "output": ["ActionOutput_box_deletecollaboration"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_deletecollaboration", "ActionOutput_box_deletecollaboration"],
+            "output": [
+                "ActionOutput_box_deletecollaboration"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletecollaboration",
+                "ActionOutput_box_deletecollaboration"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -679,7 +812,9 @@
                                 "description": "The ID of the collaboration to delete. Example: \"72837978884\""
                             }
                         },
-                        "required": ["collaboration_id"],
+                        "required": [
+                            "collaboration_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_deletecollaboration": {
@@ -692,7 +827,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "collaboration_id"],
+                        "required": [
+                            "success",
+                            "collaboration_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -705,9 +843,16 @@
             "endpoint": null,
             "input": "ActionInput_box_deletecomment",
             "name": "delete-comment",
-            "output": ["ActionOutput_box_deletecomment"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_deletecomment", "ActionOutput_box_deletecomment"],
+            "output": [
+                "ActionOutput_box_deletecomment"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletecomment",
+                "ActionOutput_box_deletecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -720,7 +865,9 @@
                                 "description": "The ID of the comment to delete. Example: \"12345\""
                             }
                         },
-                        "required": ["commentId"],
+                        "required": [
+                            "commentId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_deletecomment": {
@@ -731,7 +878,9 @@
                                 "description": "Whether the comment was successfully deleted"
                             }
                         },
-                        "required": ["success"],
+                        "required": [
+                            "success"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -744,9 +893,16 @@
             "endpoint": null,
             "input": "ActionInput_box_deleteuser",
             "name": "delete-user",
-            "output": ["ActionOutput_box_deleteuser"],
-            "scopes": ["manage_managed_users"],
-            "usedModels": ["ActionInput_box_deleteuser", "ActionOutput_box_deleteuser"],
+            "output": [
+                "ActionOutput_box_deleteuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_deleteuser",
+                "ActionOutput_box_deleteuser"
+            ],
             "version": "3.0.1",
             "json_schema": {
                 "definitions": {
@@ -767,7 +923,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_deleteuser": {
@@ -782,7 +940,10 @@
                                 "description": "The ID of the deleted user"
                             }
                         },
-                        "required": ["success", "user_id"],
+                        "required": [
+                            "success",
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -795,9 +956,16 @@
             "endpoint": null,
             "input": "ActionInput_box_deletefile",
             "name": "delete-file",
-            "output": ["ActionOutput_box_deletefile"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_deletefile", "ActionOutput_box_deletefile"],
+            "output": [
+                "ActionOutput_box_deletefile"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletefile",
+                "ActionOutput_box_deletefile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -813,7 +981,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_deletefile": {
@@ -832,7 +1002,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "file_id", "permanently_deleted", "message"],
+                        "required": [
+                            "success",
+                            "file_id",
+                            "permanently_deleted",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -845,9 +1020,16 @@
             "endpoint": null,
             "input": "ActionInput_box_deletefolder",
             "name": "delete-folder",
-            "output": ["ActionOutput_box_deletefolder"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_deletefolder", "ActionOutput_box_deletefolder"],
+            "output": [
+                "ActionOutput_box_deletefolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_deletefolder",
+                "ActionOutput_box_deletefolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -863,7 +1045,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["folderId"],
+                        "required": [
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_deletefolder": {
@@ -878,7 +1062,10 @@
                                 "description": "The ID of the deleted folder"
                             }
                         },
-                        "required": ["success", "folderId"],
+                        "required": [
+                            "success",
+                            "folderId"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -891,9 +1078,16 @@
             "endpoint": null,
             "input": "ActionInput_box_downloadfile",
             "name": "download-file",
-            "output": ["ActionOutput_box_downloadfile"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_downloadfile", "ActionOutput_box_downloadfile"],
+            "output": [
+                "ActionOutput_box_downloadfile"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_downloadfile",
+                "ActionOutput_box_downloadfile"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -905,7 +1099,9 @@
                                 "description": "The ID of the file to download. Example: \"123456789\""
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_downloadfile": {
@@ -920,7 +1116,10 @@
                                 "description": "The ID of the downloaded file"
                             }
                         },
-                        "required": ["content", "file_id"],
+                        "required": [
+                            "content",
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -933,9 +1132,16 @@
             "endpoint": null,
             "input": "ActionInput_box_foldercontent",
             "name": "folder-content",
-            "output": ["ActionOutput_box_foldercontent"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_foldercontent", "ActionOutput_box_foldercontent"],
+            "output": [
+                "ActionOutput_box_foldercontent"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_foldercontent",
+                "ActionOutput_box_foldercontent"
+            ],
             "version": "3.0.2",
             "json_schema": {
                 "definitions": {
@@ -971,10 +1177,17 @@
                                             "type": "string"
                                         },
                                         "url": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         }
                                     },
-                                    "required": ["id", "name", "modified_at"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "modified_at"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -996,7 +1209,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name", "modified_at", "download_url"],
+                                    "required": [
+                                        "id",
+                                        "name",
+                                        "modified_at",
+                                        "download_url"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1004,7 +1222,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folders", "files"],
+                        "required": [
+                            "folders",
+                            "files"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1017,9 +1238,16 @@
             "endpoint": null,
             "input": "ActionInput_box_getcollaboration",
             "name": "get-collaboration",
-            "output": ["ActionOutput_box_getcollaboration"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_getcollaboration", "ActionOutput_box_getcollaboration"],
+            "output": [
+                "ActionOutput_box_getcollaboration"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getcollaboration",
+                "ActionOutput_box_getcollaboration"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1031,7 +1259,9 @@
                                 "description": "The ID of the collaboration. Example: \"1234\""
                             }
                         },
-                        "required": ["collaboration_id"],
+                        "required": [
+                            "collaboration_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_getcollaboration": {
@@ -1057,7 +1287,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "accessible_by": {
@@ -1076,7 +1309,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "invite_email": {
@@ -1093,7 +1329,11 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["accepted", "pending", "rejected"]
+                                "enum": [
+                                    "accepted",
+                                    "pending",
+                                    "rejected"
+                                ]
                             },
                             "acknowledged_at": {
                                 "type": "string"
@@ -1114,7 +1354,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -1124,7 +1367,14 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "role", "status", "created_at", "modified_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "role",
+                            "status",
+                            "created_at",
+                            "modified_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1137,9 +1387,16 @@
             "endpoint": null,
             "input": "ActionInput_box_getcomment",
             "name": "get-comment",
-            "output": ["ActionOutput_box_getcomment"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_getcomment", "ActionOutput_box_getcomment"],
+            "output": [
+                "ActionOutput_box_getcomment"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getcomment",
+                "ActionOutput_box_getcomment"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1151,7 +1408,9 @@
                                 "description": "The ID of the comment to retrieve. Example: \"12345\""
                             }
                         },
-                        "required": ["comment_id"],
+                        "required": [
+                            "comment_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_getcomment": {
@@ -1190,7 +1449,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -1209,11 +1471,17 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1226,9 +1494,16 @@
             "endpoint": null,
             "input": "ActionInput_box_getfile",
             "name": "get-file",
-            "output": ["ActionOutput_box_getfile"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_getfile", "ActionOutput_box_getfile"],
+            "output": [
+                "ActionOutput_box_getfile"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getfile",
+                "ActionOutput_box_getfile"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1240,7 +1515,9 @@
                                 "description": "The unique identifier of the file. Example: \"12345\""
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_getfile": {
@@ -1283,7 +1560,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_by": {
@@ -1302,7 +1582,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "modified_by": {
@@ -1321,7 +1605,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "owned_by": {
@@ -1340,14 +1628,25 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type", "name"],
+                                "required": [
+                                    "id",
+                                    "type",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "item_status": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "name", "size", "created_at", "modified_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name",
+                            "size",
+                            "created_at",
+                            "modified_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1360,9 +1659,16 @@
             "endpoint": null,
             "input": "ActionInput_box_getfolder",
             "name": "get-folder",
-            "output": ["ActionOutput_box_getfolder"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_getfolder", "ActionOutput_box_getfolder"],
+            "output": [
+                "ActionOutput_box_getfolder"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_getfolder",
+                "ActionOutput_box_getfolder"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1374,7 +1680,9 @@
                                 "description": "The unique identifier that represent a folder. The root folder is always represented by the ID 0. Example: \"12345\""
                             }
                         },
-                        "required": ["folder_id"],
+                        "required": [
+                            "folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_getfolder": {
@@ -1388,19 +1696,31 @@
                                 "type": "string"
                             },
                             "sequence_id": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "etag": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "name": {
                                 "type": "string"
                             },
                             "created_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "modified_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "description": {
                                 "type": "string"
@@ -1427,21 +1747,34 @@
                                                     "type": "string"
                                                 },
                                                 "sequence_id": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "etag": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "name": {
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["type", "id", "name"],
+                                            "required": [
+                                                "type",
+                                                "id",
+                                                "name"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["total_count", "entries"],
+                                "required": [
+                                    "total_count",
+                                    "entries"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_by": {
@@ -1461,7 +1794,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "id", "name"],
+                                "required": [
+                                    "type",
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "modified_by": {
@@ -1481,20 +1818,36 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "id", "name"],
+                                "required": [
+                                    "type",
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "trashed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "purged_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "content_created_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "content_modified_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "owned_by": {
                                 "type": "object",
@@ -1513,7 +1866,11 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type", "id", "name"],
+                                "required": [
+                                    "type",
+                                    "id",
+                                    "name"
+                                ],
                                 "additionalProperties": false
                             },
                             "shared_link": {
@@ -1525,13 +1882,22 @@
                                                 "type": "string"
                                             },
                                             "download_url": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "vanity_url": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "vanity_name": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "access": {
                                                 "type": "string"
@@ -1552,7 +1918,9 @@
                                                 "type": "number"
                                             }
                                         },
-                                        "required": ["url"],
+                                        "required": [
+                                            "url"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1572,7 +1940,10 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["access", "email"],
+                                        "required": [
+                                            "access",
+                                            "email"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1593,16 +1964,26 @@
                                                 "type": "string"
                                             },
                                             "sequence_id": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "etag": {
-                                                "type": ["string", "null"]
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ]
                                             },
                                             "name": {
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["type", "id", "name"],
+                                        "required": [
+                                            "type",
+                                            "id",
+                                            "name"
+                                        ],
                                         "additionalProperties": false
                                     },
                                     {
@@ -1634,13 +2015,22 @@
                                                     "type": "string"
                                                 },
                                                 "sequence_id": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 },
                                                 "etag": {
-                                                    "type": ["string", "null"]
+                                                    "type": [
+                                                        "string",
+                                                        "null"
+                                                    ]
                                                 }
                                             },
-                                            "required": ["type", "id"],
+                                            "required": [
+                                                "type",
+                                                "id"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
@@ -1662,12 +2052,18 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["by", "direction"],
+                                            "required": [
+                                                "by",
+                                                "direction"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     }
                                 },
-                                "required": ["total_count", "entries"],
+                                "required": [
+                                    "total_count",
+                                    "entries"
+                                ],
                                 "additionalProperties": false
                             },
                             "has_collaborations": {
@@ -1743,7 +2139,9 @@
                                         "type": "boolean"
                                     }
                                 },
-                                "required": ["is_watermarked"],
+                                "required": [
+                                    "is_watermarked"
+                                ],
                                 "additionalProperties": false
                             },
                             "is_accessible_via_shared_link": {
@@ -1778,7 +2176,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["type", "id", "name"],
+                        "required": [
+                            "type",
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1791,9 +2193,16 @@
             "endpoint": null,
             "input": "ActionInput_box_getuser",
             "name": "get-user",
-            "output": ["ActionOutput_box_getuser"],
-            "scopes": ["manage_managed_users"],
-            "usedModels": ["ActionInput_box_getuser", "ActionOutput_box_getuser"],
+            "output": [
+                "ActionOutput_box_getuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_getuser",
+                "ActionOutput_box_getuser"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1805,7 +2214,9 @@
                                 "description": "The ID of the user. Example: \"123\""
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_getuser": {
@@ -1857,7 +2268,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1870,9 +2283,16 @@
             "endpoint": null,
             "input": "ActionInput_box_listcollaborations",
             "name": "list-collaborations",
-            "output": ["ActionOutput_box_listcollaborations"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_listcollaborations", "ActionOutput_box_listcollaborations"],
+            "output": [
+                "ActionOutput_box_listcollaborations"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listcollaborations",
+                "ActionOutput_box_listcollaborations"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -1882,7 +2302,9 @@
                             "status": {
                                 "description": "The status of the collaborations to retrieve. Defaults to pending.",
                                 "type": "string",
-                                "enum": ["pending"]
+                                "enum": [
+                                    "pending"
+                                ]
                             },
                             "offset": {
                                 "description": "The offset of the item at which to begin the response.",
@@ -1924,13 +2346,20 @@
                                                         },
                                                         "type": {
                                                             "type": "string",
-                                                            "enum": ["file", "folder", "web_link"]
+                                                            "enum": [
+                                                                "file",
+                                                                "folder",
+                                                                "web_link"
+                                                            ]
                                                         },
                                                         "name": {
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "type"],
+                                                    "required": [
+                                                        "id",
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 {
@@ -1957,7 +2386,10 @@
                                                             "type": "string"
                                                         }
                                                     },
-                                                    "required": ["id", "type"],
+                                                    "required": [
+                                                        "id",
+                                                        "type"
+                                                    ],
                                                     "additionalProperties": {}
                                                 },
                                                 {
@@ -1973,7 +2405,11 @@
                                         },
                                         "status": {
                                             "type": "string",
-                                            "enum": ["accepted", "pending", "rejected"]
+                                            "enum": [
+                                                "accepted",
+                                                "pending",
+                                                "rejected"
+                                            ]
                                         },
                                         "acknowledged_at": {
                                             "type": "string"
@@ -1985,7 +2421,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2008,7 +2447,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["collaborations"],
+                        "required": [
+                            "collaborations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2021,9 +2462,16 @@
             "endpoint": null,
             "input": "ActionInput_box_listcomments",
             "name": "list-comments",
-            "output": ["ActionOutput_box_listcomments"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_listcomments", "ActionOutput_box_listcomments"],
+            "output": [
+                "ActionOutput_box_listcomments"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listcomments",
+                "ActionOutput_box_listcomments"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2047,7 +2495,9 @@
                                 "maximum": 9007199254740991
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_listcomments": {
@@ -2078,7 +2528,10 @@
                                         },
                                         "direction": {
                                             "type": "string",
-                                            "enum": ["ASC", "DESC"]
+                                            "enum": [
+                                                "ASC",
+                                                "DESC"
+                                            ]
                                         }
                                     },
                                     "additionalProperties": false
@@ -2122,7 +2575,12 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type", "name", "login"],
+                                            "required": [
+                                                "id",
+                                                "type",
+                                                "name",
+                                                "login"
+                                            ],
                                             "additionalProperties": false
                                         },
                                         "created_at": {
@@ -2141,16 +2599,24 @@
                                                     "type": "string"
                                                 }
                                             },
-                                            "required": ["id", "type"],
+                                            "required": [
+                                                "id",
+                                                "type"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["entries"],
+                        "required": [
+                            "entries"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2163,9 +2629,16 @@
             "endpoint": null,
             "input": "ActionInput_box_listfiles",
             "name": "list-files",
-            "output": ["ActionOutput_box_listfiles"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_listfiles", "ActionOutput_box_listfiles"],
+            "output": [
+                "ActionOutput_box_listfiles"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listfiles",
+                "ActionOutput_box_listfiles"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2189,15 +2662,25 @@
                             "sort": {
                                 "description": "Defines the second attribute by which items are sorted.",
                                 "type": "string",
-                                "enum": ["id", "name", "date", "size"]
+                                "enum": [
+                                    "id",
+                                    "name",
+                                    "date",
+                                    "size"
+                                ]
                             },
                             "direction": {
                                 "description": "The direction to sort results in.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             }
                         },
-                        "required": ["folder_id"],
+                        "required": [
+                            "folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_listfiles": {
@@ -2215,7 +2698,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type"],
+                                    "required": [
+                                        "id",
+                                        "type"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -2223,7 +2709,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2236,9 +2724,16 @@
             "endpoint": null,
             "input": "ActionInput_box_listfolders",
             "name": "list-folders",
-            "output": ["ActionOutput_box_listfolders"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_listfolders", "ActionOutput_box_listfolders"],
+            "output": [
+                "ActionOutput_box_listfolders"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_listfolders",
+                "ActionOutput_box_listfolders"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2285,7 +2780,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "type", "name"],
+                                    "required": [
+                                        "id",
+                                        "type",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -2293,7 +2792,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["folders"],
+                        "required": [
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2306,9 +2807,16 @@
             "endpoint": null,
             "input": "ActionInput_box_search",
             "name": "search",
-            "output": ["ActionOutput_box_search"],
-            "scopes": ["root_readonly"],
-            "usedModels": ["ActionInput_box_search", "ActionOutput_box_search"],
+            "output": [
+                "ActionOutput_box_search"
+            ],
+            "scopes": [
+                "root_readonly"
+            ],
+            "usedModels": [
+                "ActionInput_box_search",
+                "ActionOutput_box_search"
+            ],
             "version": "1.0.2",
             "json_schema": {
                 "definitions": {
@@ -2322,7 +2830,11 @@
                             "type": {
                                 "description": "Limits the search results to items of this type.",
                                 "type": "string",
-                                "enum": ["file", "folder", "web_link"]
+                                "enum": [
+                                    "file",
+                                    "folder",
+                                    "web_link"
+                                ]
                             },
                             "file_extensions": {
                                 "description": "Limits results to files matching any of the provided extensions (comma-separated list without dots).",
@@ -2378,23 +2890,39 @@
                                 "type": "array",
                                 "items": {
                                     "type": "string",
-                                    "enum": ["name", "description", "file_content", "comments", "tags"]
+                                    "enum": [
+                                        "name",
+                                        "description",
+                                        "file_content",
+                                        "comments",
+                                        "tags"
+                                    ]
                                 }
                             },
                             "trash_content": {
                                 "description": "Determines if the search should look in trash. Defaults to non_trashed_only.",
                                 "type": "string",
-                                "enum": ["non_trashed_only", "trashed_only", "all_items"]
+                                "enum": [
+                                    "non_trashed_only",
+                                    "trashed_only",
+                                    "all_items"
+                                ]
                             },
                             "sort": {
                                 "description": "Defines the order of search results. Defaults to relevance.",
                                 "type": "string",
-                                "enum": ["relevance", "modified_at"]
+                                "enum": [
+                                    "relevance",
+                                    "modified_at"
+                                ]
                             },
                             "direction": {
                                 "description": "Defines the direction of ordering. Defaults to DESC.",
                                 "type": "string",
-                                "enum": ["ASC", "DESC"]
+                                "enum": [
+                                    "ASC",
+                                    "DESC"
+                                ]
                             },
                             "limit": {
                                 "description": "Maximum number of items to return per page. Defaults to 30, max 200.",
@@ -2411,7 +2939,10 @@
                             "scope": {
                                 "description": "Limits results to user content or enterprise content. Defaults to user_content.",
                                 "type": "string",
-                                "enum": ["user_content", "enterprise_content"]
+                                "enum": [
+                                    "user_content",
+                                    "enterprise_content"
+                                ]
                             },
                             "fields": {
                                 "description": "Comma-separated list of attributes to include in the response.",
@@ -2439,7 +2970,9 @@
                                 }
                             }
                         },
-                        "required": ["query"],
+                        "required": [
+                            "query"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_search": {
@@ -2498,21 +3031,34 @@
                                                                 "type": "string"
                                                             }
                                                         },
-                                                        "required": ["type", "id"],
+                                                        "required": [
+                                                            "type",
+                                                            "id"
+                                                        ],
                                                         "additionalProperties": false
                                                     }
                                                 }
                                             },
-                                            "required": ["entries"],
+                                            "required": [
+                                                "entries"
+                                            ],
                                             "additionalProperties": false
                                         }
                                     },
-                                    "required": ["type", "id"],
+                                    "required": [
+                                        "type",
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["total_count", "limit", "offset", "entries"],
+                        "required": [
+                            "total_count",
+                            "limit",
+                            "offset",
+                            "entries"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2525,9 +3071,16 @@
             "endpoint": null,
             "input": "ActionInput_box_updatecollaboration",
             "name": "update-collaboration",
-            "output": ["ActionOutput_box_updatecollaboration"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_updatecollaboration", "ActionOutput_box_updatecollaboration"],
+            "output": [
+                "ActionOutput_box_updatecollaboration"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatecollaboration",
+                "ActionOutput_box_updatecollaboration"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2541,12 +3094,25 @@
                             "role": {
                                 "description": "The level of access granted.",
                                 "type": "string",
-                                "enum": ["editor", "viewer", "previewer", "uploader", "previewer uploader", "viewer uploader", "co-owner", "owner"]
+                                "enum": [
+                                    "editor",
+                                    "viewer",
+                                    "previewer",
+                                    "uploader",
+                                    "previewer uploader",
+                                    "viewer uploader",
+                                    "co-owner",
+                                    "owner"
+                                ]
                             },
                             "status": {
                                 "description": "Set the status of a pending collaboration invitation, effectively accepting or rejecting the invite.",
                                 "type": "string",
-                                "enum": ["pending", "accepted", "rejected"]
+                                "enum": [
+                                    "pending",
+                                    "accepted",
+                                    "rejected"
+                                ]
                             },
                             "expires_at": {
                                 "description": "Update the expiration date for the collaboration. Format: ISO 8601 date-time. Example: \"2019-08-29T23:59:00-07:00\"",
@@ -2557,7 +3123,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["collaboration_id"],
+                        "required": [
+                            "collaboration_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_updatecollaboration": {
@@ -2578,10 +3146,17 @@
                                     },
                                     "type": {
                                         "type": "string",
-                                        "enum": ["file", "folder", "web_link"]
+                                        "enum": [
+                                            "file",
+                                            "folder",
+                                            "web_link"
+                                        ]
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": {}
                             },
                             "accessible_by": {
@@ -2603,7 +3178,12 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "type", "name", "login"],
+                                        "required": [
+                                            "id",
+                                            "type",
+                                            "name",
+                                            "login"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -2612,23 +3192,36 @@
                                 ]
                             },
                             "invite_email": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "role": {
                                 "type": "string"
                             },
                             "expires_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "is_access_only": {
                                 "type": "boolean"
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["accepted", "pending", "rejected"]
+                                "enum": [
+                                    "accepted",
+                                    "pending",
+                                    "rejected"
+                                ]
                             },
                             "acknowledged_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "created_by": {
                                 "anyOf": [
@@ -2649,7 +3242,12 @@
                                                 "type": "string"
                                             }
                                         },
-                                        "required": ["id", "type", "name", "login"],
+                                        "required": [
+                                            "id",
+                                            "type",
+                                            "name",
+                                            "login"
+                                        ],
                                         "additionalProperties": {}
                                     },
                                     {
@@ -2664,7 +3262,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "role", "status"],
+                        "required": [
+                            "id",
+                            "type",
+                            "role",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2677,9 +3280,16 @@
             "endpoint": null,
             "input": "ActionInput_box_updatecomment",
             "name": "update-comment",
-            "output": ["ActionOutput_box_updatecomment"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_updatecomment", "ActionOutput_box_updatecomment"],
+            "output": [
+                "ActionOutput_box_updatecomment"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatecomment",
+                "ActionOutput_box_updatecomment"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2695,7 +3305,10 @@
                                 "description": "The new text of the comment. Example: \"Updated comment message\""
                             }
                         },
-                        "required": ["commentId", "message"],
+                        "required": [
+                            "commentId",
+                            "message"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_updatecomment": {
@@ -2735,7 +3348,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "item": {
@@ -2748,14 +3364,21 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "taggedMessage": {
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "message"],
+                        "required": [
+                            "id",
+                            "type",
+                            "message"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2768,9 +3391,16 @@
             "endpoint": null,
             "input": "ActionInput_box_updatefile",
             "name": "update-file",
-            "output": ["ActionOutput_box_updatefile"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_updatefile", "ActionOutput_box_updatefile"],
+            "output": [
+                "ActionOutput_box_updatefile"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatefile",
+                "ActionOutput_box_updatefile"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2799,7 +3429,9 @@
                                         "description": "The ID of parent folder. Use \"0\" for the root folder."
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "tags": {
@@ -2812,7 +3444,9 @@
                                 }
                             }
                         },
-                        "required": ["file_id"],
+                        "required": [
+                            "file_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_updatefile": {
@@ -2849,7 +3483,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": false
                             },
                             "tags": {
@@ -2859,7 +3495,10 @@
                                 }
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2872,9 +3511,16 @@
             "endpoint": null,
             "input": "ActionInput_box_updatefolder",
             "name": "update-folder",
-            "output": ["ActionOutput_box_updatefolder"],
-            "scopes": ["root_readwrite"],
-            "usedModels": ["ActionInput_box_updatefolder", "ActionOutput_box_updatefolder"],
+            "output": [
+                "ActionOutput_box_updatefolder"
+            ],
+            "scopes": [
+                "root_readwrite"
+            ],
+            "usedModels": [
+                "ActionInput_box_updatefolder",
+                "ActionOutput_box_updatefolder"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2920,7 +3566,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["folder_id"],
+                        "required": [
+                            "folder_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_updatefolder": {
@@ -2943,7 +3591,11 @@
                             },
                             "sync_state": {
                                 "type": "string",
-                                "enum": ["synced", "not_synced", "partially_synced"]
+                                "enum": [
+                                    "synced",
+                                    "not_synced",
+                                    "partially_synced"
+                                ]
                             },
                             "tags": {
                                 "type": "array",
@@ -2961,7 +3613,11 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["id", "type", "name"],
+                        "required": [
+                            "id",
+                            "type",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -2974,9 +3630,16 @@
             "endpoint": null,
             "input": "ActionInput_box_updateuser",
             "name": "update-user",
-            "output": ["ActionOutput_box_updateuser"],
-            "scopes": ["manage_managed_users"],
-            "usedModels": ["ActionInput_box_updateuser", "ActionOutput_box_updateuser"],
+            "output": [
+                "ActionOutput_box_updateuser"
+            ],
+            "scopes": [
+                "manage_managed_users"
+            ],
+            "usedModels": [
+                "ActionInput_box_updateuser",
+                "ActionOutput_box_updateuser"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -2999,7 +3662,10 @@
                             "role": {
                                 "description": "The user's enterprise role.",
                                 "type": "string",
-                                "enum": ["coadmin", "user"]
+                                "enum": [
+                                    "coadmin",
+                                    "user"
+                                ]
                             },
                             "language": {
                                 "description": "The language of the user in ISO 639-1 format.",
@@ -3051,7 +3717,12 @@
                             "status": {
                                 "description": "The user's account status.",
                                 "type": "string",
-                                "enum": ["active", "inactive", "cannot_delete_edit", "cannot_delete_edit_upload"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "cannot_delete_edit",
+                                    "cannot_delete_edit_upload"
+                                ]
                             },
                             "space_amount": {
                                 "description": "The user's total available space in bytes. Set to -1 for unlimited storage.",
@@ -3064,7 +3735,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id"],
+                        "required": [
+                            "user_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_box_updateuser": {
@@ -3075,7 +3748,9 @@
                             },
                             "type": {
                                 "type": "string",
-                                "enum": ["user"]
+                                "enum": [
+                                    "user"
+                                ]
                             },
                             "name": {
                                 "type": "string"
@@ -3085,7 +3760,11 @@
                             },
                             "role": {
                                 "type": "string",
-                                "enum": ["admin", "coadmin", "user"]
+                                "enum": [
+                                    "admin",
+                                    "coadmin",
+                                    "user"
+                                ]
                             },
                             "language": {
                                 "type": "string"
@@ -3110,7 +3789,12 @@
                             },
                             "status": {
                                 "type": "string",
-                                "enum": ["active", "inactive", "cannot_delete_edit", "cannot_delete_edit_upload"]
+                                "enum": [
+                                    "active",
+                                    "inactive",
+                                    "cannot_delete_edit",
+                                    "cannot_delete_edit_upload"
+                                ]
                             },
                             "job_title": {
                                 "type": "string"
@@ -3152,7 +3836,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type"],
+                        "required": [
+                            "id",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -3173,12 +3860,18 @@
             ],
             "input": null,
             "name": "collaborations",
-            "output": ["Collaboration"],
+            "output": [
+                "Collaboration"
+            ],
             "runs": "every hour",
-            "scopes": ["root_readonly"],
+            "scopes": [
+                "root_readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Collaboration"],
+            "usedModels": [
+                "Collaboration"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3205,7 +3898,10 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id", "type"],
+                                "required": [
+                                    "id",
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "accessible_by": {
@@ -3224,7 +3920,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "invite_email": {
@@ -3261,7 +3959,9 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["type"],
+                                "required": [
+                                    "type"
+                                ],
                                 "additionalProperties": false
                             },
                             "created_at": {
@@ -3271,12 +3971,21 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "type", "role", "status", "created_at", "modified_at"],
+                        "required": [
+                            "id",
+                            "type",
+                            "role",
+                            "status",
+                            "created_at",
+                            "modified_at"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3290,12 +3999,18 @@
             ],
             "input": null,
             "name": "folders",
-            "output": ["Folder"],
+            "output": [
+                "Folder"
+            ],
             "runs": "every hour",
-            "scopes": ["root_readonly"],
+            "scopes": [
+                "root_readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Folder"],
+            "usedModels": [
+                "Folder"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3326,7 +4041,10 @@
                                 "type": "string"
                             },
                             "trashed_at": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "parent": {
                                 "type": "object",
@@ -3338,16 +4056,24 @@
                                         "type": "string"
                                     }
                                 },
-                                "required": ["id"],
+                                "required": [
+                                    "id"
+                                ],
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name", "type"],
+                        "required": [
+                            "id",
+                            "name",
+                            "type"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3362,12 +4088,19 @@
             ],
             "input": "SyncMetadata_box_files",
             "name": "files",
-            "output": ["BoxDocument"],
+            "output": [
+                "BoxDocument"
+            ],
             "runs": "every day",
-            "scopes": ["root_readonly"],
+            "scopes": [
+                "root_readonly"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["BoxDocument", "SyncMetadata_box_files"],
+            "usedModels": [
+                "BoxDocument",
+                "SyncMetadata_box_files"
+            ],
             "version": "3.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3388,7 +4121,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "modified_at"],
+                        "required": [
+                            "id",
+                            "name",
+                            "modified_at"
+                        ],
                         "additionalProperties": false
                     },
                     "SyncMetadata_box_files": {
@@ -3407,12 +4144,17 @@
                                 }
                             }
                         },
-                        "required": ["files", "folders"],
+                        "required": [
+                            "files",
+                            "folders"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -3427,12 +4169,18 @@
             ],
             "input": null,
             "name": "users",
-            "output": ["User"],
+            "output": [
+                "User"
+            ],
             "runs": "every day",
-            "scopes": ["manage_managed_users"],
+            "scopes": [
+                "manage_managed_users"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["User"],
+            "usedModels": [
+                "User"
+            ],
             "version": "3.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -3489,7 +4237,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }

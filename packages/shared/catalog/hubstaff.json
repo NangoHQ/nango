@@ -7,9 +7,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_createclient",
             "name": "create-client",
-            "output": ["ActionOutput_hubstaff_createclient"],
-            "scopes": ["hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_createclient", "ActionOutput_hubstaff_createclient"],
+            "output": [
+                "ActionOutput_hubstaff_createclient"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createclient",
+                "ActionOutput_hubstaff_createclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -25,7 +32,10 @@
                                 "description": "Client name. Example: \"Nango Registry Test Client 3\""
                             }
                         },
-                        "required": ["organization_id", "name"],
+                        "required": [
+                            "organization_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_createclient": {
@@ -75,7 +85,11 @@
                             },
                             "metadata": {}
                         },
-                        "required": ["id", "organization_id", "name"],
+                        "required": [
+                            "id",
+                            "organization_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -88,9 +102,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_createproject",
             "name": "create-project",
-            "output": ["ActionOutput_hubstaff_createproject"],
-            "scopes": ["hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_createproject", "ActionOutput_hubstaff_createproject"],
+            "output": [
+                "ActionOutput_hubstaff_createproject"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createproject",
+                "ActionOutput_hubstaff_createproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -106,7 +127,10 @@
                                 "description": "Project name."
                             }
                         },
-                        "required": ["organization_id", "name"],
+                        "required": [
+                            "organization_id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_createproject": {
@@ -128,7 +152,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -141,9 +168,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_createtask",
             "name": "create-task",
-            "output": ["ActionOutput_hubstaff_createtask"],
-            "scopes": ["hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_createtask", "ActionOutput_hubstaff_createtask"],
+            "output": [
+                "ActionOutput_hubstaff_createtask"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createtask",
+                "ActionOutput_hubstaff_createtask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -167,7 +201,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["project_id", "summary", "assignee_id"],
+                        "required": [
+                            "project_id",
+                            "summary",
+                            "assignee_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_createtask": {
@@ -212,7 +250,10 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id", "summary"],
+                        "required": [
+                            "id",
+                            "summary"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -225,9 +266,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_createtimeentry",
             "name": "create-time-entry",
-            "output": ["ActionOutput_hubstaff_createtimeentry"],
-            "scopes": ["hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_createtimeentry", "ActionOutput_hubstaff_createtimeentry"],
+            "output": [
+                "ActionOutput_hubstaff_createtimeentry"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_createtimeentry",
+                "ActionOutput_hubstaff_createtimeentry"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -236,11 +284,17 @@
                         "properties": {
                             "user_id": {
                                 "description": "Hubstaff user ID. Example: \"4453817\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "project_id": {
                                 "description": "Hubstaff project ID. Example: 4145631",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "start_time": {
                                 "type": "string",
@@ -255,7 +309,12 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["user_id", "project_id", "start_time", "tracked"],
+                        "required": [
+                            "user_id",
+                            "project_id",
+                            "start_time",
+                            "tracked"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_createtimeentry": {
@@ -280,7 +339,13 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["success", "user_id", "project_id", "start_time", "tracked"],
+                        "required": [
+                            "success",
+                            "user_id",
+                            "project_id",
+                            "start_time",
+                            "tracked"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -293,9 +358,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_deletetask",
             "name": "delete-task",
-            "output": ["ActionOutput_hubstaff_deletetask"],
-            "scopes": ["hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_deletetask", "ActionOutput_hubstaff_deletetask"],
+            "output": [
+                "ActionOutput_hubstaff_deletetask"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_deletetask",
+                "ActionOutput_hubstaff_deletetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -307,7 +379,9 @@
                                 "description": "The ID of the task to delete. Example: 165909246"
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_deletetask": {
@@ -321,7 +395,10 @@
                                 "const": "deleted"
                             }
                         },
-                        "required": ["id", "status"],
+                        "required": [
+                            "id",
+                            "status"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -334,9 +411,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_getclient",
             "name": "get-client",
-            "output": ["ActionOutput_hubstaff_getclient"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_getclient", "ActionOutput_hubstaff_getclient"],
+            "output": [
+                "ActionOutput_hubstaff_getclient"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_getclient",
+                "ActionOutput_hubstaff_getclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -348,7 +432,9 @@
                                 "description": "Client ID. Example: \"458914\""
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_getclient": {
@@ -422,9 +508,19 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_getcurrentuser",
             "name": "get-current-user",
-            "output": ["ActionOutput_hubstaff_getcurrentuser"],
-            "scopes": ["hubstaff:read", "email", "openid", "profile"],
-            "usedModels": ["ActionInput_hubstaff_getcurrentuser", "ActionOutput_hubstaff_getcurrentuser"],
+            "output": [
+                "ActionOutput_hubstaff_getcurrentuser"
+            ],
+            "scopes": [
+                "hubstaff:read",
+                "email",
+                "openid",
+                "profile"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_getcurrentuser",
+                "ActionOutput_hubstaff_getcurrentuser"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -467,7 +563,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -480,9 +578,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_getproject",
             "name": "get-project",
-            "output": ["ActionOutput_hubstaff_getproject"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_getproject", "ActionOutput_hubstaff_getproject"],
+            "output": [
+                "ActionOutput_hubstaff_getproject"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_getproject",
+                "ActionOutput_hubstaff_getproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -494,7 +599,9 @@
                                 "description": "Project ID. Example: 4145631"
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_getproject": {
@@ -527,7 +634,10 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id", "name"],
+                        "required": [
+                            "id",
+                            "name"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -540,9 +650,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_gettask",
             "name": "get-task",
-            "output": ["ActionOutput_hubstaff_gettask"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_gettask", "ActionOutput_hubstaff_gettask"],
+            "output": [
+                "ActionOutput_hubstaff_gettask"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_gettask",
+                "ActionOutput_hubstaff_gettask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -554,7 +671,9 @@
                                 "description": "Task ID. Example: \"165909246\""
                             }
                         },
-                        "required": ["taskId"],
+                        "required": [
+                            "taskId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_gettask": {
@@ -616,7 +735,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -629,9 +750,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listactivities",
             "name": "list-activities",
-            "output": ["ActionOutput_hubstaff_listactivities"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listactivities", "ActionOutput_hubstaff_listactivities"],
+            "output": [
+                "ActionOutput_hubstaff_listactivities"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listactivities",
+                "ActionOutput_hubstaff_listactivities"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -651,7 +779,11 @@
                                 "description": "End of date range in ISO8601 format. Example: 2026-07-30T00:00:00Z"
                             }
                         },
-                        "required": ["organization_id", "start", "stop"],
+                        "required": [
+                            "organization_id",
+                            "start",
+                            "stop"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listactivities": {
@@ -663,7 +795,10 @@
                                     "type": "object",
                                     "properties": {
                                         "id": {
-                                            "type": ["string", "number"]
+                                            "type": [
+                                                "string",
+                                                "number"
+                                            ]
                                         },
                                         "date": {
                                             "type": "string"
@@ -687,7 +822,10 @@
                                             "type": "number"
                                         },
                                         "task_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "keyboard": {
                                             "type": "number"
@@ -708,7 +846,10 @@
                                             "type": "boolean"
                                         },
                                         "location_type": {
-                                            "type": ["string", "null"]
+                                            "type": [
+                                                "string",
+                                                "null"
+                                            ]
                                         },
                                         "billable": {
                                             "type": "boolean"
@@ -735,12 +876,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["activities"],
+                        "required": [
+                            "activities"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -753,9 +898,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listclients",
             "name": "list-clients",
-            "output": ["ActionOutput_hubstaff_listclients"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listclients", "ActionOutput_hubstaff_listclients"],
+            "output": [
+                "ActionOutput_hubstaff_listclients"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listclients",
+                "ActionOutput_hubstaff_listclients"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -771,7 +923,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listclients": {
@@ -798,7 +952,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -806,7 +962,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -819,9 +977,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listnotes",
             "name": "list-notes",
-            "output": ["ActionOutput_hubstaff_listnotes"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listnotes", "ActionOutput_hubstaff_listnotes"],
+            "output": [
+                "ActionOutput_hubstaff_listnotes"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listnotes",
+                "ActionOutput_hubstaff_listnotes"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -830,7 +995,10 @@
                         "properties": {
                             "organization_id": {
                                 "description": "Organization ID. Example: \"775646\"",
-                                "type": ["string", "number"]
+                                "type": [
+                                    "string",
+                                    "number"
+                                ]
                             },
                             "time_slot_start": {
                                 "type": "string",
@@ -845,7 +1013,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id", "time_slot_start", "time_slot_stop"],
+                        "required": [
+                            "organization_id",
+                            "time_slot_start",
+                            "time_slot_stop"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listnotes": {
@@ -875,7 +1047,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -883,7 +1057,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["notes"],
+                        "required": [
+                            "notes"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -896,9 +1072,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listorganizationmembers",
             "name": "list-organization-members",
-            "output": ["ActionOutput_hubstaff_listorganizationmembers"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listorganizationmembers", "ActionOutput_hubstaff_listorganizationmembers"],
+            "output": [
+                "ActionOutput_hubstaff_listorganizationmembers"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listorganizationmembers",
+                "ActionOutput_hubstaff_listorganizationmembers"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -930,7 +1113,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listorganizationmembers": {
@@ -981,7 +1166,11 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["user_id", "membership_role", "membership_status"],
+                                    "required": [
+                                        "user_id",
+                                        "membership_role",
+                                        "membership_status"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -989,7 +1178,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["items"],
+                        "required": [
+                            "items"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1002,9 +1193,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listorganizations",
             "name": "list-organizations",
-            "output": ["ActionOutput_hubstaff_listorganizations"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listorganizations", "ActionOutput_hubstaff_listorganizations"],
+            "output": [
+                "ActionOutput_hubstaff_listorganizations"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listorganizations",
+                "ActionOutput_hubstaff_listorganizations"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1042,12 +1240,17 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": false
                                 }
                             }
                         },
-                        "required": ["organizations"],
+                        "required": [
+                            "organizations"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1060,9 +1263,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listprojects",
             "name": "list-projects",
-            "output": ["ActionOutput_hubstaff_listprojects"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listprojects", "ActionOutput_hubstaff_listprojects"],
+            "output": [
+                "ActionOutput_hubstaff_listprojects"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listprojects",
+                "ActionOutput_hubstaff_listprojects"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1078,7 +1288,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listprojects": {
@@ -1105,7 +1317,10 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "name"],
+                                    "required": [
+                                        "id",
+                                        "name"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1113,7 +1328,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["projects"],
+                        "required": [
+                            "projects"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1126,9 +1343,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listscreenshots",
             "name": "list-screenshots",
-            "output": ["ActionOutput_hubstaff_listscreenshots"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listscreenshots", "ActionOutput_hubstaff_listscreenshots"],
+            "output": [
+                "ActionOutput_hubstaff_listscreenshots"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listscreenshots",
+                "ActionOutput_hubstaff_listscreenshots"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1152,7 +1376,11 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["organization_id", "start", "stop"],
+                        "required": [
+                            "organization_id",
+                            "start",
+                            "stop"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listscreenshots": {
@@ -1173,7 +1401,10 @@
                                             "type": "number"
                                         },
                                         "task_id": {
-                                            "type": ["number", "null"]
+                                            "type": [
+                                                "number",
+                                                "null"
+                                            ]
                                         },
                                         "time_slot": {
                                             "type": "string"
@@ -1194,7 +1425,9 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             },
@@ -1202,7 +1435,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["screenshots"],
+                        "required": [
+                            "screenshots"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1215,9 +1450,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listtasks",
             "name": "list-tasks",
-            "output": ["ActionOutput_hubstaff_listtasks"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listtasks", "ActionOutput_hubstaff_listtasks"],
+            "output": [
+                "ActionOutput_hubstaff_listtasks"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listtasks",
+                "ActionOutput_hubstaff_listtasks"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1233,7 +1475,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["projectId"],
+                        "required": [
+                            "projectId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listtasks": {
@@ -1280,7 +1524,12 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id", "status", "project_id", "summary"],
+                                    "required": [
+                                        "id",
+                                        "status",
+                                        "project_id",
+                                        "summary"
+                                    ],
                                     "additionalProperties": false
                                 }
                             },
@@ -1288,7 +1537,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["tasks"],
+                        "required": [
+                            "tasks"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1301,9 +1552,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_listteams",
             "name": "list-teams",
-            "output": ["ActionOutput_hubstaff_listteams"],
-            "scopes": ["hubstaff:read"],
-            "usedModels": ["ActionInput_hubstaff_listteams", "ActionOutput_hubstaff_listteams"],
+            "output": [
+                "ActionOutput_hubstaff_listteams"
+            ],
+            "scopes": [
+                "hubstaff:read"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_listteams",
+                "ActionOutput_hubstaff_listteams"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1315,7 +1573,9 @@
                                 "description": "Organization ID. Example: 775646"
                             }
                         },
-                        "required": ["organization_id"],
+                        "required": [
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_listteams": {
@@ -1333,12 +1593,16 @@
                                             "type": "string"
                                         }
                                     },
-                                    "required": ["id"],
+                                    "required": [
+                                        "id"
+                                    ],
                                     "additionalProperties": {}
                                 }
                             }
                         },
-                        "required": ["teams"],
+                        "required": [
+                            "teams"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1351,9 +1615,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_updateclient",
             "name": "update-client",
-            "output": ["ActionOutput_hubstaff_updateclient"],
-            "scopes": ["hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_updateclient", "ActionOutput_hubstaff_updateclient"],
+            "output": [
+                "ActionOutput_hubstaff_updateclient"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_updateclient",
+                "ActionOutput_hubstaff_updateclient"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1374,7 +1645,9 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["clientId"],
+                        "required": [
+                            "clientId"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_updateclient": {
@@ -1430,7 +1703,9 @@
                                 "additionalProperties": {}
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1443,9 +1718,16 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_updateproject",
             "name": "update-project",
-            "output": ["ActionOutput_hubstaff_updateproject"],
-            "scopes": ["hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_updateproject", "ActionOutput_hubstaff_updateproject"],
+            "output": [
+                "ActionOutput_hubstaff_updateproject"
+            ],
+            "scopes": [
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_updateproject",
+                "ActionOutput_hubstaff_updateproject"
+            ],
             "version": "1.0.0",
             "json_schema": {
                 "definitions": {
@@ -1463,10 +1745,15 @@
                             "status": {
                                 "description": "Project status. Set to \"archived\" to archive the project.",
                                 "type": "string",
-                                "enum": ["active", "archived"]
+                                "enum": [
+                                    "active",
+                                    "archived"
+                                ]
                             }
                         },
-                        "required": ["project_id"],
+                        "required": [
+                            "project_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_updateproject": {
@@ -1476,16 +1763,27 @@
                                 "type": "number"
                             },
                             "name": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "status": {
-                                "type": ["string", "null"]
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
                             },
                             "organization_id": {
-                                "type": ["number", "null"]
+                                "type": [
+                                    "number",
+                                    "null"
+                                ]
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": {}
                     }
                 }
@@ -1498,9 +1796,17 @@
             "endpoint": null,
             "input": "ActionInput_hubstaff_updatetask",
             "name": "update-task",
-            "output": ["ActionOutput_hubstaff_updatetask"],
-            "scopes": ["hubstaff:read", "hubstaff:write"],
-            "usedModels": ["ActionInput_hubstaff_updatetask", "ActionOutput_hubstaff_updatetask"],
+            "output": [
+                "ActionOutput_hubstaff_updatetask"
+            ],
+            "scopes": [
+                "hubstaff:read",
+                "hubstaff:write"
+            ],
+            "usedModels": [
+                "ActionInput_hubstaff_updatetask",
+                "ActionOutput_hubstaff_updatetask"
+            ],
             "version": "1.0.1",
             "json_schema": {
                 "definitions": {
@@ -1528,7 +1834,9 @@
                                 "type": "boolean"
                             }
                         },
-                        "required": ["task_id"],
+                        "required": [
+                            "task_id"
+                        ],
                         "additionalProperties": false
                     },
                     "ActionOutput_hubstaff_updatetask": {
@@ -1565,7 +1873,10 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "lock_version"],
+                        "required": [
+                            "id",
+                            "lock_version"
+                        ],
                         "additionalProperties": false
                     }
                 }
@@ -1581,12 +1892,18 @@
             "endpoints": [],
             "input": null,
             "name": "activities",
-            "output": ["Activity"],
+            "output": [
+                "Activity"
+            ],
             "runs": "every hour",
-            "scopes": ["hubstaff:read"],
+            "scopes": [
+                "hubstaff:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Activity"],
+            "usedModels": [
+                "Activity"
+            ],
             "version": "1.0.1",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1619,12 +1936,16 @@
                                 "type": "number"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1633,12 +1954,18 @@
             "endpoints": [],
             "input": null,
             "name": "clients",
-            "output": ["Client"],
+            "output": [
+                "Client"
+            ],
             "runs": "every hour",
-            "scopes": ["hubstaff:read"],
+            "scopes": [
+                "hubstaff:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Client"],
+            "usedModels": [
+                "Client"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1665,12 +1992,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1679,12 +2010,18 @@
             "endpoints": [],
             "input": null,
             "name": "projects",
-            "output": ["Project"],
+            "output": [
+                "Project"
+            ],
             "runs": "every hour",
-            "scopes": ["hubstaff:read"],
+            "scopes": [
+                "hubstaff:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Project"],
+            "usedModels": [
+                "Project"
+            ],
             "version": "1.0.3",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1711,12 +2048,19 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id", "name", "status", "organization_id"],
+                        "required": [
+                            "id",
+                            "name",
+                            "status",
+                            "organization_id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         },
         {
             "type": "sync",
@@ -1725,12 +2069,18 @@
             "endpoints": [],
             "input": null,
             "name": "tasks",
-            "output": ["Task"],
+            "output": [
+                "Task"
+            ],
             "runs": "every hour",
-            "scopes": ["hubstaff:read"],
+            "scopes": [
+                "hubstaff:read"
+            ],
             "sync_type": "full",
             "track_deletes": false,
-            "usedModels": ["Task"],
+            "usedModels": [
+                "Task"
+            ],
             "version": "1.0.2",
             "webhookSubscriptions": [],
             "json_schema": {
@@ -1775,12 +2125,16 @@
                                 "type": "string"
                             }
                         },
-                        "required": ["id"],
+                        "required": [
+                            "id"
+                        ],
                         "additionalProperties": false
                     }
                 }
             },
-            "features": ["checkpoints"]
+            "features": [
+                "checkpoints"
+            ]
         }
     ],
     "onEventScripts": {
